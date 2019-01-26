@@ -15,7 +15,7 @@
 * Surfaces can be colored by atomic no, polarity, donor/acceptor potential
 * Surfaces can be cut smoothly by clipping planes or lasso selection
 * A side panel allows to show and hide individual molecules
-* Protein Database entries can be downloaded abinding site can be cropped in one step.
+* PDB-entries can be downloaded, protein surfaces generated and binding site cropped in one step
 * The open source ray-tracer SunFlow was built in to render scenes and molecules in high quality
 
 
