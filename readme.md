@@ -38,6 +38,11 @@ git clone https://github.com/thsa/fxmolviewer.git
 On Linux or Macintosh just run the 'buildAll' shell script.
 
 
+### How to run the project
+
+After building it double click fxmolviewer.jar or type in a shell: 'java -jar fxmolviewer.jar'. **Note that this project requires Java 8.** For Java 9 and above you need to replace controlsfx-8.40.14.jar by a newer version.
+
+
 ### How to contribute
 
 Contact the author under the e-mail shown on www.openmolecules.org
