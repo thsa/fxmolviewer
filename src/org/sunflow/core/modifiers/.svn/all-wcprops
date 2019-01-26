@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/modifiers
+END
+NormalMapModifier.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svnroot/sunflow/!svn/ver/318/trunk/src/org/sunflow/core/modifiers/NormalMapModifier.java
+END
+PerlinModifier.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/modifiers/PerlinModifier.java
+END
+BumpMappingModifier.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svnroot/sunflow/!svn/ver/166/trunk/src/org/sunflow/core/modifiers/BumpMappingModifier.java
+END

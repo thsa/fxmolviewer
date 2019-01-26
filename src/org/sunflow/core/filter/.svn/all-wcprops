@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svnroot/sunflow/!svn/ver/348/trunk/src/org/sunflow/core/filter
+END
+LanczosFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/sunflow/!svn/ver/25/trunk/src/org/sunflow/core/filter/LanczosFilter.java
+END
+GaussianFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/filter/GaussianFilter.java
+END
+CubicBSpline.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/sunflow/!svn/ver/348/trunk/src/org/sunflow/core/filter/CubicBSpline.java
+END
+SincFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/filter/SincFilter.java
+END
+CatmullRomFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/sunflow/!svn/ver/25/trunk/src/org/sunflow/core/filter/CatmullRomFilter.java
+END
+BlackmanHarrisFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/filter/BlackmanHarrisFilter.java
+END
+MitchellFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/sunflow/!svn/ver/25/trunk/src/org/sunflow/core/filter/MitchellFilter.java
+END
+TriangleFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/filter/TriangleFilter.java
+END
+BoxFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/filter/BoxFilter.java
+END

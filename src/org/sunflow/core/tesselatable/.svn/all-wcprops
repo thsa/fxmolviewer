@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/sunflow/!svn/ver/312/trunk/src/org/sunflow/core/tesselatable
+END
+Gumbo.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/sunflow/!svn/ver/70/trunk/src/org/sunflow/core/tesselatable/Gumbo.java
+END
+FileMesh.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/sunflow/!svn/ver/181/trunk/src/org/sunflow/core/tesselatable/FileMesh.java
+END
+Teapot.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/sunflow/!svn/ver/70/trunk/src/org/sunflow/core/tesselatable/Teapot.java
+END
+BezierMesh.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/sunflow/!svn/ver/312/trunk/src/org/sunflow/core/tesselatable/BezierMesh.java
+END

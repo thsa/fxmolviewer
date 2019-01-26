@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/sunflow/!svn/ver/346/trunk/src/org/sunflow/math
+END
+PerlinScalar.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/sunflow/!svn/ver/70/trunk/src/org/sunflow/math/PerlinScalar.java
+END
+QMC.java
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/sunflow/!svn/ver/346/trunk/src/org/sunflow/math/QMC.java
+END
+Vector3.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/sunflow/!svn/ver/152/trunk/src/org/sunflow/math/Vector3.java
+END
+OrthoNormalBasis.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/sunflow/!svn/ver/7/trunk/src/org/sunflow/math/OrthoNormalBasis.java
+END
+Matrix4.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/math/Matrix4.java
+END
+MovingMatrix4.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/math/MovingMatrix4.java
+END
+MathUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/sunflow/!svn/ver/237/trunk/src/org/sunflow/math/MathUtils.java
+END
+Point2.java
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/sunflow/!svn/ver/7/trunk/src/org/sunflow/math/Point2.java
+END
+PerlinVector.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/sunflow/!svn/ver/24/trunk/src/org/sunflow/math/PerlinVector.java
+END
+Point3.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/sunflow/!svn/ver/200/trunk/src/org/sunflow/math/Point3.java
+END
+Solvers.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svnroot/sunflow/!svn/ver/26/trunk/src/org/sunflow/math/Solvers.java
+END
+BoundingBox.java
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/math/BoundingBox.java
+END

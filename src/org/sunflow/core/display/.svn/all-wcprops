@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/core/display
+END
+FrameDisplay.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/sunflow/!svn/ver/207/trunk/src/org/sunflow/core/display/FrameDisplay.java
+END
+ImgPipeDisplay.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/sunflow/!svn/ver/207/trunk/src/org/sunflow/core/display/ImgPipeDisplay.java
+END
+FastDisplay.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/core/display/FastDisplay.java
+END
+FileDisplay.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/sunflow/!svn/ver/245/trunk/src/org/sunflow/core/display/FileDisplay.java
+END
