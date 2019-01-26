@@ -1,49 +1,49 @@
-#### FXMolViewer
+## FXMolViewer
 
 *FXMolViewer* is a small project with the original purpose to check, whether JavaFX and its 3D-API may serve as a robust technology to display and manipulate molecules and protein structures interactively in 3D. A particular focus is put on triangle meshes to display opaque and translucent molecular surfaces, which are colored to indicate surface region specific molecular properties or atom types.
 
 
-## Features
+### Features
 
-..* Displays small molecules with cylinders and spheres in atom specific color
-..* Supported modes: wires, balls, sticks, ball&sticks
-..* atoms can be selected with lasso selection (left mouse button)
-..* The entire scene can be rotated or translated with the right/middle mouse buttons
-..* individual molecules are positioned in scene graph as tree nodes and can be translated and rotated individually using Ctrl
-..* front and rear clipping planes are accessible on popup with right mouse click
-..* an *Improved Marching Cubes* algorithm creates fast and smooth molecular surfaces
-..* Surfaces can be colored by atomic no, polarity, donor/acceptor potential
-..* Surfaces can be cut smoothly by clipping planes or lasso selection
-..* A side panel allows to show and hide individual molecules
-..* Protein Database entries can be downloaded abinding site can be cropped in one step.
-..* The open source ray-tracer SunFlow was built in to render scenes and molecules in high quality
+* Displays small molecules with cylinders and spheres in atom specific color
+* Supported modes: wires, balls, sticks, ball&sticks
+* atoms can be selected with lasso selection (left mouse button)
+* The entire scene can be rotated or translated with the right/middle mouse buttons
+* individual molecules are positioned in scene graph as tree nodes and can be translated and rotated individually using Ctrl
+* front and rear clipping planes are accessible on popup with right mouse click
+* an *Improved Marching Cubes* algorithm creates fast and smooth molecular surfaces
+* Surfaces can be colored by atomic no, polarity, donor/acceptor potential
+* Surfaces can be cut smoothly by clipping planes or lasso selection
+* A side panel allows to show and hide individual molecules
+* Protein Database entries can be downloaded abinding site can be cropped in one step.
+* The open source ray-tracer SunFlow was built in to render scenes and molecules in high quality
 
 
-## Dependencies
+### Dependencies
 
 All dependencies are part of this project and can be found in the ./lib folder:
-..* OpenChemLib: Cheminformatics base functionality to handle molecules and generate conformers
-..* SunFlow source code and janino.jar: Ray-Tracer to build photo-realistic images of 3-dimensional scenes
-..* mmtf-all: Java library to download and parse binary structure files from the PDB-database
-..* controlsfx-8.40.14.jar: Controls extending JavaFX functionality, used for the molecule side panel
+* OpenChemLib: Cheminformatics base functionality to handle molecules and generate conformers
+* SunFlow source code and janino.jar: Ray-Tracer to build photo-realistic images of 3-dimensional scenes
+* mmtf-all: Java library to download and parse binary structure files from the PDB-database
+* controlsfx-8.40.14.jar: Controls extending JavaFX functionality, used for the molecule side panel
 
 
-## How to download the project
+### How to download the project
 
 git clone https://github.com/thsa/fxmolviewer.git
 
 
-## How to build the project
+### How to build the project
 
 On Linux or Macintosh just run the 'buildAll' shell script.
 
 
-## How to contribute
+### How to contribute
 
 Contact the author under the e-mail shown on www.openmolecules.org
 
 
-## License
+### License
 
 FXMolViewer, showing and manipulating molecules and protein structures in 3D.
 Copyright (C) 2019 Thomas Sander
