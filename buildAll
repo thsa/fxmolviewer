@@ -1,0 +1,13 @@
+rm -rf ./bin
+mkdir ./bin
+cp -r ./src/resources ./bin/
+javac -d ./bin -sourcepath ./src -classpath ./lib/controlsfx-8.40.14.jar:./lib/janino.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewerapp/ViewerApp.java
+cd ./bin
+jar xf ../lib/controlsfx-8.40.14.jar 
+jar xf ../lib/janino.jar 
+jar xf ../lib/mmtf-all.jar 
+jar xf ../lib/openchemlib.jar 
+cd ..
+jar -cfm fxmolviewer.jar manifest_additions.txt -C ./bin .
+chmod 755 fxmolviewer.jar
+
