@@ -176,8 +176,8 @@ public class MoleculeCell extends ListCell<MoleculeModel> implements ChangeListe
 
 	private V3DScene getScene3D() {
 		Node parent = getParent();
-		while (!(parent instanceof SidePanel))
+		while (!(parent instanceof SidePane))
 			parent = parent.getParent();
-		return ((SidePanel)parent).getV3DScene();
+		return ((SidePane)parent).getV3DScene();
 	}
 }

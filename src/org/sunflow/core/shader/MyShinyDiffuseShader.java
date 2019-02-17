@@ -15,8 +15,12 @@ public class MyShinyDiffuseShader extends ShinyDiffuseShader {
 
 	@Override
 	public Color getDiffuse(ShadingState state) {
-		if (mColorProvider == null)
-			return super.getDiffuse(state);
-		return mColorProvider.colorAtPoint(state.getPoint()).mul(0.2f); // we seem to need to darken significantly
+		Color ret = (mColorProvider == null) ? super.getDiffuse(state)
+			: mColorProvider.colorAtPoint(state.getPoint()).mul(0.2f); // we seem to need to darken significantly
+
+		if (state.isBehind())
+			ret.mul(0.25f);
+
+		return ret;
 	}
 }

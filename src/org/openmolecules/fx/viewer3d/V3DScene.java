@@ -24,6 +24,8 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
+
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -34,6 +36,7 @@ import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.mesh.MoleculeSurfaceMesh;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class V3DScene extends SubScene {
 	private ClipboardHandler mClipboardHandler;
@@ -264,6 +267,11 @@ public class V3DScene extends SubScene {
 		if (mSceneListener != null)
 			mSceneListener.addMolecule(fxmol);
 		}
+	
+	public void coordinatesChanged(V3DMolecule fxmol, double[] newCoords) { //added by JW
+				fxmol.updateCoordinates(newCoords);
+
+	}
 
 /*	public double getDistanceToScreenFactor(double z) {
 		PerspectiveCamera camera = (PerspectiveCamera)getCamera();
@@ -339,6 +347,7 @@ public class V3DScene extends SubScene {
 	public void moveCamera(double dz) {
 		getCamera().setTranslateZ(getCamera().getTranslateZ() + dz);
 		}
+	
 
 	private void buildLight() {
 		AmbientLight light1=new AmbientLight(new Color(0.3, 0.3, 0.3, 1.0));

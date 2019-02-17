@@ -366,8 +366,8 @@ public class MoleculeArchitect {
 			}
 
 		if (mConstructionMode != CONSTRUCTION_MODE_WIRES) {
-			mBuilder.addSphere(-1, -1, p1, r, color1);
-			mBuilder.addSphere(-1, -1, p2, r, color2);
+			mBuilder.addSphere(-1, 1, p1, r, color1); //modified by JW
+			mBuilder.addSphere(-1, 1, p2, r, color2); // modified by JW
 			}
 
 		if (color1 == color2) {

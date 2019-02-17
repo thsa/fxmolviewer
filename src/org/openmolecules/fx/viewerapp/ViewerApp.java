@@ -226,7 +226,7 @@ public class ViewerApp extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
-		mViewer = new V3DSceneWithSidePane();
+		mViewer = ("editor".equals(System.getProperty("mode"))) ? new V3DSceneWithToolsPane(primaryStage) : new V3DSceneWithSidePane();
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		Scene scene = new Scene(mViewer, 1024, 768, true, SceneAntialiasing.BALANCED);
 		scene.getStylesheets().add(css);

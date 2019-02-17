@@ -40,14 +40,14 @@ import org.openmolecules.fx.viewer3d.V3DSceneListener;
 /**
  * Created by thomas on 27.09.16.
  */
-public class SidePanel extends BorderPane implements V3DSceneListener {
+public class SidePane extends BorderPane implements V3DSceneListener {
 	private static final boolean AUTO_HIDE_AT_START = false;
 	private V3DScene mScene3D;
 	private CheckBox mCheckBoxPin;
 	private ObservableList<MoleculeModel> mCellModelList;
 	private BooleanProperty mShowStructure;
 
-	public SidePanel(final V3DScene scene3D, final HiddenSidesPane pane) {
+	public SidePane(final V3DScene scene3D, final HiddenSidesPane pane) {
 		super();
 
 		mScene3D = scene3D;

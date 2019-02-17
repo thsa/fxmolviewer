@@ -54,22 +54,26 @@ public class MyTransparencyShader implements Shader {
 		ret.add(shiny);
 		ret.clamp(0f, 1f);
 
-	    return ret;
+		return ret;
     }
 
 	private Color getShinyDiffuse(ShadingState state) {
 		if (state.isBehind())
-			return Color.BLACK;
+//			return Color.BLACK;
+			return state.diffuse(mColorProvider == null ? diff.mul(0.25f*(1f-transparency))
+					: mColorProvider.colorAtPoint(state.getPoint()).mul(0.25f*(1f-transparency)));
 
-		Color lr = Color.black();   // we don't use any diffuse light
-
-/*		// direct lighting
+		// direct (diffuse) lighting
 		state.initLightSamples();
 		state.initCausticSamples();
-		Color lr = state.diffuse(diff);
+//		Color lr = state.diffuse(diff);
+		Color lr = state.diffuse(mColorProvider == null ? diff.mul(1f-transparency)
+				: mColorProvider.colorAtPoint(state.getPoint()).mul(1f-transparency));
 		if (!state.includeSpecular())
 			return lr;
-*/
+
+//		Color lr = Color.black();   // this wouldn't use any diffuse light
+
 
 		float cos = state.getCosND();
 		float dn = 2 * cos;
@@ -88,6 +92,7 @@ public class MyTransparencyShader implements Shader {
 		ret.sub(r);
 		ret.mul(cos5);
 		ret.add(r);
+
 		return lr.add(ret.mul(state.traceReflection(refRay, 0)));
 	}
 

@@ -22,14 +22,14 @@ package org.openmolecules.fx.viewer3d;
 
 import javafx.scene.Group;
 import org.controlsfx.control.HiddenSidesPane;
-import org.openmolecules.fx.viewer3d.panel.SidePanel;
+import org.openmolecules.fx.viewer3d.panel.SidePane;
 
 /**
  * Created by thomas on 25.09.16.
  */
 public class V3DSceneWithSidePane extends HiddenSidesPane {
 	private V3DScene mScene3D;
-	private SidePanel mMoleculePanel;
+	private SidePane mMoleculePanel;
 
 	public V3DSceneWithSidePane() {
 		this(1024, 768);
@@ -38,7 +38,7 @@ public class V3DSceneWithSidePane extends HiddenSidesPane {
 	public V3DSceneWithSidePane(int width, int height) {
 		mScene3D = new V3DScene(new Group(), width, height);
 
-		mMoleculePanel = new SidePanel(mScene3D, this);
+		mMoleculePanel = new SidePane(mScene3D, this);
 		mMoleculePanel.getStyleClass().add("side-panel");
 		setLeft(mMoleculePanel);
 //		setContent(mScene3D);
@@ -49,7 +49,7 @@ public class V3DSceneWithSidePane extends HiddenSidesPane {
 		return mScene3D;
 	}
 
-	public SidePanel getMoleculePanel() {
+	public SidePane getMoleculePanel() {
 		return mMoleculePanel;
 	}
 }

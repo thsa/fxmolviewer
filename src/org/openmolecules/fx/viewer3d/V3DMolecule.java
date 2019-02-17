@@ -728,6 +728,59 @@ public class V3DMolecule extends RotatableGroup {
 		NonRotatingLabel label = NonRotatingLabel.create(this, text, p1, p2, color);
 		mLabelList.add(label);
 		}
+	
+	public void updateCoordinates(double[] v) {
+		
+		for(int a=0,i=0;a<mConformer.getMolecule().getAllAtoms();a++) {
+			//int index = a+offset;
+			Point3D localCoords = sceneToLocal(v[3*a],v[3*a+1],v[3*a+2]); 
+			mConformer.setX(a, localCoords.getX());
+			mConformer.setY(a, localCoords.getY());
+			mConformer.setZ(a, localCoords.getZ());
+
+
+		}
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
+		// we cannot center pre-alligned conformers			builder.centerMolecule(conformer);
+		ArrayList<Node> nodesToBeDeleted = new ArrayList();
+		for(Node node : getChildren()) {
+			NodeDetail detail = (NodeDetail)node.getUserData();
+			if (detail != null) {
+				if (detail.isAtom()) {
+					nodesToBeDeleted.add(node);
+				}
+				else if(detail.isBond()) {
+					nodesToBeDeleted.add(node);
+				}
+			}
+		}
+		builder.buildMolecule(mConformer);
+		getChildren().removeAll(nodesToBeDeleted);
+	}
+	
+	
+	public void setConformer(Conformer conf) { //added by JW
+		mConformer = conf;
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
+		// we cannot center pre-alligned conformers			builder.centerMolecule(conformer);
+		ArrayList<Node> nodesToBeDeleted = new ArrayList<Node>();
+		for(Node node : getChildren()) {
+			NodeDetail detail = (NodeDetail)node.getUserData();
+			if (detail != null) {
+				if (detail.isAtom()) {
+					nodesToBeDeleted.add(node);
+				}
+				
+				else if(detail.isBond()) {
+					nodesToBeDeleted.add(node);
+				}
+			}
+		}
+		builder.buildMolecule(mConformer);
+		getChildren().removeAll(nodesToBeDeleted);
+		
+		
+	}
 
 	public double getHighlightedZ() {
 		return (mHighlightedShape == null) ? 0.0 : mHighlightedShape.localToScene(0, 0, 0).getZ();
@@ -849,6 +902,7 @@ public class V3DMolecule extends RotatableGroup {
 		double opacity = detail.getMaterial().getDiffuseColor().getOpacity();
 		return createMaterial(mOverrideMaterial.getDiffuseColor(), opacity);
 	}
+	
 
 	private void setHighlightedShape(Shape3D shape) {
 		if (mHighlightedShape != shape) {
