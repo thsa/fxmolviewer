@@ -13,18 +13,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class V3DMinimizationHandler implements ForceFieldChangeListener {
-	public static final int MMFF94SP = 1;
 	private ArrayList<V3DMolecule> mMolecularScenery;
 	private int[] mIndividualMolSizes;
 	private ForceField mForceField;
 	private V3DSceneWithToolsPane mScene;
 	
-	public V3DMinimizationHandler(ArrayList<V3DMolecule> molecularScenery, int mode, V3DSceneWithToolsPane scene)  {
+	public V3DMinimizationHandler(ArrayList<V3DMolecule> molecularScenery, V3DSceneWithToolsPane scene)  {
 		mMolecularScenery = molecularScenery;
 		mScene = scene;
     	StereoMolecule molScenery = new StereoMolecule();
     	mIndividualMolSizes = new int[molecularScenery.size()];
     	int counter = 0;
+
     	for(V3DMolecule v3dMol : molecularScenery) {
     		StereoMolecule mol = new StereoMolecule(v3dMol.getConformer().getMolecule());
     		for(int a=0;a<mol.getAllAtoms();a++) {
@@ -37,17 +37,8 @@ public class V3DMinimizationHandler implements ForceFieldChangeListener {
     		mIndividualMolSizes[counter] = mol.getAllAtoms();
     		counter++;
     	}
-    	switch(mode) {
-    		case 1: 
-//TODO    			ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
-//    			mForceField = new ForceFieldMMFF94(molScenery,ForceFieldMMFF94.MMFF94SPLUS);
-//    			mForceField.addListener(this);
-    			break;
-    		default:
-//TODO    			ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
-//    			mForceField = new ForceFieldMMFF94(molScenery,ForceFieldMMFF94.MMFF94SPLUS);
-//    			mForceField.addListener(this);
-    		}
+
+		mForceField = ForceFieldFactory.createDefaultForceField(molScenery);
 	}
     	
 	public void minimise() {
