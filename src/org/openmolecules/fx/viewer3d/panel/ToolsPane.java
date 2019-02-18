@@ -18,6 +18,9 @@
 
 package org.openmolecules.fx.viewer3d.panel;
 
+import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.io.SDFileParser;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.TitledPane;
@@ -31,6 +34,7 @@ import org.openmolecules.fx.viewer3d.V3DSceneWithToolsPane;
 import org.openmolecules.fx.viewer3d.tools.MoleculeFileReader;
 
 import java.io.File;
+import java.util.ArrayList;
 //import org.openmolecules.fx.viewer3d.MoleculeMinimizer;
 
 
@@ -60,8 +64,7 @@ public class ToolsPane extends Accordion  {
 			
 			File selectedFile = fileChooser.showOpenDialog(mPrimaryStage);
 			 if (selectedFile != null) {
-				    MoleculeFileReader mfr = new MoleculeFileReader();
-				    V3DMolecule[] mols = mfr.readMolFile(selectedFile.toString());
+				    V3DMolecule[] mols = readMolFile(selectedFile.toString());
 				    for(V3DMolecule vm: mols) {
 						vm.activateEvents();
 						mScene3D.addMolecule(vm);
@@ -105,9 +108,32 @@ public class ToolsPane extends Accordion  {
 		return mScene3D;
 	}
 
+	private ArrayList<StereoMolecule> parseSDFile(String sdfile) {
+		ArrayList<StereoMolecule> mols = new ArrayList<StereoMolecule>();
+		SDFileParser sdfp = new SDFileParser(sdfile);
+		boolean notDone = sdfp.next();
+		while(notDone) {
+			try {
+				mols.add(sdfp.getMolecule());
+				notDone = sdfp.next();
+			}
+			catch(Exception e) {
+				notDone = false;
+			}
+		}
+		return mols;
+	}
 
 
+	private V3DMolecule[] readMolFile(String sdfile) {
+		ArrayList<StereoMolecule> mols = parseSDFile(sdfile);
+		V3DMolecule[] v3d_mols = new V3DMolecule[mols.size()];
+		int i = 0;
+		for(StereoMolecule mol: mols) {
+			v3d_mols[i] = new V3DMolecule(new Conformer(mol));
+			i++;
 
-
-
+		}
+		return v3d_mols;
+	}
 }
