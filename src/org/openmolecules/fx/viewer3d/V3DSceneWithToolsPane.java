@@ -38,20 +38,21 @@ public class V3DSceneWithToolsPane extends V3DSceneWithSidePane  {
 				}
 			}
 		for(V3DMolecule mol : toMinimize) {
-			ConformerGenerator confgen = new ConformerGenerator();
 			Conformer conf = mol.getConformer();
 			StereoMolecule minMol = conf.getMolecule();
-			minMol.ensureHelperArrays(Molecule.cHelperParities);
+			int oldAtoms = minMol.getAllAtoms();
 			for(int i=0;i<minMol.getAllAtoms();i++) {
 				minMol.setAtomX(i, conf.getX(i));
 				minMol.setAtomY(i, conf.getY(i));
 				minMol.setAtomZ(i, conf.getZ(i));
 			}
-			confgen.addHydrogenAtoms(minMol);
-			
-			mol.setConformer(new Conformer(minMol));
+			ConformerGenerator.addHydrogenAtoms(minMol);
+
+			// TODO add hydrogens rather than replace molecule
+			if (oldAtoms != minMol.getAllAtoms())
+				mol.setConformer(new Conformer(minMol));
 		}
-		V3DMinimizationHandler minimizer = new V3DMinimizationHandler(toMinimize,V3DMinimizationHandler.MMFF94SP, this);
+		V3DMinimizationHandler minimizer = new V3DMinimizationHandler(toMinimize, this);
 		minimizer.minimise();
 	}
 	

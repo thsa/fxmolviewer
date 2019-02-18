@@ -6,6 +6,7 @@ import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Point3D;
+import mmff.ForceFieldMMFF94;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +39,8 @@ public class V3DMinimizationHandler implements ForceFieldChangeListener {
     		counter++;
     	}
 
-		mForceField = ForceFieldFactory.createDefaultForceField(molScenery);
+		ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
+		mForceField = new ForceFieldMMFF94(molScenery, ForceFieldMMFF94.MMFF94SPLUS);
 	}
     	
 	public void minimise() {
