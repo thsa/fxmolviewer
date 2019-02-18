@@ -31,7 +31,6 @@ import javafx.stage.Stage;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.V3DSceneWithToolsPane;
-import org.openmolecules.fx.viewer3d.tools.MoleculeFileReader;
 
 import java.io.File;
 import java.util.ArrayList;
