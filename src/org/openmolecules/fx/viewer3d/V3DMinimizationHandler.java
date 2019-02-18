@@ -41,6 +41,7 @@ public class V3DMinimizationHandler implements ForceFieldChangeListener {
 
 		ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField = new ForceFieldMMFF94(molScenery, ForceFieldMMFF94.MMFF94SPLUS);
+		mForceField.addListener(this);
 	}
     	
 	public void minimise() {
