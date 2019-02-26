@@ -23,9 +23,8 @@ package org.openmolecules.fx.viewer3d;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
-
-import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -36,7 +35,6 @@ import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.mesh.MoleculeSurfaceMesh;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class V3DScene extends SubScene {
 	private ClipboardHandler mClipboardHandler;
@@ -95,23 +93,17 @@ public class V3DScene extends SubScene {
 		}
 
 	public void cut(V3DMolecule fxmol) {
-		copy(fxmol);
+		copy3D(fxmol);
 		delete(fxmol);
 		}
 
-	public void copy(V3DMolecule fxmol) {
+	public void copy3D(V3DMolecule fxmol) {
 		mClipboardHandler.copyMolecule(fxmol.getConformer().toMolecule(null));
 		}
 
 	public void copy2D(V3DMolecule fxmol) {
-		Conformer conformer = fxmol.getConformer();
-		StereoMolecule mol = conformer.getMolecule().getCompactCopy();
-		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-			Point2D p = fxmol.localToScreen(conformer.getX(atom), conformer.getY(atom), conformer.getZ(atom));
-			mol.setAtomX(atom, p.getX());
-			mol.setAtomY(atom, p.getY());
-			mol.setAtomZ(atom, 0);
-			}
+		StereoMolecule mol = fxmol.getConformer().getMolecule().getCompactCopy();
+		new CoordinateInventor().invent(mol);
 		mClipboardHandler.copyMolecule(mol);
 		}
 
@@ -224,6 +216,21 @@ public class V3DScene extends SubScene {
 		return new Point3D(x / atomCount, y / atomCount, z / atomCount);
 	}
 
+	public void updateCoordinates(V3DMolecule[] fxmols, double[] pos) {
+		int posIndex = 0;
+		for (V3DMolecule fxmol:fxmols) {
+			Conformer conf = fxmol.getConformer();
+			for (int atom=0; atom<conf.getSize(); atom++) {
+				Point3D p = fxmol.parentToLocal(pos[posIndex], pos[posIndex+1], pos[posIndex+2]);
+				conf.setX(atom, p.getX());
+				conf.setY(atom, p.getY());
+				conf.setZ(atom, p.getZ());
+				posIndex += 3;
+			}
+			fxmol.updateCoordinates();
+		}
+	}
+
 	public void crop(V3DMolecule refMol, double distance) {
 		Bounds refBounds = refMol.localToScene(refMol.getBoundsInLocal());
 		ArrayList<V3DMolecule> moleculesToBeDeleted = new ArrayList<>();
@@ -268,11 +275,6 @@ public class V3DScene extends SubScene {
 			mSceneListener.addMolecule(fxmol);
 		}
 	
-	public void coordinatesChanged(V3DMolecule fxmol, double[] newCoords) { //added by JW
-				fxmol.updateCoordinates(newCoords);
-
-	}
-
 /*	public double getDistanceToScreenFactor(double z) {
 		PerspectiveCamera camera = (PerspectiveCamera)getCamera();
 		double fieldOfView = camera.getFieldOfView();

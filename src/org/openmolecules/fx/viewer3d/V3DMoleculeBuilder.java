@@ -67,13 +67,13 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		mArchitect.centerMolecule(conformer);
 		}*/
 
-	public void buildMolecule(Conformer conformer) {
-		mArchitect.buildMolecule(conformer);
+	public void buildMolecule() {
+		buildMolecule(0, 0);
+	}
 
-		if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS)	// no atom picking for wires
-			for (int i=0; i<conformer.getSize(); i++)
-				addTransparentSphere(i, conformer.getCoordinates(i), mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS ?
-						STICK_MODE_ATOM_PICK_RADIUS : WIRE_MODE_ATOM_PICK_RADIUS);
+	public void buildMolecule(int fromAtom, int fromBond) {
+		Conformer conformer = mV3DMolecule.getConformer();
+		mArchitect.buildMolecule(conformer, fromAtom, fromBond);
 		}
 
 	private void addTransparentSphere(int atom, Coordinates c, double radius) {
@@ -101,6 +101,9 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		sphere.setTranslateZ(c.z);
 		sphere.setUserData(new NodeDetail(material, atom, bond, isOverridable));
 		mV3DMolecule.getChildren().add(sphere);
+
+		if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS && atom != -1)
+			addTransparentSphere(atom, c, STICK_MODE_ATOM_PICK_RADIUS);
 		}
 
 	@Override

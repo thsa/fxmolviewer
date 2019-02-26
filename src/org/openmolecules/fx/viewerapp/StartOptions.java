@@ -36,13 +36,18 @@ import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.pdb.MMTFParser;
 
 public class StartOptions {
-	private static final String HOME_PATH = Platform.isLinux() ? "/home/thomas/" : "/Users/thomas/Documents/";
+	// home path used when loading pdb file from disk assuming OS is either Linux or MacOSX
+	private static final String HOME_PATH = Platform.isLinux() ? "~/" : "~/Documents/";
 
-	private static final int TEST_MOLECULE_MIN = 0;    // between 0 and TEST_MOLECULE_MAX
-	private static final int TEST_MOLECULE_MAX = 63;    // 63 or less
+	public static final int MODE_PDB_ENTRY = 0;
+	public static final int MODE_SMALL_MOLECULES = 1;
+	public static final int MODE_SMALL_MOLECULE_SURFACES = 2;
+	public static final int MODE_SMALL_COMFORMERS = 3;
+	public static final int MODE_PROTEIN = 4;
+	public static final int MODE_VOXEL_DATA = 5;
 
 	private static final double POSITION_FACTOR = 16;
-/*	private static final double[][] IKOSAEDER = {
+	private static final double[][] TEST_POSITIONS_13 = {
 		{      0,      0,      0 },
 		{      0,      1,  0.618 },
 		{      0,      1, -0.618 },
@@ -57,7 +62,7 @@ public class StartOptions {
 		{     -1,  0.618,      0 },
 		{     -1, -0.618,      0 }
 		};
-	private static final String[][] TEST_MOLECULE = {
+/*	private static final String[][] TEST_MOLECULES_13 = {
 //		{ "#qRQurt[e[frwKHtHToTBxrTcqMGx@@ARFEQGrtnqKUGzdEz_UWhY`ej`xGdxAEtzAHenDjiW^vISQPZjmiwNlIQFm^{qC^xspvXuR~OUOfoZbQfRHCQHpXw]^oNV{TKErsdDjpAvo[U}C@gzYCdgna\\[itY^YuFqbXsI`ckzfNYK~YyIjQlH^h]p_LQcX{uep{Pu[vDzqRqd_}]q}JlV{]~Z^pApa[JG}FtMeEgHmedlq~`jPOmaVaGYQXQ_xumsGv@jkvaGHY^csVwgFRrnWunufe~i@mxBu`dUxzujGc^Eii[tv|\\ovwPY[EnSRG`D|RnMuBXV]rnr^Bh{s\\TRB]beo@bVAihvzFYLesYyIY]ERxo[F\\vQfeF^Iok]`OJpahZFAvv}WexzsP{F^SaIOKKVf}fE}E@MnA}Rs{\\R_W|SmTWeVFYHZfEPn@QFfJXx_Yy|uJGcgSZGAzoiiX}y]iv`BLAfXD", "ehRPJH@HKLgo`GCIIDhdhuEMEHkHmIXk@faeco`ZjjjZijjjjZjnJEhoHEBiuCh@`abNHDbRMXHNFQ`" },
 		{ "#q|BGrxP@@ANyZ}tKz\\ZpcZkyFM]NellJZSV\\Os\\Hq_nE^hvo||XgD\\VH{[dNKmL}ZBAlcWaKePifsvZNKP~O\u007FVg{jynmr]m_Q\u007FnOeX]K]GREk_AQy]ZxD[jz\\TLGY@Xl|J^iZ^X{UuXEXqnS|QPTmb_D}vTOEeirnP}h}@\\RATP@", "dg]DHAUnCDRHrPhHrJPjPjIG]UKTt`@"},
 		{ "#qXCi^QefLDgJtCf~`ozqoyfnbOP}Vb_k~kB|]U^vKc@FuRAfI}YCXxytEVPiffXKTlc~{XUV@CCdn]RJjBgfkRIOu{SgCaC{axRNqaosYeByVZuZgs@}A_njlZSQMdT[hAYosvHjNqbZyYV|HlfmX{PW@@@fX_XAdHcXjPW]Y[GevvYSufSEi]oTKij`vFjCLxQyES|}FmjNMCIT|zsRk\\udd|LMD{HlossWy@eBYq{ym}Xaz[MwdiDLyCQg]RwtoeXm^fglJhXZaaw\\}]kCnnW}foNOCj}Ao_TGj\\ZBL_dIA^@cg~fkvS|SyWxF]ESAvv[e^gN\\xKKDyfM]CMuCBT{rfSD{|qpnaoh^a`g\\[J{dBdV|]sYQ\\tl~a{OO{kPi`xjRvd[mWRfeSXN}C[EMiTscqpGa}OAqFOYDLhaBaG[fJhJ|kAH_]dR]C`UPg\\LM^[eidUXltHxVhcobs]LwKgYYZ}Ikeef]DrzP\\y~vUvZOHExL[q_ogLics[z_tQdogB@rMjZRG|_BrJNoWt[klCulsoTYoi{ujHlfdijxMB~fhz{Vksph\\e[EJGC[CeR\\tU|d}jPIiMbammHwJxQRyMEcTXMQTJ{hum{XDF^ZhONbTbR]T@DmMevPitkQYeHTj_pgiFnVUhi[[B_misPJaAvxD", "ehRPL@@@FildTrTrbVRfbQdtJbbXDTL|BRJjjZjjjjjjijjT`PbTQb\\`RRUTzVt@@" },
@@ -76,7 +81,7 @@ public class StartOptions {
 		};
 */
 
-	private static final double[][] IKOSAEDER = {
+	private static final double[][] TEST_POSITIONS_64 = {
 			{-1.5, -1.5, -1.5},
 			{-1.5, -1.5, -0.5},
 			{-1.5, -1.5, 0.5},
@@ -143,7 +148,7 @@ public class StartOptions {
 			{1.5, 1.5, 1.5},
 	};
 
-	private static final String[][] TEST_MOLECULE = {
+	private static final String[][] TEST_MOLECULES_64 = {
 			{"#qt]SzCBTnHaCd~Wxla]D@@@ICb_KNDAh\\tecOk]f{H[cdFHZzbMi\\nCwgFvBSV[qtd[^ulgeTDziXzCl{}[V{[}ccKHS_[QnkJSpKlCmbkvjZXOv\\[[DhCr[DvAbsqSESzQKFP^IpHrdtPuBBWbml^hqvdMzE\\_[[]JsnFSrrBMU]_JQrnLZTFeEsTMp[jY{]ci[QmFUzM{E|W\\E\\BsMWGaNM`~O_Ubx]w\\VYwR`b|IqOY\\KUSvrE`Z}XkxqKGmuQQv@Sc_luERqtZmz@lrZDWYrFNLSCobYgDrl~[ubrIwjSFJtajgkGCFwuhK@HZAx`D", "fdeA`@@FCdTTRdTtTqYqQgQZjjjjfibHRTgHIJP@"},
 			{"#qSOjPYWrdP|p|Rpa^NWJzjopolmeUBQnz`itm\\FxAhw\\rhtGePV]Vk_HMehVc~hz[M`mGSnnwKV]ZhDnmTRfmd{tblnQEkvAbYteUpoM_VHbozKNDgrqoLhyjOAq@\\ZhQyoO`@@ajIB@|NRj`Oc}JljJ~YhVXgQoJx^UdMIED{ZfVbCgaK`WSAaLSYgfUSCxAuyXcD^g[ju^X^|XNeUYgclZFVtBk`]nydQ\\~XQV{RaOiOQcghVeX_RZR[Y{NHEz_Nzt_@YYKxqbl\\b^UvZVMmaFjJ[WlvGFGl{Q[J~`JjafSngAkr@EhAkHD", "ffeqp@FR|ACdyKWHihhdmhhTh@ISPPPtuL@`j@"},
 			{"#qQXNgB]zsIizwpgSOux_HByA~~K^Ey]}{bch}Zd}~Lx@@EVViKfIRQtn~\\AcDX~Ms[\\XkowJd|LK[dY}zZZBJsa}efqT}gfsNcj\\ntb~eqnXwo|d[[jQc_o~zo]JwGaWUs~KYQtyrZMlCVPb_N`U`RLWFzr}qBGLegyKe[xd|MZKXMR^eijkmYll^aKdcpDKfIrbIGJr{dqYAsCce}j`Lpi`FJBOzSZmbSLjJL[Y]yuUD[ig@L^bLqm^|iKUiS{Lx~ENJsd`PFk]Mfir~Z_[nMoULTNN`q]]Ihbe^W@EUr}rWQUiEiuj[TKALeH\\`aTvJPZVe\\CCU\\FwmPN\\dKMlGbXEi{Igi_gmAUIfa`xbD[dLubvA`myWcHV[ezqsoMKxHwAOUFE|J{ephU]QUjQ@CVAvXD", "ffc@`@@IrJJQIYIQJFQDxgNZmUUTmUUUTQBKd|lrFh"},
@@ -151,7 +156,7 @@ public class StartOptions {
 			{"#qjGvChcZMzVNWUNGbF}GTHVJ_ALzAXPPyu~lL]LEKUH]BJ]Icv|SBZQyyEUjiyeJJoEyDWFiW{EwjR[rOsQEtJsD}cpYIIQl~fiPry`XRrJG]Doyt{kk@rhOTIJtr@~ZxSbWpIjY^wHPEe|h\\OUZy_wTkXiSF[YrEobCZjjzUKans^vgQDsyfKfElk_sREhaPSyjWOAD\\vqt}MEdZhYSjZCWOEyTMdFhtz^RuhtllfTGFSXvmzcVFWhP}slNsVIhJN~zuQtjYfqqD@t\\QsyYrYaapVxytZlb\\VjWLcR^ia]iDOWRkz\\mj`@FnA^DD", "fde@P@@DEGHhiDeHULkrRc^BuUUUUUQDRbM@p@"},
 			{"#qlnMtoVyZQonZBgHzD@yvKnISlto[`r~zpdb]KDMAJUZ}wI[_QoX]FgHZEs~KJwHbCtiiQyeZxouU^\\\\LB^n\\W\\y^JPdzBhmGtmKdaPX_K}}RcBOqUSj^dlEICvU[arfbjwX{zokZXsxQ]NsaetxjCNQcZXGZx~mwag|IEfhtw\\LPxtLdA}~Uhmlek}x]RLOl@BstTVH@]nXhVqpJ_vmYlX`~OCxMlCUn_DjonW]d]TpCeT`Hw^AWI`qVwPCO]|psvqOgaFItzY[f{RanB\\ctnDY{mDYs~F[HQHwZPltDVRW_pWCCn[K^{jI|ucEt{OSnZvMuySS^mThoB[i|^AiIzUSCz[Ee}Gm~UZjVrR}C_NMyy[HAccUG\\WLc|lr\\_aQFDRDZwQ\\]fmkq[OZ^coFXl\\_s{oT|{ki|T|KTKTcvB`YU{NXi{KkpKkil`SeXl}OA\\vuXfnYFyVCX[FVpiHFYA}KNgRcC\\^RIwCYZBu|ghZx}`aM]KAbjcJnckoZQj\\ylNt]XIQECpFFftfpneHabtSZ{rsjgmf_ALkGoSZzREBagkSOM[M\\AlNByRQYfXdc}Oq^GgvFskiRVYxlbtD~^FpE^eUnShw`YjDbOpuyCitB`JTiegbc_O[S|rMAjQEpuiQ|xmiV@LLAf@@", "el^PJ@@@DJID\\bbTbtflTbTQaRTRtfxD|RjzfV^~ZjjjjjjZjjjjjdp`dLed|WRfRr~`@"},
 			{"#qskHLwD]MHIVMTEmImTai^RkMhnxEEgpnrisMT\\F|uKbEZSjFc]aR@~c`qQi}{@VudLXyzCgN@QRJUa[sIJVDT{IYdV_D[T[\\O[EBVRoePxshmZo^gUo[mfywcQ^NEBy{bsFloZcLEmDWBzxkVaBUxNDaXo``|xW]Fnh{Y`RZnMvUuXvm{MKpGvrKUxynCOol}fJS~~VJFj|u^}VikdgxAzrkkrrDazngWPp]WjuP^{nE@yZhmZHnR`\\FdOYCLsvRutXm^dENOew[MG~WK{ovYvlDvq~ojqy[sUi[[`e|\\GITVZLludA{EQISZtgSPCyZapnb]Oy_dhAljFjCcOKsm}V{[v[sUHQUzXOtT~lHFKpb_GMrZfPKBDQBcgZoB^YooX`LyhvUksOJiSNfbdadrTYIGsbUjpUzhz{s@{VvMLmRP]VgaIZc]PfSHFwoK_JCoYRmi[SQdrHmdqqM]DOj^dlpyt|\\dIiIpG|@wUu^zkdp`CyXVNBHSAejiw]lo~nsJi[tgYa|dyUOTMMurMWNnLiKotDDSSzvuibPHLAspD", "e`RPJ@@@EmkolbbdRebTJTfbqbbLw@ae`TQSVqsUUUUUUURuUMWADDRb|TTJat@@"},
-			{"#qLny@Z`sWoz{CdtT{Q_z\\TFCI`zrs{nv|F{xJcawBAF~[DQdpNzPZcGwp\\zktp[kPTG_dBgitpGRLENqKGyybap_wCRUgHSEHB^dBUNGpeDFjkP_NE}Ohjejj}E|m]vP}@m]DeRfts~GAuOywl}TVDkF_AoYdInKbCo^SyeTg`XU|YBhudd^{wZ\\Qbk\\jSVk|Q{krtR_lJhFJpa_R|b]Vi\\EDc{SeDna_tm\\^^yxcpZekXclJoMMoWJaBbMUBvHSRADwxtec\\WD_z_i[QUqlMaOGUaYFSc[{R[iL|xzqNxUgd]YrhpjRtEuMr@UQDKMUeGrhXKz^TLMrW{tuOUA[IJ[VyEcWMMvUOq|f{WkGhEAQk}@@JALxD", "ei]PH@`H`I@bPXdAIARPlhNiBZPvdKi@FPQdLYBfPydAYCHhhiimheDhheEEEEimLl^IEhWbXHbJZj@JHbJJKh@BCR@"},
+			{"#qN`xa~P`GiZRgiaRCyEOFtwaCHreVqXbOJN]uN]Bz`dIY~XDWSz`Ni[i]PNNTj[JWHQ{uPPjCsygog@GI\\qo{OgGSLqZl[Hd[|FXxPl~n`JAml@aAXlY@oDEXARumqxIKat_aYYCOt^ftRT@{@MUcpT`aexLYZvf{XtMkDiSl|_V@adTftpA|NGbiN^rZtGeRm}wOEUY@LI~uz{vtXak]Q~^fpNfDJPpaVFoMhLJrB^gaLm_mwbLGIskNKi{FzcW_acr_[owie[MjKehf}jpblB^kNNIIsk~SZYj@Lpk\\oeY_RbNZ}E_zZRTAdCUhH@@`A]@D", "fluA`@@HcdTRbrbTTeaFZ\\[sTuMUUUQBQdUGH@"},
 			{"!qLg_Uch`FG|h@@E@yc_s}FPnPFlsWMopSydumCD\\JIVRTbdzzaTcB{ebiCYRf@ai\\QIjjskmP}YtnLwij@i]^ZXTb}IP^ZpTXNt_cN]Jys[Bxf\\ErMlM^tkZec_^mDMY|TvBxCb}vWH_BlSVlgkyziagQKniUrdGiwayTYsTmuqIULKhrdji|aQfvWwKBYsAfEtK@QHQVn}H\\z]MwgIZy}VmrVVhf]chxbS^ILfY^NJPP^Yj{cIRK@ik@LlAR@D", "e`TPDN@HG@@aZPvdCiBzP^dOiCIIhhhddiMYdmEiEHiXYDuuT@D@U@PEUU@H@JQ@@"},
 			{"#qMr\\g_K_yKXmeS\\iKwWEwLO}rTUZaspL]jt^_GO{E}D_zWGNedihyYwhBRQiZ{gXWDyTHuJ{mqltwUuZmUBLWeP_Q}BfalzcYJNqywlef]@uUzsH`fcPjGhqH|CHnk~|bzoExbSJK`vbmitsX]r]VhCyd]UuWACcBxAEtycT~J|abFbiEvXA[OmzMEW}MxFUkxGbu_E~yw\\lgFuBWRhvbwAHtNA|ceYVRg}KgfTvNR__n^QT`W~\\vhyXxn}ChWf~YG{[@yJd|qJeZA}_DtUE`v~gxdC\\TlrHqpxQfUkSLYzg`~NFxVXxvM_\\LE~S_Ulqh@@QLA\\XD", "ff}QB@BZTBPrJJIQZVJZIKLdVlDECUHP@@`y@"},
 			{"#qu]Huo_z|DcjBMzCYUGiManI`m|fSEYgo}ne@nBU``fojsUCqfvvRICTdMMYS_}u@^STSZodAQD]WEiPmrrmict]RWat^ik^xHKyhCyMrC|PNh`DTCAQCoaazBMtSJ\\Q]xjb}URq{XqfSZMVrrx_UcyscnsH{^TSNXYwpAUPvTewV_qSXsSck~rMjm\\AkV{HXrGJ]]tmBkJzFNMKVm\\ybmMdR[XV\\]{sUHLA\\bUrxxoNhk{mtSht_PKeLfYixNzHXyou\\YUO`mtFdqVcHrKYGvIAem~]z{QiRTFqTSTC\\gFJRIp{nQmfVtFmtv\\zcOeNxj}R{PpqMe^IkvNwQd^Y]tiR}SOu]eearWAS@Yjf@DbA|TD", "fak@P@@H]gHhmDheDdUEDbjqkMzuTuMU@pEABQdTkJBh"},
@@ -176,8 +181,8 @@ public class StartOptions {
 			{"!qoRp_pdAKO]\\vCMWzBJN]m~BkH]FSrdzp]aNF`}JtCw`D}WUHlNALa]{{td@@KEaA{n@OVxb[]Fnln]kWxDyJjvXDbxcsUjxlBl[Hv~bpN]mnPueQYhuQLhe]LshxjRUULLx|ob}JXcUVbhx@mhu]JWNYfC\\ThJEiD@H@@S@@", "fju`R@DPUkH@cIIeHiXbhdlhijjjY`@hPADTMP"},
 			{"#qM|kTqru^\\RyWoTshM@jwHvfW\\|WTHa`HNWEzlnuO_vJnmt}NMovm^xtlZhct|`TBLdiRo\\GGADi}OYXgAv}fFVxu_Ud`J`@@QRUy_OMPB|JWm}^N_NmMgNh|tk^jwMVIVDQf]BOBnhb\\igPL|jndZwmB@wtfiNnKi`V|~jr[YXX]tVBArdKZGZTHUf|Y^l`XDWqtUMXRBY]fG`mDsDQ|CJ\\_xPyoCt~KAujoOaI]~Vd[KVQz~{dQUcL~JCTrF~]IKRPrbvNzjKxgrmnYFr~fjsCikIT{YnLpd[hs[RB{UckHzIU_hyy\\sCDFWWBlu|HeqVmg`m}^wbrjAr`SVyMVh}RThq{]irS^whBo\\J`RHKtbde{]TaUPI}kms_U\\gzF`d_gHurOZLzKYpAcFgxj]ztHdOWBmaEwgrTMPsZQPgJGERJcYXpeiRKDYkn@OdAGPD", "ek`XN@@J`DM@fielbbTTRTRrbtratJT\\lb|BjZZ`hJbjjjZbi`a\\PrVJJIP@"},
 			{"#q`Depjb`Px`}NnLl}fRkF`jdl^}[ZdRbXAdkIGXgLnrTZ]ooLvWgFJks~jxIIhui\\XePdG`yXEPw[[WqANXftdoBfSelAD{svo]_qXJOH^c]KyNpDMF|V``[P|lED^XFMX|p[EtheDYGhakXpJ~A|ihRtT`vqEPMxfcnKhdmpeYpE]rtfBa^QweKt}_h^gCzRhH]vgtz|^Fv^CEs_]DVNdg}aPjbO`WZ@lV~siUc\\]vRtskSoPjip[YZZ`wMvCZkoCVif@Nw[gefd_Hgoe_uzqd__XHVMmpfDQ@YAqIshDAK[G~PtwzLTdFpo_EeV[L]j[|e@iyi[jeHSZspafYGVeSOSEF[yWi~kDmKehx`CdAkpD", "fnsPb@AAmdFIdTTRTLRbVRbkNF|gLAAUSUURUbdMOH@"},
-			{"#qO[Fu\\gyLcAtoFZ~k[oj[Zq{cse]egM]EmvhM^KGQKAM}_@^Ijopd{MCKkKS^E_SDZwRtj`hG}~wnhr~_lHEvaGwLUqe~lfW}Z|BIoUAlCfNsdhotdr]KBdJ~GMRWS}@@@lIWS~jnXZ@N|qFcMr_YhChsJeEAe}[gHseOC}yl|yQeRAl}sC[@GK^{aync_[lqnkHtJ@[CrsTHy`ctqagqwxKzyjzP~LYkbQfI\\ZRDEJrf^OjTjOU]Jl|ISv`VJEqtlXkIiINTPIViCgjFMuG|QfjpxUWZ~`Mdm@lpjiJtISX[ElCYoxZJLJf[b@ycU]^yfrwUI`}wXRlTZabq{Mb^z[WM_UkBAXLe{{d}sauIXlitz~JtAuY_URgheHgduPMDSTv\\eYfjcLbpmoljwd^j\\e[Je|l}ugddZXyQUavMlZeevHEjn`AxAXXD", "fcPbBL]`LEXCns`RbbdTRTrRRRVLxht\\mkOhvjjj@J@JJHHaIQFTX@"},
-			{"#qxBazheOuNbZa`qOW[xPKGb\\TraT@@@ZUwxs^MBFakr|ZecJm]fr@ELC~IEd{|LJchZ`{TPZbWsvBnCcVRJtsnyicWObSeGxA~PPJQ@_aIr~w~l_uLx}mYfmM|dbO\\WjbSDuQ^tYSm{\\y{cUmpnOCZNdvazdY[NMEFD{bHubJk}j[xhdrlYhsdtoQT]FyGImUhzpqtXaZnVUG[GdN~LT\\W[FMbZIKphA}beiWckTBdkMgDMigANeH^cuUqjI`E@A[hD", "fbm`cBBXRBPaPHdH\\R\\bdrbbfRRqWAVCzMUR@@@U@@@"},
+			{"#qBApyAkOCwLxZU[UWR}R@aKuVulQMxoL]_Rt[aIdRzL[C~d~_r`QZMSWLoIgACgkTazOMuq~UrcR{Rm|@tAE{[]Sb`mIfcQYs~fK_Qf\\KmQ|vngSOu\\}kyDRVwL`RnmjIkt@ullUpvdBw\\pbgZ[[QFRppk]lnalw[~]sbHjOhdaqy^lWLiWyLfYIIgMrf`{uDwL}QcNpI]WnzEVECcCarJ^JkzPdRcCfSlmzSBEMdzleeFSpKCJA~Yv]NcZBjsevTuNu`~{zNq_~^~IYGbVSbBiW}UZ|o_NIrQSai`XBXqqMQp}ta[jbUhx@I@@Q@D", "fbmAP@@HhiNQQJQYJKQPhcKA}EjjjjZijYbDcHJFWh@"},
+			{"#qsIQJPv[Zakx@zToWSIWgWmkCShQTPrHbaRa\\udENfSdD{JvDbSFDvlVWYiQlXHHXlikJS}`}CbrlpxVTPgGVBCL@@CV^ZiAzSVBssWJNIYGJUu`SQcKBhvsvrHvL_EDb|QZ_qi]hptzqC]dU@BDRAMqDmPqYJYRTyHCMruIMV]B`I|jqh}M_~cRsGZbqCU}BrlVcQegDm\\KeXZRLYYjUNTg|xShSDp@fnGGPRffSwzUUAkZecaa|kLYTQgHSnRKVakVB}MshhgSW|PeXm}HRUabJ@tUf\\HejD@B`AF@@", "fbca`@G@iEJYWUiUoENBLyrPyhHBjijhj@@"},
 			{"#qXVIhIyWylQ|UtQanxiUii_CWdN@E^lsI{eFpNwwdrwVkE__wc}TYlAwZcn~qRZbA}Wz_UL@k|JhIyfrH_wwbq^lgQoEOb~f`uKL@XFV[[IUON{~smt^`fTUfjxFJFIpqnrgULPXgyGQhbmSyupkmhZhX`xKY{Ok~inr\\`r[CqfGl@ONrZZl^gtiT`uMih@l^ZQgNDrXNhmnmIdfYRfrU~dYJTBsODKuFcJ~Iyf{XPROWfJZ^aSf^XssiILMpUAWNvyOOqYj_auNAiUIbK\\gOTMjSBCW`sTHUpYZcfIGOYFZEGHwU[bzYVor]pcZCNjOmEzh@D^bo|cNyd^HSzBduiN`AJAFhD", "fdiAP@@XdjNRJQQEPkQY`jjjjjjbHcIrVP@"},
 			{"#qjIW^~M{nKZh{AFoMBN_~ugEbd^`fjQXcOVdBxNyVEafVdwTX[E[{jKccZVFCbk`LNrKRiJx_}B}oxfnIb]PjONFPnuNa]KPFQycRTLsh}O`rzNcY[q~INcLEZI~HbcZHoCNmjKk[GOpu\\MM`Kc|XRRP[Y{\\{miw^G]MHb^cfHQmZLzwFeb[_@BQkW{nRk}wzJKzZUBnyNauWKajQka|cURC[dAsmgLrcung~uPrqirf`^VUwkejl]\\oZ}wGTM\\Yha@BTANPD", "fdea`@L@QSHheDeEEBcJrgAbuUUAPCBFHT@@"},
 			{"#qYI{FeJec\\|dBz\\{oAch@@IjjcMEEnBT{qBdOfHe{wKttQb\\`Qd[FwYn_e@sUBKbF@dsYvIrzpaoshUd{s}AnS^rirzeAVDc{J|ZV[YTOCRYQ[\\xOwKCrcUXiVjPqPSwvU~lQIgaAtAn_Ilq~HyonHURQ~JZewPNBpQZcMFafhnSmFTNAfuT{heVxM]^niNVLIOdRBYxiX[CpVZAmeMeWAy|Y\\N_BKSct@pVS}gPq\\QR~qikYTi\\Bspykt`Gh@O@D", "f`qA`@@HddrsON}AN|uUTDAALHdiAP@"},
@@ -194,7 +199,7 @@ public class StartOptions {
 			{"#qaCcxp`}YlkYxFZTo\\^D@@IvVk\\`FuUilKncmnfERRalyCOoidkrpjpI]esphb@uNwnTcKPKPi_YlLAEzwo[WtLkzHJS]WiZdvlyh{x}VV|vCW@~TuYoCDOi`FWiCR[haFV`cQWhHLtmWMsTrrOSzPRe_OZbEj~CSMspEjmZvev}DbUqDtW^l]hlm]h[sFbAhzKlwTsqz[kC}]t]aIDC}GtqnfxecLeVOvzdBrmNytVsBocbkIe_AXf\\UIj}@ErAK@D", "fluaA@A\\AHHdLbdtTbVTQVhKWhij`jB@@``Q@@"},
 			{"#q@LXdsNu\\_Hrx\\\\Mlz_u`lCNA}GiGeGkt|yop}a^KTCvGrLZATUuHrK_~`MnXub~KbxLbdB@AGheyRlz`ICqmNGj}zQJ{TGoN[WkbhWgU[MYOZllDQ]P_KXZCnfaJRZOmeTZ{i]~{qMfNcmTqfERRyXv|bx]bPULv^dJQRNH}HHfO@NrO`QggBTPIOH~FqrAsYIPN]Z}\\siBPjtTHglWARSRg}wPvmLmXkH`vR^kusSjImx{Od^ye\\@lakohNbNi}WJIsyWH{OvRhp~wfEz{exGtXdkinqf~QCEU\\gtC[m\\VXwV^S_|E\\uY~jj}T\\L@ijMJkisGWeorPv{K\\`ZcHwWo`b@z_uJza_vbzdjJ~dLCtqhp`@DA@@D", "fmgQpBHJ@bNRu[BT]dTtRVTRbbfberWAF\\t@EUMLsUQPd`@"},
 			{"#q^@M]pDySDlnY]JxBrNVclswhegydg\\xxu[_^MF[og_NYeVCwDjVRGKlCCYpj_tlEy@}qTRuH_h`kvuB@KzGxWapFjo@KNJumsym@~YOhSPJrAIWxQHm]I`zVvtobTSlIQaYVktHnf`IsIGXLn~]MdIGQOcvhaiVHkCT]c[WXsEy]BzGfxAbHv{gpTkOZozWvsJRAnFCvKVbUZ^|vkFjYHHRkwsSKDY@ZpXgnWe[InUzPvN[PD\\X`DKIs|{\\_O]kzj`f]a@WkBjPPuObElkbzP~wEC{EDXDnvdxrm{MVHMHCEXjiKxVqlgYWLuj|yYavuB~vxHQx]Bfx^YGdWjWvPftmBJzWojsgWJ~@yj`whGz]orgderfH_~OaAJscz`~r]CBNlKUUSUmanIiPu~aEz|h[hNCo{MWDmQI^twaYrLD_PudDjW}GcN{|\\g[GGfLwBvylOPZes_xM[PvjuE{TItAU\\uFOGcvhj_x~aDYC@HE\\aJkcWYY|nxynHf]jFoVF|`FKZxYBc[xarpM|RjlUx[FKcFWiyCgu_EuS]VAludFeS`ahYiz`evbMebDrKjSpngmDzlEFI[oBvejFdg[uV~vB`eU~~L}u[nusC_CLkwpGUNtCqnGebp~hn\\vtjyfgvgZmFeEPIgXSIxZqL|eg|x_IwvoJS{{{uN@ciPNHQdxCcDkJJjjM[SjtusBg|XkYFjtGWxkLTNSLKp`mHrFhIkOTplScAhB^lNsxeJyOLRfnuNUtpDyyMuN@tLibY`_nSvZGuvFh_Ls\\{HE|Y^qFgMFK}qupJtv^kGWCJJ{YCQ[YHbZXJMaKH{TeYVqgwNY`nAUcshFRDqu]jMqnh]vFxfUaEPIwayZhyXOqiAQMILxGLWLGYRQDi_jol@JF\\\\RElmtKYZhFqiKvqVnYiqKeJdnqeigk\\kQOfvhJaK`rUcnE~hdXJJCt|hV~uPdHzGlkUirJGilYzeezM^SvCZyupXZ[rCq{wa{jenxAWSguetdt_dZ^AEmVkABYcFWkIm~Ufy}FXn\\ODHF\\\\pUNytuN]fE~LjWg]ovwDOqfQpYB`Yjjvmyorn@TwelpDkoT@j\\iYvGLA}RhJiZ[rynNFPW\\VJrxTdv@qnUFBnevCPSwQ[mTjULgfMW~[XOsPYaZraHlWc\\rOXN~p_YZSyz]_ViUw]{SxThSsiDgoJmFPmDiPo|jiSphgeaE[uunHT{uxPHE_ijU`\\LCo`fzD]xBHlyu@YkM~gDmxfZZO^DFRoxMKRyRVmtqTZTu{pHkH^DUWwtwvkBv\\RJqFedVxoympzwz~_pWbX}nDowaqm^Vrly`WHfelWoYRyRJuTSokf}zVWHi[cRcQWgOg]}WorgqXFq]H{gW@Uf@VUhYVOR@_p}qRiq~sVGw_TqQTJrfXKZXIKZb`xVUTuWjhfehmeVQ[ABluuMqcEema[sv`y}U|IoQVFFeRkidoqVKT\\KSLIH[hvDX||VpLTyUn~MyhirRZBnLLjq_~AvW}{dO}x@HpfcdaXqWNYjibQ{qRN`q~Bb{xTtUAEfUvU`T}fEkH@EzAa@D", "gn^oapd@GDSyvLmUiaxABeWjLADHHcADDHaaD\\H`QDJHcQDYE@U@U@UDhhdhhikMeHhhdhhdmXlcHeDeDdXhldXmi@uEDdddQhdtNSKbjMZSAlwxcaxzWIfrmvuUUMP@AE@uU@EDPPUUTELDAPTSTuUT}uPPPT`AQl`@"},
-			{"!qx}kUypKL@cDRf@EThh^WbU{SymAw~m|S[`OxjZthx]udZSWHDIbzSlsR{z]ogMzy}rNTlHFiZcwQJzlRTsbbZbtpffzfMLiO\\VCH@BBZQjMznxAOLVZn|hu{~ulSXKChcNjg_GOS{PvnfR~^cvcCzZYqfpHYnSwASvSBaprB{HMXQqCBrJMRBFxRVZ^haSh\\LZivRDndBcuyRrQTPSPEhd`BFA@pD", "fcoab@BPQ`GaddbVbfRbbT\\RRVYKjy{jjjnjh@@@`PBT`@"},
+			{"#q@@AiEF~V@QaFUVnnVqxA|EWnEjsVMGtvOVdNNzaBw@LIo\\NxsCmzPIvscJCJIV^gRkZjpDEdTKxKGgbnZWKyIGcEnRDmjs|AUTAYD]|NvU`VJ|zwbGj`QSweCeKXn}[upeU~dVpWiUVNISEUEV`vAGArC[HbqSA@puZWqnzaki}NW~quuA~YKBuUrbvo{JCqYt`pH]kgfch|wrZ[un_KM^cDqvQaFzwgFEYdAsH{FUJgQ\\NlekvmDS]Yhd@OP@h@@", "fbmiADDJ\\gL`XeLSLyEDhlhieCDbLMXJZZjZZZeh@@"},
 			{"#q]r}RixQY`MZf^|E}Mv_rUdAJnrorLqlIm\\l~LplIvtZD^vJ]s~]}MbwrYtOQ]Hg}{_mAtQQKn]|@zIFjAdtQIAKGDXJ^yN|Vb]jheKfqfFGEWrv\\vW@qfEPUGmJ\\kZkpIl_qynkFhoK^jBBL\\KhizfnH]s[NEslz}[UyrqYf`q_zCGPIIFdDQhfD^A\\lsPCfz^mZCvcXqlfbJZvvZi~fuXWCE]t}RMhN@StAYXD", "fhyaa@GLMXFIHHrJIJYJJSFgEN|F@HjejJ`I@@"},
 			{"#qmoESlOlyZv\\zl\\OhKkbfCQlyNf@iylGGHJWlR\\@]xLTpieO@@B@djH^TRlNgDEXYYHGFHGC[^|XMYVURm`C^XCkyWh~AMFbAj|R{]FnnhOeDeAWq[uithQWchDYuVKXX`V}@}AZClaoDmTfZ|JsTyevic|F\\NkAiciF[GKl_}@XzHQ^baf]O{Adf`z\\Q^KMUEr~xgRoFiSB\\y{[S[YQeYtvtLH|[ZlmzPn}ZVc[oDdYBOwRh~iUfDaVMp|yJHcjPgJPuvNTQP[Y[VNpg_f~_]ybGKHR]@[M@^UdWeDSiH{YCMVWNncD|EWxuWminqldco~qwfj_kx[vRy@fyXfogvmjfpRSGD^JpVZXppn`ZqMGANvUj`]\\Qi}@\\PAy|D", "fe{QP@L\\@`uayEDdhheDeLleboYkujj`f@HBJBED@"},
 			{"#qiLkx_W_HN]kG^tAi~k[TbxGzGtkpTSGK_wzHTUGrIkZLb{GuvLuT^NgrmXvafgWz\\nnV]s[QibnDenmCAlsK[mNLiSRdqwiZ{[@G_V`GGCvW~zmhFJJMM`Dth{ymPx{tFDNfP{tA_v`]`rLh}yfmdcqTr|ZYrGFke~]VLIYPTAkrY]VmAC_~LaVwN}yshYRsFaHUkKMrIpgaK^S}rOkPlKueyhzDr}IkjOYQSiVZrIEu]\\E|mtore_zlUppnb|ijf{SCKBnmYi`@\\JAXxD", "fbmAB@M@bLbbRrTTTLrUFF\\gL@Dtu@@QATar@"},
@@ -218,9 +223,27 @@ public class StartOptions {
 	private static final double SURFACE_BRIGHTNESS = 0.55;
 	private static final double SURFACE_SATURATION = 0.15;   // must be less than 1.0 - SURFACE_BRIGHTNESS
 
-	int mode;
-	String pdbEntryCode;
-	boolean cropLigand;
+	private int mode;
+	private String pdbEntryCode;
+	private boolean cropLigand;
+
+	public StartOptions(int mode, String pdbEntryCode, boolean cropLigand) {
+		this.mode = mode;
+		this.pdbEntryCode = pdbEntryCode;
+		this.cropLigand = cropLigand;
+		}
+
+	public int getMode() {
+		return mode;
+		}
+
+	public String getPDBEntryCode() {
+		return pdbEntryCode;
+		}
+
+	public boolean geCropLigand() {
+		return cropLigand;
+		}
 
 	public void initializeScene(V3DScene scene) {
 		scene.clearAll(mode == 1 || mode == 2);
@@ -312,9 +335,9 @@ public class StartOptions {
 	}
 
 	private void testMolecules(V3DScene scene) {
-		for (int i = TEST_MOLECULE_MIN; i <= TEST_MOLECULE_MAX; i++) {
-			double[] coord = IKOSAEDER[i];
-			String[] code = TEST_MOLECULE[i];
+		for (int i = 0; i < 13/*TEST_POSITIONS_13.length*/; i++) {
+			double[] coord = TEST_POSITIONS_13[i];
+			String[] code = TEST_MOLECULES_64[i];
 
 			double dx = POSITION_FACTOR * coord[0];
 			double dy = POSITION_FACTOR * coord[1];
@@ -323,9 +346,7 @@ public class StartOptions {
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
 			Conformer conformer = new Conformer(mol).center().translate(dx, dy, dz);
 			V3DMolecule vm = new V3DMolecule(conformer);
-//				vm.setSurfaceMode(0, (1 + i) % 3, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS);
-//				vm.setSurfaceTransparency(0, 0.2 * (i % 5));
-
+			vm.setSurface(0, (1 + i) % 3, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.2 * (i % 5));
 			vm.activateEvents();
 			scene.addMolecule(vm);
 		}
@@ -339,7 +360,7 @@ public class StartOptions {
 			double dy = 8.0 * (i%count - shift);
 			double dz = 0.0;
 
-			String[] code = TEST_MOLECULE[i];
+			String[] code = TEST_MOLECULES_64[i];
 
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
 			Conformer conformer = new Conformer(mol).center().translate(dx, dy, dz);

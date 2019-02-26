@@ -5,17 +5,16 @@
 
 ### Features
 
-* Displays small molecules with cylinders and spheres in atom specific color
-* Supported modes: wires, balls, sticks, ball&sticks
-* atoms can be selected with lasso selection (left mouse button)
-* The entire scene can be rotated or translated with the right/middle mouse buttons
-* individual molecules are positioned in scene graph as tree nodes and can be translated and rotated individually using Ctrl
-* front and rear clipping planes are accessible on popup with right mouse click
-* an *Improved Marching Cubes* algorithm creates fast and smooth molecular surfaces
+* Interactive small molecule/protein viewer supporting wire, ball, stick, ball&stick modes
+* PDB-entries can be downloaded, protein surfaces generated and binding site cropped in one step
+* An *Improved Marching Cubes* algorithm creates fast and smooth molecular surfaces
+* Visible molecules can be energy-minimized using a MMFF94s+ forcefield
+* Entire scene or individual molecules (Ctrl) can be rotated/translated with right/middle mouse button
+* Atoms can be selected with lasso selection (left mouse button)
+* Front and rear clipping planes are accessible on popup with right mouse click
 * Surfaces can be colored by atomic no, polarity, donor/acceptor potential
 * Surfaces can be cut smoothly by clipping planes or lasso selection
 * A side panel allows to show and hide individual molecules
-* PDB-entries can be downloaded, protein surfaces generated and binding site cropped in one step
 * The open source ray-tracer SunFlow was built in to render scenes and molecules in high quality
 
 

@@ -30,7 +30,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
-import org.openmolecules.fx.viewer3d.V3DSceneWithToolsPane;
+import org.openmolecules.fx.viewer3d.V3DSceneEditor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,12 +42,12 @@ import java.util.ArrayList;
  */
 public class ToolsPane extends Accordion  {
 	private V3DScene mScene3D;
-	private V3DSceneWithToolsPane mScene3DWithToolsPane;
+	private V3DSceneEditor mScene3DWithToolsPane;
 	private Stage mPrimaryStage;
 	//private CheckBox mCheckBoxPin;
 
 
-	public ToolsPane(final Stage primaryStage, final V3DSceneWithToolsPane scene3DWithToolsPane) {
+	public ToolsPane(final Stage primaryStage, final V3DSceneEditor scene3DWithToolsPane) {
 		super();
 		mScene3D = scene3DWithToolsPane.getScene3D();
 		mScene3DWithToolsPane = scene3DWithToolsPane;

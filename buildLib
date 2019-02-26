@@ -1,0 +1,12 @@
+# Builds 3D-molecule viewer library (molviewerlib.jar) as a JavaFX component to be embedded into other projects.
+# The only dependency of molviewerlib.jar is openchemlib.jar from the lib directory (or built from the Actelion/OpenChemLib project at github).
+#
+rm -rf ./bin
+mkdir ./bin
+cp -r ./src/resources ./bin/
+javac -d ./bin -sourcepath ./src -classpath ./lib/controlsfx-8.40.14.jar:./lib/janino.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewer3d/V3DSceneWithSidePane.java
+cd ./bin
+jar xf ../lib/controlsfx-8.40.14.jar 
+jar xf ../lib/janino.jar
+cd ..
+jar -cf molviewerlib.jar -C ./bin .

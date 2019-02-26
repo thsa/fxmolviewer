@@ -1,112 +1,101 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.forcefield.ForceField;
 import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
+import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.geometry.Point3D;
+import javafx.scene.Node;
 import mmff.ForceFieldMMFF94;
+import org.openmolecules.mesh.MoleculeSurfaceMesh;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class V3DMinimizationHandler implements ForceFieldChangeListener {
-	private ArrayList<V3DMolecule> mMolecularScenery;
-	private int[] mIndividualMolSizes;
+	private V3DMolecule[] mFXMol;
 	private ForceField mForceField;
-	private V3DSceneWithToolsPane mScene;
+	private V3DScene mScene3D;
+	private V3DSceneEditor mEditor;
+	private volatile Thread mMinimizationThread;
 	
-	public V3DMinimizationHandler(ArrayList<V3DMolecule> molecularScenery, V3DSceneWithToolsPane scene)  {
-		mMolecularScenery = molecularScenery;
-		mScene = scene;
-    	StereoMolecule molScenery = new StereoMolecule();
-    	mIndividualMolSizes = new int[molecularScenery.size()];
-    	int counter = 0;
+	public V3DMinimizationHandler(V3DScene scene3D, V3DSceneEditor editor)  {
+		mScene3D = scene3D;
+		mEditor = editor;
 
-    	for(V3DMolecule v3dMol : molecularScenery) {
-    		StereoMolecule mol = new StereoMolecule(v3dMol.getConformer().getMolecule());
-    		for(int a=0;a<mol.getAllAtoms();a++) {
-    			Point3D globalCoords = v3dMol.localToScene(mol.getAtomX(a),mol.getAtomY(a),mol.getAtomZ(a));
-    			mol.setAtomX(a, globalCoords.getX());
-    			mol.setAtomY(a, globalCoords.getY());
-    			mol.setAtomZ(a, globalCoords.getZ());
-    		}
-    		molScenery.addMolecule(mol);
-    		mIndividualMolSizes[counter] = mol.getAllAtoms();
-    		counter++;
-    	}
+		ArrayList<V3DMolecule> fxmolList = new ArrayList<V3DMolecule>();
+		for (Node node : scene3D.getWorld().getChildren()) {
+			if (node instanceof V3DMolecule && node.isVisible()) {
+				if (node.isVisible()) {
+					V3DMolecule fxmol = (V3DMolecule)node;
+					fxmol.addImplicitHydrogens();
+					fxmolList.add(fxmol);
+				}
+			}
+		}
+
+		mFXMol = fxmolList.toArray(new V3DMolecule[0]);
+	}
+
+	public V3DMinimizationHandler(V3DScene scene3D, V3DMolecule fxmol, V3DSceneEditor editor)  {
+		mScene3D = scene3D;
+		mEditor = editor;
+		mFXMol = new V3DMolecule[1];
+		mFXMol[0] = fxmol;
+		mFXMol[0].addImplicitHydrogens();
+	}
+
+	public void minimize() {
+		if (mFXMol.length == 0)
+			return;
+
+		StereoMolecule molScenery = new StereoMolecule();
+
+		int atom = 0;
+		for(V3DMolecule fxmol : mFXMol) {
+			// remove any surfaces
+			for (int type=0; type<MoleculeSurfaceMesh.SURFACE_TYPE.length; type++)
+				fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+
+			Conformer conf = fxmol.getConformer();
+			StereoMolecule mol = conf.getMolecule();
+			molScenery.addMolecule(mol);
+
+			for(int a=0;a<mol.getAllAtoms();a++) {
+				Point3D globalCoords = fxmol.localToParent(conf.getX(a), conf.getY(a), conf.getZ(a));
+				molScenery.setAtomX(atom, globalCoords.getX());
+				molScenery.setAtomY(atom, globalCoords.getY());
+				molScenery.setAtomZ(atom, globalCoords.getZ());
+				atom++;
+			}
+		}
 
 		ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField = new ForceFieldMMFF94(molScenery, ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField.addListener(this);
+
+		mMinimizationThread = new Thread(() -> mForceField.minimise());
+		mMinimizationThread.start();
 	}
-    	
-	public void minimise() {
-		MinimizerThread minimizerTask = new MinimizerThread(mForceField);
 
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		/*
-		mScene.setOnMouseClicked(new EventHandler<MouseEvent>() {
-	        @Override
-	        public void handle(MouseEvent event) {
-	        	mForceField.interrupt();
-	        }
-		});
-		
-		mScene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-	        @Override
-	        public void handle(KeyEvent event) {
-	        	mForceField.interrupt();
-	        }
-		});
-		*/
-	        
-		
-		executorService.submit(minimizerTask);
-		executorService.shutdown();
-		}
-
-	public class MinimizerThread extends Task<Void> {
-		private ForceField mForceField;
-		
-		public MinimizerThread(ForceField forceField) {
-			mForceField = forceField;
-		}
-		@Override
-		protected Void call() throws Exception {
-			mForceField.minimise();
-			return null;
-		}
+	public void stopMinimization() {
+		mMinimizationThread = null;
+		mForceField.interrupt();
 	}
 
 	@Override
 	public void stateChanged() {
-		int firstIndex = 0;
-		int counter = 0;
-		int lastIndex = mIndividualMolSizes[counter];
-		double[] pos_ = mForceField.getCurrentPositionsMapped();
-		double energy = mForceField.getTotalEnergy(mForceField.getCurrentPositions());
-		Platform.runLater(new Runnable(){
-			@Override public void run() {
-		//		//v3dMol.updateCoordinates(pos);}
-				mScene.createOutput("energy: " + Double.toString(energy) + " kcal/mol");}
-		});
-		for(V3DMolecule v3dMol : mMolecularScenery) {
-			//final int innerFirstIndex = firstIndex;
-			int len = lastIndex - firstIndex;
-			double[] pos = Arrays.copyOfRange(pos_, 3*firstIndex, 3*lastIndex);
-			Platform.runLater(new Runnable(){
-				@Override public void run() {
-			//		//v3dMol.updateCoordinates(pos);}
-					mScene.getScene3D().coordinatesChanged(v3dMol, pos);}
-			});
-			firstIndex = lastIndex;
-			counter++;
-			if(counter==mMolecularScenery.size()) break;
-			lastIndex = firstIndex + mIndividualMolSizes[counter];
+		final double[] pos = mForceField.getCurrentPositions();
+		final double energy = mForceField.getTotalEnergy();
+		Platform.runLater(() -> {
+			if (mMinimizationThread != null) {
+				mScene3D.updateCoordinates(mFXMol, pos);
+				if (mEditor != null)
+					mEditor.createOutput("energy: " + Double.toString(energy) + " kcal/mol");
+				else
+					System.out.println("MMFF-Energy: "+ DoubleFormat.toString(energy) + " kcal/mol");
 			}
+		});
 	}
 }

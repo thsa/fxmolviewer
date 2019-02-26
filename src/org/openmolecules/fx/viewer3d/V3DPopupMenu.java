@@ -69,7 +69,7 @@ public class V3DPopupMenu extends ContextMenu {
 
 		MenuItem itemCopy3D = new MenuItem("Copy Molecule 3D");
 		itemCopy3D.setDisable(fxmol == null);
-		itemCopy3D.setOnAction(e -> scene.copy(fxmol));
+		itemCopy3D.setOnAction(e -> scene.copy3D(fxmol));
 
 		MenuItem itemCopy2D = new MenuItem("Copy Molecule 2D");
 		itemCopy2D.setDisable(fxmol == null);
@@ -284,6 +284,16 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuClippingPlanes = new Menu("Clipping Planes");
 		menuClippingPlanes.getItems().addAll(sliderItem, useWheelForClipping);
 		getItems().add(menuClippingPlanes);
+
+		getItems().add(new SeparatorMenuItem());
+		MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
+		itemMinimizeMol.setOnAction(e -> new V3DMinimizationHandler(scene, fxmol, null).minimize());
+		itemMinimizeMol.setDisable(fxmol == null);
+		MenuItem itemMinimizeScene = new MenuItem("Of Visible Scene");
+		itemMinimizeScene.setOnAction(e -> new V3DMinimizationHandler(scene, null).minimize());
+		Menu menuMinimize = new Menu("Minimize Energy");
+		menuMinimize.getItems().addAll(itemMinimizeMol, itemMinimizeScene);
+		getItems().add(menuMinimize);
 
 		getItems().add(new SeparatorMenuItem());
 		MenuItem itemRayTraceMol = new MenuItem("Of This Molecule...");

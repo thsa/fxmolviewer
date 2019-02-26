@@ -137,24 +137,35 @@ public class MoleculeArchitect {
 		}*/
 
 	public void buildMolecule(Conformer conformer) {
+		buildMolecule(conformer,0,0);
+		}
+
+	public void buildMolecule(Conformer conformer,  int fromAtom, int fromBond) {
 		StereoMolecule mol = conformer.getMolecule();
 		mol.ensureHelperArrays(Molecule.cHelperRings);
-
 		mBuilder.init();
+		// adding non-hydrogen atoms and bonds first allows us to later to add hydrogens without disrupting order of already created primitives
+		buildMolecule(conformer, fromAtom, mol.getAtoms(), fromBond, mol.getBonds());
+		buildMolecule(conformer, Math.max(fromAtom, mol.getAtoms()), mol.getAllAtoms(), Math.max(fromBond, mol.getBonds()), mol.getAllBonds());
+		mBuilder.done();
+		}
+
+	private void buildMolecule(Conformer conformer, int fromAtom, int toAtom, int fromBond, int toBond) {
+		StereoMolecule mol = conformer.getMolecule();
 
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_WIRES)
-			for (int bond=0; bond<mol.getAllBonds(); bond++)
-				if (!skipAtom(mol, mol.getBondAtom(0, bond))
-				 && !skipAtom(mol, mol.getBondAtom(1, bond)))
+			for (int bond=fromBond; bond<toBond; bond++)
+				if (includeAtom(mol, mol.getBondAtom(0, bond))
+				 && includeAtom(mol, mol.getBondAtom(1, bond)))
 					buildBond(conformer, bond);
 
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALLS) {
-			for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-				if (!skipAtom(mol, atom)) {
+			for (int atom=fromAtom; atom<toAtom; atom++) {
+				if (includeAtom(mol, atom)) {
 					int atomicNo = mol.getAtomicNo(atom);
 					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
 								  : (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
@@ -165,18 +176,18 @@ public class MoleculeArchitect {
 				}
 			}
 
-		mBuilder.done();
 		}
 
 	private int getAtomColor(StereoMolecule mol, int atom) {
 		return ATOM_ARGB[mol.getAtomicNo(atom)];
 		}
 
-	private boolean skipAtom(StereoMolecule mol, int atom) {
-		return (mHydrogenMode == HYDROGEN_MODE_ALL) ? false
-			 : (mHydrogenMode == HYDROGEN_MODE_NONE) ? true
-			 : (mol.getConnAtoms(atom) != 1) ? false
-			 : (mol.getAtomicNo(mol.getConnAtom(atom, 0)) == 6);
+	private boolean includeAtom(StereoMolecule mol, int atom) {
+		return mHydrogenMode == HYDROGEN_MODE_ALL
+			|| !mol.isSimpleHydrogen(atom)
+			|| mol.getConnAtoms(atom) != 1
+			|| (mHydrogenMode == HYDROGEN_MODE_POLAR
+			 && mol.getAtomicNo(mol.getConnAtom(atom, 0)) != 6);
 		}
 
 	private void buildBond(Conformer conformer, int bond) {
@@ -366,8 +377,8 @@ public class MoleculeArchitect {
 			}
 
 		if (mConstructionMode != CONSTRUCTION_MODE_WIRES) {
-			mBuilder.addSphere(-1, 1, p1, r, color1); //modified by JW
-			mBuilder.addSphere(-1, 1, p2, r, color2); // modified by JW
+			mBuilder.addSphere(-1, bond, p1, r, color1); //modified by JW
+			mBuilder.addSphere(-1, bond, p2, r, color2); // modified by JW
 			}
 
 		if (color1 == color2) {

@@ -68,16 +68,16 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 		mComboboxMode = new ComboBox();
 		for (String mode:MODE_OPTIONS)
 			mComboboxMode.getItems().add(mode);
-		mComboboxMode.getSelectionModel().select(options == null ? 0 : options.mode);
+		mComboboxMode.getSelectionModel().select(options == null ? 0 : options.getMode());
 		mComboboxMode.addEventHandler(ActionEvent.ACTION, this);
 		grid.add(mComboboxMode, 1, yIndex);
 
 		grid.add(new Label("PDB entry code:"), 0, ++yIndex);
-		mTextFieldPDBCode = new TextField(options == null ? "5om7" : options.pdbEntryCode);
+		mTextFieldPDBCode = new TextField(options == null ? "5om7" : options.getPDBEntryCode());
 		grid.add(mTextFieldPDBCode, 1, yIndex);
 
 		mCheckBoxCropLigand = new CheckBox("Crop ligand");
-		mCheckBoxCropLigand.setSelected(options == null || options.cropLigand);
+		mCheckBoxCropLigand.setSelected(options == null || options.geCropLigand());
 		grid.add(mCheckBoxCropLigand, 0, ++yIndex);
 
 		getDialogPane().setContent(grid);
@@ -86,10 +86,10 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 
 		setResultConverter(dialogButton -> {
 			if (dialogButton == ButtonType.OK) {
-				StartOptions outOptions = new StartOptions();
-				outOptions.mode = mComboboxMode.getSelectionModel().getSelectedIndex();
-				outOptions.pdbEntryCode = mTextFieldPDBCode.getText();
-				outOptions.cropLigand = mCheckBoxCropLigand.isSelected();
+				StartOptions outOptions = new StartOptions(
+						mComboboxMode.getSelectionModel().getSelectedIndex(),
+						mTextFieldPDBCode.getText(),
+						mCheckBoxCropLigand.isSelected() );
 				return outOptions;
 			}
 			return null;

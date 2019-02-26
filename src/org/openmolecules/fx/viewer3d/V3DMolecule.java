@@ -21,7 +21,9 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
+import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.util.DoubleFormat;
 import javafx.collections.ObservableFloatArray;
@@ -36,11 +38,11 @@ import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
-import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.mesh.MoleculeSurfaceMesh;
+import org.openmolecules.render.MoleculeArchitect;
 
 import java.util.ArrayList;
 
@@ -158,13 +160,36 @@ public class V3DMolecule extends RotatableGroup {
 		constructMaterials();
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 // we cannot center pre-alligned conformers			builder.centerMolecule(conformer);
-		builder.buildMolecule(conformer);
+		builder.buildMolecule();
 
 		if (surfaceMode != SURFACE_NONE) {
 			mSurfaceMesh[0] = new SurfaceMesh(mConformer, 0, surfaceColorMode, getNeutralColor(0), 1.0 - transparency);
 			updateSurfaceFromMesh(0);
 			}
 		}
+
+	public boolean addImplicitHydrogens() {
+		StereoMolecule mol = mConformer.getMolecule();
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+		int oldAtoms = mol.getAllAtoms();
+		int oldBonds = mol.getAllBonds();
+		for(int i=0;i<oldAtoms;i++) {
+			mol.setAtomX(i, mConformer.getX(i));
+			mol.setAtomY(i, mConformer.getY(i));
+			mol.setAtomZ(i, mConformer.getZ(i));
+			}
+		AtomAssembler assembler = new AtomAssembler(mol);
+		int atom = assembler.addImplicitHydrogens();
+		if (atom == -1)
+			return false;
+
+		mConformer = new Conformer(mol);
+
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
+		builder.buildMolecule(oldAtoms, oldBonds);
+
+		return true;
+	}
 
 	public Conformer getConformer() {
 		return mConformer;
@@ -254,7 +279,7 @@ public class V3DMolecule extends RotatableGroup {
 			V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 			builder.setConstructionMode(constructionMode);
 			builder.setHydrogenMode(hydrogenMode);
-			builder.buildMolecule(mConformer);
+			builder.buildMolecule();
 
 			// rebuild surfaces after creation of molecule primitives, because surface transparency depends on creation time of triangles
 			for (int i=0; i<mSurfaceMode.length; i++)
@@ -729,36 +754,26 @@ public class V3DMolecule extends RotatableGroup {
 		mLabelList.add(label);
 		}
 	
-	public void updateCoordinates(double[] v) {
-		
-		for(int a=0,i=0;a<mConformer.getMolecule().getAllAtoms();a++) {
-			//int index = a+offset;
-			Point3D localCoords = sceneToLocal(v[3*a],v[3*a+1],v[3*a+2]); 
-			mConformer.setX(a, localCoords.getX());
-			mConformer.setY(a, localCoords.getY());
-			mConformer.setZ(a, localCoords.getZ());
-
-
-		}
-		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
-		// we cannot center pre-alligned conformers			builder.centerMolecule(conformer);
-		ArrayList<Node> nodesToBeDeleted = new ArrayList();
-		for(Node node : getChildren()) {
+	public void updateCoordinates() {
+		V3DMoleculeUpdater updater = new V3DMoleculeUpdater(this);
+		updater.update();
+/*		for(Node node : getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null) {
 				if (detail.isAtom()) {
-					nodesToBeDeleted.add(node);
+					int atom = detail.getAtom();
+					node.setTranslateX(mConformer.getX(atom));
+					node.setTranslateY(mConformer.getY(atom));
+					node.setTranslateZ(mConformer.getZ(atom));
 				}
 				else if(detail.isBond()) {
-					nodesToBeDeleted.add(node);
+
 				}
 			}
-		}
-		builder.buildMolecule(mConformer);
-		getChildren().removeAll(nodesToBeDeleted);
+		}*/
 	}
 	
-	
+/*
 	public void setConformer(Conformer conf) { //added by JW
 		mConformer = conf;
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
@@ -778,9 +793,7 @@ public class V3DMolecule extends RotatableGroup {
 		}
 		builder.buildMolecule(mConformer);
 		getChildren().removeAll(nodesToBeDeleted);
-		
-		
-	}
+	}*/
 
 	public double getHighlightedZ() {
 		return (mHighlightedShape == null) ? 0.0 : mHighlightedShape.localToScene(0, 0, 0).getZ();
