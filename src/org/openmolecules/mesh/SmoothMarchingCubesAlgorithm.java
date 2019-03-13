@@ -105,7 +105,7 @@ public class SmoothMarchingCubesMesh {
 			0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
 			0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x000 };
 
-//	public static final int[][] FACE_TABLE = MarchingCubesMesh.FACE_TABLE;
+//	public static final int[][] FACE_TABLE = MarchingCubesAlgorithm.FACE_TABLE;
 	public static final int[][] FACE_TABLE = {
 		{},
 		{0, 8, 3},
