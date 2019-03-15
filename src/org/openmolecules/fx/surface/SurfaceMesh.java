@@ -29,14 +29,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.shape.VertexFormat;
 import org.openmolecules.mesh.MeshBuilder;
-import org.openmolecules.mesh.MoleculeSurfaceMesh;
-import org.openmolecules.mesh.SmoothMarchingCubesMesh;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
+import org.openmolecules.mesh.SmoothMarchingCubesAlgorithm;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static org.openmolecules.mesh.MoleculeSurfaceMesh.CONNOLLY;
+import static org.openmolecules.mesh.MoleculeSurfaceAlgorithm.CONNOLLY;
 
 public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 	public static final boolean USE_NORMALS = false;	// doesn't seem to do anything for FX (JDK 1.8.0_74)
@@ -71,10 +71,11 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 	 * It uses a probe with 1.4 Angstrom radius and a voxel size of 0.5 Angstrom.
 	 * The surface is uniformly colored.
 	 * @param conformer
-	 * @param surfaceType MoleculeSurfaceMesh.CONNOLLY or LEE_RICHARDS
+	 * @param surfaceType MoleculeSurfaceAlgorithm.CONNOLLY or LEE_RICHARDS
+	 * @param postCreationCutter optional surface cutter to remove parts of the surface just after creation
 	 */
-	public SurfaceMesh(Conformer conformer, int surfaceType) {
-		this(conformer, surfaceType, SURFACE_COLOR_PLAIN, null, 1f);
+	public SurfaceMesh(Conformer conformer, int surfaceType, SurfaceCutter postCreationCutter) {
+		this(conformer, surfaceType, SURFACE_COLOR_PLAIN, null, 1f, postCreationCutter);
 	}
 
 	/**
@@ -83,16 +84,17 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 	 * It uses a probe with 1.4 Angstrom radius and a voxel size of 0.5 Angstrom.
 	 * The surface is colored according to the textureMode.
 	 * @param conformer
-	 * @param surfaceType MoleculeSurfaceMesh.CONNOLLY or LEE_RICHARDS
+	 * @param surfaceType MoleculeSurfaceAlgorithm.CONNOLLY or LEE_RICHARDS
 	 * @param textureMode
 	 * @param neutralColor color of hydrogen and carbon in case of AtomicNoTexture
 	 * @param opacity
+	 * @param postCreationCutter optional surface cutter to remove parts of the surface just after creation
 	 */
-	public SurfaceMesh(Conformer conformer, int surfaceType, int textureMode, Color neutralColor, double opacity) {
+	public SurfaceMesh(Conformer conformer, int surfaceType, int textureMode, Color neutralColor, double opacity, SurfaceCutter postCreationCutter) {
 		super(USE_NORMALS ? VertexFormat.POINT_NORMAL_TEXCOORD : VertexFormat.POINT_TEXCOORD);
 
 		mSurfaceType = surfaceType;
-		mProbeSize = MoleculeSurfaceMesh.DEFAULT_PROBE_SIZE;
+		mProbeSize = MoleculeSurfaceAlgorithm.DEFAULT_PROBE_SIZE;
 
 		getTexCoords().addAll(0, 0);    // create one texture point to refer to
 
@@ -105,7 +107,10 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 			catch (IOException ioe) {}
 			}
 
-		new MoleculeSurfaceMesh(conformer, surfaceType, 1.4f, 0.4f, this);
+		new MoleculeSurfaceAlgorithm(conformer, surfaceType, mProbeSize, MoleculeSurfaceAlgorithm.DEFAULT_VOXEL_SIZE, this);
+
+		if (postCreationCutter != null)
+			postCreationCutter.cut(this);
 
 //		System.out.println("SurfaceMesh() complete. Triangles:"+getFaces().size()/getFaceElementSize()+" Vertexes:"+getPoints().size()/getPointElementSize());
 
@@ -124,12 +129,11 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 	 * using an enhanced marched cubes algorithm to avoid skinny triangles.
 	 * It uses a probe with 1.4 Angstrom radius and a voxel size of 0.5 Angstrom.
 	 * The surface is colored according to the textureMode.
-	 * @param voxelFile raw voxel data file
 	 */
 	public SurfaceMesh() {
 		super(USE_NORMALS ? VertexFormat.POINT_NORMAL_TEXCOORD : VertexFormat.POINT_TEXCOORD);
 
-		mProbeSize = MoleculeSurfaceMesh.DEFAULT_PROBE_SIZE;
+		mProbeSize = MoleculeSurfaceAlgorithm.DEFAULT_PROBE_SIZE;
 
 		getTexCoords().addAll(0, 0);    // create one texture point to refer to
 
@@ -143,7 +147,7 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 		}
 
 		long t = System.currentTimeMillis();
-		SmoothMarchingCubesMesh mesh = new SmoothMarchingCubesMesh(this, 0.1f);
+		SmoothMarchingCubesAlgorithm mesh = new SmoothMarchingCubesAlgorithm(this, 0.1f);
 		if (VOXEL_DATA_FILE == VOXEL_DATA_BONSAI)
 			mesh.create(VOXEL_DATA_BONSAI, 256, 256, 256, 40.5f);
 		else if (VOXEL_DATA_FILE == VOXEL_DATA_SKULL)

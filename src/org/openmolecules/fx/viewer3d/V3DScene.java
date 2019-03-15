@@ -32,15 +32,14 @@ import javafx.scene.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.mesh.MoleculeSurfaceMesh;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
 
 public class V3DScene extends SubScene {
 	private ClipboardHandler mClipboardHandler;
 	private Group mRoot;                  	// not rotatable, contains light and camera
-	private RotatableGroup mUniverse;		// rotatable, not movable, root in center of scene, contains all visible objects
-	private RotatableGroup mWorld;		    // rotatable & movable, contains all visible objects
+	private RotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
 	private V3DMouseHandler mMouseHandler;
 	private V3DKeyHandler mKeyHandler;
 	private V3DSceneListener mSceneListener;
@@ -60,11 +59,9 @@ public class V3DScene extends SubScene {
 		super(root , width, height, true, SceneAntialiasing.BALANCED);
 		mRoot = root;
 
-		mUniverse = new RotatableGroup();
 		mWorld = new RotatableGroup();
 
-		mRoot.getChildren().add(mUniverse);
-		mUniverse.getChildren().add(mWorld);
+		mRoot.getChildren().add(mWorld);
 		mRoot.setDepthTest(DepthTest.ENABLE);
 
 		// gradients work well in a Scene, but don't seem to work in SubScenes
@@ -184,11 +181,22 @@ public class V3DScene extends SubScene {
 		mWorld.getChildren().clear();	// this does not remove the measurements
 	}
 
-	public void centerMolecules() {
+	/**
+	 * Moves all nodes such that the center of gravity of all atoms is world center (0,0,0).
+	 * Moves the camera such that x=0, y=0 and z<0, such that all nodes are just within the field of view.
+	 */
+	public void optimizeView() {
 		Point3D cog = getCenterOfGravity();
-		mWorld.setTranslateX(mWorld.getTranslateX() - cog.getX());
-		mWorld.setTranslateY(mWorld.getTranslateY() - cog.getY());
-		mWorld.setTranslateZ(mWorld.getTranslateZ() - cog.getZ());
+		for (Node n:mWorld.getChildren()) {
+			Point3D p = mWorld.sceneToLocal(cog);
+			n.setTranslateX(n.getTranslateX() - p.getX());
+			n.setTranslateY(n.getTranslateY() - p.getY());
+			n.setTranslateZ(n.getTranslateZ() - p.getZ());
+		}
+
+		getCamera().setTranslateX(0);
+		getCamera().setTranslateY(0);
+		getCamera().setTranslateZ(-50);
 	}
 
 	public Point3D getCenterOfGravity() {
@@ -198,15 +206,18 @@ public class V3DScene extends SubScene {
 		double z = 0.0;
 		for (Node node1:mWorld.getChildren()) {
 			if (node1 instanceof V3DMolecule) {
-				for (Node node2:((V3DMolecule)node1).getChildren()) {
-					NodeDetail detail = (NodeDetail)node2.getUserData();
-					if (detail != null) {
-						if (detail.isAtom()) {
-							Point3D p = node2.localToScene(0.0, 0.0, 0.0);
-							x += p.getX();
-							y += p.getY();
-							z += p.getZ();
-							atomCount++;
+				V3DMolecule fxmol = (V3DMolecule)node1;
+				if (fxmol.isVisible()) {
+					for (Node node2:fxmol.getChildren()) {
+						NodeDetail detail = (NodeDetail)node2.getUserData();
+						if (detail != null) {
+							if (detail.isAtom()) {
+								Point3D p = node2.localToScene(0.0, 0.0, 0.0);
+								x += p.getX();
+								y += p.getY();
+								z += p.getZ();
+								atomCount++;
+							}
 						}
 					}
 				}
@@ -214,21 +225,6 @@ public class V3DScene extends SubScene {
 		}
 
 		return new Point3D(x / atomCount, y / atomCount, z / atomCount);
-	}
-
-	public void updateCoordinates(V3DMolecule[] fxmols, double[] pos) {
-		int posIndex = 0;
-		for (V3DMolecule fxmol:fxmols) {
-			Conformer conf = fxmol.getConformer();
-			for (int atom=0; atom<conf.getSize(); atom++) {
-				Point3D p = fxmol.parentToLocal(pos[posIndex], pos[posIndex+1], pos[posIndex+2]);
-				conf.setX(atom, p.getX());
-				conf.setY(atom, p.getY());
-				conf.setZ(atom, p.getZ());
-				posIndex += 3;
-			}
-			fxmol.updateCoordinates();
-		}
 	}
 
 	public void crop(V3DMolecule refMol, double distance) {
@@ -255,19 +251,16 @@ public class V3DScene extends SubScene {
 					}
 					V3DMoleculeCropper cropper = new V3DMoleculeCropper(fxmol, distance, refPoint, refBounds);
 					cropper.crop();
-					for (int type=0; type<MoleculeSurfaceMesh.SURFACE_TYPE.length; type++)
+					for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 						fxmol.cutSurface(type, cropper);
 				}
 			}
 		}
 		for (V3DMolecule fxmol:moleculesToBeDeleted)
 			delete(fxmol);
-	}
 
-	public void addAxis(Group axis) {
-		mWorld.getChildren().add(axis);
-		mKeyHandler.setAxis(axis);
-		}
+		optimizeView();
+	}
 
 	public void addMolecule(V3DMolecule fxmol) {
 		mWorld.getChildren().add(fxmol);
@@ -282,10 +275,6 @@ public class V3DScene extends SubScene {
 		double sizeAtZ0 = -camera.getTranslateZ() * Math.tan(Math.PI*fieldOfView/90);
 		return 20;	// TODO calculate something reasonable
 		}*/
-
-	public RotatableGroup getUniverse() {
-		return mUniverse;
-		}
 
 	public RotatableGroup getWorld() {
 		return mWorld;
@@ -345,11 +334,6 @@ public class V3DScene extends SubScene {
 				mol3D.select(mode == 1);
 			}
 		}
-
-	public void moveCamera(double dz) {
-		getCamera().setTranslateZ(getCamera().getTranslateZ() + dz);
-		}
-	
 
 	private void buildLight() {
 		AmbientLight light1=new AmbientLight(new Color(0.3, 0.3, 0.3, 1.0));

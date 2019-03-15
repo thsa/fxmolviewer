@@ -34,7 +34,7 @@ import org.openmolecules.fx.sunflow.RayTraceOptions;
 import org.openmolecules.fx.surface.ClipSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.mesh.MoleculeSurfaceMesh;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.Optional;
 
@@ -59,9 +59,22 @@ public class V3DPopupMenu extends ContextMenu {
 
 		mMolecule = fxmol;
 
-		MenuItem itemReset = new MenuItem("Reset Location");
-		itemReset.setDisable(fxmol == null);
-		itemReset.setOnAction(e -> fxmol.clearTransform());
+		MenuItem itemCenter = new MenuItem("Center View");
+		itemCenter.setOnAction(e -> scene.optimizeView());
+
+		Menu menuReset = new Menu("Reset Location");
+		MenuItem itemResetMolecule = new MenuItem("Of This Molecule");
+		itemResetMolecule.setDisable(fxmol == null);
+		itemResetMolecule.setOnAction(e -> fxmol.clearTransform());
+		MenuItem itemResetAll = new MenuItem("Of All Molecules");
+		itemResetAll.setOnAction(e -> { for (Node n:scene.getWorld().getChildren())
+			if (n instanceof V3DMolecule) ((V3DMolecule)n).clearTransform(); } );
+		menuReset.getItems().addAll(itemResetMolecule, itemResetAll);
+
+		Menu menuView = new Menu("View");
+		menuView.getItems().addAll(itemCenter, menuReset);
+
+		getItems().add(menuView);
 
 		MenuItem itemCut = new MenuItem("Cut Molecule");
 		itemCut.setDisable(fxmol == null);
@@ -101,8 +114,10 @@ public class V3DPopupMenu extends ContextMenu {
 		itemClear.setOnAction(e -> scene.clearAll(true));
 
 		Menu menuClipboard = new Menu("Edit");
-		menuClipboard.getItems().addAll(itemReset, new SeparatorMenuItem(), itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete,
+		menuClipboard.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete,
 				new SeparatorMenuItem(), menuCrop, new SeparatorMenuItem(), itemClear);
+
+		getItems().add(new SeparatorMenuItem());
 		getItems().add(menuClipboard);
 
 		if (fxmol != null) {
@@ -135,7 +150,7 @@ public class V3DPopupMenu extends ContextMenu {
 			menuColor.getItems().addAll(colorNone, colorExplicit);
 			getItems().add(menuColor);
 
-			for (int i=0; i<MoleculeSurfaceMesh.SURFACE_TYPE.length; i++) {
+			for (int i = 0; i<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; i++) {
 				final int type = i;
 				RadioMenuItem surfaceNone = new RadioMenuItem("None");
 				surfaceNone.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SURFACE_NONE);
@@ -200,7 +215,7 @@ public class V3DPopupMenu extends ContextMenu {
 					fxmol.cutSurface(type, new ClipSurfaceCutter(nearClip, farClip, fxmol));
 				} );
 
-				Menu menuSurface = new Menu(MoleculeSurfaceMesh.SURFACE_TYPE[type]+" Surface");
+				Menu menuSurface = new Menu(MoleculeSurfaceAlgorithm.SURFACE_TYPE[type]+" Surface");
 				menuSurface.getItems().addAll(surfaceNone, surfaceMesh, surfaceOpaque, new SeparatorMenuItem(),
 						menuSurfaceColor, menuTransparency, new SeparatorMenuItem(), menuSurfaceCutter,
 						new SeparatorMenuItem(), itemRemoveInvisible);
@@ -287,10 +302,10 @@ public class V3DPopupMenu extends ContextMenu {
 
 		getItems().add(new SeparatorMenuItem());
 		MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
-		itemMinimizeMol.setOnAction(e -> new V3DMinimizationHandler(scene, fxmol, null).minimize());
+		itemMinimizeMol.setOnAction(e -> V3DMinimizer.minimize(scene, null, fxmol));
 		itemMinimizeMol.setDisable(fxmol == null);
 		MenuItem itemMinimizeScene = new MenuItem("Of Visible Scene");
-		itemMinimizeScene.setOnAction(e -> new V3DMinimizationHandler(scene, null).minimize());
+		itemMinimizeScene.setOnAction(e -> V3DMinimizer.minimize(scene, null, null));
 		Menu menuMinimize = new Menu("Minimize Energy");
 		menuMinimize.getItems().addAll(itemMinimizeMol, itemMinimizeScene);
 		getItems().add(menuMinimize);

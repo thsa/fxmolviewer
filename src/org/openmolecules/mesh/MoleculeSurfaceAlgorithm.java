@@ -30,7 +30,7 @@ import com.actelion.research.chem.conf.VDWRadii;
  * Tom Goddard; Oct 14, 2013; Molecular Surface Algorithms;
  * https://www.cgl.ucsf.edu/chimera/data/surface- oct2013/surface.html
  */
-public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesMesh implements VDWRadii {
+public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm implements VDWRadii {
 	public static final String[] SURFACE_TYPE = { "Connolly", "Lee-Richards" };
 	public static final int CONNOLLY = 0;
 	public static final int LEE_RICHARDS = 1;

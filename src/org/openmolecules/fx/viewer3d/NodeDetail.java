@@ -20,20 +20,21 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import com.actelion.research.chem.Molecule;
 import javafx.scene.paint.PhongMaterial;
+import org.openmolecules.render.MoleculeBuilder;
 
 /**
  * Created by thomas on 15.11.15.
  */
 public class NodeDetail {
     private PhongMaterial mMaterial;
-    private int mAtom,mBond;
+    private int mRole;
     private boolean mMayOverride,mIsSelected;
 
-    public NodeDetail(PhongMaterial material, int atom, int bond, boolean mayOverride) {
+    public NodeDetail(PhongMaterial material, int role, boolean mayOverride) {
         mMaterial = material;
-        mAtom = atom;
-        mBond = bond;
+        mRole = role;
 	    mMayOverride = mayOverride;
         }
 
@@ -46,11 +47,11 @@ public class NodeDetail {
         }
 
     public boolean isAtom() {
-        return mAtom != -1;
+        return (mRole & MoleculeBuilder.ROLE_IS_ATOM) != 0;
         }
 
     public boolean isBond() {
-        return mBond != -1;
+        return (mRole & MoleculeBuilder.ROLE_IS_BOND) != 0;
         }
 
     public boolean isSelected() {
@@ -68,19 +69,20 @@ public class NodeDetail {
 		return mMaterial == V3DMoleculeBuilder.sTransparentMaterial;
 		}
 
+	public int getRole() {
+		return mRole;
+		}
+
     public int getAtom() {
-        return mAtom;
+        return (mRole & MoleculeBuilder.ROLE_IS_ATOM) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
         }
 
     public int getBond() {
-        return mBond;
+	    return (mRole & MoleculeBuilder.ROLE_IS_BOND) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
     }
 
-    public void setAtom(int atom) {
-		mAtom = atom;
+    public void setIndex(int index) {
+		mRole &= ~MoleculeBuilder.ROLE_INDEX_BITS;
+		mRole |= index;
     }
-
-	public void setBond(int bond) {
-		mBond = bond;
-	}
-    }
+}

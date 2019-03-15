@@ -7,8 +7,13 @@ import com.actelion.research.chem.Coordinates;
  * to construct a molecule for a 3D environment for rendering.
  */
 public interface MoleculeBuilder {
+	public static final int ROLE_INDEX_BITS = 0x00FFFFFF;
+	public static final int ROLE_IS_ATOM = 0x01000000;
+	public static final int ROLE_IS_BOND = 0x02000000;
+	public static final int ROLE_DETAIL_SHIFT = 26;
+
 	public void init();
-	public void addSphere(int atom, int bond, Coordinates c, double radius, int argb);
-	public void addCylinder(int bond, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb);
+	public void addSphere(int role, Coordinates c, double radius, int argb);
+	public void addCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb);
 	public void done();
 	}

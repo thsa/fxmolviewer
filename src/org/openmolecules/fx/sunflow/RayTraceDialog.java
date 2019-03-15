@@ -32,9 +32,9 @@ import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.StringConverter;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.mesh.MoleculeSurfaceMesh;
 import org.openmolecules.render.SunflowMoleculeBuilder;
 
 public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHandler<ActionEvent> {
@@ -115,10 +115,10 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 		mComboboxBondMaterial.getSelectionModel().select(options != null ? options.bondMaterial : SunflowMoleculeBuilder.DEFAULT_BOND_MATERIAL);
 		grid.add(mComboboxBondMaterial, 1, yIndex);
 
-		mComboboxSurfaceMaterial = new ComboBox[MoleculeSurfaceMesh.SURFACE_TYPE.length];
+		mComboboxSurfaceMaterial = new ComboBox[MoleculeSurfaceAlgorithm.SURFACE_TYPE.length];
 		for (int type=0; type<mComboboxSurfaceMaterial.length; type++) {
 			if (mol != null && mol.getSurfaceMode(type) != V3DMolecule.SURFACE_NONE) {
-				grid.add(new Label(MoleculeSurfaceMesh.SURFACE_TYPE[type]+" surface material:"), 0, ++yIndex);
+				grid.add(new Label(MoleculeSurfaceAlgorithm.SURFACE_TYPE[type]+" surface material:"), 0, ++yIndex);
 				mComboboxSurfaceMaterial[type] = new ComboBox();
 				for (String item : SunflowMoleculeBuilder.SURFACE_TEXT)
 					mComboboxSurfaceMaterial[type].getItems().add(item);
@@ -205,8 +205,8 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 				outOptions.mode = (mComboboxMode == null) ? -1 : mComboboxMode.getSelectionModel().getSelectedIndex();
 				outOptions.atomMaterial = mComboboxAtomMaterial.getSelectionModel().getSelectedIndex();
 				outOptions.bondMaterial = mComboboxBondMaterial.getSelectionModel().getSelectedIndex();
-				outOptions.surfaceMaterial = new int[MoleculeSurfaceMesh.SURFACE_TYPE.length];
-				for (int i=0; i<MoleculeSurfaceMesh.SURFACE_TYPE.length; i++)
+				outOptions.surfaceMaterial = new int[MoleculeSurfaceAlgorithm.SURFACE_TYPE.length];
+				for (int i = 0; i<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; i++)
 					outOptions.surfaceMaterial[i] = (mComboboxSurfaceMaterial[i] == null) ?
 							-1 : mComboboxSurfaceMaterial[i].getSelectionModel().getSelectedIndex();
 				outOptions.backgroundColor = mCheckboxUseBackground.isSelected() ? mBackgroundColorPicker.valueProperty().get() : null;

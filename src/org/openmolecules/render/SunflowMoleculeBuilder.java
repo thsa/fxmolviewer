@@ -500,12 +500,12 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 		}
 
 	@Override
-	public void addSphere(int atom, int bond, Coordinates c, double radius, int argb) {
+	public void addSphere(int role, Coordinates c, double radius, int argb) {
 		if (mOverrideARGB != ARGB_NONE)
 			argb = mOverrideARGB;
 
-		// atom==-1 -> stickbond or dotted bond
-		boolean useBondMaterial = (atom == -1
+		// if is bond -> stickbond or dotted bond
+		boolean useBondMaterial = ((role & MoleculeBuilder.ROLE_IS_BOND) != 0
 								|| mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_STICKS
 								|| mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 		int material = useBondMaterial? mBondMaterial : mAtomMaterial;
@@ -521,7 +521,7 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 		}
 
 	@Override
-	public void addCylinder(int bond, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
+	public void addCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
 		if (mOverrideARGB != ARGB_NONE)
 			argb = mOverrideARGB;
 

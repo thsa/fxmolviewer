@@ -27,16 +27,19 @@ import javafx.geometry.Point3D;
 import org.openmolecules.fx.surface.SurfaceCutter;
 
 public class V3DMoleculeCropper extends SurfaceCutter {
+	private static final double CROP_ZONE_WIDTH = 1.6;
 
-	private double mDistance,mSquareDistance;
+	private double mInsideDistance,mSquareInsideDistance,mOutsideDistance,mSquareOutsideDistance;
 	private Point3D[] mRefPoints;
 	private Bounds mRefBounds;
 	private V3DMolecule mFXMol;
 
 	public V3DMoleculeCropper(V3DMolecule fxmol, double distance, Point3D[] refPoints, Bounds refBounds) {
 		mFXMol = fxmol;
-		mDistance = distance;
-		mSquareDistance = distance * distance;
+		mInsideDistance = distance - CROP_ZONE_WIDTH / 2;
+		mSquareInsideDistance = mInsideDistance * mInsideDistance;
+		mOutsideDistance = distance + CROP_ZONE_WIDTH / 2;
+		mSquareOutsideDistance = mOutsideDistance * mOutsideDistance;
 		mRefPoints = refPoints;
 		mRefBounds = refBounds;
 	}
@@ -48,9 +51,13 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 		int count = 0;
 		for (int atom=0; atom<conformer.getSize(); atom++) {
 			Coordinates c = conformer.getCoordinates(atom);
-			if (isBeyondDistance(mFXMol.localToScene(c.x, c.y, c.z))) {
+			int beyond = isBeyondDistance(mFXMol.localToScene(c.x, c.y, c.z));
+			if (beyond == 1) {
 				deleteAtom[atom] = true;
 				count++;
+			}
+			else if (beyond == 0) {
+				conformer.getMolecule().setAtomMarker(atom, true);
 			}
 		}
 
@@ -60,7 +67,7 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 
 	@Override
 	protected boolean isVertexToBeRemoved(float x, float y, float z) {
-		return isBeyondDistance(mFXMol.localToScene(x, y, z));
+		return isBeyondDistance(mFXMol.localToScene(x, y, z)) == 1;
 	}
 
 	@Override
@@ -70,30 +77,37 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 		location[2] += (zi+zo)/2;
 	}
 
-	private boolean isBeyondDistance(Point3D p) {
-		if (p.getX() < mRefBounds.getMinX() - mDistance
-		 || p.getX() > mRefBounds.getMaxX() + mDistance
-		 || p.getY() < mRefBounds.getMinY() - mDistance
-		 || p.getY() > mRefBounds.getMaxY() + mDistance
-		 || p.getZ() < mRefBounds.getMinZ() - mDistance
-		 || p.getZ() > mRefBounds.getMaxZ() + mDistance)
-			return true;
+	/**
+	 * @param p
+	 * @return -1,0,1 for (inside, within 0.1 nm of cropping distance, outside)
+	 */
+	private int isBeyondDistance(Point3D p) {
+		if (p.getX() < mRefBounds.getMinX() - mOutsideDistance
+		 || p.getX() > mRefBounds.getMaxX() + mOutsideDistance
+		 || p.getY() < mRefBounds.getMinY() - mOutsideDistance
+		 || p.getY() > mRefBounds.getMaxY() + mOutsideDistance
+		 || p.getZ() < mRefBounds.getMinZ() - mOutsideDistance
+		 || p.getZ() > mRefBounds.getMaxZ() + mOutsideDistance)
+			return 1;
 
+		int result = 1;
 		for (Point3D refP:mRefPoints) {
 			double dx = Math.abs(p.getX() - refP.getX());
-			if (dx < mDistance) {
+			if (dx < mOutsideDistance) {
 				double dy = Math.abs(p.getY() - refP.getY());
-				if (dy <mDistance) {
+				if (dy < mOutsideDistance) {
 					double dz = Math.abs(p.getZ() - refP.getZ());
-					if (dz <mDistance) {
-						if (dx*dx+dy*dy+dz*dz < mSquareDistance) {
-							return false;
-						}
+					if (dz < mOutsideDistance) {
+						double squareDistance = dx*dx+dy*dy+dz*dz;
+						if (squareDistance < mSquareInsideDistance)
+							return -1;
+						if (squareDistance < mSquareOutsideDistance)
+							result = 0;
 					}
 				}
 			}
 		}
 
-		return true;
+		return result;
 	}
 }

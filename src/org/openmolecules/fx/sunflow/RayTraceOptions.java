@@ -30,7 +30,7 @@ import javafx.stage.Window;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.surface.SurfaceTexture;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.mesh.MoleculeSurfaceMesh;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.SunflowMoleculeBuilder;
 import org.sunflow.core.shader.ColorProvider;
 import org.sunflow.math.Point3;
@@ -108,7 +108,7 @@ public class RayTraceOptions {
 		}
 
 		double surplus = -1;
-		for (int type=0; type<MoleculeSurfaceMesh.SURFACE_TYPE.length; type++)
+		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 			if (fxmol.getSurfaceMode(type) != V3DMolecule.SURFACE_NONE)
 				surplus = Math.max(surplus, fxmol.getSurfaceMesh(type).getSurfaceSurplus());
 		Color color = fxmol.getColor();
@@ -116,7 +116,7 @@ public class RayTraceOptions {
 		mRenderer.setOverrideColor(color == null ? null : new java.awt.Color((float)color.getRed(), (float)color.getGreen(), (float)color.getBlue()));
 		mRenderer.drawMolecule(conformer, optimizeRotation, optimizeTranslation, surplus);
 
-		for (int type=0; type<MoleculeSurfaceMesh.SURFACE_TYPE.length; type++) {
+		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++) {
 			SurfaceMesh mesh = fxmol.getSurfaceMesh(type);
 			if (mesh != null) {
 				int pointSize = mesh.getPointElementSize();

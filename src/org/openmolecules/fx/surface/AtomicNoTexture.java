@@ -29,7 +29,7 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.TriangleMesh;
-import org.openmolecules.mesh.MoleculeSurfaceMesh;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.sunflow.math.Point3;
 
 import java.util.Arrays;
@@ -41,7 +41,7 @@ import static org.openmolecules.render.MoleculeArchitect.ATOM_ARGB;
  * Created by thomas on 28.03.16.
  */
 public class AtomicNoTexture extends SurfaceTexture {
-	private final float SURPLUS = MoleculeSurfaceMesh.DEFAULT_VOXEL_SIZE; // larger than distance triangle center to far corner
+	private final float SURPLUS = MoleculeSurfaceAlgorithm.DEFAULT_VOXEL_SIZE; // larger than distance triangle center to far corner
 	private final float REACH = 1.0f;   // reach distance in addition do VDW-radius for atoms to influence surface color
 
 	private final int MAX_ATOMS_ON_TRIANGLE = 16;

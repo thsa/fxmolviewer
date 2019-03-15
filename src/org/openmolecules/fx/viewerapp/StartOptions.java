@@ -317,7 +317,7 @@ public class StartOptions {
 					if (i == ligandIndex)
 						ligand = vm;
 
-					//						millis = printDelay(millis);
+//						millis = printDelay(millis);
 //						System.out.print("adding molecule to scene...  ");
 
 					scene.addMolecule(vm);
@@ -326,7 +326,7 @@ public class StartOptions {
 
 				if (ligand != null && cropLigand) {
 					scene.crop(ligand, 10.0);
-					scene.centerMolecules();
+					scene.optimizeView();
 				}
 			}
 		} catch (Exception e) {

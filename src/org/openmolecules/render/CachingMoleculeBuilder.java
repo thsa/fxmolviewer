@@ -22,9 +22,9 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		mCylinderList.clear();
 		}
 
-		@Override
-	public void addSphere(int atom, int bond, Coordinates c, double radius, int argb) {
-		mSphereList.add(new CachedSphere(atom, bond, c, radius, argb));
+	@Override
+	public void addSphere(int role, Coordinates c, double radius, int argb) {
+		mSphereList.add(new CachedSphere(role, c, radius, argb));
 		}
 
 	@Override
@@ -37,22 +37,21 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		CachedCylinder[] cylinders = mCylinderList.toArray(new CachedCylinder[0]);
 		Arrays.sort(cylinders);
 		for (CachedCylinder c:cylinders)
-			mRenderer.addCylinder(c.bond, c.radius, c.length, c.c, c.rotationY, c.rotationZ, c.argb);
+			mRenderer.addCylinder(c.role, c.radius, c.length, c.c, c.rotationY, c.rotationZ, c.argb);
 
 		CachedSphere[] spheres = mSphereList.toArray(new CachedSphere[0]);
 		Arrays.sort(spheres);
 		for (CachedSphere s:spheres)
-			mRenderer.addSphere(s.atom, s.bond, s.c, s.radius, s.argb);
+			mRenderer.addSphere(s.role, s.c, s.radius, s.argb);
 		}
 
 	private class CachedSphere implements Comparable<CachedSphere> {
-		int atom,bond,argb;
+		int role,argb;
 		Coordinates c;
 		double radius;
 
-		public CachedSphere(int atom, int bond, Coordinates c, double radius, int argb) {
-			this.atom = atom;
-			this.bond = bond;
+		public CachedSphere(int role, Coordinates c, double radius, int argb) {
+			this.role = role;
 			this.c = new Coordinates(c);
 			this.radius = radius;
 			this.argb = argb;
@@ -65,12 +64,12 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		}
 
 	private class CachedCylinder implements Comparable<CachedCylinder> {
-		int bond,argb;
+		int role,argb;
 		Coordinates c;
 		double radius,length,rotationY,rotationZ;
 
-		public CachedCylinder(int bond, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
-			this.bond = bond;
+		public CachedCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
+			this.role = role;
 			this.radius = radius;
 			this.length = length;
 			this.c = new Coordinates(c);

@@ -39,9 +39,10 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
+import org.openmolecules.fx.surface.RemovedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.mesh.MoleculeSurfaceMesh;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 
 import java.util.ArrayList;
@@ -137,7 +138,7 @@ public class V3DMolecule extends RotatableGroup {
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
 
-		int surfaceCount = MoleculeSurfaceMesh.SURFACE_TYPE.length;
+		int surfaceCount = MoleculeSurfaceAlgorithm.SURFACE_TYPE.length;
 		mSurface = new MeshView[surfaceCount];
 		mSurfaceMesh = new SurfaceMesh[surfaceCount];
 		mSurfaceMode = new int[surfaceCount];
@@ -163,7 +164,7 @@ public class V3DMolecule extends RotatableGroup {
 		builder.buildMolecule();
 
 		if (surfaceMode != SURFACE_NONE) {
-			mSurfaceMesh[0] = new SurfaceMesh(mConformer, 0, surfaceColorMode, getNeutralColor(0), 1.0 - transparency);
+			mSurfaceMesh[0] = new SurfaceMesh(mConformer, 0, surfaceColorMode, getNeutralColor(0), 1.0 - transparency, createSurfaceCutter());
 			updateSurfaceFromMesh(0);
 			}
 		}
@@ -179,10 +180,17 @@ public class V3DMolecule extends RotatableGroup {
 			mol.setAtomZ(i, mConformer.getZ(i));
 			}
 		AtomAssembler assembler = new AtomAssembler(mol);
-		int atom = assembler.addImplicitHydrogens();
-		if (atom == -1)
+		int count = assembler.addImplicitHydrogens();
+		if (count == 0)
 			return false;
 
+		// mark new hydrogen atoms, if their neighbour atom is also marked
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+		for (int i=oldAtoms; i<mol.getAllAtoms(); i++)
+			if (mol.isMarkedAtom(mol.getConnAtom(i, 0)))
+				mol.setAtomMarker(i, true);
+
+		// create new set of coordinates including new atoms
 		mConformer = new Conformer(mol);
 
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
@@ -328,7 +336,7 @@ public class V3DMolecule extends RotatableGroup {
 					material.setDiffuseMap(mSurfaceMesh[i].getTexture().getImage());
 				}
 
-				mSurface[i].setUserData(new NodeDetail(material, -1, -1, true));
+				mSurface[i].setUserData(new NodeDetail(material, 0, true));
 				mSurface[i].setMaterial(material);
 			}
 		}
@@ -407,7 +415,7 @@ public class V3DMolecule extends RotatableGroup {
 
 	/**
 	 * Use this method to create or remove a molecules surface
-	 * @param surfaceType MoleculeSurfaceMesh.CONNOLLY or LEE_RICHARDS
+	 * @param surfaceType MoleculeSurfaceAlgorithm.CONNOLLY or LEE_RICHARDS
 	 * @param surfaceMode SURFACE_NONE,SURFACE_WIRES, or SURFACE_FILLED
 	 * @param colorMode one of the SurfaceMesh.SURFACE_COLOR_... options
 	 * @param transparency
@@ -430,14 +438,30 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		} else {
 			double opacity = 1.0 - transparency;
-			if (mSurfaceMesh[surfaceType] == null)
-				mSurfaceMesh[surfaceType] = new SurfaceMesh(mConformer, surfaceType, colorMode, getNeutralColor(surfaceType), opacity);
+			if (mSurfaceMesh[surfaceType] == null) {
+				mSurfaceMesh[surfaceType] = new SurfaceMesh(mConformer, surfaceType, colorMode, getNeutralColor(surfaceType), opacity, createSurfaceCutter());
+				}
 			else
 				mSurfaceMesh[surfaceType].updateTexture(mConformer, colorMode, getNeutralColor(surfaceType), opacity);
 
 			updateSurfaceFromMesh(surfaceType);
 //showSurfaceNormals();
 		}
+	}
+
+	/**
+	 * If we have cropped the molecule/protein and therefore have open valences filled with
+	 * pseudo atoms (atomicNo=0), then we don't want those molecule parts to be covered
+	 * by the surface mesh. We use a surface cutter to remove this after complete surface creation.
+	 * @return null or SurfaceCutter to be used by SurfaceMesh after fresh mesh creation
+	 */
+	private SurfaceCutter createSurfaceCutter() {
+		StereoMolecule mol = mConformer.getMolecule();
+		for (int atom=0; atom<mol.getAllAtoms(); atom++)
+			if (mol.getAtomicNo(atom) == 0)
+				return new RemovedAtomSurfaceCutter(this);
+
+		return null;
 	}
 
 	private Color getNeutralColor(int surfaceType) {
@@ -470,7 +494,7 @@ public class V3DMolecule extends RotatableGroup {
 			material = new PhongMaterial();
 			material.setDiffuseMap(mSurfaceMesh[surfaceType].getTexture().getImage());
 		}
-		mSurface[surfaceType].setUserData(new NodeDetail(material, -1, -1, true));
+		mSurface[surfaceType].setUserData(new NodeDetail(material, 0, true));
 		mSurface[surfaceType].setMaterial(material);
 //			mSurface.setMaterial(mSurfaceOverrideMaterial != null ? mSurfaceOverrideMaterial : material);
 
@@ -667,8 +691,38 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 
+	// delete all flagged atoms except those that have a direct connection
+	// to an atom not to be deleted. In this case change the atom's atomic no
+	// to 0 unless it is a hydrogen, which is not touched.
 	public void deleteAtoms(boolean[] isToBeDeleted) {
 		StereoMolecule mol = mConformer.getMolecule();
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+
+			// delete also all hydrogens that are connected to an atom destined to be deleted
+		for (int atom=mol.getAtoms(); atom<mol.getAllAtoms(); atom++)
+			if (isToBeDeleted[mol.getConnAtom(atom, 0)])
+				isToBeDeleted[atom] = true;
+
+			// convert atomic no to 0 for first layer of deleted atoms
+		// (unless for hydrogen) and unset their deletion flag
+		int[] borderAtom = new int[mol.getAllAtoms()];
+		int borderAtomCount = 0;
+		for (int bond=0; bond<mol.getAllBonds(); bond++) {
+			int atom1 = mol.getBondAtom(0, bond);
+			int atom2 = mol.getBondAtom(1, bond);
+			if (isToBeDeleted[atom1] ^ isToBeDeleted[atom2]) {
+				borderAtom[borderAtomCount++] = isToBeDeleted[atom1] ? atom1 : atom2;
+			}
+		}
+		for (int i=0; i<borderAtomCount; i++) {
+			int atom = borderAtom[i];
+			if (mol.getAtomicNo(atom) != 1) {
+				mol.setAtomicNo(atom, 0);
+				mol.setAtomMarker(atom, true);
+			}
+			isToBeDeleted[atom] = false;
+		}
+
 		int[] oldAtomToNew = new int[mol.getAllAtoms()];
 		int index = 0;
 		for (int i=0; i<oldAtomToNew.length; i++) {
@@ -696,12 +750,12 @@ public class V3DMolecule extends RotatableGroup {
 					if (oldAtomToNew[detail.getAtom()] == -1)
 						nodesToBeDeleted.add(node);
 					else
-						detail.setAtom(oldAtomToNew[detail.getAtom()]);
+						detail.setIndex(oldAtomToNew[detail.getAtom()]);
 				} else if (detail.isBond()) {
 					if (oldBondToNew[detail.getBond()] == -1)
 						nodesToBeDeleted.add(node);
 					else
-						detail.setBond(oldBondToNew[detail.getBond()]);
+						detail.setIndex(oldBondToNew[detail.getBond()]);
 				}
 			}
 		}
@@ -717,7 +771,7 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param paneOnScreen top let point of parent pane on screen
 	 */
 	public void cutSurface(Polygon polygon, int mode, Point2D paneOnScreen) {
-		for (int type=0; type<MoleculeSurfaceMesh.SURFACE_TYPE.length; type++) {
+		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++) {
 			if (mSurface[type] != null) {
 				PolygonSurfaceCutter cutter = new PolygonSurfaceCutter(polygon, this, mode, paneOnScreen);
 				cutSurface(type, cutter);
@@ -753,26 +807,7 @@ public class V3DMolecule extends RotatableGroup {
 		NonRotatingLabel label = NonRotatingLabel.create(this, text, p1, p2, color);
 		mLabelList.add(label);
 		}
-	
-	public void updateCoordinates() {
-		V3DMoleculeUpdater updater = new V3DMoleculeUpdater(this);
-		updater.update();
-/*		for(Node node : getChildren()) {
-			NodeDetail detail = (NodeDetail)node.getUserData();
-			if (detail != null) {
-				if (detail.isAtom()) {
-					int atom = detail.getAtom();
-					node.setTranslateX(mConformer.getX(atom));
-					node.setTranslateY(mConformer.getY(atom));
-					node.setTranslateZ(mConformer.getZ(atom));
-				}
-				else if(detail.isBond()) {
 
-				}
-			}
-		}*/
-	}
-	
 /*
 	public void setConformer(Conformer conf) { //added by JW
 		mConformer = conf;

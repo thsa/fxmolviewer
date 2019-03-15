@@ -4,6 +4,7 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.forcefield.ForceField;
 import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
+import com.actelion.research.util.ArrayUtils;
 import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
@@ -13,8 +14,8 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
 
-public class V3DMinimizationHandler implements ForceFieldChangeListener {
-	private static V3DMinimizationHandler sInstance;
+public class V3DMinimizer implements ForceFieldChangeListener {
+	private static V3DMinimizer sInstance;
 	private V3DMolecule[] mFXMol;
 	private V3DMoleculeUpdater[] mFXMolUpdater;
 	private ForceField mForceField;
@@ -22,50 +23,60 @@ public class V3DMinimizationHandler implements ForceFieldChangeListener {
 	private V3DSceneEditor mEditor;
 	private volatile Thread mMinimizationThread;
 
-	public V3DMinimizationHandler getInstance(V3DScene scene3D, V3DSceneEditor editor) {
-		if (sInstance == null)
-			sInstance = new V3DMinimizationHandler(scene3D, editor);
+	/**
+	 *
+	 * @param scene3D
+	 * @param editor
+	 * @param fxmol if null, then all visible molecules are minimized
+	 */
+	public static void minimize(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol) {
+		stopMinimization();
 
-		return sInstance;
+		sInstance = new V3DMinimizer(scene3D, editor, fxmol);
+		sInstance.minimize();
 	}
 
-	private V3DMinimizationHandler(V3DScene scene3D, V3DSceneEditor editor)  {
+	private V3DMinimizer(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol)  {
 		mScene3D = scene3D;
 		mEditor = editor;
 
-		ArrayList<V3DMolecule> fxmolList = new ArrayList<V3DMolecule>();
-		for (Node node : scene3D.getWorld().getChildren()) {
-			if (node instanceof V3DMolecule && node.isVisible()) {
-				if (node.isVisible()) {
-					V3DMolecule fxmol = (V3DMolecule)node;
-					fxmol.addImplicitHydrogens();
-					fxmolList.add(fxmol);
+		if (fxmol != null) {
+			mFXMol = new V3DMolecule[1];
+			mFXMol[0] = fxmol;
+			mFXMol[0].addImplicitHydrogens();
+		}
+		else {
+			ArrayList<V3DMolecule> fxmolList = new ArrayList<V3DMolecule>();
+			for (Node node : scene3D.getWorld().getChildren()) {
+				if (node instanceof V3DMolecule && node.isVisible()) {
+					if (node.isVisible()) {
+						fxmol = (V3DMolecule)node;
+						fxmol.addImplicitHydrogens();
+						fxmolList.add(fxmol);
+					}
 				}
 			}
+
+			mFXMol = fxmolList.toArray(new V3DMolecule[0]);
 		}
-
-		mFXMol = fxmolList.toArray(new V3DMolecule[0]);
 	}
 
-	public V3DMinimizationHandler(V3DScene scene3D, V3DMolecule fxmol, V3DSceneEditor editor)  {
-		mScene3D = scene3D;
-		mEditor = editor;
-		mFXMol = new V3DMolecule[1];
-		mFXMol[0] = fxmol;
-		mFXMol[0].addImplicitHydrogens();
-	}
-
-	public void minimize() {
+	private void minimize() {
 		if (mFXMol.length == 0)
 			return;
 
 		mFXMolUpdater = new V3DMoleculeUpdater[mFXMol.length];
-		for (int i=0; i<mFXMol.length; i++)
+		int totalAtomCount = 0;
+		for (int i=0; i<mFXMol.length; i++) {
 			mFXMolUpdater[i] = new V3DMoleculeUpdater(mFXMol[i]);
+			totalAtomCount += mFXMol[i].getConformer().getSize();
+		}
 
 		StereoMolecule molScenery = new StereoMolecule();
 
 		int atom = 0;
+		int fixedAtomCount = 0;
+		int[] fixedAtom = new int[totalAtomCount];
 		ArrayList<Integer> rigidAtoms = new ArrayList<>();
 		for(V3DMolecule fxmol : mFXMol) {
 			// remove any surfaces
@@ -82,9 +93,9 @@ public class V3DMinimizationHandler implements ForceFieldChangeListener {
 				molScenery.setAtomY(atom, globalCoords.getY());
 				molScenery.setAtomZ(atom, globalCoords.getZ());
 				if (mol.isMarkedAtom(a))
-					rigidAtoms.add(atom);
+					fixedAtom[fixedAtomCount++] = atom;
 				if (mol.getAtomicNo(a) == 0)
-					molScenery.setAtomicNo(atom, 1);
+					molScenery.setAtomicNo(atom, 6);
 				atom++;
 			}
 		}
@@ -92,10 +103,13 @@ public class V3DMinimizationHandler implements ForceFieldChangeListener {
 		ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField = new ForceFieldMMFF94(molScenery, ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField.addListener(this);
-		int[] fixedAtom = new int[rigidAtoms.size()];
-		for (int i=0; i<rigidAtoms.size(); i++)
-			fixedAtom[i] = rigidAtoms.get(i);
-		mForceField.setFixedAtoms(fixedAtom);
+
+		if (fixedAtomCount != 0) {
+			ArrayUtils.resize(fixedAtom, fixedAtomCount);
+			for (int i = 0; i < rigidAtoms.size(); i++)
+				fixedAtom[i] = rigidAtoms.get(i);
+			mForceField.setFixedAtoms(fixedAtom);
+		}
 
 		mMinimizationThread = new Thread(() -> mForceField.minimise());
 		mMinimizationThread.start();
@@ -116,7 +130,19 @@ public class V3DMinimizationHandler implements ForceFieldChangeListener {
 			final double energy = mForceField.getTotalEnergy();
 			Platform.runLater(() -> {
 				if (mMinimizationThread != null) {
-					mScene3D.updateCoordinates(mFXMol, pos);
+					int posIndex = 0;
+					for (int i=0; i<mFXMol.length; i++) {
+						Conformer conf = mFXMol[i].getConformer();
+						for (int atom=0; atom<conf.getSize(); atom++) {
+							Point3D p = mFXMol[i].parentToLocal(pos[posIndex], pos[posIndex+1], pos[posIndex+2]);
+							conf.setX(atom, p.getX());
+							conf.setY(atom, p.getY());
+							conf.setZ(atom, p.getZ());
+							posIndex += 3;
+						}
+						mFXMolUpdater[i].update();
+					}
+
 					if (mEditor != null)
 						mEditor.createOutput("energy: " + Double.toString(energy) + " kcal/mol");
 					else

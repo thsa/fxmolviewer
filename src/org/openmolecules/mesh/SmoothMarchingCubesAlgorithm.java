@@ -38,7 +38,7 @@ import java.util.TreeMap;
  * 15% to 20% more time for the triangulations, because vertexes of any layer
  * are merged, cached and reassigned before triangulating the layer.
  */
-public class SmoothMarchingCubesMesh {
+public class SmoothMarchingCubesAlgorithm {
 	private static final float MAX_JOINT_POSITION = 0.48f;   // max: 0.5, min: 0.0 (this is uncorrected maching cubes
 	// TODO make statistics of triangle area and corner angle distribution with different MAX_JOINT_POSITION values
 
@@ -650,7 +650,7 @@ public class SmoothMarchingCubesMesh {
 	 * Use one of the create() methods to produce the vertexes and triangles of the mesh.
 	 * @param meshBuilder
 	 */
-	public SmoothMarchingCubesMesh(MeshBuilder meshBuilder) {
+	public SmoothMarchingCubesAlgorithm(MeshBuilder meshBuilder) {
 		mMeshBuilder = meshBuilder;
 		mVoxelSize = 1f;
 	}
@@ -662,7 +662,7 @@ public class SmoothMarchingCubesMesh {
 	 * your own provided voxel grid.
 	 * @param meshBuilder
 	 */
-	public SmoothMarchingCubesMesh(MeshBuilder meshBuilder, float voxelSize) {
+	public SmoothMarchingCubesAlgorithm(MeshBuilder meshBuilder, float voxelSize) {
 		mMeshBuilder = meshBuilder;
 		mVoxelSize = voxelSize;
 	}

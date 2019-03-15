@@ -24,7 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.TreeMap;
 
-public class MarchingCubesMesh implements VDWRadii {
+public class MarchingCubesAlgorithm implements VDWRadii {
 	public static final float DEFAULT_PROBE_SIZE = 1.4f;	// angstrom
 	protected static final float ISOLEVEL_VALUE = 5.0f;		// not 0 to save the array initialization to something else
 	private static final float RADIUS_SURPLUS = 1.0f;		// voxel edge lengths to consider beyond sphere radii
@@ -351,11 +351,11 @@ public class MarchingCubesMesh implements VDWRadii {
 	protected float mOffsetX,mOffsetY,mOffsetZ,mVoxelSize;	// all in angstrom
 	protected MeshBuilder mMeshBuilder;
 
-	public MarchingCubesMesh(MeshBuilder meshBuilder) {
+	public MarchingCubesAlgorithm(MeshBuilder meshBuilder) {
 		this(meshBuilder, 1.0f);
 		}
 
-	public MarchingCubesMesh(MeshBuilder meshBuilder, float voxelSize) {
+	public MarchingCubesAlgorithm(MeshBuilder meshBuilder, float voxelSize) {
 		mMeshBuilder = meshBuilder;
 		mVoxelSize = voxelSize;
 		}

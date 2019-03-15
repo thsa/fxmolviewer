@@ -76,13 +76,13 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		mArchitect.buildMolecule(conformer, fromAtom, fromBond);
 		}
 
-	private void addTransparentSphere(int atom, Coordinates c, double radius) {
+	private void addTransparentSphere(int role, Coordinates c, double radius) {
 		Sphere sphere = new Sphere(radius, mSphereDivisions);
 		sphere.setMaterial(sTransparentMaterial);
 		sphere.setTranslateX(c.x);
 		sphere.setTranslateY(c.y);
 		sphere.setTranslateZ(c.z);
-		sphere.setUserData(new NodeDetail(sTransparentMaterial, atom, -1, false));
+		sphere.setUserData(new NodeDetail(sTransparentMaterial, role | 0x80000000, false));
 		mV3DMolecule.getChildren().add(sphere);
 		}
 
@@ -90,7 +90,7 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 	public void init() {}
 
 	@Override
-	public void addSphere(int atom, int bond, Coordinates c, double radius, int argb) {
+	public void addSphere(int role, Coordinates c, double radius, int argb) {
 		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
 							  || argb == MoleculeArchitect.ATOM_ARGB[6]);
 		PhongMaterial material = getMaterial(argb);
@@ -99,15 +99,16 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		sphere.setTranslateX(c.x);
 		sphere.setTranslateY(c.y);
 		sphere.setTranslateZ(c.z);
-		sphere.setUserData(new NodeDetail(material, atom, bond, isOverridable));
+		sphere.setUserData(new NodeDetail(material, role, isOverridable));
 		mV3DMolecule.getChildren().add(sphere);
 
-		if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS && atom != -1)
-			addTransparentSphere(atom, c, STICK_MODE_ATOM_PICK_RADIUS);
+		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0
+		 && mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS)
+			addTransparentSphere(role, c, STICK_MODE_ATOM_PICK_RADIUS);
 		}
 
 	@Override
-	public void addCylinder(int bond, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
+	public void addCylinder(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
 		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
 							  || argb == MoleculeArchitect.ATOM_ARGB[6]
 							  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
@@ -122,7 +123,7 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		Transform r2 = new Rotate(90+180/Math.PI*rotationZ, Rotate.Z_AXIS);
 		cylinder.getTransforms().add(r2);
 		cylinder.getTransforms().add(r1);
-		cylinder.setUserData(new NodeDetail(material, -1, bond, isOverridable));
+		cylinder.setUserData(new NodeDetail(material, role, isOverridable));
 		mV3DMolecule.getChildren().add(cylinder);
 		}
 

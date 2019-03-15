@@ -23,6 +23,7 @@ package org.openmolecules.fx.viewer3d;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.scene.Camera;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.input.MouseButton;
@@ -75,11 +76,10 @@ public class V3DMouseHandler {
 			else {
 				trackHighlightedMol(se.getPickResult());
 				trackAffectedMol(isSingleMolecule(se), true);
-//				translate(0, 0, delta);     // moving the world in the universe moves the world relative to the rotation center
 				if (mAffectedMol == null)
-					translateCamera(-delta);    // this does not change the world rotation center
+					translateCameraZ(-delta);    // this does not change the world rotation center
 				else
-					translate(0, 0, delta);
+					translateMolecule(mAffectedMol, 0, 0, delta);
 			}
 		} );
 		scene.setOnMousePressed(me -> {
@@ -146,8 +146,11 @@ public class V3DMouseHandler {
 			double dx = (mMouseX - oldMouseX);
 			double dy = (mMouseY - oldMouseY);
 
-			if (me.isMiddleButtonDown()) {
-				translate(dx, dy, 0);
+			if (me.isMiddleButtonDown() || (me.isPrimaryButtonDown() && me.isMetaDown())) {
+				if (mAffectedMol == null)
+					translateCameraXY(-dx, -dy);
+				else
+					translateMolecule(mAffectedMol, dx, dy, 0);
 			}
 			else if (me.isSecondaryButtonDown()) {
 				mShowPopup = false;
@@ -250,30 +253,30 @@ public class V3DMouseHandler {
 		return 0;
 	}
 
-	private void translate(double dx, double dy, double dz) {
+	private void translateMolecule(V3DMolecule fxmol, double dx, double dy, double dz) {
 		RotatableGroup world = mScene.getWorld();
 
-		double f = getScreenToObjectFactor (mAffectedMol != null ? mAffectedMol.getHighlightedZ() : world.getTranslateZ());
+		double f = getScreenToObjectFactor(fxmol.getHighlightedZ());
 
-		if (mAffectedMol != null) {
-			// p0 and p1 are world coordinates
-			Point3D p0 = mAffectedMol.localToParent(mAffectedMol.getHighlightedPointLocal());
-			Point3D p1 = world.sceneToLocal(mAffectedMol.getHighlightedPointInScene().subtract(f*dx, f*dy, f*dz));
-			mAffectedMol.setTranslateX(mAffectedMol.getTranslateX() + p0.getX() - p1.getX());
-			mAffectedMol.setTranslateY(mAffectedMol.getTranslateY() + p0.getY() - p1.getY());
-			mAffectedMol.setTranslateZ(mAffectedMol.getTranslateZ() + p0.getZ() - p1.getZ());
-		}
-		else {
-			Point3D p = world.sceneToLocal(world.localToScene(0,0,0).subtract(f*dx, f*dy, f*dz));
-			world.setTranslateX(world.getTranslateX() - p.getX());
-			world.setTranslateY(world.getTranslateY() - p.getY());
-			world.setTranslateZ(world.getTranslateZ() - p.getZ());
-		}
+		// p0 and p1 are world coordinates
+		Point3D p0 = fxmol.localToParent(fxmol.getHighlightedPointLocal());
+		Point3D p1 = world.sceneToLocal(fxmol.getHighlightedPointInScene().subtract(f*dx, f*dy, f*dz));
+		fxmol.setTranslateX(fxmol.getTranslateX() + p0.getX() - p1.getX());
+		fxmol.setTranslateY(fxmol.getTranslateY() + p0.getY() - p1.getY());
+		fxmol.setTranslateZ(fxmol.getTranslateZ() + p0.getZ() - p1.getZ());
 	}
 
-	private void translateCamera(double dz) {
+	private void translateCameraXY(double dx, double dy) {
 		double f = getScreenToObjectFactor(mScene.getWorld().getTranslateZ());
-		mScene.moveCamera(2*f*dz);
+		Camera camera = mScene.getCamera();
+		camera.setTranslateX(camera.getTranslateX() + 2*f*dx);
+		camera.setTranslateY(camera.getTranslateY() + 2*f*dy);
+	}
+
+	private void translateCameraZ(double dz) {
+		double f = getScreenToObjectFactor(mScene.getWorld().getTranslateZ());
+		Camera camera = mScene.getCamera();
+		camera.setTranslateZ(camera.getTranslateZ() + 2*f*dz);
 	}
 
 	private double getScreenToObjectFactor(double objectZ) {
@@ -301,7 +304,7 @@ public class V3DMouseHandler {
 			Point3D p1 = null;
 			if (aroundZAxis) {
 				Point2D origin = (mAffectedMol != null) ? mAffectedMol.localToScreen(0,0,0)
-														: mScene.getUniverse().localToScreen(0,0,0);
+														: mScene.getWorld().localToScreen(0,0,0);
 				double x2 = mMouseX - origin.getX();
 				double x1 = x2 - dx;
 				double y2 = mMouseY - origin.getY();
@@ -326,10 +329,7 @@ public class V3DMouseHandler {
 				}
 			else {
 				// world center of gravity:
-// TODO rotate around cog				Point3D cog = mScene.getCenterOfGravity();
-
-				// this rotates around the center of the universe
-				mScene.getUniverse().rotate(new Rotate(d, p1));
+				mScene.getWorld().rotate(new Rotate(d, p1));
 				}
 			}
 		}

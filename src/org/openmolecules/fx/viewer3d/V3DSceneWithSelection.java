@@ -35,7 +35,7 @@ public class V3DSceneWithSelection extends Pane {
 
 		setOnMousePressed(me -> {
 			mSelection = null;
-			if (me.getButton() == MouseButton.PRIMARY) {
+			if (me.getButton() == MouseButton.PRIMARY && !me.isMetaDown()) {
 				mSelectionMode = me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0;
 				startSelection(me.getX(), me.getY());
 			}
