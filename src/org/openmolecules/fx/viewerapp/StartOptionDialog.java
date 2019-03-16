@@ -89,6 +89,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 				StartOptions outOptions = new StartOptions(
 						mComboboxMode.getSelectionModel().getSelectedIndex(),
 						mTextFieldPDBCode.getText(),
+						null,
 						mCheckBoxCropLigand.isSelected() );
 				return outOptions;
 			}

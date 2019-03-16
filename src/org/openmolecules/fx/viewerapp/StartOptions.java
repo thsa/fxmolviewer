@@ -224,12 +224,13 @@ public class StartOptions {
 	private static final double SURFACE_SATURATION = 0.15;   // must be less than 1.0 - SURFACE_BRIGHTNESS
 
 	private int mode;
-	private String pdbEntryCode;
+	private String pdbEntryCode,mmtfFile;
 	private boolean cropLigand;
 
-	public StartOptions(int mode, String pdbEntryCode, boolean cropLigand) {
+	public StartOptions(int mode, String pdbEntryCode, String mmtfFile, boolean cropLigand) {
 		this.mode = mode;
 		this.pdbEntryCode = pdbEntryCode;
+		this.mmtfFile = mmtfFile;
 		this.cropLigand = cropLigand;
 		}
 
@@ -264,8 +265,13 @@ public class StartOptions {
 
 	private void loadPDBEntry(V3DScene scene) {
 		try {
-			if (pdbEntryCode.length() != 0) {
-				Molecule3D[] mol = MMTFParser.getStructureFromName(pdbEntryCode, MMTFParser.MODE_SPLIT_CHAINS);
+			Molecule3D[] mol = null;
+			if (mmtfFile != null)
+				mol = MMTFParser.getStructureFromFile(mmtfFile, pdbEntryCode, MMTFParser.MODE_SPLIT_CHAINS);
+			else if (pdbEntryCode.length() != 0)
+				mol = MMTFParser.getStructureFromName(pdbEntryCode, MMTFParser.MODE_SPLIT_CHAINS);
+
+			if (mol != null) {
 //					mMoleculePanel.setShowStructure(false);
 				MMTFParser.centerMolecules(mol);
 

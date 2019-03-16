@@ -27,6 +27,7 @@ import javafx.scene.SceneAntialiasing;
 import javafx.stage.Stage;
 import org.openmolecules.fx.viewer3d.*;
 
+import java.io.File;
 import java.util.Optional;
 
 public class ViewerApp extends Application {
@@ -39,6 +40,7 @@ public class ViewerApp extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		String modeString = System.getProperty("mode", "viewer");
+		String path = System.getProperty("file", "");
 		boolean isEditor = modeString.startsWith("editor");
 		int mode = -1;
 		try { mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
@@ -53,10 +55,12 @@ public class ViewerApp extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
-		if (mode == -1)
-			Platform.runLater(() -> showStartOptionDialog(mViewer.getScene3D()) );
+		if (path.length() != 0)
+			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path.substring(0, path.lastIndexOf(File.separatorChar)+1), true).initializeScene(mViewer.getScene3D()) );
+		else if (mode != -1)
+			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(mViewer.getScene3D()) );
 		else
-			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, false).initializeScene(mViewer.getScene3D()) );
+			Platform.runLater(() -> showStartOptionDialog(mViewer.getScene3D()) );
 	}
 
 	private static void showStartOptionDialog(V3DScene scene) {
