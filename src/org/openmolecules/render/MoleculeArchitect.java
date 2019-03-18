@@ -77,7 +77,7 @@ public class MoleculeArchitect {
 
 	private MoleculeBuilder mBuilder;
 	private Coordinates center,delta,point1,point2;    // reused Coordinate objects
-	private int mColorMode,mConstructionMode,mHydrogenMode;
+	private int mColorMode,mConstructionMode,mHydrogenMode,mBondDetail;
 
 	public MoleculeArchitect(MoleculeBuilder builder) {
 		mBuilder = builder;
@@ -171,7 +171,7 @@ public class MoleculeArchitect {
 								  : (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
 								  : (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
 								  :							VDWRadii.VDW_RADIUS[atomicNo]/4;
-					mBuilder.addSphere(atomRole(atom, 1), conformer.getCoordinates(atom), radius, getAtomColor(mol, atom));
+					mBuilder.addSphere(atomRole(atom), conformer.getCoordinates(atom), radius, getAtomColor(mol, atom));
 					}
 				}
 			}
@@ -206,6 +206,8 @@ public class MoleculeArchitect {
 				: (delta.x > 0.0) ? Math.atan(delta.y / delta.x)
 				: (delta.y > 0.0) ? Math.PI / 2 : -Math.PI / 2;
 
+		mBondDetail = 0;	// incremented with every primitiv to give a unique id for the primitiv
+
 		switch (mConstructionMode) {
 		case CONSTRUCTION_MODE_BALL_AND_STICKS:
 			buildBallAndStickBond(conformer, bond, d, b, c);
@@ -226,7 +228,7 @@ public class MoleculeArchitect {
 		if (order == 1) {
 			double dd = 2*calculateBondReduction(mol, bond, 0.2);
 			if (dd < d)
-				mBuilder.addCylinder(bondRole(bond, 1), BALL_AND_STICK_SBOND_RADIUS, d-dd, center, b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_SBOND_RADIUS, d-dd, center, b, c, color);
 			return;
 			}
 
@@ -234,8 +236,8 @@ public class MoleculeArchitect {
 			Coordinates ds = calculateDoubleBondShift(conformer, bond).scale(BALL_AND_STICK_DBOND_SHIFT);
 			double dd = calculateBondReduction(mol, bond, 0.20+0.10);
 			if (dd != 0f) {
-				mBuilder.addCylinder(bondRole(bond, 2), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).add(ds), b, c, color);
-				mBuilder.addCylinder(bondRole(bond, 3), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).sub(ds), b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).add(ds), b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).sub(ds), b, c, color);
 				}
 			return;
 			}
@@ -245,11 +247,11 @@ public class MoleculeArchitect {
 			double dd1 = 2*calculateBondReduction(mol, bond, 0.11);
 			double dd2 = 2*calculateBondReduction(mol, bond, 0.22+0.07);
 			if (dd2 < d)
-				mBuilder.addCylinder(bondRole(bond, 4), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).add(ds), b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).add(ds), b, c, color);
 			if (dd1 < d)
-				mBuilder.addCylinder(bondRole(bond, 5), BALL_AND_STICK_TBOND_RADIUS, d-dd1, center, b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd1, center, b, c, color);
 			if (dd2 < d)
-				mBuilder.addCylinder(bondRole(bond, 6), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).sub(ds), b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).sub(ds), b, c, color);
 			return;
 			}
 
@@ -307,8 +309,8 @@ public class MoleculeArchitect {
 		if (order == 3) {
 			Coordinates ds = calculateRandomOrthogonalShift(conformer, bond).scale(piShift);
 			buildStickBond(bond, color1, color2, p1, p2, r1, d, b, c);
-			buildPiStickBond(mol, bond, color1, color2, point1.set(p1).sub(ds),
-														point2.set(p2).sub(ds), r2, piShift, d, b, c);
+			buildPiStickBond(mol, bond, color1, color2, point1.set(p1).add(ds),
+														point2.set(p2).add(ds), r2, piShift, d, b, c);
 			buildPiStickBond(mol, bond, color1, color2, point1.set(p1).sub(ds),
 														point2.set(p2).sub(ds), r2, piShift, d, b, c);
 			return;
@@ -319,13 +321,13 @@ public class MoleculeArchitect {
 	                            double r, double d, double b, double c) {
 		if (color1 == color2) {
 			center.center(p1, p2);
-			mBuilder.addCylinder(bondRole(bond, 7), r, d, center, b, c, color1);
+			mBuilder.addCylinder(bondRole(bond), r, d, center, b, c, color1);
 			}
 		else {
 			center.between(p1, p2, 0.25);
-			mBuilder.addCylinder(bondRole(bond, 8), r, d / 2, center, b, c, color1);
+			mBuilder.addCylinder(bondRole(bond), r, d / 2, center, b, c, color1);
 			center.between(p1, p2, 0.75);
-			mBuilder.addCylinder(bondRole(bond, 9), r, d / 2, center, b, c, color2);
+			mBuilder.addCylinder(bondRole(bond), r, d / 2, center, b, c, color2);
 			}
 		}
 
@@ -335,7 +337,7 @@ public class MoleculeArchitect {
 		double dd = r / (dots-1);
 		for (int i=1; i<dots-1; i++) {
 			center.between(p1, p2, (double)i/(dots-1));
-			mBuilder.addSphere(bondRole(bond, 15), center, r, i*2<dots ? color1 : color2);
+			mBuilder.addSphere(bondRole(bond), center, r, i*2<dots ? color1 : color2);
 			}
 		}
 
@@ -377,28 +379,28 @@ public class MoleculeArchitect {
 			}
 
 		if (mConstructionMode != CONSTRUCTION_MODE_WIRES) {
-			mBuilder.addSphere(bondRole(bond, 13), p1, r, color1); //modified by JW
-			mBuilder.addSphere(bondRole(bond, 14), p2, r, color2); // modified by JW
+			mBuilder.addSphere(bondRole(bond), p1, r, color1); //modified by JW
+			mBuilder.addSphere(bondRole(bond), p2, r, color2); // modified by JW
 			}
 
 		if (color1 == color2) {
 			center.center(p1, p2);
-			mBuilder.addCylinder(bondRole(bond, 10), r, l1 + l2, center, b, c, color1);
+			mBuilder.addCylinder(bondRole(bond), r, l1 + l2, center, b, c, color1);
 			}
 		else {
 			p1.center(center);
-			mBuilder.addCylinder(bondRole(bond, 11), r, l1, p1, b, c, color1);
+			mBuilder.addCylinder(bondRole(bond), r, l1, p1, b, c, color1);
 			p2.center(center);
-			mBuilder.addCylinder(bondRole(bond, 12), r, l2, p2, b, c, color2);
+			mBuilder.addCylinder(bondRole(bond), r, l2, p2, b, c, color2);
 			}
 		}
 
-	private int atomRole(int atom, int detail) {
-		return (detail << MoleculeBuilder.ROLE_DETAIL_SHIFT) | MoleculeBuilder.ROLE_IS_ATOM | atom;
+	private int atomRole(int atom) {
+		return /*(mAtomDetail++ << MoleculeBuilder.ROLE_DETAIL_SHIFT) | */ MoleculeBuilder.ROLE_IS_ATOM | atom;
 		}
 
-	private int bondRole(int bond, int detail) {
-		return (detail << MoleculeBuilder.ROLE_DETAIL_SHIFT) | MoleculeBuilder.ROLE_IS_BOND | bond;
+	private int bondRole(int bond) {
+		return (mBondDetail++ << MoleculeBuilder.ROLE_DETAIL_SHIFT) | MoleculeBuilder.ROLE_IS_BOND | bond;
 		}
 
 	private Coordinates calculateDoubleBondShift(Conformer conformer, int bond) {

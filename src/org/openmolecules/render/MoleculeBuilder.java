@@ -11,6 +11,7 @@ public interface MoleculeBuilder {
 	public static final int ROLE_IS_ATOM = 0x01000000;
 	public static final int ROLE_IS_BOND = 0x02000000;
 	public static final int ROLE_DETAIL_SHIFT = 26;
+	public static final int ROLE_ORDER_SHIFT = 30;
 
 	public void init();
 	public void addSphere(int role, Coordinates c, double radius, int argb);
