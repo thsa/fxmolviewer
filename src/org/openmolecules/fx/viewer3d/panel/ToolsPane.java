@@ -31,6 +31,7 @@ import javafx.stage.Stage;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.V3DSceneEditor;
+import org.openmolecules.fx.viewer3d.editor.StructureEditorToolbar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -95,9 +96,15 @@ public class ToolsPane extends Accordion  {
 		VBox ffBox = new VBox();
 		ffBox.getChildren().add(minimizeMolecule);
 		forcefieldPane.setContent(ffBox);
+		
+		TitledPane editorPane = new TitledPane();
+		editorPane.setStyle("-fx-font-size: 1.5em ;");
+		editorPane.setText("Build");
+		StructureEditorToolbar editorBar = new StructureEditorToolbar(mScene3D);
+		editorPane.setContent(editorBar);
 
-	
-		this.getPanes().addAll(readWritePane,forcefieldPane);
+		this.getPanes().addAll(readWritePane,forcefieldPane,editorPane);
+
 
 
 		
