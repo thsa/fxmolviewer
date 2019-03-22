@@ -20,7 +20,7 @@
 
 package org.openmolecules.fx.surface;
 
-import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.VDWRadii;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableIntegerArray;
@@ -63,8 +63,8 @@ public class AtomicNoTexture extends SurfaceTexture {
 
 	private float mPixelWidth,mPixelHeight,mPixelWidthHalf,mPixelHeightHalf;
 
-	public AtomicNoTexture(TriangleMesh mesh, Conformer conformer, Color color, double opacity, float surfaceSurplus) {
-		super(mesh, conformer);
+	public AtomicNoTexture(TriangleMesh mesh, StereoMolecule mol, Color color, double opacity, float surfaceSurplus) {
+		super(mesh, mol);
 
 		mAtomicNoWeightBuffer = new float[MAX_ATOMS_ON_TRIANGLE];
 		mAtomicNoBuffer = new int[MAX_ATOMS_ON_TRIANGLE];
@@ -94,7 +94,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 			int atomicNo = mMol.getAtomicNo(atom);
 			float vdwr = VDWRadii.VDW_RADIUS[atomicNo];
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
-			float d = distanceToAtom(p.x, p.y, p.z, influenceRadius, atom, mConformerSunFlow);
+			float d = distanceToPoint(p.x, p.y, p.z, influenceRadius, mConformerSunFlow.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
 				int argb = (mNeutralRGB != -1 && (atomicNo == 1 || atomicNo == 6)) ?
 						mNeutralRGB : ATOM_ARGB[atomicNo];
@@ -187,7 +187,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 			int atom = toAtom(index, mSortedAtomsFX);
 			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom)];
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus + SURPLUS;
-			float d = distanceToAtom(x, y, z, influenceRadius, atom, mConformerFX);
+			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
 				if (atomCount == MAX_ATOMS_ON_TRIANGLE-1) {
 					System.out.println("WARNING: more near atoms than MAX_ATOMS_ON_TRIANGLE");
@@ -285,7 +285,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		for (int i=0; i<MAX_ATOMS_ON_TRIANGLE && atom[i] != -1; i++) {
 			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom[i])];
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
-			float d = distanceToAtom(x, y, z, influenceRadius, atom[i], mConformerFX);
+			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom[i]));
 			if (d != Float.MAX_VALUE) {
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				int atomicNo = mMol.getAtomicNo(atom[i]);
@@ -322,7 +322,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		for (int i=0; i<MAX_ATOMS_ON_TRIANGLE && atom[i] != -1; i++) {
 			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom[i])];
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
-			float d = distanceToAtom(x, y, z, influenceRadius, atom[i], mConformerFX);
+			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom[i]));
 			if (d != Float.MAX_VALUE) {
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				int atomicNo = mMol.getAtomicNo(atom[i]);

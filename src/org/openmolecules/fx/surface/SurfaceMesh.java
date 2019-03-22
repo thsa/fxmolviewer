@@ -21,7 +21,8 @@
 package org.openmolecules.fx.surface;
 
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.Molecule3D;
+import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.util.DoubleFormat;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableIntegerArray;
@@ -70,12 +71,12 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 	 * using an enhanced marched cubes algorithm to avoid skinny triangles.
 	 * It uses a probe with 1.4 Angstrom radius and a voxel size of 0.5 Angstrom.
 	 * The surface is uniformly colored.
-	 * @param conformer
+	 * @param mol
 	 * @param surfaceType MoleculeSurfaceAlgorithm.CONNOLLY or LEE_RICHARDS
 	 * @param postCreationCutter optional surface cutter to remove parts of the surface just after creation
 	 */
-	public SurfaceMesh(Conformer conformer, int surfaceType, SurfaceCutter postCreationCutter) {
-		this(conformer, surfaceType, SURFACE_COLOR_PLAIN, null, 1f, postCreationCutter);
+	public SurfaceMesh(Molecule3D mol, int surfaceType, SurfaceCutter postCreationCutter) {
+		this(mol, surfaceType, SURFACE_COLOR_PLAIN, null, 1f, postCreationCutter);
 	}
 
 	/**
@@ -83,14 +84,14 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 	 * using an enhanced marched cubes algorithm to avoid skinny triangles.
 	 * It uses a probe with 1.4 Angstrom radius and a voxel size of 0.5 Angstrom.
 	 * The surface is colored according to the textureMode.
-	 * @param conformer
+	 * @param mol
 	 * @param surfaceType MoleculeSurfaceAlgorithm.CONNOLLY or LEE_RICHARDS
 	 * @param textureMode
 	 * @param neutralColor color of hydrogen and carbon in case of AtomicNoTexture
 	 * @param opacity
 	 * @param postCreationCutter optional surface cutter to remove parts of the surface just after creation
 	 */
-	public SurfaceMesh(Conformer conformer, int surfaceType, int textureMode, Color neutralColor, double opacity, SurfaceCutter postCreationCutter) {
+	public SurfaceMesh(StereoMolecule mol, int surfaceType, int textureMode, Color neutralColor, double opacity, SurfaceCutter postCreationCutter) {
 		super(USE_NORMALS ? VertexFormat.POINT_NORMAL_TEXCOORD : VertexFormat.POINT_TEXCOORD);
 
 		mSurfaceType = surfaceType;
@@ -107,7 +108,7 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 			catch (IOException ioe) {}
 			}
 
-		new MoleculeSurfaceAlgorithm(conformer, surfaceType, mProbeSize, MoleculeSurfaceAlgorithm.DEFAULT_VOXEL_SIZE, this);
+		new MoleculeSurfaceAlgorithm(mol, surfaceType, mProbeSize, MoleculeSurfaceAlgorithm.DEFAULT_VOXEL_SIZE, this);
 
 		if (postCreationCutter != null)
 			postCreationCutter.cut(this);
@@ -118,7 +119,7 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 			try { mAngleStatisticsWriter.close(); } catch (IOException ioe) {}
 
 		if (textureMode > SURFACE_COLOR_PLAIN)
-			updateTexture(conformer, textureMode, neutralColor, opacity);
+			updateTexture(mol, textureMode, neutralColor, opacity);
 
 		if (USE_NORMALS)
 			unifyNormals();
@@ -333,12 +334,12 @@ System.out.println(i1+"("+p.get(i1*3)+","+p.get(i1*3+1)+","+p.get(i1*3+2)+") "+i
 		}
 
 	/**
-	 * @param conformer
+	 * @param mol
 	 * @param textureMode
 	 * @param neutralColor color of hydrogen and carbon in case of AtomicNoTexture
 	 * @param opacity
 	 */
-	public void updateTexture(Conformer conformer, int textureMode, Color neutralColor, double opacity) {
+	public void updateTexture(StereoMolecule mol, int textureMode, Color neutralColor, double opacity) {
 		// list coordinates for every pixel in the image
 		if (textureMode <= SURFACE_COLOR_PLAIN) {
 			mTexture = null;
@@ -362,11 +363,11 @@ System.out.println(i1+"("+p.get(i1*3)+","+p.get(i1*3+1)+","+p.get(i1*3+2)+") "+i
 			}
 		}
 		else if (textureMode == SURFACE_COLOR_ATOMIC_NOS) {
-			mTexture = new AtomicNoTexture(this, conformer, neutralColor, opacity, getSurfaceSurplus());
+			mTexture = new AtomicNoTexture(this, mol, neutralColor, opacity, getSurfaceSurplus());
 			mTexture.applyToSurface();
 		}
 		else {
-			mTexture = new PropertyTexture(this, conformer, textureMode, opacity, getSurfaceSurplus());
+			mTexture = new PropertyTexture(this, mol, textureMode, opacity, getSurfaceSurplus());
 			mTexture.applyToSurface();
 			}
 		}

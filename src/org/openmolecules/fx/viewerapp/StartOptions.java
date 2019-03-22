@@ -298,10 +298,6 @@ public class StartOptions {
 
 				int largeMoleculeIndex = 0;
 				for (int i=0; i<mol.length; i++) {
-//						millis = printDelay(millis);
-//						System.out.print("Creating conformer...  ");
-
-					Conformer conformer = new Conformer(mol[i]);
 
 //						millis = printDelay(millis);
 //						System.out.print("Creating V3DMolecule...  ");
@@ -311,12 +307,12 @@ public class StartOptions {
 
 					V3DMolecule vm;
 					if (isWater)
-						vm = new V3DMolecule(conformer, MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
 					else if (isLargeMolecule)
-						vm = new V3DMolecule(conformer, MoleculeArchitect.CONSTRUCTION_MODE_WIRES, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
+						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_WIRES, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 								V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[largeMoleculeIndex++], 0.5);
 					else
-						vm = new V3DMolecule(conformer, MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
 
 					vm.activateEvents();
 
@@ -350,8 +346,9 @@ public class StartOptions {
 			double dz = POSITION_FACTOR * coord[2];
 
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
-			Conformer conformer = new Conformer(mol).center().translate(dx, dy, dz);
-			V3DMolecule vm = new V3DMolecule(conformer);
+			mol.center();
+			mol.translate(dx, dy, dz);
+			V3DMolecule vm = new V3DMolecule(mol);
 			vm.setSurface(0, (1 + i) % 3, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.2 * (i % 5));
 			vm.activateEvents();
 			scene.addMolecule(vm);
@@ -369,8 +366,9 @@ public class StartOptions {
 			String[] code = TEST_MOLECULES_64[i];
 
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
-			Conformer conformer = new Conformer(mol).center().translate(dx, dy, dz);
-			V3DMolecule vm = new V3DMolecule(conformer);
+			mol.center();
+			mol.translate(dx, dy, dz);
+			V3DMolecule vm = new V3DMolecule(mol);
 			double transparency = 0.20 + 0.1 * (i % 7);
 			vm.setSurface(0, V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, transparency);
 
@@ -433,7 +431,7 @@ public class StartOptions {
 				conformer.translate(dx, dy, dz);
 			}
 
-			V3DMolecule vm = new V3DMolecule(conformer);
+			V3DMolecule vm = new V3DMolecule(conformer.toMolecule(null));
 			vm.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			vm.setColor(Color.hsb(hue, 1.0, 0.5), true);
 			vm.activateEvents();
@@ -462,14 +460,9 @@ public class StartOptions {
 
 			for (int i=0; i<mol.length; i++) {
 				millis = printDelay(millis);
-				System.out.print("Creating conformer...  ");
-
-				Conformer conformer = new Conformer(mol[i]);
-
-				millis = printDelay(millis);
 				System.out.print("Creating V3DMolecule...  ");
 
-				V3DMolecule vm = new V3DMolecule(conformer, MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
+				V3DMolecule vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
 				//				V3DMolecule vm = new V3DMolecule(conformer, -1, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 				//						V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.5);
 

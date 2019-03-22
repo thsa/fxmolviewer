@@ -21,7 +21,7 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.StereoMolecule;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import org.openmolecules.fx.surface.SurfaceCutter;
@@ -46,18 +46,18 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 
 	public void crop() {
 		mFXMol.removeMeasurements();   // TODO be more specific
-		Conformer conformer = mFXMol.getConformer();
-		boolean[] deleteAtom = new boolean[conformer.getSize()];
+		StereoMolecule mol = mFXMol.getMolecule();
+		boolean[] deleteAtom = new boolean[mol.getAllAtoms()];
 		int count = 0;
-		for (int atom=0; atom<conformer.getSize(); atom++) {
-			Coordinates c = conformer.getCoordinates(atom);
+		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
+			Coordinates c = mol.getCoordinates(atom);
 			int beyond = isBeyondDistance(mFXMol.localToScene(c.x, c.y, c.z));
 			if (beyond == 1) {
 				deleteAtom[atom] = true;
 				count++;
 			}
 			else if (beyond == 0) {
-				conformer.getMolecule().setAtomMarker(atom, true);
+				mol.setAtomMarker(atom, true);
 			}
 		}
 

@@ -5,12 +5,10 @@ import com.actelion.research.chem.conf.Conformer;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
 public class RemovedAtomSurfaceCutter extends SurfaceCutter {
-	private Conformer mConformer;
 	private StereoMolecule mMol;
 
 	public RemovedAtomSurfaceCutter(V3DMolecule fxmol) {
-		mConformer = fxmol.getConformer();
-		mMol = mConformer.getMolecule();
+		mMol = fxmol.getMolecule();
 	}
 
 	@Override
@@ -19,13 +17,13 @@ public class RemovedAtomSurfaceCutter extends SurfaceCutter {
 		boolean isClosestAtomMarked = false;
 
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++) {
-			float dx = x - (float)mConformer.getX(atom);
+			float dx = x - (float)mMol.getAtomX(atom);
 			float sdx = dx * dx;
 			if (sdx < minSquareDistance) {
-				float dy = y - (float)mConformer.getY(atom);
+				float dy = y - (float)mMol.getAtomY(atom);
 				float sdy = dy * dy;
 				if (sdy < minSquareDistance) {
-					float dz = z - (float)mConformer.getZ(atom);
+					float dz = z - (float)mMol.getAtomZ(atom);
 					float sdz = dz * dz;
 					if (sdz < minSquareDistance) {
 						float squareDistance = sdx + sdy + sdz;

@@ -41,7 +41,7 @@ public class MoleculeModel {
 	}
 
 	private StereoMolecule createMolecule2D(V3DMolecule mol3D) {
-		StereoMolecule mol = mol3D.getConformer().getMolecule().getCompactCopy();
+		StereoMolecule mol = mol3D.getMolecule().getCompactCopy();
 		mol.ensureHelperArrays(Molecule.cHelperParities);	// create parities from 3D-coords
 		new CoordinateInventor(CoordinateInventor.MODE_REMOVE_HYDROGEN).invent(mol);
 		mol.setStereoBondsFromParity();
@@ -50,11 +50,8 @@ public class MoleculeModel {
 	}
 
 	public String getMoleculeName() {
-		if (mMol3D.getConformer().getName() != null)
-			return mMol3D.getConformer().getName();
-
-		if (mMol3D.getConformer().getMolecule().getName() != null)
-			return mMol3D.getConformer().getMolecule().getName();
+		if (mMol3D.getMolecule().getName() != null)
+			return mMol3D.getMolecule().getName();
 
 		return "Structure "+mID;
 	}

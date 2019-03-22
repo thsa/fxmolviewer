@@ -18,7 +18,8 @@
 
 package org.openmolecules.mesh;
 
-import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.Molecule3D;
+import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.VDWRadii;
 
 /**
@@ -49,7 +50,7 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 	 * @param type CONNOLLY or LEE_RICHARDS
 	 * @param meshBuilder
 	 */
-	public MoleculeSurfaceAlgorithm(Conformer mol, int type, MeshBuilder meshBuilder) {
+	public MoleculeSurfaceAlgorithm(Molecule3D mol, int type, MeshBuilder meshBuilder) {
 		this(mol, type, DEFAULT_PROBE_SIZE, DEFAULT_VOXEL_SIZE, meshBuilder);
 	}
 
@@ -60,13 +61,13 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 	 * is created using a sphere with the given size as probe.
 	 * Otherwise the created surface is just the outer hull of all atom spheres
 	 * using van-der-Waals radii.
-	 * @param conf
+	 * @param mol
 	 * @param type CONNOLLY or LEE_RICHARDS
 	 * @param probeSize radius of spherical solvent probe in Angstrom
 	 * @param voxelSize size of internal voxels to track space occupation
 	 * @param meshBuilder
 	 */
-	public MoleculeSurfaceAlgorithm(Conformer conf, int type, float probeSize, float voxelSize, MeshBuilder meshBuilder) {
+	public MoleculeSurfaceAlgorithm(StereoMolecule mol, int type, float probeSize, float voxelSize, MeshBuilder meshBuilder) {
 		super(meshBuilder, voxelSize);
 
 		float xmin = Float.MAX_VALUE;
@@ -75,11 +76,11 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		float ymax = Float.MIN_VALUE;
 		float zmin = Float.MAX_VALUE;
 		float zmax = Float.MIN_VALUE;
-		for (int atom=0; atom<conf.getMolecule().getAllAtoms(); atom++) {
-			float r = VDW_RADIUS[conf.getMolecule().getAtomicNo(atom)];
-			float x = (float)conf.getX(atom);
-			float y = (float)conf.getY(atom);
-			float z = (float)conf.getZ(atom);
+		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
+			float r = VDW_RADIUS[mol.getAtomicNo(atom)];
+			float x = (float)mol.getAtomX(atom);
+			float y = (float)mol.getAtomY(atom);
+			float z = (float)mol.getAtomZ(atom);
 			if (xmin > x - r)
 				xmin = x - r;
 			if (ymin > y - r)
@@ -109,14 +110,14 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		// The coordinates within the voxel box range from 0 ... sx-1, (sy-1, sz-1)
 		float[] grid = new float[sx*sy*sz];
 
-		for (int atom=0; atom<conf.getMolecule().getAllAtoms(); atom++) {
+		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
 			// translate atom coordinates to voxel space
-			float x = ((float)conf.getX(atom) - offsetX) / voxelSize;
-			float y = ((float)conf.getY(atom) - offsetY) / voxelSize;
-			float z = ((float)conf.getZ(atom) - offsetZ) / voxelSize;
+			float x = ((float)mol.getAtomX(atom) - offsetX) / voxelSize;
+			float y = ((float)mol.getAtomY(atom) - offsetY) / voxelSize;
+			float z = ((float)mol.getAtomZ(atom) - offsetZ) / voxelSize;
 
 			// radius to consider for voxel updates
-			float r = (probeSize + VDW_RADIUS[conf.getMolecule().getAtomicNo(atom)]) / voxelSize;
+			float r = (probeSize + VDW_RADIUS[mol.getAtomicNo(atom)]) / voxelSize;
 			int x1 = Math.max(0, (int)(x-r));
 			int x2 = Math.min(sx-1, (int)(x+r+1));
 			int y1 = Math.max(0, (int)(y-r));

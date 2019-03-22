@@ -63,17 +63,12 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		mArchitect.setHydrogenMode(mode);
 		}
 
-/*	public void centerMolecule(Conformer conformer) {
-		mArchitect.centerMolecule(conformer);
-		}*/
-
 	public void buildMolecule() {
 		buildMolecule(0, 0);
 	}
 
 	public void buildMolecule(int fromAtom, int fromBond) {
-		Conformer conformer = mV3DMolecule.getConformer();
-		mArchitect.buildMolecule(conformer, fromAtom, fromBond);
+		mArchitect.buildMolecule(mV3DMolecule.getMolecule(), fromAtom, fromBond);
 		}
 
 	private void addTransparentSphere(int role, Coordinates c, double radius) {
