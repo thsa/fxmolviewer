@@ -419,7 +419,7 @@ public class StartOptions {
 			double dx = 0.0;
 			double dy = 0.0;
 			double dz = 0.0;
-			if (count != 0) {
+			if (count == 0) {
 				conformer.center();
 				refCoord = conformer.getCoordinates(REF_ATOM);
 			}
