@@ -177,29 +177,29 @@ public class MoleculeArchitect {
 
 		}
 	//added by JW
-	public void buildMolecule(Conformer conformer, ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
-		StereoMolecule mol = conformer.getMolecule();
+	public void buildMolecule(StereoMolecule mol, ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
+		mol = mMol;
 
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_WIRES)
 			for (Integer bond:bonds) {
-				if (includeAtom(mol, mol.getBondAtom(0, bond))
-				 && includeAtom(mol, mol.getBondAtom(1, bond)))
-					buildBond(conformer, bond);
+				if (includeAtom(mol.getBondAtom(0, bond))
+				 && includeAtom(mol.getBondAtom(1, bond)))
+					buildBond(bond);
 			}
 
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALLS) {
 			for (Integer atom:atoms) {
-				if (includeAtom(mol, atom)) {
+				if (includeAtom(atom)) {
 					int atomicNo = mol.getAtomicNo(atom);
 					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
 								  : (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
 								  : (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
 								  :							VDWRadii.VDW_RADIUS[atomicNo]/4;
-					mBuilder.addSphere(atomRole(atom), conformer.getCoordinates(atom), radius, getAtomColor(mol, atom));
+					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
 				}
 			}
