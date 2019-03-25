@@ -73,8 +73,7 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		}
 	
 	public void buildMolecule(ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
-		Conformer conformer = mV3DMolecule.getConformer();
-		mArchitect.buildMolecule(conformer, atoms, bonds);
+		mArchitect.buildMolecule(mV3DMolecule.getMolecule(), atoms, bonds);
 		}
 
 	private void addTransparentSphere(int role, Coordinates c, double radius) {
