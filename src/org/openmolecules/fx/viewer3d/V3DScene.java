@@ -32,6 +32,7 @@ import javafx.scene.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
+import org.openmolecules.fx.viewer3d.editor.actions.AbstractV3DEditorAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
@@ -47,7 +48,7 @@ public class V3DScene extends SubScene {
 	private boolean mIsIndividualRotationModus;
 	private int mSurfaceCutMode;
 	private V3DMolecule mSurfaceCutMolecule;
-	private V3DEditorAction mAction;
+	private V3DMoleculeEditor mEditor;
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
@@ -62,7 +63,7 @@ public class V3DScene extends SubScene {
 		mRoot = root;
 
 		mWorld = new RotatableGroup();
-
+		mEditor = new V3DMoleculeEditor();
 		mRoot.getChildren().add(mWorld);
 		mRoot.setDepthTest(DepthTest.ENABLE);
 
@@ -265,6 +266,7 @@ public class V3DScene extends SubScene {
 	}
 
 	public void addMolecule(V3DMolecule fxmol) {
+		fxmol.addListener(mEditor);
 		mWorld.getChildren().add(fxmol);
 		if (mSceneListener != null)
 			mSceneListener.addMolecule(fxmol);
@@ -360,11 +362,21 @@ public class V3DScene extends SubScene {
 		setCamera(camera);
 		mRoot.getChildren().add(camera);
 		}
-
-	public void updateEditorAction(V3DEditorAction action) {
+	/*
+	public void updateEditorAction(AbstractV3DEditorAction action) {
 		for (Node node : mWorld.getChildren())
 			if (node instanceof V3DMolecule) {
 				((V3DMolecule) node).setEditorAction(action);
 			}
 	}
+	*/
+	
+	public void setEditor(V3DMoleculeEditor editor) {
+		mEditor = editor;
+	}
+	
+	public V3DMoleculeEditor getEditor() {
+		return mEditor;
+	}
+
 	}

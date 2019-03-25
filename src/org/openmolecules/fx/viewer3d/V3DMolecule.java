@@ -24,6 +24,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
+import com.actelion.research.chem.conf.BondLengthSet;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.util.DoubleFormat;
 import javafx.collections.ObservableFloatArray;
@@ -42,11 +43,13 @@ import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.RemovedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
-
+import org.openmolecules.fx.viewer3d.V3DMoleculeMouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
@@ -83,10 +86,11 @@ public class V3DMolecule extends RotatableGroup {
 	private int				mConstructionMode,mHydrogenMode;
 	private MEASUREMENT     mMeasurementMode;
 	private ArrayList<Sphere> mPickedAtomList;
+	private int				mPartnerAtom; //atom to which a bond will be drawn
 	private ArrayList<NonRotatingLabel> mLabelList;
 	private boolean			mIsMouseDown,mOverrideCarbonOnly;
 	private double[]        mSurfaceTransparency;
-	private V3DEditorAction mAction;
+	private ArrayList<V3DMoleculeMouseListener> mMouseListeners;
 
 	/**
 	 * Creates a V3DMolecule from the given conformer with the following default specification:<br>
@@ -137,6 +141,7 @@ public class V3DMolecule extends RotatableGroup {
 		mMeasurementMode = MEASUREMENT.NONE;
 		mPickedAtomList = new ArrayList<>();
 		mLabelList = new ArrayList<>();
+		mMouseListeners = new ArrayList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
 
@@ -152,6 +157,8 @@ public class V3DMolecule extends RotatableGroup {
 		mSurfaceColor[0] = (surfaceColor == null) ? DEFAULT_SURFACE_COLOR : surfaceColor;
 		mSurfaceColorMode[0] = surfaceColorMode;
 		mSurfaceTransparency[0] = transparency;
+		
+		mPartnerAtom = -1;
 
 		for (int i=1; i<surfaceCount; i++) {
 			mSurfaceMode[i] = SURFACE_NONE;
@@ -171,8 +178,8 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 
-	public void setEditorAction(V3DEditorAction action) {
-		mAction = action;
+	public void addListener(V3DMoleculeMouseListener listener) {
+		mMouseListeners.add(listener);
 	}
 	
 	public boolean addImplicitHydrogens() {
@@ -205,50 +212,15 @@ public class V3DMolecule extends RotatableGroup {
 		return true;
 	}
 	
-	// added by JW
-	public void changeAtom(int at, int atomicNo) {
-		StereoMolecule mol = mConformer.getMolecule();
-		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		int oldAtoms = mol.getAllAtoms();
-		int oldBonds = mol.getAllBonds();
-		for(int i=0;i<oldAtoms;i++) {
-			mol.setAtomX(i, mConformer.getX(i));
-			mol.setAtomY(i, mConformer.getY(i));
-			mol.setAtomZ(i, mConformer.getZ(i));
-			}
-		ArrayList<Node> nodesToBeDeleted = new ArrayList<>();
-		for(Node node : getChildren()) {
-			NodeDetail detail = (NodeDetail)node.getUserData();;
-			if (detail != null && detail.isAtom() && detail.getAtom()==at) {
-				nodesToBeDeleted.add(node);
+	
 
-			}
-			
-			else if (detail != null && detail.isBond() ) {
-				int bond = detail.getBond();
-				for(int j=0;j<mol.getConnAtoms(at);j++) {
-					if(bond==mol.getBond(at, mol.getConnAtom(at,j))) nodesToBeDeleted.add(node);
-				}
-			}
-			
-			
-		}
-		getChildren().removeAll(nodesToBeDeleted);
-		/*
-		for (int i=getChildren().size()-1; i>=0; i--)
-			getChildren().remove(i);
-		mol.setAtomicNo(at, atomicNo);
-		AtomAssembler assembler = new AtomAssembler(mol);
-		assembler.addImplicitHydrogens();
-		mConformer = new Conformer(mol);
-		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
-		//builder.buildMolecule(oldAtoms, oldBonds);
-		builder.buildMolecule();
-		*/
-	}
 
 	public Conformer getConformer() {
 		return mConformer;
+		}
+	
+	public void setConformer(Conformer conf) {
+		mConformer=conf;
 		}
 
 	/**
@@ -583,15 +555,21 @@ public class V3DMolecule extends RotatableGroup {
 				//System.out.println("mouse pressed isPrimaryButtonDown:"+me.isPrimaryButtonDown()+" isMiddleButtonDown:"+me.isMiddleButtonDown());
 				if (me.getButton() == MouseButton.PRIMARY) {
 					pickShape(me);
-					editMol(me);
 				}
 				// clicking the mouse wheel causes a MouseExited followed by a MousePressed event
-				if (me.getButton() == MouseButton.MIDDLE)
+				if (me.getButton() == MouseButton.MIDDLE) {
 					trackHiliting(me);
 				mIsMouseDown = true;
+				}
 			} );
 		setOnMouseReleased(me -> {
+			if(me.getButton() == MouseButton.SECONDARY && mMeasurementMode==mMeasurementMode.NONE) {
+				for(V3DMoleculeMouseListener listener: mMouseListeners) {
+					listener.mouseClicked(this, me);
+				}
+			}
 				mIsMouseDown = false;
+
 			});
 		setOnMouseMoved(me -> {
 //System.out.println("mouse moved");
@@ -643,21 +621,7 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 	
-	private void editMol(MouseEvent me) {
-		PickResult result = me.getPickResult();
-		Node node = result.getIntersectedNode();
-		NodeDetail detail = (NodeDetail)node.getUserData();
-		
-		if (detail != null && detail.isAtom()) {
-			if(mAction!=null) {;
-				mAction.onMouseUp(this, detail.getAtom());
-			}
-		
-			
 
-		}
-		
-	}
 
 	private void tryAddMeasurement() {
 		if (mMeasurementMode == MEASUREMENT.DISTANCE) {
@@ -1026,6 +990,8 @@ public class V3DMolecule extends RotatableGroup {
 				updateAppearance(shape);
 			}
 		}
+
+
 
 
 	}

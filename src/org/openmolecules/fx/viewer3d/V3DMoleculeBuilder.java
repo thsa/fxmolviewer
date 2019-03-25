@@ -31,6 +31,7 @@ import javafx.scene.transform.Transform;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class V3DMoleculeBuilder implements MoleculeBuilder {
@@ -74,6 +75,11 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 	public void buildMolecule(int fromAtom, int fromBond) {
 		Conformer conformer = mV3DMolecule.getConformer();
 		mArchitect.buildMolecule(conformer, fromAtom, fromBond);
+		}
+	
+	public void buildMolecule(ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
+		Conformer conformer = mV3DMolecule.getConformer();
+		mArchitect.buildMolecule(conformer, atoms, bonds);
 		}
 
 	private void addTransparentSphere(int role, Coordinates c, double radius) {

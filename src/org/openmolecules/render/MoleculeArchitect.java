@@ -1,5 +1,7 @@
 package org.openmolecules.render;
 
+import java.util.ArrayList;
+
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.RingCollection;
@@ -139,6 +141,8 @@ public class MoleculeArchitect {
 	public void buildMolecule(Conformer conformer) {
 		buildMolecule(conformer,0,0);
 		}
+	
+
 
 	public void buildMolecule(Conformer conformer,  int fromAtom, int fromBond) {
 		StereoMolecule mol = conformer.getMolecule();
@@ -177,6 +181,36 @@ public class MoleculeArchitect {
 			}
 
 		}
+	//added by JW
+	public void buildMolecule(Conformer conformer, ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
+		StereoMolecule mol = conformer.getMolecule();
+
+		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
+		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
+		 || mConstructionMode == CONSTRUCTION_MODE_WIRES)
+			for (Integer bond:bonds) {
+				if (includeAtom(mol, mol.getBondAtom(0, bond))
+				 && includeAtom(mol, mol.getBondAtom(1, bond)))
+					buildBond(conformer, bond);
+			}
+
+		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
+		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
+		 || mConstructionMode == CONSTRUCTION_MODE_BALLS) {
+			for (Integer atom:atoms) {
+				if (includeAtom(mol, atom)) {
+					int atomicNo = mol.getAtomicNo(atom);
+					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+								  : (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
+								  : (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+								  :							VDWRadii.VDW_RADIUS[atomicNo]/4;
+					mBuilder.addSphere(atomRole(atom), conformer.getCoordinates(atom), radius, getAtomColor(mol, atom));
+					}
+				}
+			}
+
+		}
+
 
 	private int getAtomColor(StereoMolecule mol, int atom) {
 		return ATOM_ARGB[mol.getAtomicNo(atom)];
