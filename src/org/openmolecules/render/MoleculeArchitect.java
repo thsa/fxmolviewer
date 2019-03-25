@@ -178,7 +178,7 @@ public class MoleculeArchitect {
 		}
 	//added by JW
 	public void buildMolecule(StereoMolecule mol, ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
-		mol = mMol;
+		mMol = mol;
 
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
