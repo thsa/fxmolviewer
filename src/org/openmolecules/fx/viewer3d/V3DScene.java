@@ -98,11 +98,11 @@ public class V3DScene extends SubScene {
 		}
 
 	public void copy3D(V3DMolecule fxmol) {
-		mClipboardHandler.copyMolecule(fxmol.getConformer().toMolecule(null));
+		mClipboardHandler.copyMolecule(fxmol.getMolecule());
 		}
 
 	public void copy2D(V3DMolecule fxmol) {
-		StereoMolecule mol = fxmol.getConformer().getMolecule().getCompactCopy();
+		StereoMolecule mol = fxmol.getMolecule().getCompactCopy();
 		new CoordinateInventor().invent(mol);
 		mClipboardHandler.copyMolecule(mol);
 		}
@@ -122,20 +122,16 @@ public class V3DScene extends SubScene {
 				}
 			}
 
-		Conformer conformer = null;
-		if (is3D) {
-			conformer = new Conformer(mol);
-			}
-		else {
-			conformer = new ConformerGenerator().getOneConformer(mol);
-			conformer.toMolecule(mol);	// copy atom coordinates to molecule as well
-			}
-		if (conformer == null) {    // TODO interactive message
-			System.out.println("Conformer generation failed!");
-			return;
+		if (!is3D) {
+			Conformer conformer = new ConformerGenerator().getOneConformer(mol);
+			if (conformer == null) {    // TODO interactive message
+				System.out.println("Conformer generation failed!");
+				return;
+				}
+			conformer.toMolecule(mol);	// copy atom coordinates to molecule
 			}
 
-		V3DMolecule fxmol = new V3DMolecule(conformer);
+		V3DMolecule fxmol = new V3DMolecule(mol);
 		fxmol.activateEvents();
 		addMolecule(fxmol);
 		}
@@ -230,11 +226,11 @@ public class V3DScene extends SubScene {
 		return new Point3D(x / atomCount, y / atomCount, z / atomCount);
 	}
 
-	public void crop(V3DMolecule refMol, double distance) {
-		Bounds refBounds = refMol.localToScene(refMol.getBoundsInLocal());
+	public void crop(V3DMolecule refMolFX, double distance) {
+		Bounds refBounds = refMolFX.localToScene(refMolFX.getBoundsInLocal());
 		ArrayList<V3DMolecule> moleculesToBeDeleted = new ArrayList<>();
 		for (Node node:mWorld.getChildren()) {
-			if (node instanceof V3DMolecule && node != refMol) {
+			if (node instanceof V3DMolecule && node != refMolFX) {
 				V3DMolecule fxmol = (V3DMolecule) node;
 				Bounds bounds = fxmol.localToScene(fxmol.getBoundsInLocal());
 				if (refBounds.getMinX() - distance > bounds.getMaxX()
@@ -246,10 +242,10 @@ public class V3DScene extends SubScene {
 					moleculesToBeDeleted.add(fxmol);
 				}
 				else {
-					Conformer refConformer = refMol.getConformer();
-					Point3D[] refPoint = new Point3D[refConformer.getSize()];
-					for (int atom=0; atom<refConformer.getSize(); atom++) {
-						Coordinates c = refConformer.getCoordinates(atom);
+					StereoMolecule refMol = refMolFX.getMolecule();
+					Point3D[] refPoint = new Point3D[refMol.getAllAtoms()];
+					for (int atom=0; atom<refMol.getAllAtoms(); atom++) {
+						Coordinates c = refMol.getCoordinates(atom);
 						refPoint[atom] = fxmol.localToScene(c.x, c.y, c.z);
 					}
 					V3DMoleculeCropper cropper = new V3DMoleculeCropper(fxmol, distance, refPoint, refBounds);

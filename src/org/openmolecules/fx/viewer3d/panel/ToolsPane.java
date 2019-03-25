@@ -136,7 +136,7 @@ public class ToolsPane extends Accordion  {
 		V3DMolecule[] v3d_mols = new V3DMolecule[mols.size()];
 		int i = 0;
 		for(StereoMolecule mol: mols) {
-			v3d_mols[i] = new V3DMolecule(new Conformer(mol));
+			v3d_mols[i] = new V3DMolecule(mol);
 			i++;
 
 		}

@@ -34,8 +34,9 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 			"Test small molecules",
 			"Test molecules surfaces",
 			"Test Conformers",
-			"Test protein",
-			"Test surface from voxel data" };
+//			"Test protein",
+//			"Test surface from voxel data"
+	};
 
 	private ComboBox mComboboxMode;
 	private TextField mTextFieldPDBCode;

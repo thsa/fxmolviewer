@@ -69,7 +69,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 		int totalAtomCount = 0;
 		for (int i=0; i<mFXMol.length; i++) {
 			mFXMolUpdater[i] = new V3DMoleculeUpdater(mFXMol[i]);
-			totalAtomCount += mFXMol[i].getConformer().getSize();
+			totalAtomCount += mFXMol[i].getMolecule().getAllAtoms();
 		}
 
 		StereoMolecule molScenery = new StereoMolecule();
@@ -83,12 +83,11 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 			for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 				fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
 
-			Conformer conf = fxmol.getConformer();
-			StereoMolecule mol = conf.getMolecule();
+			StereoMolecule mol = fxmol.getMolecule();
 			molScenery.addMolecule(mol);
 
 			for(int a=0;a<mol.getAllAtoms();a++) {
-				Point3D globalCoords = fxmol.localToParent(conf.getX(a), conf.getY(a), conf.getZ(a));
+				Point3D globalCoords = fxmol.localToParent(mol.getAtomX(a), mol.getAtomY(a), mol.getAtomZ(a));
 				molScenery.setAtomX(atom, globalCoords.getX());
 				molScenery.setAtomY(atom, globalCoords.getY());
 				molScenery.setAtomZ(atom, globalCoords.getZ());
@@ -132,12 +131,12 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 				if (mMinimizationThread != null) {
 					int posIndex = 0;
 					for (int i=0; i<mFXMol.length; i++) {
-						Conformer conf = mFXMol[i].getConformer();
-						for (int atom=0; atom<conf.getSize(); atom++) {
+						StereoMolecule mol = mFXMol[i].getMolecule();
+						for (int atom=0; atom<mol.getAllAtoms(); atom++) {
 							Point3D p = mFXMol[i].parentToLocal(pos[posIndex], pos[posIndex+1], pos[posIndex+2]);
-							conf.setX(atom, p.getX());
-							conf.setY(atom, p.getY());
-							conf.setZ(atom, p.getZ());
+							mol.setAtomX(atom, p.getX());
+							mol.setAtomY(atom, p.getY());
+							mol.setAtomZ(atom, p.getZ());
 							posIndex += 3;
 						}
 						mFXMolUpdater[i].update();

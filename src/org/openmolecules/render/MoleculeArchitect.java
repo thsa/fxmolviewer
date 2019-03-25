@@ -77,6 +77,8 @@ public class MoleculeArchitect {
 	};
 
 
+	private StereoMolecule mMol;
+	private Conformer mConformer;
 	private MoleculeBuilder mBuilder;
 	private Coordinates center,delta,point1,point2;    // reused Coordinate objects
 	private int mColorMode,mConstructionMode,mHydrogenMode,mBondDetail;
@@ -120,62 +122,55 @@ public class MoleculeArchitect {
 		return mBuilder;
 		}
 
-/*	public void centerMolecule(Conformer conformer) {
-		Coordinates cog = new Coordinates();
-		double atomicNoSum = 0.0;
-		StereoMolecule mol = conformer.getMolecule();
-		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-			Coordinates c = conformer.getCoordinates(atom);
-			cog.add(c.x * mol.getAtomicNo(atom),
-					c.y * mol.getAtomicNo(atom),
-					c.z * mol.getAtomicNo(atom));
-			atomicNoSum += mol.getAtomicNo(atom);
-			}
-		cog.scale(1.0 / atomicNoSum);
-
-		// Here we move the conformer's internal coordinates to center it around its COG!!!!!!!
-		for (int atom=0; atom<mol.getAllAtoms(); atom++)
-			conformer.getCoordinates(atom).sub(cog);
-		}*/
-
 	public void buildMolecule(Conformer conformer) {
-		buildMolecule(conformer,0,0);
+		buildMolecule(conformer, conformer.getMolecule(), 0, 0);
+		}
+
+	public void buildMolecule(StereoMolecule mol) {
+		buildMolecule(null, mol, 0, 0);
+		}
+
+	public void buildMolecule(Conformer conformer, int fromAtom, int fromBond) {
+		buildMolecule(conformer, conformer.getMolecule(), fromAtom, fromBond);
+		}
+
+	public void buildMolecule(StereoMolecule mol, int fromAtom, int fromBond) {
+		buildMolecule(null, mol, fromAtom, fromBond);
 		}
 	
 
 
-	public void buildMolecule(Conformer conformer,  int fromAtom, int fromBond) {
-		StereoMolecule mol = conformer.getMolecule();
+	private void buildMolecule(Conformer conformer, StereoMolecule mol, int fromAtom, int fromBond) {
+		mConformer = conformer;
+		mMol = mol;
 		mol.ensureHelperArrays(Molecule.cHelperRings);
 		mBuilder.init();
 		// adding non-hydrogen atoms and bonds first allows us to later to add hydrogens without disrupting order of already created primitives
-		buildMolecule(conformer, fromAtom, mol.getAtoms(), fromBond, mol.getBonds());
-		buildMolecule(conformer, Math.max(fromAtom, mol.getAtoms()), mol.getAllAtoms(), Math.max(fromBond, mol.getBonds()), mol.getAllBonds());
+		buildMolecule(fromAtom, mol.getAtoms(), fromBond, mol.getBonds());
+		buildMolecule(Math.max(fromAtom, mol.getAtoms()), mol.getAllAtoms(), Math.max(fromBond, mol.getBonds()), mol.getAllBonds());
 		mBuilder.done();
 		}
 
-	private void buildMolecule(Conformer conformer, int fromAtom, int toAtom, int fromBond, int toBond) {
-		StereoMolecule mol = conformer.getMolecule();
-
+	private void buildMolecule(int fromAtom, int toAtom, int fromBond, int toBond) {
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_WIRES)
 			for (int bond=fromBond; bond<toBond; bond++)
-				if (includeAtom(mol, mol.getBondAtom(0, bond))
-				 && includeAtom(mol, mol.getBondAtom(1, bond)))
-					buildBond(conformer, bond);
+				if (includeAtom(mMol.getBondAtom(0, bond))
+				 && includeAtom(mMol.getBondAtom(1, bond)))
+					buildBond(bond);
 
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALLS) {
 			for (int atom=fromAtom; atom<toAtom; atom++) {
-				if (includeAtom(mol, atom)) {
-					int atomicNo = mol.getAtomicNo(atom);
-					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+				if (includeAtom(atom)) {
+					int atomicNo = mMol.getAtomicNo(atom);
+					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
 								  : (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
 								  : (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
 								  :							VDWRadii.VDW_RADIUS[atomicNo]/4;
-					mBuilder.addSphere(atomRole(atom), conformer.getCoordinates(atom), radius, getAtomColor(mol, atom));
+					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
 				}
 			}
@@ -212,24 +207,23 @@ public class MoleculeArchitect {
 		}
 
 
-	private int getAtomColor(StereoMolecule mol, int atom) {
-		return ATOM_ARGB[mol.getAtomicNo(atom)];
+	private int getAtomColor(int atom) {
+		return ATOM_ARGB[mMol.getAtomicNo(atom)];
 		}
 
-	private boolean includeAtom(StereoMolecule mol, int atom) {
+	private boolean includeAtom(int atom) {
 		return mHydrogenMode == HYDROGEN_MODE_ALL
-			|| !mol.isSimpleHydrogen(atom)
-			|| mol.getConnAtoms(atom) != 1
+			|| !mMol.isSimpleHydrogen(atom)
+			|| mMol.getConnAtoms(atom) != 1
 			|| (mHydrogenMode == HYDROGEN_MODE_POLAR
-			 && mol.getAtomicNo(mol.getConnAtom(atom, 0)) != 6);
+			 && mMol.getAtomicNo(mMol.getConnAtom(atom, 0)) != 6);
 		}
 
-	private void buildBond(Conformer conformer, int bond) {
-		StereoMolecule mol = conformer.getMolecule();
-		int atom1 = mol.getBondAtom(0, bond);
-		int atom2 = mol.getBondAtom(1, bond);
-		Coordinates c1 = conformer.getCoordinates(atom1);
-		Coordinates c2 = conformer.getCoordinates(atom2);
+	private void buildBond(int bond) {
+		int atom1 = mMol.getBondAtom(0, bond);
+		int atom2 = mMol.getBondAtom(1, bond);
+		Coordinates c1 = getCoordinates(atom1);
+		Coordinates c2 = getCoordinates(atom2);
 		center.center(c1, c2);
 		delta.set(c2).sub(c1);
 
@@ -244,31 +238,30 @@ public class MoleculeArchitect {
 
 		switch (mConstructionMode) {
 		case CONSTRUCTION_MODE_BALL_AND_STICKS:
-			buildBallAndStickBond(conformer, bond, d, b, c);
+			buildBallAndStickBond(bond, d, b, c);
 			break;
 		case CONSTRUCTION_MODE_STICKS:
-			buildStickBond(conformer, bond, d, b, c);
+			buildStickBond(bond, d, b, c);
 			break;
 		case CONSTRUCTION_MODE_WIRES:
-			buildStickBond(conformer, bond, d, b, c);
+			buildStickBond(bond, d, b, c);
 			break;
 			}
 		}
 
-	private void buildBallAndStickBond(Conformer conformer, int bond, double d, double b, double c) {
-		StereoMolecule mol = conformer.getMolecule();
+	private void buildBallAndStickBond(int bond, double d, double b, double c) {
 		int color = BALL_AND_STICK_STICK_COLOR;
-		int order = mol.getBondOrder(bond);
+		int order = mMol.getBondOrder(bond);
 		if (order == 1) {
-			double dd = 2*calculateBondReduction(mol, bond, 0.2);
+			double dd = 2*calculateBondReduction(bond, 0.2);
 			if (dd < d)
 				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_SBOND_RADIUS, d-dd, center, b, c, color);
 			return;
 			}
 
 		if (order == 2) {
-			Coordinates ds = calculateDoubleBondShift(conformer, bond).scale(BALL_AND_STICK_DBOND_SHIFT);
-			double dd = calculateBondReduction(mol, bond, 0.20+0.10);
+			Coordinates ds = calculateDoubleBondShift(bond).scale(BALL_AND_STICK_DBOND_SHIFT);
+			double dd = calculateBondReduction(bond, 0.20+0.10);
 			if (dd != 0f) {
 				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).add(ds), b, c, color);
 				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).sub(ds), b, c, color);
@@ -277,9 +270,9 @@ public class MoleculeArchitect {
 			}
 
 		if (order == 3) {
-			Coordinates ds = calculateRandomOrthogonalShift(conformer, bond).scale(BALL_AND_STICK_TBOND_SHIFT);
-			double dd1 = 2*calculateBondReduction(mol, bond, 0.11);
-			double dd2 = 2*calculateBondReduction(mol, bond, 0.22+0.07);
+			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(BALL_AND_STICK_TBOND_SHIFT);
+			double dd1 = 2*calculateBondReduction(bond, 0.11);
+			double dd2 = 2*calculateBondReduction(bond, 0.22+0.07);
 			if (dd2 < d)
 				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).add(ds), b, c, color);
 			if (dd1 < d)
@@ -290,10 +283,10 @@ public class MoleculeArchitect {
 			}
 
 		if (order == 0) {
-			double dd = calculateBondReduction(mol, bond, 0.2);
+			double dd = calculateBondReduction(bond, 0.2);
 			if (2*dd < d) {
-				Coordinates p1 = conformer.getCoordinates(mol.getBondAtom(0, bond));
-				Coordinates p2 = conformer.getCoordinates(mol.getBondAtom(1, bond));
+				Coordinates p1 = getCoordinates(mMol.getBondAtom(0, bond));
+				Coordinates p2 = getCoordinates(mMol.getBondAtom(1, bond));
 				point1.between(p1, p2, dd/d);
 				point2.between(p2, p1, dd/d);
 				buildDottedBond(bond, color, color, point1, point2, BALL_AND_STICK_DOT_RADIUS, d-2*dd);
@@ -302,19 +295,17 @@ public class MoleculeArchitect {
 			}
 		}
 
-	private void buildStickBond(Conformer conformer, int bond, double d, double b, double c) {
-		StereoMolecule mol = conformer.getMolecule();
+	private void buildStickBond(int bond, double d, double b, double c) {
+		int color1 = getAtomColor(mMol.getBondAtom(0, bond));
+		int color2 = getAtomColor(mMol.getBondAtom(1, bond));
 
-		int color1 = getAtomColor(mol, mol.getBondAtom(0, bond));
-		int color2 = getAtomColor(mol, mol.getBondAtom(1, bond));
+		int atom1 = mMol.getBondAtom(0, bond);
+		int atom2 = mMol.getBondAtom(1, bond);
 
-		int atom1 = mol.getBondAtom(0, bond);
-		int atom2 = mol.getBondAtom(1, bond);
+		Coordinates p1 = getCoordinates(atom1);
+		Coordinates p2 = getCoordinates(atom2);
 
-		Coordinates p1 = conformer.getCoordinates(atom1);
-		Coordinates p2 = conformer.getCoordinates(atom2);
-
-		int order = mol.getBondOrder(bond);
+		int order = mMol.getBondOrder(bond);
 
 		if (order == 0) {
 			double r = (mConstructionMode == CONSTRUCTION_MODE_WIRES) ? WIRE_DOT_RADIUS : STICK_DOT_RADIUS;
@@ -333,20 +324,17 @@ public class MoleculeArchitect {
 		double piShift = (mConstructionMode == CONSTRUCTION_MODE_WIRES) ? WIRE_PI_BOND_SHIFT : STICK_PI_BOND_SHIFT;
 
 		if (order == 2) {
-			Coordinates ds = calculateDoubleBondShift(conformer, bond).scale(piShift);
+			Coordinates ds = calculateDoubleBondShift(bond).scale(piShift);
 			buildStickBond(bond, color1, color2, p1, p2, r1, d, b, c);
-			buildPiStickBond(mol, bond, color1, color2, point1.set(p1).add(ds),
-														point2.set(p2).add(ds), r2, piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, piShift, d, b, c);
 			return;
 			}
 
 		if (order == 3) {
-			Coordinates ds = calculateRandomOrthogonalShift(conformer, bond).scale(piShift);
+			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(piShift);
 			buildStickBond(bond, color1, color2, p1, p2, r1, d, b, c);
-			buildPiStickBond(mol, bond, color1, color2, point1.set(p1).add(ds),
-														point2.set(p2).add(ds), r2, piShift, d, b, c);
-			buildPiStickBond(mol, bond, color1, color2, point1.set(p1).sub(ds),
-														point2.set(p2).sub(ds), r2, piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, piShift, d, b, c);
 			return;
 			}
 		}
@@ -380,7 +368,6 @@ public class MoleculeArchitect {
 	 * that indicates the unsaturation in STICK mode. Both stick ends are rounded by adding
 	 * a sphere and the stick is created from two differently colored cylinders, if both
 	 * and atoms have different atomic numbers.
-	 * @param mol
 	 * @param bond
 	 * @param color1 color of bond atom 0
 	 * @param color2 color of bond atom 1
@@ -392,7 +379,7 @@ public class MoleculeArchitect {
 	 * @param b rotation around y axis
 	 * @param c rotation around z axis
 	 */
-	private void buildPiStickBond(StereoMolecule mol, int bond, int color1, int color2,
+	private void buildPiStickBond(int bond, int color1, int color2,
 	                              Coordinates c1, Coordinates c2, double r, double piShift, double d, double b, double c) {
 		center.center(c1, c2);
 
@@ -400,14 +387,14 @@ public class MoleculeArchitect {
 
 		double l1 = d / 2;
 		Coordinates p1 = c1;
-		if (mol.getAllConnAtoms(mol.getBondAtom(0, bond)) != 1) {
+		if (mMol.getAllConnAtoms(mMol.getBondAtom(0, bond)) != 1) {
 			p1 = point1.between(c1, c2, centerShift);
 			l1 -= piShift / 2;
 			}
 
 		double l2 = d / 2;
 		Coordinates p2 = c2;
-		if (mol.getAllConnAtoms(mol.getBondAtom(1, bond)) != 1) {
+		if (mMol.getAllConnAtoms(mMol.getBondAtom(1, bond)) != 1) {
 			p2 = point2.between(c1, c2, 1.0 - centerShift);
 			l2 -= piShift / 2;
 			}
@@ -437,18 +424,17 @@ public class MoleculeArchitect {
 		return (mBondDetail++ << MoleculeBuilder.ROLE_DETAIL_SHIFT) | MoleculeBuilder.ROLE_IS_BOND | bond;
 		}
 
-	private Coordinates calculateDoubleBondShift(Conformer conformer, int bond) {
-		StereoMolecule mol = conformer.getMolecule();
+	private Coordinates calculateDoubleBondShift(int bond) {
 		int maxScore = 0;
 		int maxNeighbor = -1;
 		int maxSide = -1;
 		for (int i=0; i<2; i++) {
-			int atom = mol.getBondAtom(i, bond);
-			int otherAtom = mol.getBondAtom(1-i, bond);
-			for (int j=0; j<mol.getConnAtoms(atom); j++) {
-				int connAtom = mol.getConnAtom(atom, j);
+			int atom = mMol.getBondAtom(i, bond);
+			int otherAtom = mMol.getBondAtom(1-i, bond);
+			for (int j=0; j<mMol.getConnAtoms(atom); j++) {
+				int connAtom = mMol.getConnAtom(atom, j);
 				if (connAtom != otherAtom) {
-					int score = getReferenceNeighborScore(mol, atom, bond, connAtom, mol.getConnBond(atom, j));
+					int score = getReferenceNeighborScore(mMol, atom, bond, connAtom, mMol.getConnBond(atom, j));
 					if (maxScore < score) {
 						maxScore = score;
 						maxNeighbor = connAtom;
@@ -459,14 +445,14 @@ public class MoleculeArchitect {
 			}
 
 		if (maxNeighbor != -1) {
-			Coordinates ca = conformer.getCoordinates(mol.getBondAtom(maxSide, bond));
-			Coordinates vb = conformer.getCoordinates(mol.getBondAtom(1-maxSide, bond)).subC(ca).unit();
-			Coordinates vc = conformer.getCoordinates(maxNeighbor).subC(ca).unit();
+			Coordinates ca = getCoordinates(mMol.getBondAtom(maxSide, bond));
+			Coordinates vb = getCoordinates(mMol.getBondAtom(1-maxSide, bond)).subC(ca).unit();
+			Coordinates vc = getCoordinates(maxNeighbor).subC(ca).unit();
 			vb.scale(-vb.dot(vc));
 			return vc.addC(vb).unit();
 			}
 
-		return calculateRandomOrthogonalShift(conformer, bond);
+		return calculateRandomOrthogonalShift(bond);
 		}
 
 	/**
@@ -500,19 +486,22 @@ public class MoleculeArchitect {
 			}
 		}
 
-	private Coordinates calculateRandomOrthogonalShift(Conformer conformer, int bond) {
-		StereoMolecule mol = conformer.getMolecule();
-		Coordinates c1 = conformer.getCoordinates(mol.getBondAtom(0, bond));
-		Coordinates c2 = conformer.getCoordinates(mol.getBondAtom(1, bond));
+	private Coordinates calculateRandomOrthogonalShift(int bond) {
+		Coordinates c1 = getCoordinates(mMol.getBondAtom(0, bond));
+		Coordinates c2 = getCoordinates(mMol.getBondAtom(1, bond));
 		Coordinates v = c2.subC(c1).unit();
 		double lxy = Math.sqrt(v.x*v.x+v.y*v.y);
 		return (lxy == 0.0) ? new Coordinates(1.0, 0.0, 0.0)
 							: new Coordinates(-v.x*v.z/lxy, -v.y*v.z/lxy, lxy);
 	}
 
-	private double calculateBondReduction(StereoMolecule mol, int bond, double sideShift) {
-		double atomRadius = Math.min(VDWRadii.VDW_RADIUS[mol.getAtomicNo(mol.getBondAtom(0, bond))],
-									 VDWRadii.VDW_RADIUS[mol.getAtomicNo(mol.getBondAtom(1, bond))]) / 4;
+	private double calculateBondReduction(int bond, double sideShift) {
+		double atomRadius = Math.min(VDWRadii.VDW_RADIUS[mMol.getAtomicNo(mMol.getBondAtom(0, bond))],
+									 VDWRadii.VDW_RADIUS[mMol.getAtomicNo(mMol.getBondAtom(1, bond))]) / 4;
 		return (sideShift >= atomRadius) ? 0.0 : Math.sqrt(atomRadius*atomRadius - sideShift*sideShift);
+		}
+
+	private Coordinates getCoordinates(int atom) {
+		return (mConformer != null) ? mConformer.getCoordinates(atom) : mMol.getCoordinates(atom);
 		}
 	}

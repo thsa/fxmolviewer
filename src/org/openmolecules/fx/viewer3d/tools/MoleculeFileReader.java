@@ -9,8 +9,6 @@ import org.openmolecules.fx.viewer3d.V3DMolecule;
 
 public class MoleculeFileReader {
 	
-
-	
 	public ArrayList<StereoMolecule> parseSDFile(String sdfile) {
 		ArrayList<StereoMolecule> mols = new ArrayList<StereoMolecule>();
 		SDFileParser sdfp = new SDFileParser(sdfile);
@@ -33,12 +31,10 @@ public class MoleculeFileReader {
 		V3DMolecule[] v3d_mols = new V3DMolecule[mols.size()];
 		int i = 0;
 		for(StereoMolecule mol: mols) {
-			v3d_mols[i] = new V3DMolecule(new Conformer(mol));
+			v3d_mols[i] = new V3DMolecule(mol);
 			i++;
 			
 		}
 		return v3d_mols;
 	}
-	
-
 }

@@ -39,8 +39,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder {
 	}
 
 	public void update() {
-		Conformer conformer = mV3DMolecule.getConformer();
-		mArchitect.buildMolecule(conformer);
+		mArchitect.buildMolecule(mV3DMolecule.getMolecule());
 
 //		if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS)	// no atom picking for wires
 //			for (int atom=0; atom<conformer.getSize(); atom++)

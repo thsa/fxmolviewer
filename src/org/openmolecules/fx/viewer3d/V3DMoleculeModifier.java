@@ -14,12 +14,13 @@ import javafx.scene.Node;
 public class V3DMoleculeModifier {
 	
 	public static void changeAtomElement(V3DMolecule v3dMol, int a, int atomicNo) {
-		if(v3dMol.getConformer().getMolecule().getAtomicNo(a)==1)changeHydrogenAtomElement(v3dMol, a, atomicNo);
+		if(v3dMol.getMolecule().getAtomicNo(a)==1)changeHydrogenAtomElement(v3dMol, a, atomicNo);
 		else changeHeavyAtomElement(v3dMol, a, atomicNo);
 		
 	}
 	public static void changeHydrogenAtomElement(V3DMolecule v3dMol, int a, int atomicNo) {
-		StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		//StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		StereoMolecule mol = v3dMol.getMolecule();
 		ArrayList<Integer> bonds = new ArrayList<Integer>(); //bonds that will be rebuilt
 		ArrayList<Node> nodesToBeDeleted = new ArrayList<>();
 		for(Node node : v3dMol.getChildren()) {
@@ -70,7 +71,7 @@ public class V3DMoleculeModifier {
 		atoms.add(a);
 		constructHydrogens(mol,new int[] {a},atoms,bonds);
 		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		v3dMol.setConformer(new Conformer(mol));
+		//v3dMol.setConformer(new Conformer(mol));
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
 		builder.buildMolecule(atoms,bonds);
 
@@ -78,7 +79,8 @@ public class V3DMoleculeModifier {
 	}
 	
 	public static void changeHeavyAtomElement(V3DMolecule v3dMol, int a, int atomicNo) {
-		StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		//StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		StereoMolecule mol = v3dMol.getMolecule();
 		boolean[] hydrogensToBeDeleted = getHydrogensFromAtoms(mol,a);
 		//the bonds from the atom to the hydrogens are deleted in the StereoMolecule as well as removed from the V3DMolecule
 		boolean[] hydrogenBonds = new boolean[mol.getAllBonds()];
@@ -127,7 +129,7 @@ public class V3DMoleculeModifier {
 		atoms.add(a);
 		constructHydrogens(mol,new int[] {a},atoms,bonds);
 		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		v3dMol.setConformer(new Conformer(mol));
+		//v3dMol.setConformer(new Conformer(mol));
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
 		builder.buildMolecule(atoms,bonds);
 		
@@ -135,7 +137,8 @@ public class V3DMoleculeModifier {
 	}
 	
 	public static void drawBond(V3DMolecule v3dMol, int a, int b) {
-		StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		//StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		StereoMolecule mol = v3dMol.getMolecule();
 		boolean[] hydrogensToBeDeleted = getHydrogensFromAtoms(mol,new int[] {a,b});
 		//the bonds from the atom to the hydrogens are deleted in the StereoMolecule as well as removed from the V3DMolecule
 		boolean[] hydrogenBonds = new boolean[mol.getAllBonds()];
@@ -195,15 +198,15 @@ public class V3DMoleculeModifier {
 		bonds.add(mol.getBond(a,b));
 		constructHydrogens(mol,new int[] {a,b},atoms,bonds);
 		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		v3dMol.setConformer(new Conformer(mol));
+		//v3dMol.setConformer(new Conformer(mol));
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
 		builder.buildMolecule(atoms,bonds);
 
 	}
 	
 	public static void deleteBond(V3DMolecule v3dMol, int bond) {
-		System.out.println("delete bond");
-		StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		//StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		StereoMolecule mol = v3dMol.getMolecule();
 		int a = mol.getBondAtom(0, bond);
 		int b = mol.getBondAtom(1, bond);
 		boolean[] hydrogensToBeDeleted = getHydrogensFromAtoms(mol,new int[] {a,b});
@@ -264,14 +267,15 @@ public class V3DMoleculeModifier {
 		
 		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
 		constructHydrogens(mol,new int[] {a,b},atoms,bonds);
-		v3dMol.setConformer(new Conformer(mol));
+		//v3dMol.setConformer(new Conformer(mol));
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
 		builder.buildMolecule(atoms,bonds);
 
 	}
 	
 	public static void changeBondOrder(V3DMolecule v3dMol, int bond) {
-		StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		//StereoMolecule mol = v3dMolToStereoMol(v3dMol);
+		StereoMolecule mol = v3dMol.getMolecule();
 		int a = mol.getBondAtom(0, bond);
 		int b = mol.getBondAtom(1, bond);
 		boolean[] hydrogensToBeDeleted = getHydrogensFromAtoms(mol,new int[] {a,b});
@@ -335,7 +339,7 @@ public class V3DMoleculeModifier {
 
 		constructHydrogens(mol,new int[] {a,b},atoms,bonds);
 		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		v3dMol.setConformer(new Conformer(mol));
+		//v3dMol.setConformer(new Conformer(mol));
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
 		builder.buildMolecule(atoms,bonds);
 
@@ -410,7 +414,7 @@ public class V3DMoleculeModifier {
 			}
 		}
 	}
-	
+	/*
 	public static StereoMolecule v3dMolToStereoMol(V3DMolecule v3dMol) {
 		Conformer conf = v3dMol.getConformer();
 		StereoMolecule mol = conf.getMolecule();
@@ -423,6 +427,7 @@ public class V3DMoleculeModifier {
 			}
 		return mol;
 	}
+	*/
 	
 
 }

@@ -48,8 +48,8 @@ public class PropertyTexture extends SurfaceTexture {
 	private float[] mAtomValue;
 	private float mSurfaceSurplus;
 
-	public PropertyTexture(TriangleMesh mesh, Conformer conformer, int mode, double opacity, float surfaceSurplus) {
-		super(mesh, conformer);
+	public PropertyTexture(TriangleMesh mesh, StereoMolecule mol, int mode, double opacity, float surfaceSurplus) {
+		super(mesh, mol);
 		mMode = mode;
 
 		mSurfaceSurplus = surfaceSurplus;
@@ -103,7 +103,7 @@ public class PropertyTexture extends SurfaceTexture {
 		int count = points.size() / 3;
 		for (int i = 0; i < count; i++) {
 			int base = i * 3;
-			float value = calculateNormalizedProperty(points.get(base), points.get(base + 1), points.get(base + 2), mSortedAtomsFX, mConformerFX);
+			float value = calculateNormalizedProperty(points.get(base), points.get(base + 1), points.get(base + 2), mSortedAtomsFX, mMol);
 			textureIndex[i] = getIndexFromValue(value);
 		}
 
@@ -127,7 +127,7 @@ public class PropertyTexture extends SurfaceTexture {
 
 	@Override
 	public org.sunflow.image.Color getSurfaceColor(Point3 p) {
-		float value = calculateNormalizedProperty(p.x, p.y, p.z, mSortedAtomsSunFlow, mConformerSunFlow);
+		float value = calculateNormalizedProperty(p.x, p.y, p.z, mSortedAtomsSunFlow, mConformerSunFlow.getMolecule());
 		if (mMode == SurfaceMesh.SURFACE_COLOR_POLARITY) {
 			float gray = TEXTURE_GRAY_F - value * TEXTURE_GRAY_F;
 			float color = TEXTURE_GRAY_F + value * (1f - TEXTURE_GRAY_F);
@@ -149,7 +149,7 @@ public class PropertyTexture extends SurfaceTexture {
 		}
 	}
 
-	private float calculateNormalizedProperty(float x, float y, float z, SortedList<AtomWithXCoord> sortedAtomList, Conformer conformer) {
+	private float calculateNormalizedProperty(float x, float y, float z, SortedList<AtomWithXCoord> sortedAtomList, StereoMolecule mol) {
 		// variables for surface property coloring
 		float sum = 0.0f;
 		float weightSum = 0.0001f;   // not 0 to prevent infinity
@@ -160,7 +160,7 @@ public class PropertyTexture extends SurfaceTexture {
 			int atom = toAtom(index, sortedAtomList);
 			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom)];
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
-			float d = distanceToAtom(x, y, z, influenceRadius, atom, conformer);
+			float d = distanceToPoint(x, y, z, influenceRadius, mol.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				weightSum += weight;

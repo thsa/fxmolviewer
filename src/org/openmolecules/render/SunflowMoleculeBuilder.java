@@ -232,9 +232,9 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 				mMinAtomY = (float)conformer.getY(atom);
 		}
 
-		MoleculeArchitect builder = new MoleculeArchitect(new CachingMoleculeBuilder(this));
-		builder.setConstructionMode(mRenderMode);
-		builder.buildMolecule(conformer);
+		MoleculeArchitect architect = new MoleculeArchitect(new CachingMoleculeBuilder(this));
+		architect.setConstructionMode(mRenderMode);
+		architect.buildMolecule(conformer);
 		}
 
 	public void createSurfaceShader(int material, Color color, ColorProvider cp, float transparency, int surfaceIndex) {

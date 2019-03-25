@@ -35,24 +35,23 @@ import org.sunflow.math.Point3;
  */
 public abstract class SurfaceTexture {
 	protected TriangleMesh mMesh;
-	protected Conformer mConformerFX,mConformerSunFlow;
+	protected Conformer mConformerSunFlow;
 	protected StereoMolecule mMol;
 	protected Image mImage;
 	protected SortedList<AtomWithXCoord> mSortedAtomsFX, mSortedAtomsSunFlow;
 	private AtomWithXCoord mAtomWithXCoord;  // non thread save buffer
 	private float mMaxVDWR;
 
-	public SurfaceTexture(TriangleMesh mesh, Conformer conformer) {
+	public SurfaceTexture(TriangleMesh mesh, StereoMolecule mol) {
 		mMesh = mesh;
-		mConformerFX = conformer;
-		mMol = conformer.getMolecule();
+		mMol = mol;
 		mMol.ensureHelperArrays(Molecule.cHelperNeighbours);
 
 		mMaxVDWR = 0f;
 		mAtomWithXCoord = new AtomWithXCoord(0, 0);
 		mSortedAtomsFX = new SortedList<>();
 		for (int atom=0; atom<mMol.getAtoms(); atom++) {
-			float x = (float) mConformerFX.getX(atom);
+			float x = (float) mol.getAtomX(atom);
 			mSortedAtomsFX.add(new AtomWithXCoord(atom, x));
 			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom)];
 			if (mMaxVDWR < vdwr)
@@ -71,13 +70,13 @@ public abstract class SurfaceTexture {
 	/**
 	 * Creates a sorted atom list based on the given conformer's coordinates.
 	 * This must be called once before calling getSurfaceColor().
-	 * @param conformer
+	 * @param mol
 	 */
-	public void initializeSurfaceColor(Conformer conformer) {
-		mConformerSunFlow = conformer;
+	public void initializeSurfaceColor(StereoMolecule mol) {
+		mConformerSunFlow = new Conformer(mol);		// TODO check, whether we really need a copy
 		mSortedAtomsSunFlow = new SortedList<>();
 		for (int atom=0; atom<mMol.getAtoms(); atom++) {
-			float x = (float)conformer.getX(atom);
+			float x = (float)mol.getAtomX(atom);
 			mSortedAtomsSunFlow.add(new AtomWithXCoord(atom, x));
 		}
 	}
@@ -132,12 +131,10 @@ public abstract class SurfaceTexture {
 	 * @param y
 	 * @param z
 	 * @param limit maximum distance to calculate
-	 * @param atom
-	 * @param conformer
+	 * @param c
 	 * @return if distance between given point and atom if it is smaller than limit; otherwise Float.MAX_VALUE
 	 */
-	public float distanceToAtom(float x, float y, float z, float limit, int atom, Conformer conformer) {
-		Coordinates c = conformer.getCoordinates(atom);
+	public float distanceToPoint(float x, float y, float z, float limit, Coordinates c) {
 		float dx = Math.abs((float)c.x - x);
 		if (dx > limit)
 			return Float.MAX_VALUE;
