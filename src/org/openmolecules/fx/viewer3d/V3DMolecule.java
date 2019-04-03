@@ -22,11 +22,8 @@ package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
-import com.actelion.research.chem.Molecule3D;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
-import com.actelion.research.chem.conf.BondLengthSet;
-import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.util.DoubleFormat;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point2D;
@@ -46,11 +43,8 @@ import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
-import org.openmolecules.fx.viewer3d.V3DMoleculeMouseListener;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
@@ -933,7 +927,7 @@ public class V3DMolecule extends RotatableGroup {
 			}
 
 		NodeDetail detail = (NodeDetail)shape.getUserData();
-		if (detail.isSelected()) {
+		if (detail != null && detail.isSelected()) {
 			if (shape.getMaterial() != sSelectedMaterial)
 				shape.setMaterial(sSelectedMaterial);
 			return;
