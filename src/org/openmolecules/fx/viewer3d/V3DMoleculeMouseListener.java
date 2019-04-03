@@ -5,6 +5,6 @@ import javafx.scene.input.MouseEvent;
 
 public interface V3DMoleculeMouseListener {
 	
-	public void mouseClicked(V3DMolecule v3dMol, MouseEvent me);
+	public void mouseClicked(V3DMolecule v3dMol, Node node);
 
 }

@@ -548,10 +548,6 @@ public class V3DMolecule extends RotatableGroup {
 				//System.out.println("mouse pressed isPrimaryButtonDown:"+me.isPrimaryButtonDown()+" isMiddleButtonDown:"+me.isMiddleButtonDown());
 				if (me.getButton() == MouseButton.PRIMARY) {
 					pickShape(me);
-					for(V3DMoleculeMouseListener listener: mMouseListeners) {
-						listener.mouseClicked(this, me);
-					
-				}
 				}
 				// clicking the mouse wheel causes a MouseExited followed by a MousePressed event
 				if (me.getButton() == MouseButton.MIDDLE) {
@@ -560,6 +556,11 @@ public class V3DMolecule extends RotatableGroup {
 				}
 			} );
 		setOnMouseReleased(me -> {
+			if (me.getButton() == MouseButton.PRIMARY) {
+				for(V3DMoleculeMouseListener listener: mMouseListeners) {
+					listener.mouseClicked(this, mLastPickedNode);	
+			}
+			}
 
 				mIsMouseDown = false;
 
@@ -601,9 +602,9 @@ public class V3DMolecule extends RotatableGroup {
 
 	private void pickShape(MouseEvent me) {
 		mLastPickedNode = null;
+		PickResult result = me.getPickResult();
+		mLastPickedNode = result.getIntersectedNode();
 		if (mMeasurementMode != MEASUREMENT.NONE) {
-			PickResult result = me.getPickResult();
-			mLastPickedNode = result.getIntersectedNode();
 			if (mLastPickedNode instanceof Sphere) {
 				NodeDetail detail = (NodeDetail)mLastPickedNode.getUserData();
 				if (detail != null && detail.isAtom()) {

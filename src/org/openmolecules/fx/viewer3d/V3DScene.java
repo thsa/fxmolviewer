@@ -32,7 +32,6 @@ import javafx.scene.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.editor.actions.AbstractV3DEditorAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
