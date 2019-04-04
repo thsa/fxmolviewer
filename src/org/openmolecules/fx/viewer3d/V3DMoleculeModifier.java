@@ -11,7 +11,8 @@ import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondLengthSet;
-import com.actelion.research.chem.conf.DihedralAngleKnowledgeBase;
+import com.actelion.research.chem.conf.TorsionDB;
+import com.actelion.research.chem.conf.TorsionDetail;
 
 import javafx.scene.Node;
 
@@ -572,6 +573,7 @@ public class V3DMoleculeModifier {
 	
 	
 	public static void optimizeDihedral(StereoMolecule mol,int atom1, int atom2, ArrayList<Integer> atomList) {
+		TorsionDB.initialize(TorsionDB.MODE_ANGLES);
 		int bond = mol.getBond(atom1, atom2);
 		int atom3,atom4;
 		int aa1 = 0;
@@ -591,9 +593,11 @@ public class V3DMoleculeModifier {
 		atom3 = mol.getConnAtom(atom1, aa1);
 		atom4 = mol.getConnAtom(atom2, aa2);
 		int[] torsionAtoms = new int[] {atom3,atom1,atom2,atom4};
-		int[] dihedral = DihedralAngleKnowledgeBase.getKnowledgeBase().getDihedralAngles(mol, bond, aa1, aa2);
+		TorsionDetail detail = new TorsionDetail();
+		String torsionID = TorsionDB.getTorsionID(mol, bond, torsionAtoms, detail);
+		short[] dihedral = TorsionDB.getTorsions(torsionID);
 		if(dihedral==null) {
-			dihedral = new int[] {0,60,120,180,240,300,360};
+			dihedral = new short[] {0,60,120,180,240,300,360};
 		}
 		boolean [][] skipCollisionCheck = new boolean[mol.getAllAtoms()][];
 		for (int atom=1; atom<mol.getAllAtoms(); atom++)
@@ -616,7 +620,7 @@ public class V3DMoleculeModifier {
 			}
 		double minCollision = Float.MAX_VALUE;
 		int bestDihedral = dihedral[0];
-		for(Integer angle:dihedral) {
+		for(Short angle:dihedral) {
 			double torsion = 180*mol.calculateTorsion(torsionAtoms)/Math.PI;
 			int deltaTorsion = angle - (int)torsion;
 			rotateAtomsAroundBond(mol,Math.PI * deltaTorsion / 180.0,atomList,atom1,atom2);
