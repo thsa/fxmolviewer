@@ -31,12 +31,15 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 			V3DMoleculeModifier.addFragment(v3dMol, detail.getAtom(), mIDCodes);
 		}
 		else if(detail.isBond() && mAllowFusion) {
-			V3DMoleculeModifier.fuseRing(v3dMol, detail.getBond(), mIDCodes);
-			
-			
+			V3DMoleculeModifier.fuseRing(v3dMol, detail.getBond(), mIDCodes);	
 			
 		}
 		
+	}
+	
+	@Override
+	public void onMouseUp(V3DMolecule v3dMol) {
+		V3DMoleculeModifier.placeFragment(v3dMol, mIDCodes);
 	}
 	
 	

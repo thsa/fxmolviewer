@@ -42,6 +42,11 @@ public class V3DDrawBondAction implements V3DEditorAction {
 
 	}
 	
+	@Override
+	public void onMouseUp(V3DMolecule v3dMol) {
+		return;
+	}
+	
 
 
 	

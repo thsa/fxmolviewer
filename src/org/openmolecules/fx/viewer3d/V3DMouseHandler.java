@@ -46,6 +46,7 @@ public class V3DMouseHandler {
 	private long mRecentWheelMillis;
 	private V3DMolecule mHighlightedMol,mMousePressedMol,mAffectedMol;
 	private long mMousePressedMillis;
+	private Node mSelectedNode;
 
 
 	public V3DMouseHandler(final V3DScene scene) {
@@ -83,6 +84,7 @@ public class V3DMouseHandler {
 			}
 		} );
 		scene.setOnMousePressed(me -> {
+			mSelectedNode = me.getPickResult().getIntersectedNode();
 			mMouseX = me.getScreenX();
 			mMouseY = me.getScreenY();
 
@@ -125,10 +127,33 @@ public class V3DMouseHandler {
 			}
 		} );
 		scene.setOnMouseReleased(me -> {
+			if ((me.getButton() == MouseButton.PRIMARY)) {
+				Node parent = mSelectedNode;
+				while (parent != null && !(parent instanceof V3DMolecule)) {
+					parent = parent.getParent();
+				}
+				if(mScene.getEditor().getAction()!=null) {
+					if (parent == null) {
+						V3DMolecule fxmol = mScene.getEditor().sceneClicked(mScene);
+						RotatableGroup world = mScene.getWorld();
+						double f = getScreenToObjectFactor(0.0);
+						Point2D origin = world.localToScreen(0,0,0);
+						double dx = me.getScreenX()-origin.getX();
+						double dy = me.getScreenY()-origin.getY();
+						Point3D p1 = world.parentToLocal(f*dx,f*dy , 0.0);
+						fxmol.setTranslateX(fxmol.getTranslateX() +  p1.getX());
+						fxmol.setTranslateY(fxmol.getTranslateY() +  p1.getY());
+						fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
+					}
+					else mScene.getEditor().moleculeClicked((V3DMolecule)parent, mSelectedNode);
+
+					}
+				}
 			if (mShowPopup) {
 				mShowPopup = false;
-				Node node = me.getPickResult().getIntersectedNode();
-				createPopupMenu(node, me.getScreenX(), me.getScreenY());
+				//Node node = me.getPickResult().getIntersectedNode();
+				//createPopupMenu(node, me.getScreenX(), me.getScreenY());
+				createPopupMenu(mSelectedNode, me.getScreenX(), me.getScreenY());
 			}
 //			mAffectedMol = null;
 		} );
@@ -357,9 +382,9 @@ public class V3DMouseHandler {
 	private void createPopupMenu(Node node, double x, double y) {
 		// if we have an active node, create a node specific popup
 		Node parent = node;
-		while (parent != null && !(parent instanceof V3DMolecule))
+		while (parent != null && !(parent instanceof V3DMolecule)) {
 			parent = parent.getParent();
-
+		}
 		if (parent == null)
 			new V3DPopupMenu(mScene, null).show(mScene.getWorld(), x, y);
 		else

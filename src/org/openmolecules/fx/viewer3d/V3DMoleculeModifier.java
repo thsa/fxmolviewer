@@ -91,8 +91,21 @@ public class V3DMoleculeModifier {
 		optimizeDihedral(mol,atomMap[attachmentPoint],atomMap[fragmentMap[attachmentPointFragment]],atomConstructionList);
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
 		builder.buildMolecule(atomConstructionList,bondConstructionList);
-		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+		mol.ensureHelperArrays(Molecule.cHelperRings);
 
+	}
+	
+	public static void placeAtom(V3DMolecule v3dMol, int atomicNo) {
+		StereoMolecule mol = v3dMol.getMolecule();
+		mol.addAtom(atomicNo);
+		AtomAssembler assembler = new AtomAssembler(mol);
+		assembler.addImplicitHydrogens();
+		mol.ensureHelperArrays(Molecule.cHelperRings);
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
+		builder.buildMolecule();
+
+		
+		
 	}
 	
 	public static void fuseRing(V3DMolecule v3dMol,int bond, String[] fragmentIDCode) {
@@ -211,16 +224,16 @@ public class V3DMoleculeModifier {
 		ArrayList<Integer> bondsToBeRemoved = new ArrayList<Integer>();
 		atomsToBeRemoved.add(atom);
 		atomConstructionList.add(atom);
-		bondsToBeRemoved.add(mol.getBond(atom, mol.getConnAtom(atom,0)));
-		bondConstructionList.add(mol.getBond(atom, mol.getConnAtom(atom,0)));
+		int aa1 = mol.getConnAtom(atom, 0);
+		int bond = mol.getBond(atom, aa1);
+		bondsToBeRemoved.add(bond);
+		bondConstructionList.add(bond);
 		cleanNodes(v3dMol,atomsToBeRemoved,bondsToBeRemoved);
 		
 		mol.setAtomicNo(atom, atomicNo); 
 		//cleaning up the geometry
-		int aa1 = mol.getConnAtom(atom, 0);
 		Coordinates c1 = mol.getCoordinates(atom);
 		Coordinates cc1 = mol.getCoordinates(aa1);
-		int bond = mol.getBond(atom, aa1);
 		double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(mol,bond));
 		Coordinates v = c1.subC(cc1);
 		double l = v.dist();
@@ -349,16 +362,16 @@ public class V3DMoleculeModifier {
 		bondAtoms.add(atom1);
 		bondAtoms.add(atom2);
 		ArrayList<Integer> bondsToBeRemoved = new ArrayList<Integer>();
-		ArrayList<Integer> atomsToBeRemoved = new ArrayList<Integer>();
+		ArrayList<Integer> hydrogensToBeDeleted = getHydrogensFromAtoms(mol,bondAtoms);
 		ArrayList<Integer> bondConstructionList  = new ArrayList<Integer>();
 		ArrayList<Integer> atomConstructionList = new ArrayList<Integer>();
-		ArrayList<Integer> hydrogensToBeDeleted = getHydrogensFromAtoms(mol,bondAtoms);
+		bondsToBeRemoved.add(bond);
+		//ArrayList<Integer> hydrogensToBeDeleted = getHydrogensFromAtoms(mol,bondAtoms);
 		//the bonds from the atom to the hydrogens are deleted in the StereoMolecule as well as removed from the V3DMolecule
 		for(Integer hydrogen : hydrogensToBeDeleted) {
-			atomsToBeRemoved.add(hydrogen);
 			bondsToBeRemoved.add(mol.getBond(hydrogen, mol.getConnAtom(hydrogen,0)));
 		}
-		cleanNodes(v3dMol, atomsToBeRemoved,bondsToBeRemoved);
+		cleanNodes(v3dMol, hydrogensToBeDeleted,bondsToBeRemoved);
 
 		int[] bondMap = mol.getDeleteAtomsBondMap(hydrogensToBeDeleted.stream().mapToInt(i->i).toArray());
 		int[] atomMap = mol.deleteAtoms(hydrogensToBeDeleted.stream().mapToInt(i->i).toArray());
@@ -378,6 +391,43 @@ public class V3DMoleculeModifier {
 		}
 		for(Integer bondAtom:bondAtoms)
 			constructHydrogens(mol,bondAtom,atomConstructionList,bondConstructionList);
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
+		builder.buildMolecule(atomConstructionList,bondConstructionList);
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+	
+
+	}
+	
+	public static void deleteAtom(V3DMolecule v3dMol, int atom) {
+		StereoMolecule mol = v3dMol.getMolecule();
+		ArrayList<Integer> bondsToBeRemoved = new ArrayList<Integer>();
+		ArrayList<Integer> atomsToBeRemoved = new ArrayList<Integer>();
+		ArrayList<Integer> bondConstructionList  = new ArrayList<Integer>();
+		ArrayList<Integer> atomConstructionList = new ArrayList<Integer>();
+		ArrayList<Integer> hydrogensToBeDeleted = getHydrogensFromAtom(mol,atom);
+		ArrayList<Integer> heavyAtomNeighbours = new ArrayList<Integer>();
+		//the bonds from the atom to the hydrogens are deleted in the StereoMolecule as well as removed from the V3DMolecule
+		atomsToBeRemoved.add(atom);
+		for(Integer hydrogen : hydrogensToBeDeleted) {
+			atomsToBeRemoved.add(hydrogen);
+			bondsToBeRemoved.add(mol.getBond(hydrogen, mol.getConnAtom(hydrogen,0)));
+		}
+		for(int i=0;i<mol.getConnAtoms(atom);i++) {
+			bondsToBeRemoved.add(mol.getBond(atom, mol.getConnAtom(atom, i)));
+			heavyAtomNeighbours.add(mol.getConnAtom(atom, i));
+		}
+		cleanNodes(v3dMol, atomsToBeRemoved,bondsToBeRemoved);
+		
+		int[] bondMap = mol.getDeleteAtomsBondMap(atomsToBeRemoved.stream().mapToInt(i->i).toArray());
+		int[] atomMap = mol.deleteAtoms(atomsToBeRemoved.stream().mapToInt(i->i).toArray());
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+		if(atomMap!=null && bondMap!=null ) 
+			updateListIndeces(heavyAtomNeighbours,atomMap);
+			updateNodeIndeces(v3dMol,atomMap,bondMap);
+
+
+		for(Integer heavyAtomNeighbour:heavyAtomNeighbours)
+			constructHydrogens(mol,heavyAtomNeighbour,atomConstructionList,bondConstructionList);
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
 		builder.buildMolecule(atomConstructionList,bondConstructionList);
 		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
@@ -468,6 +518,22 @@ public class V3DMoleculeModifier {
 		builder.buildMolecule(atomConstructionList,bondConstructionList);
 		mol.ensureHelperArrays(Molecule.cHelperRings);
 	}
+	
+	public static void placeFragment(V3DMolecule v3dMol,  String[] fragmentIDCode) {
+		IDCodeParserWithoutCoordinateInvention parser = new IDCodeParserWithoutCoordinateInvention();
+		StereoMolecule mol = v3dMol.getMolecule();
+		
+		StereoMolecule fragment = parser.getCompactMolecule(fragmentIDCode[0],fragmentIDCode[1]);
+		for(int at=0;at<fragment.getAllAtoms();at++) 
+			if (fragment.getAtomicNo(at)==0) 
+				fragment.setAtomicNo(at, 1);
+		fragment.ensureHelperArrays(Molecule.cHelperCIP);
+		mol.addMolecule(fragment);
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
+		builder.buildMolecule();
+
+		
+	}
 
 	
 
@@ -484,7 +550,8 @@ public class V3DMoleculeModifier {
 		for(int bondTemp=mol.getAllBonds()-addedHs;bondTemp<mol.getAllBonds();bondTemp++) {
 			bondConstructionList.add(bondTemp);
 
-		}		
+		}
+		mol.ensureHelperArrays(StereoMolecule.cHelperRings);
 	}
 		
 		
@@ -531,7 +598,7 @@ public class V3DMoleculeModifier {
 	private static void cleanNodes(V3DMolecule v3dMol,ArrayList<Integer> atomsToBeDeleted,ArrayList<Integer> bondsToBeDeleted) {
 		ArrayList<Node> nodesToBeDeleted = new ArrayList<Node>();
 		for(Node node : v3dMol.getChildren()) {
-			NodeDetail detail = (NodeDetail)node.getUserData();;
+			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && detail.isAtom()) {
 				int atom = detail.getAtom();
 				if(atomsToBeDeleted.contains(atom)) nodesToBeDeleted.add(node);
@@ -642,10 +709,10 @@ public class V3DMoleculeModifier {
 		for(Node node : v3dMol.getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail!=null) {
-				if(detail.isAtom() && detail.getAtom()>0 ) {
+				if(detail.isAtom() && detail.getAtom()>=0 ) {
 					detail.setIndex(atomMap[detail.getAtom()]);
 				}
-				else if (detail.isBond() && detail.getBond()>0) {
+				else if (detail.isBond() && detail.getBond()>=0) {
 					detail.setIndex(bondMap[detail.getBond()]);
 			}
 		}
@@ -759,5 +826,9 @@ public class V3DMoleculeModifier {
 		}
 		return collisionIntensitySum;
 	}
+
+
+
+
 }
 	

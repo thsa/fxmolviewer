@@ -5,7 +5,7 @@ import org.openmolecules.fx.viewer3d.V3DSceneEditor;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DDrawBondAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DDeleteAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DAddFragmentAction;
-import org.openmolecules.fx.viewer3d.editor.actions.V3DChangeAtomAction;
+import org.openmolecules.fx.viewer3d.editor.actions.V3DAddAtomAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DDecreaseChargeAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DIncreaseChargeAction;
@@ -24,7 +24,7 @@ public class StructureEditorToolbar extends GridPane {
 		super();
 		mScene3D = scene3D;
 		Button ch4 = new Button();
-		V3DEditorAction actionC = new V3DChangeAtomAction(6);
+		V3DEditorAction actionC = new V3DAddAtomAction(6);
 		ch4.setText("C");
 		ch4.setOnAction(event -> {
 			mScene3D.getEditor().setAction(actionC);
@@ -32,7 +32,7 @@ public class StructureEditorToolbar extends GridPane {
 		add(ch4,1,0);
 	
 		Button oh2 = new Button();
-		V3DEditorAction actionO = new V3DChangeAtomAction(8);
+		V3DEditorAction actionO = new V3DAddAtomAction(8);
 		oh2.setText("O");
 		oh2.setOnAction(event -> {
 			mScene3D.getEditor().setAction(actionO);
@@ -40,7 +40,7 @@ public class StructureEditorToolbar extends GridPane {
 		add(oh2,4,0);
 		
 		Button h = new Button();
-		V3DEditorAction actionH = new V3DChangeAtomAction(1);
+		V3DEditorAction actionH = new V3DAddAtomAction(1);
 		h.setText("H");
 		h.setOnAction(event -> {
 			mScene3D.getEditor().setAction(actionH);
@@ -48,7 +48,7 @@ public class StructureEditorToolbar extends GridPane {
 		add(h,2,0);
 		
 		Button n = new Button();
-		V3DEditorAction actionN = new V3DChangeAtomAction(7);
+		V3DEditorAction actionN = new V3DAddAtomAction(7);
 		n.setText("N");
 		n.setOnAction(event -> {
 			mScene3D.getEditor().setAction(actionN);
@@ -56,7 +56,7 @@ public class StructureEditorToolbar extends GridPane {
 		add(n,3,0);
 		
 		Button s = new Button();
-		V3DEditorAction actionS = new V3DChangeAtomAction(16);
+		V3DEditorAction actionS = new V3DAddAtomAction(16);
 		s.setText("S");
 		s.setOnAction(event -> {
 			mScene3D.getEditor().setAction(actionS);
@@ -64,7 +64,7 @@ public class StructureEditorToolbar extends GridPane {
 		add(s,5,0);
 		
 		Button p = new Button();
-		V3DEditorAction actionP = new V3DChangeAtomAction(15);
+		V3DEditorAction actionP = new V3DAddAtomAction(15);
 		p.setText("P");
 		p.setOnAction(event -> {
 			mScene3D.getEditor().setAction(actionP);

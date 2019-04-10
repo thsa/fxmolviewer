@@ -22,6 +22,11 @@ public class V3DIncreaseChargeAction implements V3DEditorAction {
 			V3DMoleculeModifier.increaseCharge(v3dMol, detail.getAtom());
 		
 	}
+	
+	@Override
+	public void onMouseUp(V3DMolecule v3dMol) {
+		return;
+	}
 
 	
 }

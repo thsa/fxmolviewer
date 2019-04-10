@@ -86,7 +86,7 @@ public class V3DMolecule extends RotatableGroup {
 	private ArrayList<NonRotatingLabel> mLabelList;
 	private boolean			mIsMouseDown,mOverrideCarbonOnly;
 	private double[]        mSurfaceTransparency;
-	private ArrayList<V3DMoleculeMouseListener> mMouseListeners;
+
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -137,7 +137,6 @@ public class V3DMolecule extends RotatableGroup {
 		mMeasurementMode = MEASUREMENT.NONE;
 		mPickedAtomList = new ArrayList<>();
 		mLabelList = new ArrayList<>();
-		mMouseListeners = new ArrayList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
 
@@ -174,9 +173,7 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 
-	public void addListener(V3DMoleculeMouseListener listener) {
-		mMouseListeners.add(listener);
-	}
+
 	
 	public boolean addImplicitHydrogens() {
 		int oldAtoms = mMol.getAllAtoms();
@@ -550,11 +547,6 @@ public class V3DMolecule extends RotatableGroup {
 				}
 			} );
 		setOnMouseReleased(me -> {
-			if (me.getButton() == MouseButton.PRIMARY) {
-				for(V3DMoleculeMouseListener listener: mMouseListeners) {
-					listener.mouseClicked(this, mLastPickedNode);	
-			}
-			}
 
 				mIsMouseDown = false;
 

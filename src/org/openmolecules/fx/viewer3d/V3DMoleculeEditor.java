@@ -1,16 +1,15 @@
 package org.openmolecules.fx.viewer3d;
 
 import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
+
+import com.actelion.research.chem.StereoMolecule;
 import javafx.scene.Node;
 
-public class V3DMoleculeEditor implements V3DMoleculeMouseListener{
+
+public class V3DMoleculeEditor {
 	
 	private V3DEditorAction mAction;
-	private int mPartnerAtom;
-	
-	public V3DMoleculeEditor() {
-		mPartnerAtom = -1;
-	}
+
 	
 	public void setAction(V3DEditorAction action) {
 		mAction = action;
@@ -20,8 +19,19 @@ public class V3DMoleculeEditor implements V3DMoleculeMouseListener{
 		return mAction;
 	}
 	
-	@Override
-	public void mouseClicked(V3DMolecule v3dMol, Node node) {
+	public V3DMolecule sceneClicked(V3DScene scene3D) {
+		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule());
+		v3dMol.setId("Molecule");
+		scene3D.addMolecule(v3dMol);
+		v3dMol.activateEvents();
+		mAction.onMouseUp(v3dMol);
+		return v3dMol;
+		
+		
+	}
+	
+	
+	public void moleculeClicked(V3DMolecule v3dMol, Node node) {
 		if(mAction!=null && v3dMol.getMeasurementMode()==V3DMolecule.MEASUREMENT.NONE) {
 		NodeDetail detail = (NodeDetail)node.getUserData();
 				if(detail != null)

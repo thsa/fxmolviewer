@@ -20,10 +20,15 @@ public class V3DDeleteAction implements V3DEditorAction {
 		if(detail.isBond()) 
 			V3DMoleculeModifier.deleteBond(v3dMol, detail.getBond());
 		else if(detail.isAtom()) {
-			//TODO:implement delete atom function
+			V3DMoleculeModifier.deleteAtom(v3dMol, detail.getAtom());
 			return;
 		}
 		
+	}
+	
+	@Override
+	public void onMouseUp(V3DMolecule v3dMol) {
+		return;
 	}
 
 

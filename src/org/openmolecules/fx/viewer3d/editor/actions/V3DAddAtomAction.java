@@ -14,11 +14,11 @@ import com.actelion.research.share.gui.editor.geom.IDrawContext;
 import com.actelion.research.share.gui.editor.io.IKeyEvent;
 import com.actelion.research.share.gui.editor.io.IMouseEvent;
 
-public class V3DChangeAtomAction implements V3DEditorAction { 
+public class V3DAddAtomAction implements V3DEditorAction { 
 	
 	private int mAtomicNo;
 	
-	public V3DChangeAtomAction(int atomicNo) {
+	public V3DAddAtomAction(int atomicNo) {
 		mAtomicNo = atomicNo;
 	}
 
@@ -33,6 +33,12 @@ public class V3DChangeAtomAction implements V3DEditorAction {
 	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
 		if(detail.isAtom())
 			V3DMoleculeModifier.changeAtomElement(v3dMol, detail.getAtom(),mAtomicNo);
+		
+	}
+	
+	@Override
+	public void onMouseUp(V3DMolecule v3dMol) {
+		V3DMoleculeModifier.placeAtom(v3dMol, mAtomicNo);
 		
 	}
 	

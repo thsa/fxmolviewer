@@ -261,7 +261,6 @@ public class V3DScene extends SubScene {
 	}
 
 	public void addMolecule(V3DMolecule fxmol) {
-		fxmol.addListener(mEditor);
 		mWorld.getChildren().add(fxmol);
 		if (mSceneListener != null)
 			mSceneListener.addMolecule(fxmol);
