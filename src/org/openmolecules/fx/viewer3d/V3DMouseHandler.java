@@ -135,15 +135,17 @@ public class V3DMouseHandler {
 				if(mScene.getEditor().getAction()!=null) {
 					if (parent == null) {
 						V3DMolecule fxmol = mScene.getEditor().sceneClicked(mScene);
-						RotatableGroup world = mScene.getWorld();
-						double f = getScreenToObjectFactor(0.0);
-						Point2D origin = world.localToScreen(0,0,0);
-						double dx = me.getScreenX()-origin.getX();
-						double dy = me.getScreenY()-origin.getY();
-						Point3D p1 = world.parentToLocal(f*dx,f*dy , 0.0);
-						fxmol.setTranslateX(fxmol.getTranslateX() +  p1.getX());
-						fxmol.setTranslateY(fxmol.getTranslateY() +  p1.getY());
-						fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
+						if(fxmol!=null) {
+							RotatableGroup world = mScene.getWorld();
+							double f = getScreenToObjectFactor(0.0);
+							Point2D origin = world.localToScreen(0,0,0);
+							double dx = me.getScreenX()-origin.getX();
+							double dy = me.getScreenY()-origin.getY();
+							Point3D p1 = world.parentToLocal(f*dx,f*dy , 0.0);
+							fxmol.setTranslateX(fxmol.getTranslateX() +  p1.getX());
+							fxmol.setTranslateY(fxmol.getTranslateY() +  p1.getY());
+							fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
+						}
 					}
 					else mScene.getEditor().moleculeClicked((V3DMolecule)parent, mSelectedNode);
 

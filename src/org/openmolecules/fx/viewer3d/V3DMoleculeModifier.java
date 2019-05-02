@@ -525,8 +525,15 @@ public class V3DMoleculeModifier {
 		
 		StereoMolecule fragment = parser.getCompactMolecule(fragmentIDCode[0],fragmentIDCode[1]);
 		for(int at=0;at<fragment.getAllAtoms();at++) 
-			if (fragment.getAtomicNo(at)==0) 
+			if (fragment.getAtomicNo(at)==0) {
 				fragment.setAtomicNo(at, 1);
+				int bond = fragment.getBond(at, fragment.getConnAtom(at, 0));
+				double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(fragment,bond));
+				Coordinates v = fragment.getCoordinates(at).subC(fragment.getCoordinates(fragment.getConnAtom(at, 0)));
+				double l = v.dist();
+				Coordinates t = v.scaleC(lNew/l).subC(v);
+				fragment.getCoordinates(at).add(t);
+		}
 		fragment.ensureHelperArrays(Molecule.cHelperCIP);
 		mol.addMolecule(fragment);
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
@@ -661,7 +668,7 @@ public class V3DMoleculeModifier {
 		atom4 = mol.getConnAtom(atom2, aa2);
 		int[] torsionAtoms = new int[] {atom3,atom1,atom2,atom4};
 		TorsionDetail detail = new TorsionDetail();
-		String torsionID = TorsionDB.getTorsionID(mol, bond, torsionAtoms, detail);
+		String torsionID = TorsionDB.getTorsionID(mol, bond, new int[4], detail);
 		short[] dihedral = TorsionDB.getTorsions(torsionID);
 		if(dihedral==null) {
 			dihedral = new short[] {0,60,120,180,240,300,360};

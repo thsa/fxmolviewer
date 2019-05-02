@@ -32,8 +32,8 @@ public class V3DDecreaseChargeAction implements V3DEditorAction {
 	}
 	
 	@Override
-	public void onMouseUp(V3DMolecule v3dMol) {
-		return;
+	public V3DMolecule onMouseUp(V3DScene scene3D) {
+		return null;
 	}
 	
 

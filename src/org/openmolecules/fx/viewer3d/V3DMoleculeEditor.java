@@ -20,12 +20,9 @@ public class V3DMoleculeEditor {
 	}
 	
 	public V3DMolecule sceneClicked(V3DScene scene3D) {
-		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule());
-		v3dMol.setId("Molecule");
-		scene3D.addMolecule(v3dMol);
-		v3dMol.activateEvents();
-		mAction.onMouseUp(v3dMol);
-		return v3dMol;
+		return mAction.onMouseUp(scene3D);
+		
+
 		
 		
 	}

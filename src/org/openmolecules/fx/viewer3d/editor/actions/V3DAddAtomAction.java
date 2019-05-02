@@ -37,9 +37,13 @@ public class V3DAddAtomAction implements V3DEditorAction {
 	}
 	
 	@Override
-	public void onMouseUp(V3DMolecule v3dMol) {
+	public V3DMolecule onMouseUp(V3DScene scene3D) {
+		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule());
+		v3dMol.setId("Molecule");
+		scene3D.addMolecule(v3dMol);
+		v3dMol.activateEvents();
 		V3DMoleculeModifier.placeAtom(v3dMol, mAtomicNo);
-		
+		return v3dMol;
 	}
 	
 

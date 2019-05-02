@@ -1,23 +1,23 @@
 package org.openmolecules.fx.viewer3d;
 
+
 import javafx.scene.control.TextArea;
-import javafx.stage.Stage;
-import org.openmolecules.fx.viewer3d.panel.ToolsPane;
+import org.openmolecules.fx.viewer3d.panel.EditorPane;
 
 public class V3DSceneEditor extends V3DSceneWithSidePane  {
 	
-	private ToolsPane mToolsPane;
-	private Stage mPrimaryStage;
 	private TextArea mOutputLog;
 	
-	public V3DSceneEditor(final Stage primaryStage) {
+	public V3DSceneEditor() {
 		super();
-		mPrimaryStage = primaryStage;
-		mToolsPane = new ToolsPane(mPrimaryStage,this);
+		//mEditorPane= new EditorPane(this);
 		mOutputLog = new TextArea();
 		mOutputLog.setEditable(false);
-		setRight(mToolsPane);
+		//setRight(mEditorPane);
 		setBottom(mOutputLog);
+		V3DSceneWithSelection content = (V3DSceneWithSelection) getContent();
+		EditorPane editorPane = new EditorPane(getScene3D());
+		content.setRight(editorPane);
 	}
 	
 	public void minimizeVisibleMols() {

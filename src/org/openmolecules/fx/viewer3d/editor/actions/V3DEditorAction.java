@@ -2,6 +2,7 @@ package org.openmolecules.fx.viewer3d.editor.actions;
 
 import org.openmolecules.fx.viewer3d.NodeDetail;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DScene;
 
 import com.actelion.research.share.gui.editor.geom.IDrawContext;
 import com.actelion.research.share.gui.editor.io.IKeyEvent;
@@ -25,7 +26,8 @@ public interface V3DEditorAction {
     
     void onMouseUp(V3DMolecule v3dMol, NodeDetail detail);
     
-    void onMouseUp(V3DMolecule v3dMol);
+
+	V3DMolecule onMouseUp(V3DScene scene3d);
     
     //void onMouseUp(V3DMolecule v3dMol, int index1, int index2);
     

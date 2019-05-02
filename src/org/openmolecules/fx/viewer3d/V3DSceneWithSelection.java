@@ -20,12 +20,15 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import org.openmolecules.fx.viewer3d.panel.EditorPane;
+
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
-public class V3DSceneWithSelection extends Pane {
+public class V3DSceneWithSelection extends BorderPane {
 	private V3DScene mScene3D;
 	private Polygon mSelection;
 	private int mSelectionMode;	// 1:adding, 2:subtracting
@@ -51,6 +54,7 @@ public class V3DSceneWithSelection extends Pane {
 			}
 		} );
 		getChildren().addAll(scene3D);
+
 	}
 
 	private void startSelection(double x, double y) {
