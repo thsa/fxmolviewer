@@ -44,6 +44,7 @@ public class V3DSceneWithSelection extends BorderPane {
 			}
 		} );
 		setOnMouseDragged(me -> {
+			mScene3D.setMouseDragged(true);
 			if (mSelection != null) {
 				appendToSelection(me.getX(), me.getY());
 			}

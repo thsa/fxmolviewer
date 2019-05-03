@@ -127,6 +127,7 @@ public class V3DMouseHandler {
 			}
 		} );
 		scene.setOnMouseReleased(me -> {
+			if(mScene.isMouseDragged()==false) {
 			if ((me.getButton() == MouseButton.PRIMARY)) {
 				Node parent = mSelectedNode;
 				while (parent != null && !(parent instanceof V3DMolecule)) {
@@ -151,12 +152,14 @@ public class V3DMouseHandler {
 
 					}
 				}
+			}
 			if (mShowPopup) {
 				mShowPopup = false;
 				//Node node = me.getPickResult().getIntersectedNode();
 				//createPopupMenu(node, me.getScreenX(), me.getScreenY());
 				createPopupMenu(mSelectedNode, me.getScreenX(), me.getScreenY());
 			}
+			mScene.setMouseDragged(false);
 //			mAffectedMol = null;
 		} );
 		scene.setOnMouseMoved(me -> {

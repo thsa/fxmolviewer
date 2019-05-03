@@ -48,6 +48,7 @@ public class V3DScene extends SubScene {
 	private int mSurfaceCutMode;
 	private V3DMolecule mSurfaceCutMolecule;
 	private V3DMoleculeEditor mEditor;
+	private boolean mMouseDragged; //don't place molecule fragments if mouse is released after a drag event
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
@@ -77,6 +78,7 @@ public class V3DScene extends SubScene {
 		mMouseHandler = new V3DMouseHandler(this);
 		mKeyHandler = new V3DKeyHandler(this);
 		mClipboardHandler = new ClipboardHandler();
+		mMouseDragged = false;
 		}
 
 	public void setSceneListener(V3DSceneListener sl) {
@@ -277,6 +279,14 @@ public class V3DScene extends SubScene {
 	public RotatableGroup getWorld() {
 		return mWorld;
 		}
+	
+	public void setMouseDragged(boolean mouseDragged) {
+		mMouseDragged = mouseDragged;
+	}
+	
+	public boolean isMouseDragged() {
+		return mMouseDragged;
+	}
 
 	public double getFieldOfView() {
 		return ((PerspectiveCamera)getCamera()).getFieldOfView();
