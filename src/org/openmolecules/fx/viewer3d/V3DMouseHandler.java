@@ -20,6 +20,9 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import org.openmolecules.fx.viewer3d.V3DMolecule.MEASUREMENT;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
+
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -148,7 +151,12 @@ public class V3DMouseHandler {
 							fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
 						}
 					}
-					else mScene.getEditor().moleculeClicked((V3DMolecule)parent, mSelectedNode);
+					else {
+						V3DMolecule fxmol = (V3DMolecule)parent;
+						mScene.getEditor().moleculeClicked(fxmol, mSelectedNode);
+						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
+							fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+					}
 
 					}
 				}
