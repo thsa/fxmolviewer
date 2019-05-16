@@ -2,11 +2,9 @@ package org.openmolecules.fx.viewer3d;
 
 import java.util.ArrayList;
 
-import org.openmolecules.fx.viewer3d.V3DScene.MEASUREMENT;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.util.DoubleFormat;
-import com.sun.xml.internal.ws.org.objectweb.asm.Label;
 
 import javafx.geometry.Point3D;
 import javafx.scene.Parent;
