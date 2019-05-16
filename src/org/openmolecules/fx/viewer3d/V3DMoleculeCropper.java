@@ -45,7 +45,6 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 	}
 
 	public void crop() {
-		mFXMol.removeMeasurements();   // TODO be more specific
 		StereoMolecule mol = mFXMol.getMolecule();
 		boolean[] deleteAtom = new boolean[mol.getAllAtoms()];
 		int count = 0;

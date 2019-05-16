@@ -45,6 +45,7 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
@@ -62,9 +63,7 @@ public class V3DMolecule extends RotatableGroup {
 	private static final Color PICKED_COLOR = Color.BLUEVIOLET;
 	private static final Color DEFAULT_INHERITED_SURFACE_COLOR = Color.LIGHTGRAY;
 	private static final Color DEFAULT_SURFACE_COLOR = Color.ROYALBLUE;
-	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
-	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
-	private static final Color TORSION_COLOR = Color.VIOLET;
+
 
 	public enum MEASUREMENT { NONE, DISTANCE, ANGLE, TORSION }
 
@@ -81,12 +80,11 @@ public class V3DMolecule extends RotatableGroup {
 	private int[]           mSurfaceMode,mSurfaceColorMode;
 	private int				mConstructionMode,mHydrogenMode;
 	private MEASUREMENT     mMeasurementMode;
-	private ArrayList<Sphere> mPickedAtomList;
-	private int				mPartnerAtom; //atom to which a bond will be drawn
-	private ArrayList<NonRotatingLabel> mLabelList;
+	private LinkedList<Sphere> mPickedAtomList;
+	//private ArrayList<NonRotatingLabel> mLabelList;
 	private boolean			mIsMouseDown,mOverrideCarbonOnly;
 	private double[]        mSurfaceTransparency;
-
+	private ArrayList<MoleculeChangeListener> mListeners;
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -135,8 +133,7 @@ public class V3DMolecule extends RotatableGroup {
 						int surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency) {
 		mMol = mol;
 		mMeasurementMode = MEASUREMENT.NONE;
-		mPickedAtomList = new ArrayList<>();
-		mLabelList = new ArrayList<>();
+		mPickedAtomList = new LinkedList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
 
@@ -147,13 +144,14 @@ public class V3DMolecule extends RotatableGroup {
 		mSurfaceColor = new Color[surfaceCount];
 		mSurfaceColorMode = new int[surfaceCount];
 		mSurfaceTransparency = new double[surfaceCount];
+		
+		mListeners = new ArrayList<MoleculeChangeListener>();
 
 		mSurfaceMode[0] = surfaceMode;
 		mSurfaceColor[0] = (surfaceColor == null) ? DEFAULT_SURFACE_COLOR : surfaceColor;
 		mSurfaceColorMode[0] = surfaceColorMode;
 		mSurfaceTransparency[0] = transparency;
 		
-		mPartnerAtom = -1;
 
 		for (int i=1; i<surfaceCount; i++) {
 			mSurfaceMode[i] = SURFACE_NONE;
@@ -195,6 +193,13 @@ public class V3DMolecule extends RotatableGroup {
 		return true;
 	}
 	
+	public void addMoleculeChangeListener(MoleculeChangeListener listener) {
+		mListeners.add(listener);
+	}
+	
+	public void removeMoleculeChangeListener(MoleculeChangeListener listener) {
+		mListeners.remove(listener);
+	}
 	
 
 
@@ -244,6 +249,7 @@ public class V3DMolecule extends RotatableGroup {
 			setTranslateX(getTranslateX()+p1.getX()-p2.getX());
 			setTranslateY(getTranslateY()+p1.getY()-p2.getY());
 			setTranslateZ(getTranslateZ()+p1.getZ()-p2.getZ());
+			fireCoordinatesChange();
 			}
 		else {
 			Point3D cog = getCenterOfGravity();
@@ -255,6 +261,7 @@ public class V3DMolecule extends RotatableGroup {
 			setTranslateX(getTranslateX()+p1.getX()-p2.getX());
 			setTranslateY(getTranslateY()+p1.getY()-p2.getY());
 			setTranslateZ(getTranslateZ()+p1.getZ()-p2.getZ());
+			fireCoordinatesChange();
 			}
 		}
 
@@ -353,6 +360,8 @@ public class V3DMolecule extends RotatableGroup {
 	public Color getSurfaceColor(int surfaceType) {
 		return mSurfaceColor[surfaceType];
 	}
+	
+
 
 		/**
 		 * Updates the surface color mode to PLAIN and updates the surface to the given color.
@@ -537,9 +546,9 @@ public class V3DMolecule extends RotatableGroup {
 	public void activateEvents() {
 		setOnMousePressed(me -> {
 				//System.out.println("mouse pressed isPrimaryButtonDown:"+me.isPrimaryButtonDown()+" isMiddleButtonDown:"+me.isMiddleButtonDown());
-				if (me.getButton() == MouseButton.PRIMARY) {
-					pickShape(me);
-				}
+				//if (me.getButton() == MouseButton.PRIMARY) {
+				//	pickShape(me);
+			//	}
 				// clicking the mouse wheel causes a MouseExited followed by a MousePressed event
 				if (me.getButton() == MouseButton.MIDDLE) {
 					trackHiliting(me);
@@ -586,75 +595,43 @@ public class V3DMolecule extends RotatableGroup {
 		return mLastPickedNode;
 		}
 
-	private void pickShape(MouseEvent me) {
+	public boolean pickShape(MouseEvent me) {
 		mLastPickedNode = null;
 		PickResult result = me.getPickResult();
 		mLastPickedNode = result.getIntersectedNode();
-		if (mMeasurementMode != MEASUREMENT.NONE) {
+		//if (mMeasurementMode != MEASUREMENT.NONE) {
 			if (mLastPickedNode instanceof Sphere) {
 				NodeDetail detail = (NodeDetail)mLastPickedNode.getUserData();
 				if (detail != null && detail.isAtom()) {
 					Sphere atomShape = (Sphere)mLastPickedNode;
-					if (mPickedAtomList.contains(atomShape))
+					if (mPickedAtomList.contains(atomShape)) {
 						mPickedAtomList.remove(atomShape);
-					else
-						mPickedAtomList.add(atomShape);
-					updateAppearance(atomShape);
+						updateAppearance(atomShape);
+						return false;
 					}
-				}
-			tryAddMeasurement();
+					else {
+						mPickedAtomList.add(atomShape);
+						updateAppearance(atomShape);
+						return true;
+					}
+					}
+			//	}
+			//tryAddMeasurement();
 			}
+			return false;
 		}
+	
+	public void fireCoordinatesChange() {
+		for(MoleculeChangeListener listener : mListeners) {
+			listener.coordinatesChanged();
+		}
+	}
+	
+
 	
 
 
-	private void tryAddMeasurement() {
-		if (mMeasurementMode == MEASUREMENT.DISTANCE) {
-			if (mPickedAtomList.size() < 2)
-				return;
 
-			int atom1 = ((NodeDetail)mPickedAtomList.get(0).getUserData()).getAtom();
-			int atom2 = ((NodeDetail)mPickedAtomList.get(1).getUserData()).getAtom();
-			addMeasurementNodes(mPickedAtomList.get(0), mPickedAtomList.get(1), DISTANCE_COLOR,
-								DoubleFormat.toString(calculateAtomDistance(atom1, atom2), 3));
-
-			clearPickedAtomList();
-			return;
-			}
-
-		if (mMeasurementMode == MEASUREMENT.ANGLE) {
-			if (mPickedAtomList.size() < 3)
-				return;
-
-			if (pickedAtomsAreStrand()) {
-				int atom1 = ((NodeDetail) mPickedAtomList.get(0).getUserData()).getAtom();
-				int atom2 = ((NodeDetail) mPickedAtomList.get(1).getUserData()).getAtom();
-				int atom3 = ((NodeDetail) mPickedAtomList.get(2).getUserData()).getAtom();
-				String angle = Integer.toString((int)Math.round(180*calculateAtomAngle(atom2, atom1, atom3)/Math.PI));
-				addMeasurementNodes(mPickedAtomList.get(0), mPickedAtomList.get(2), ANGLE_COLOR, angle);
-				}
-
-			clearPickedAtomList();
-			return;
-			}
-
-		if (mMeasurementMode == MEASUREMENT.TORSION) {
-			if (mPickedAtomList.size() < 4)
-				return;
-
-			if (pickedAtomsAreStrand()) {
-				int[] atom = new int[4];
-				for (int i = 0; i < 4; i++)
-					atom[i] = ((NodeDetail)mPickedAtomList.get(i).getUserData()).getAtom();
-
-				String torsion = Integer.toString((int)Math.round(180*mMol.calculateTorsion(atom)/Math.PI));
-				addMeasurementNodes(mPickedAtomList.get(0), mPickedAtomList.get(3), TORSION_COLOR, torsion);
-				}
-
-			clearPickedAtomList();
-			return;
-			}
-		}
 
 	private boolean pickedAtomsAreStrand() {
 		int atom1 = ((NodeDetail)mPickedAtomList.get(0).getUserData()).getAtom();
@@ -800,24 +777,16 @@ public class V3DMolecule extends RotatableGroup {
 		return v1.getAngle(v2);
 		}
 
-	private void clearPickedAtomList() {
+	public void clearPickedAtomList() {
 		// clear picked atoms
-		Sphere[] pickedAtom = mPickedAtomList.toArray(new Sphere[0]);
+		Sphere[] pickedAtom = mPickedAtomList.toArray(new Sphere[mPickedAtomList.size()]);
 		mPickedAtomList.clear();
-		for (Sphere atomShape:pickedAtom)
+		for (Sphere atomShape:pickedAtom) {
 			updateAppearance(atomShape);
 		}
-
-	private void addMeasurementNodes(Sphere s1, Sphere s2, Color color, String text) {
-		Point3D p1 = s1.localToParent(0, 0, 0);
-		Point3D p2 = s2.localToParent(0, 0, 0);
-
-		DashedRod line = new DashedRod(p1, p2, color);
-		getChildren().add(line);
-
-		NonRotatingLabel label = NonRotatingLabel.create(this, text, p1, p2, color);
-		mLabelList.add(label);
 		}
+
+
 
 /*
 	public void setConformer(Conformer conf) { //added by JW
@@ -861,14 +830,7 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 
-	public void removeMeasurements() {
-		for (int i=getChildren().size()-1; i>=0; i--)
-			if (getChildren().get(i) instanceof DashedRod)
-				getChildren().remove(i);
-		for (NonRotatingLabel label:mLabelList)
-			label.remove(this);
-		mLabelList.clear();
-		}
+
 
 	/**
 	 * @return center of molecule or location of picked Shape in scene as Point3D
@@ -876,6 +838,10 @@ public class V3DMolecule extends RotatableGroup {
 	public Point3D getHighlightedPointInScene() {
 		return (mHighlightedShape == null) ? localToScene(0, 0, 0) : mHighlightedShape.localToScene(0, 0, 0);
 		}
+	
+	public LinkedList<Sphere> getPickedAtoms() {
+		return mPickedAtomList;
+	}
 
 	/**
 	 * @return (0,0,0) or location of picked Shape in molecule coordinates as Point3D
@@ -884,7 +850,7 @@ public class V3DMolecule extends RotatableGroup {
 		return (mHighlightedShape == null) ? new Point3D(0, 0, 0) : mHighlightedShape.localToParent(0, 0, 0);
 		}
 
-	private void updateAppearance(Node node) {
+	public void updateAppearance(Node node) {
 		if (!(node instanceof Shape3D))
 			return;
 

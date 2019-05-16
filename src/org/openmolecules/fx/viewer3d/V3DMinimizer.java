@@ -4,12 +4,13 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.forcefield.ForceField;
 import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
+import com.actelion.research.chem.forcefield.mmff.ForceFieldMMFF94;
 import com.actelion.research.util.ArrayUtils;
 import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
-import mmff.ForceFieldMMFF94;
+
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	 */
 	public static void minimize(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol) {
 		stopMinimization();
-
 		sInstance = new V3DMinimizer(scene3D, editor, fxmol);
 		sInstance.minimize();
 	}
@@ -140,6 +140,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 							posIndex += 3;
 						}
 						mFXMolUpdater[i].update();
+						mFXMol[i].fireCoordinatesChange();
 					}
 
 					if (mEditor != null)

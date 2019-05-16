@@ -29,7 +29,7 @@ public class V3DMoleculeEditor {
 	
 	
 	public void moleculeClicked(V3DMolecule v3dMol, Node node) {
-		if(mAction!=null && v3dMol.getMeasurementMode()==V3DMolecule.MEASUREMENT.NONE) {
+		if(mAction!=null) {
 		NodeDetail detail = (NodeDetail)node.getUserData();
 				if(detail != null)
 					mAction.onMouseUp(v3dMol,detail);

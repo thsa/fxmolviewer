@@ -20,6 +20,8 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import java.util.ArrayList;
+
 import org.openmolecules.fx.viewer3d.V3DMolecule.MEASUREMENT;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
@@ -103,6 +105,22 @@ public class V3DMouseHandler {
 			if (me.getButton() == MouseButton.PRIMARY) {
 				if (isDoubleClick)
 					mScene.selectMolecule(mHighlightedMol, me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0);
+				else {
+					if(mScene.getMeasurementMode()!=V3DScene.MEASUREMENT.NONE) {
+					Node parent = mSelectedNode;
+					while (parent != null && !(parent instanceof V3DMolecule)) {
+						parent = parent.getParent();
+					}
+					if(parent!=null) {
+						V3DMolecule fxmol = (V3DMolecule) parent;
+						boolean molPicked = fxmol.pickShape(me);
+						if(molPicked) {
+							mScene.getPickedMolsList().add(fxmol);
+							mScene.tryAddMeasurement();
+						}
+					}
+					}
+				}
 			}
 
 			if (me.getButton() == MouseButton.SECONDARY) {
@@ -136,7 +154,7 @@ public class V3DMouseHandler {
 				while (parent != null && !(parent instanceof V3DMolecule)) {
 					parent = parent.getParent();
 				}
-				if(mScene.getEditor().getAction()!=null) {
+				if(mScene.getEditor().getAction()!=null && mScene.getMeasurementMode()==V3DScene.MEASUREMENT.NONE) {
 					if (parent == null) {
 						V3DMolecule fxmol = mScene.getEditor().sceneClicked(mScene);
 						if(fxmol!=null) {
@@ -156,6 +174,7 @@ public class V3DMouseHandler {
 						mScene.getEditor().moleculeClicked(fxmol, mSelectedNode);
 						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 							fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+						mScene.removeMeasurements(fxmol);
 					}
 
 					}
@@ -187,8 +206,10 @@ public class V3DMouseHandler {
 			if (me.isMiddleButtonDown() || (me.isPrimaryButtonDown() && me.isMetaDown())) {
 				if (mAffectedMol == null)
 					translateCameraXY(-dx, -dy);
-				else
+				else {
 					translateMolecule(mAffectedMol, dx, dy, 0);
+					mAffectedMol.fireCoordinatesChange();
+				}
 			}
 			else if (me.isSecondaryButtonDown()) {
 				mShowPopup = false;
@@ -358,12 +379,16 @@ public class V3DMouseHandler {
 				Point3D p0 = world.sceneToLocal(new Point3D(0, 0, 0));
 				Point3D p2 = world.sceneToLocal(p1).subtract(p0);
 				Rotate r = new Rotate(d, p2);
-				if (mAffectedMol != null)
+				if (mAffectedMol != null) {
 					mAffectedMol.rotate(r);
+
+				}
 				else
 					for (Node node : mScene.getWorld().getChildren())
-						if (node instanceof V3DMolecule)
+						if (node instanceof V3DMolecule) {
 							((V3DMolecule) node).rotate(r);
+
+						}
 				}
 			else {
 				// world center of gravity:
@@ -391,16 +416,25 @@ public class V3DMouseHandler {
 			angleDif -= 2 * Math.PI;
 		return angleDif;
 		}
+	
 
 	private void createPopupMenu(Node node, double x, double y) {
 		// if we have an active node, create a node specific popup
+		if(node.getParent() instanceof NonRotatingLabel) {
+			((NonRotatingLabel) node.getParent()).showMenu(x,y);
+		}
+		else {
 		Node parent = node;
 		while (parent != null && !(parent instanceof V3DMolecule)) {
 			parent = parent.getParent();
 		}
 		if (parent == null)
 			new V3DPopupMenu(mScene, null).show(mScene.getWorld(), x, y);
-		else
+		else {
+
 			new V3DPopupMenu(mScene, (V3DMolecule)parent).show(node, x, y);
+			}
+		}
 	}
+	
 }

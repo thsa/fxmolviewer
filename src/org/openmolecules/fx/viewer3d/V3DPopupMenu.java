@@ -222,23 +222,6 @@ public class V3DPopupMenu extends ContextMenu {
 				getItems().add(menuSurface);
 			}
 
-			RadioMenuItem measurementsNone = new RadioMenuItem("None");
-			measurementsNone.setSelected(fxmol.getMeasurementMode() == V3DMolecule.MEASUREMENT.NONE);
-			measurementsNone.setOnAction(e -> fxmol.setMeasurementMode(V3DMolecule.MEASUREMENT.NONE));
-			RadioMenuItem measurementsDistance = new RadioMenuItem("Distance");
-			measurementsDistance.setSelected(fxmol.getMeasurementMode() == V3DMolecule.MEASUREMENT.DISTANCE);
-			measurementsDistance.setOnAction(e -> fxmol.setMeasurementMode(V3DMolecule.MEASUREMENT.DISTANCE));
-			RadioMenuItem measurementsAngle = new RadioMenuItem("Angle");
-			measurementsAngle.setSelected(fxmol.getMeasurementMode() == V3DMolecule.MEASUREMENT.ANGLE);
-			measurementsAngle.setOnAction(e -> fxmol.setMeasurementMode(V3DMolecule.MEASUREMENT.ANGLE));
-			RadioMenuItem measurementsDihedral = new RadioMenuItem("Torsion");
-			measurementsDihedral.setSelected(fxmol.getMeasurementMode() == V3DMolecule.MEASUREMENT.TORSION);
-			measurementsDihedral.setOnAction(e -> fxmol.setMeasurementMode(V3DMolecule.MEASUREMENT.TORSION));
-			MenuItem measurementsRemoveAll = new MenuItem("Remove All");
-			measurementsRemoveAll.setOnAction(e -> fxmol.removeMeasurements());
-			Menu menuMeasurements = new Menu("Measurements");
-			menuMeasurements.getItems().addAll(measurementsNone, measurementsDistance, measurementsAngle, measurementsDihedral, new SeparatorMenuItem(), measurementsRemoveAll);
-			getItems().add(menuMeasurements);
 
 			getItems().add(new SeparatorMenuItem());
 			MenuItem itemHide = new MenuItem("Hide Molecule");
@@ -319,6 +302,25 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuRaytrace = new Menu("Photo-Realistic Image");
 		menuRaytrace.getItems().addAll(itemRayTraceMol, itemRaytraceScene);
 		getItems().add(menuRaytrace);
+		
+		RadioMenuItem measurementsNone = new RadioMenuItem("None");
+		measurementsNone.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.NONE);
+		measurementsNone.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.NONE));
+		RadioMenuItem measurementsDistance = new RadioMenuItem("Distance");
+		measurementsDistance.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.DISTANCE);
+		measurementsDistance.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.DISTANCE));
+		RadioMenuItem measurementsAngle = new RadioMenuItem("Angle");
+		measurementsAngle.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.ANGLE);
+		measurementsAngle.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.ANGLE));
+		RadioMenuItem measurementsDihedral = new RadioMenuItem("Torsion");
+		measurementsDihedral.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.TORSION);
+		measurementsDihedral.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.TORSION));
+		MenuItem measurementsRemoveAll = new MenuItem("Remove All");
+		measurementsRemoveAll.setOnAction(e -> scene.removeMeasurements());
+		Menu menuMeasurements = new Menu("Measurements");
+		menuMeasurements.getItems().addAll(measurementsNone, measurementsDistance, measurementsAngle, measurementsDihedral, new SeparatorMenuItem(), measurementsRemoveAll);
+		getItems().add(menuMeasurements);
+		
 	}
 
 	private double clipValueToSlider(double clipValue) {

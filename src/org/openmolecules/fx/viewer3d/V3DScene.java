@@ -25,19 +25,29 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
+import com.actelion.research.util.DoubleFormat;
+
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
+import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.PickResult;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Sphere;
+
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MEASUREMENT;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
-public class V3DScene extends SubScene {
+public class V3DScene extends SubScene implements LabelDeletionListener {
 	private ClipboardHandler mClipboardHandler;
 	private Group mRoot;                  	// not rotatable, contains light and camera
 	private RotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
@@ -49,13 +59,31 @@ public class V3DScene extends SubScene {
 	private V3DMolecule mSurfaceCutMolecule;
 	private V3DMoleculeEditor mEditor;
 	private boolean mMouseDragged; //don't place molecule fragments if mouse is released after a drag event
-
+	private ArrayList<V3DMolecule> mPickedMolsList;
+	private MEASUREMENT     mMeasurementMode;
+	private ArrayList<NonRotatingLabel> mLabelList;
+	private ArrayList<V3DMeasurement> mMeasurements;
+	
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
 	protected static final double CAMERA_FIELD_OF_VIEW = 30.0;	// default field of view
 	protected static final double CAMERA_NEAR_CLIP = 10.0;
 	protected static final double CAMERA_FAR_CLIP = 250.0;
 	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2;
+	public enum MEASUREMENT { NONE(0), DISTANCE(2), ANGLE(3), TORSION(4);
+		private final int requiredAtoms;
+		MEASUREMENT(int requiredAtoms){
+			this.requiredAtoms = requiredAtoms;
+		}
+		public int getRequiredAtoms() {
+			return requiredAtoms;
+		}
+		
+	}
+	
+	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
+	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
+	private static final Color TORSION_COLOR = Color.VIOLET;
 
 
 	public V3DScene(Group root, double width, double height) {
@@ -74,16 +102,36 @@ public class V3DScene extends SubScene {
 
 		buildLight();
 		buildCamera();
-
+		mMeasurements = new ArrayList<V3DMeasurement>();
 		mMouseHandler = new V3DMouseHandler(this);
 		mKeyHandler = new V3DKeyHandler(this);
 		mClipboardHandler = new ClipboardHandler();
 		mMouseDragged = false;
+		mMeasurementMode = MEASUREMENT.NONE;
+		mPickedMolsList = new ArrayList<V3DMolecule>();
+		mLabelList = new ArrayList<NonRotatingLabel>();
 		}
 
 	public void setSceneListener(V3DSceneListener sl) {
 		mSceneListener = sl;
 		}
+	
+	public MEASUREMENT getMeasurementMode() {
+		return mMeasurementMode;
+	}
+	
+	public ArrayList<V3DMolecule> getPickedMolsList() {
+		return mPickedMolsList;
+	}
+
+	public void setMeasurementMode(MEASUREMENT measurement) {
+		for(V3DMolecule fxmol : mPickedMolsList)
+			fxmol.clearPickedAtomList();
+		mPickedMolsList.clear();
+		mMeasurementMode = measurement;
+		}
+	
+
 
 	public boolean isIndividualRotationModus() {
 		return mIsIndividualRotationModus;
@@ -138,13 +186,27 @@ public class V3DScene extends SubScene {
 		}
 
 	public void delete(V3DMolecule fxmol) {
-		fxmol.removeMeasurements();
+		removeMeasurements(fxmol);
 		fxmol.deactivateEvents();
 		mWorld.getChildren().remove(fxmol);
 		if (mSceneListener != null)
 			mSceneListener.removeMolecule(fxmol);
 		}
 
+	
+	public void removeMeasurements(V3DMolecule fxmol) {
+		ArrayList<V3DMeasurement> toDelete = new ArrayList<V3DMeasurement>();
+		for(V3DMeasurement measurement : mMeasurements) {
+			if (measurement.getV3DMolecules().contains(fxmol)){
+				toDelete.add(measurement);
+				measurement.cleanup();
+				fxmol.removeMoleculeChangeListener(measurement);
+			}
+		}
+		mMeasurements.removeAll(toDelete);
+	}
+	
+	
 	public void deleteInvisibleMolecules() {
 		ArrayList<V3DMolecule> list = new ArrayList<>();
 		for (Node node : mWorld.getChildren())
@@ -172,7 +234,7 @@ public class V3DScene extends SubScene {
 	public void clearAll(boolean isSmallMoleculeMode) {
 		for (Node node:mWorld.getChildren()) {
 			if (node instanceof V3DMolecule) {
-				((V3DMolecule) node).removeMeasurements();
+				//((V3DMolecule) node).removeMeasurements();
 				if (mSceneListener != null)
 					mSceneListener.removeMolecule((V3DMolecule) node);
 			}
@@ -250,6 +312,7 @@ public class V3DScene extends SubScene {
 						refPoint[atom] = fxmol.localToScene(c.x, c.y, c.z);
 					}
 					V3DMoleculeCropper cropper = new V3DMoleculeCropper(fxmol, distance, refPoint, refBounds);
+					removeMeasurements(fxmol);
 					cropper.crop();
 					for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 						fxmol.cutSurface(type, cropper);
@@ -382,5 +445,104 @@ public class V3DScene extends SubScene {
 	public V3DMoleculeEditor getEditor() {
 		return mEditor;
 	}
+	
+	
+
+
+	public void tryAddMeasurement() {
+		
+		Set<V3DMolecule> mols = new HashSet<V3DMolecule>(mPickedMolsList);
+		int pickedAtoms = 0;
+		for(V3DMolecule fxmol : mols) {
+			pickedAtoms += fxmol.getPickedAtoms().size();
+		}
+		if(pickedAtoms<mMeasurementMode.getRequiredAtoms())
+			return;
+		else {
+			Sphere[] pickedAtomList = new Sphere[mMeasurementMode.getRequiredAtoms()];
+			Coordinates[] coords = new Coordinates[mMeasurementMode.getRequiredAtoms()];
+			ArrayList<Integer> atIds = new ArrayList<Integer>();
+			ArrayList<V3DMolecule> fxmols = new ArrayList<V3DMolecule>();
+			int counter=0;
+			for(V3DMolecule fxmol : mPickedMolsList) {
+				pickedAtomList[counter] = fxmol.getPickedAtoms().removeFirst();
+				fxmol.updateAppearance(pickedAtomList[counter]);
+				int atid = ((NodeDetail) pickedAtomList[counter].getUserData()).getAtom();
+				atIds.add(atid);
+				fxmols.add(fxmol);
+				Coordinates c = fxmol.getMolecule().getCoordinates(atid);
+				Point3D globalCoords = fxmol.localToParent(c.x,c.y,c.z);
+				coords[counter] = new Coordinates(globalCoords.getX(),globalCoords.getY(),globalCoords.getZ());
+				counter++;
+			}		
+			if (mMeasurementMode == MEASUREMENT.DISTANCE) {
+				double dist = coords[0].distance(coords[1]);
+				addMeasurementNodes(coords[0],coords[1], DISTANCE_COLOR,
+								DoubleFormat.toString(dist,3),atIds,fxmols);
+			}
+			else if(mMeasurementMode == MEASUREMENT.ANGLE) {
+				Coordinates v1 = coords[0].subC(coords[1]);
+				Coordinates v2 = coords[2].subC(coords[1]);
+				double angle = v1.getAngle(v2);
+				angle = 180*angle/Math.PI;
+				addMeasurementNodes(coords[0], coords[2], ANGLE_COLOR, DoubleFormat.toString(angle,3),atIds,fxmols);
+			}
+			
+			else if(mMeasurementMode == MEASUREMENT.TORSION) {
+
+				double dihedral = Coordinates.getDihedral(coords[0],coords[1],coords[2],coords[3]);
+				dihedral = 180*dihedral/Math.PI;
+				addMeasurementNodes(coords[0], coords[3], TORSION_COLOR, DoubleFormat.toString(dihedral,3),atIds,fxmols);
+			}
+	
+			mPickedMolsList.clear();
+		}
+
+		}
+	
+	private void addMeasurementNodes(Coordinates c1, Coordinates c2, Color color, String text, ArrayList<Integer> atoms, ArrayList<V3DMolecule> fxmols) {
+		Point3D p1 = new Point3D(c1.x,c1.y,c1.z);
+		Point3D p2 = new Point3D(c2.x,c2.y,c2.z);
+		DashedRod line = new DashedRod(p1, p2, color);
+		NonRotatingLabel label = NonRotatingLabel.create(mWorld, text, p1, p2, color);
+		label.setLabelDeletionListener(this);
+		V3DMeasurement measurement = new V3DMeasurement(atoms,fxmols,line,label,mWorld);
+		mMeasurements.add(measurement);
+
+		}
+	
+	public ArrayList<V3DMeasurement> getMeasurements() {
+		return mMeasurements;
+	}
+	
+	public void removeMeasurements() {
+		for(V3DMeasurement measurement: mMeasurements) {
+			measurement.cleanup();
+		}
+		mMeasurements.clear();
+	}
+
+	@Override
+	public void labelDeleted(Label l) {
+		ArrayList<V3DMeasurement> toBeRemoved = new ArrayList<V3DMeasurement>();
+		for(V3DMeasurement measurement: mMeasurements) {
+			if(measurement.getLabel().equals(l)) {
+				measurement.cleanup();
+				toBeRemoved.add(measurement);
+				for (Node node : mWorld.getChildren())
+					if (node instanceof V3DMolecule) {
+						V3DMolecule fxmol = (V3DMolecule) node;
+						fxmol.removeMoleculeChangeListener(measurement);
+					}
+			}
+		}
+		mMeasurements.removeAll(toBeRemoved);
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+
 
 	}
