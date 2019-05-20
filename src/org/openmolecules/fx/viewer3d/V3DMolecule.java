@@ -24,7 +24,6 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
-import com.actelion.research.util.DoubleFormat;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -293,8 +292,7 @@ public class V3DMolecule extends RotatableGroup {
 			mHydrogenMode = hydrogenMode;
 
 			for (int i=getChildren().size()-1; i>=0; i--)
-				if (!(getChildren().get(i) instanceof DashedRod)
-				 && !(getChildren().get(i) instanceof MeshView))
+				if (!(getChildren().get(i) instanceof MeshView))
 					getChildren().remove(i);
 			V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 			builder.setConstructionMode(constructionMode);
