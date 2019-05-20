@@ -656,6 +656,8 @@ public class V3DMolecule extends RotatableGroup {
 				updateAppearance(node);
 				}
 			}
+		for (int atom=0; atom<mMol.getAllAtoms(); atom++)
+			mMol.setAtomSelection(atom, isSelect);
 		}
 
 	/**
@@ -676,6 +678,9 @@ public class V3DMolecule extends RotatableGroup {
 				if (isSelected != detail.isSelected()) {
 					detail.setSelected(isSelected);
 					updateAppearance(node);
+					int atom = detail.getAtom();
+					if (atom != -1)
+						mMol.setAtomSelection(atom, isSelected);
 					}
 				}
 			}
