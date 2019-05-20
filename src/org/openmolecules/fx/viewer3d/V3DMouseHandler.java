@@ -20,9 +20,7 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import java.util.ArrayList;
-
-import org.openmolecules.fx.viewer3d.V3DMolecule.MEASUREMENT;
+import javafx.scene.shape.Shape3D;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import javafx.application.Platform;
@@ -119,9 +117,9 @@ public class V3DMouseHandler {
 							mScene.tryAddMeasurement();
 						}
 					}
-					}
 				}
 			}
+		}
 
 			if (me.getButton() == MouseButton.SECONDARY) {
 				mShowPopup = true;
@@ -260,6 +258,8 @@ public class V3DMouseHandler {
 			mHighlightedMol.removeHilite();
 
 		mHighlightedMol = (V3DMolecule) molecule;
+		if (mHighlightedMol != null && node instanceof Shape3D)
+			mHighlightedMol.setHighlightedShape((Shape3D)node);
 	}
 
 	/**
@@ -430,10 +430,8 @@ public class V3DMouseHandler {
 		}
 		if (parent == null)
 			new V3DPopupMenu(mScene, null).show(mScene.getWorld(), x, y);
-		else {
-
+		else
 			new V3DPopupMenu(mScene, (V3DMolecule)parent).show(node, x, y);
-			}
 		}
 	}
 	

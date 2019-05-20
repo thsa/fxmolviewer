@@ -314,7 +314,7 @@ public class StartOptions {
 					else
 						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
 
-					vm.activateEvents();
+//					vm.activateEvents();
 
 					if (i == ligandIndex)
 						ligand = vm;
@@ -350,7 +350,7 @@ public class StartOptions {
 			mol.translate(dx, dy, dz);
 			V3DMolecule vm = new V3DMolecule(mol);
 			vm.setSurface(0, (1 + i) % 3, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.2 * (i % 5));
-			vm.activateEvents();
+//			vm.activateEvents();
 			scene.addMolecule(vm);
 		}
 	}
@@ -372,7 +372,7 @@ public class StartOptions {
 			double transparency = 0.20 + 0.1 * (i % 7);
 			vm.setSurface(0, V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, transparency);
 
-			vm.activateEvents();
+//			vm.activateEvents();
 			scene.addMolecule(vm);
 		}
 	}
@@ -434,7 +434,7 @@ public class StartOptions {
 			V3DMolecule vm = new V3DMolecule(conformer.toMolecule(null));
 			vm.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			vm.setColor(Color.hsb(hue, 1.0, 0.5), true);
-			vm.activateEvents();
+//			vm.activateEvents();
 			scene.addMolecule(vm);
 			hue += 37;
 			count ++;
@@ -466,7 +466,7 @@ public class StartOptions {
 				//				V3DMolecule vm = new V3DMolecule(conformer, -1, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 				//						V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.5);
 
-				vm.activateEvents();
+//				vm.activateEvents();
 
 				millis = printDelay(millis);
 				System.out.print("adding molecule to scene...  ");

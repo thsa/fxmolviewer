@@ -32,15 +32,11 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.PickResult;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
 
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.V3DMolecule.MEASUREMENT;
-import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
@@ -70,6 +66,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	protected static final double CAMERA_NEAR_CLIP = 10.0;
 	protected static final double CAMERA_FAR_CLIP = 250.0;
 	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2;
+
 	public enum MEASUREMENT { NONE(0), DISTANCE(2), ANGLE(3), TORSION(4);
 		private final int requiredAtoms;
 		MEASUREMENT(int requiredAtoms){
@@ -78,7 +75,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		public int getRequiredAtoms() {
 			return requiredAtoms;
 		}
-		
 	}
 	
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
@@ -181,13 +177,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			}
 
 		V3DMolecule fxmol = new V3DMolecule(mol);
-		fxmol.activateEvents();
+//		fxmol.activateEvents();
 		addMolecule(fxmol);
 		}
 
 	public void delete(V3DMolecule fxmol) {
 		removeMeasurements(fxmol);
-		fxmol.deactivateEvents();
+//		fxmol.deactivateEvents();
 		mWorld.getChildren().remove(fxmol);
 		if (mSceneListener != null)
 			mSceneListener.removeMolecule(fxmol);
@@ -447,11 +443,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		return mEditor;
 	}
 	
-	
-
-
 	public void tryAddMeasurement() {
-		
 		Set<V3DMolecule> mols = new HashSet<V3DMolecule>(mPickedMolsList);
 		int pickedAtoms = 0;
 		for(V3DMolecule fxmol : mols) {
@@ -498,8 +490,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 			mPickedMolsList.clear();
 		}
-
-		}
+	}
 	
 	private void addMeasurementNodes(Coordinates c1, Coordinates c2, Color color, String text, ArrayList<Integer> atoms, ArrayList<V3DMolecule> fxmols) {
 		Point3D p1 = new Point3D(c1.x,c1.y,c1.z);
@@ -537,13 +528,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 					}
 			}
 		}
+
 		mMeasurements.removeAll(toBeRemoved);
 		// TODO Auto-generated method stub
-		
 	}
-
-
-
-
-
-	}
+}

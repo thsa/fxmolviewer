@@ -41,7 +41,7 @@ public class V3DAddAtomAction implements V3DEditorAction {
 		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule());
 		v3dMol.setId("Molecule");
 		scene3D.addMolecule(v3dMol);
-		v3dMol.activateEvents();
+//		v3dMol.activateEvents();
 		V3DMoleculeModifier.placeAtom(v3dMol, mAtomicNo);
 		return v3dMol;
 	}

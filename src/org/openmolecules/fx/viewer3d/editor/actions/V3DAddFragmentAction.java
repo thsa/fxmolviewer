@@ -55,7 +55,7 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule());
 		v3dMol.setId("Molecule");
 		scene3D.addMolecule(v3dMol);
-		v3dMol.activateEvents();
+//		v3dMol.activateEvents();
 		V3DMoleculeModifier.placeFragment(v3dMol, mIDCodes);
 		return v3dMol;
 	}

@@ -63,9 +63,6 @@ public class V3DMolecule extends RotatableGroup {
 	private static final Color DEFAULT_INHERITED_SURFACE_COLOR = Color.LIGHTGRAY;
 	private static final Color DEFAULT_SURFACE_COLOR = Color.ROYALBLUE;
 
-
-	public enum MEASUREMENT { NONE, DISTANCE, ANGLE, TORSION }
-
 	private static PhongMaterial sSolidHighlightedMaterial,sTransparentHighlightedMaterial,
 			sPickedMaterial,sSelectedMaterial;
 
@@ -78,9 +75,7 @@ public class V3DMolecule extends RotatableGroup {
 	private Color[]			mSurfaceColor;
 	private int[]           mSurfaceMode,mSurfaceColorMode;
 	private int				mConstructionMode,mHydrogenMode;
-	private MEASUREMENT     mMeasurementMode;
 	private LinkedList<Sphere> mPickedAtomList;
-	//private ArrayList<NonRotatingLabel> mLabelList;
 	private boolean			mIsMouseDown,mOverrideCarbonOnly;
 	private double[]        mSurfaceTransparency;
 	private ArrayList<MoleculeChangeListener> mListeners;
@@ -131,7 +126,6 @@ public class V3DMolecule extends RotatableGroup {
 	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode,
 						int surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency) {
 		mMol = mol;
-		mMeasurementMode = MEASUREMENT.NONE;
 		mPickedAtomList = new LinkedList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
@@ -304,15 +298,6 @@ public class V3DMolecule extends RotatableGroup {
 				if (mSurfaceMode[i] != SURFACE_NONE)
 					updateSurfaceFromMesh(i);
 			}
-		}
-
-	public MEASUREMENT getMeasurementMode() {
-		return mMeasurementMode;
-	}
-
-	public void setMeasurementMode(MEASUREMENT measurement) {
-		clearPickedAtomList();
-		mMeasurementMode = measurement;
 		}
 
 	public Color getColor() {
@@ -541,7 +526,7 @@ public class V3DMolecule extends RotatableGroup {
 			sSelectedMaterial = createMaterial(V3DScene.SELECTION_COLOR, 1.0);
 		}
 
-	public void activateEvents() {
+/*	public void activateEvents() {
 		setOnMousePressed(me -> {
 				//System.out.println("mouse pressed isPrimaryButtonDown:"+me.isPrimaryButtonDown()+" isMiddleButtonDown:"+me.isMiddleButtonDown());
 				//if (me.getButton() == MouseButton.PRIMARY) {
@@ -554,9 +539,7 @@ public class V3DMolecule extends RotatableGroup {
 				}
 			} );
 		setOnMouseReleased(me -> {
-
 				mIsMouseDown = false;
-
 			});
 		setOnMouseMoved(me -> {
 //System.out.println("mouse moved");
@@ -584,7 +567,7 @@ public class V3DMolecule extends RotatableGroup {
 		if (node instanceof Shape3D)
 			setHighlightedShape((Shape3D)node);
 		}
-
+*/
 	public void removeHilite() {
 		setHighlightedShape(null);
 		}
@@ -597,27 +580,24 @@ public class V3DMolecule extends RotatableGroup {
 		mLastPickedNode = null;
 		PickResult result = me.getPickResult();
 		mLastPickedNode = result.getIntersectedNode();
-		//if (mMeasurementMode != MEASUREMENT.NONE) {
-			if (mLastPickedNode instanceof Sphere) {
-				NodeDetail detail = (NodeDetail)mLastPickedNode.getUserData();
-				if (detail != null && detail.isAtom()) {
-					Sphere atomShape = (Sphere)mLastPickedNode;
-					if (mPickedAtomList.contains(atomShape)) {
-						mPickedAtomList.remove(atomShape);
-						updateAppearance(atomShape);
-						return false;
-					}
-					else {
-						mPickedAtomList.add(atomShape);
-						updateAppearance(atomShape);
-						return true;
-					}
-					}
-			//	}
-			//tryAddMeasurement();
+		if (mLastPickedNode instanceof Sphere) {
+			NodeDetail detail = (NodeDetail)mLastPickedNode.getUserData();
+			if (detail != null && detail.isAtom()) {
+				Sphere atomShape = (Sphere)mLastPickedNode;
+				if (mPickedAtomList.contains(atomShape)) {
+					mPickedAtomList.remove(atomShape);
+					updateAppearance(atomShape);
+					return false;
+				}
+				else {
+					mPickedAtomList.add(atomShape);
+					updateAppearance(atomShape);
+					return true;
+				}
 			}
-			return false;
 		}
+		return false;
+	}
 	
 	public void fireCoordinatesChange() {
 		for(MoleculeChangeListener listener : mListeners) {
@@ -930,9 +910,8 @@ public class V3DMolecule extends RotatableGroup {
 		double opacity = detail.getMaterial().getDiffuseColor().getOpacity();
 		return createMaterial(mOverrideMaterial.getDiffuseColor(), opacity);
 	}
-	
 
-	private void setHighlightedShape(Shape3D shape) {
+	public void setHighlightedShape(Shape3D shape) {
 		if (mHighlightedShape != shape) {
 			Shape3D previousShape = mHighlightedShape;
 			mHighlightedShape = shape;
