@@ -238,8 +238,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				if (mSceneListener != null)
 					mSceneListener.removeMolecule((V3DMolecule) node);
 			}
-		mSceneListener.initialize(isSmallMoleculeMode);
 		}
+		if (mSceneListener != null)
+			mSceneListener.initialize(isSmallMoleculeMode);
 		mWorld.getChildren().clear();	// this does not remove the measurements
 	}
 
