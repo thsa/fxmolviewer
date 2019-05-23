@@ -242,7 +242,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	/**
 	 * Moves all nodes such that the center of gravity of all atoms is world center (0,0,0).
-	 * Moves the camera such that x=0, y=0 and z<0, such that all nodes are just within the field of view.
+	 * Moves the camera such that x=0, y=0 and z<0, such that all atoms of visible molecules are just within the field of view.
 	 */
 	public void optimizeView() {
 		Point3D cog = getCenterOfGravity();
@@ -253,9 +253,46 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			n.setTranslateZ(n.getTranslateZ() - p.getZ());
 		}
 
+		double cameraZ = 50;
+
+		double hFOV = ((PerspectiveCamera)getCamera()).getFieldOfView();
+		double vFOV;
+		if (((PerspectiveCamera)getCamera()).isVerticalFieldOfView()) {
+			vFOV = hFOV;
+			hFOV *= getWidth() / getHeight();
+		}
+		else {
+			vFOV = hFOV * getHeight() / getWidth();
+		}
+
+		if (hFOV != 0 && vFOV != 0) {
+			double tanH = Math.tan(0.9 * Math.PI * hFOV / 360);	// we need half FOV in radians and want the molecule to fill not more than 90%
+			double tanV = Math.tan(0.9 * Math.PI * vFOV / 360);
+
+			cameraZ = 0;
+
+			for (Node node1:mWorld.getChildren()) {
+				if (node1 instanceof V3DMolecule) {
+					V3DMolecule fxmol = (V3DMolecule)node1;
+					if (fxmol.isVisible()) {
+						for (Node node2:fxmol.getChildren()) {
+							NodeDetail detail = (NodeDetail)node2.getUserData();
+							if (detail != null) {
+								if (detail.isAtom()) {
+									Point3D p = node2.localToScene(0.0, 0.0, 0.0);
+									cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getX()) / tanH);
+									cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getY()) / tanV);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		getCamera().setTranslateX(0);
 		getCamera().setTranslateY(0);
-		getCamera().setTranslateZ(-50);
+		getCamera().setTranslateZ(cameraZ);
 	}
 
 	public Point3D getCenterOfGravity() {

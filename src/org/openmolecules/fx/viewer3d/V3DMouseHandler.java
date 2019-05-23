@@ -224,8 +224,8 @@ public class V3DMouseHandler {
 				mAffectedMol = mHighlightedMol;
 			else
 				mAffectedMol = mMousePressedMol;
-			}
 		}
+	}
 
 	private boolean isSingleMolecule(MouseEvent me) {
 		if (SINGLE_MOL_KEY == 0 && me.isShiftDown())
@@ -353,7 +353,7 @@ public class V3DMouseHandler {
 		f *= 0.5*mScene.getWidth()/mScene.getHeight();
 
 		return f;
-		}
+	}
 
 	private void rotate(double dx, double dy, boolean aroundZAxis) {
 		if (dx != 0 || dy != 0) {
@@ -370,32 +370,29 @@ public class V3DMouseHandler {
 				double y1 = y2 - dy;
 				d = 180 / Math.PI * angleDif(angle(x1, y1), angle(x2, y2));
 				p1 = new Point3D(0, 0, 1);
-				}
+			}
 			else {
 				p1 = new Point3D(dy, -dx, 0);
-				}
+			}
+
 			if (mAffectedMol != null || mScene.isIndividualRotationModus()) {
 				RotatableGroup world = mScene.getWorld();
 				Point3D p0 = world.sceneToLocal(new Point3D(0, 0, 0));
 				Point3D p2 = world.sceneToLocal(p1).subtract(p0);
 				Rotate r = new Rotate(d, p2);
-				if (mAffectedMol != null) {
+				if (mAffectedMol != null)
 					mAffectedMol.rotate(r);
-
-				}
 				else
 					for (Node node : mScene.getWorld().getChildren())
-						if (node instanceof V3DMolecule) {
+						if (node instanceof V3DMolecule)
 							((V3DMolecule) node).rotate(r);
-
-						}
-				}
+			}
 			else {
 				// world center of gravity:
 				mScene.getWorld().rotate(new Rotate(d, p1));
-				}
 			}
 		}
+	}
 
 	private double angle(double dx, double dy) {
 		if (dy == 0.0)
@@ -434,5 +431,4 @@ public class V3DMouseHandler {
 			new V3DPopupMenu(mScene, (V3DMolecule)parent).show(node, x, y);
 		}
 	}
-	
 }
