@@ -16,5 +16,6 @@ public interface MoleculeBuilder {
 	public void init();
 	public void addSphere(int role, Coordinates c, double radius, int argb);
 	public void addCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb);
+	public void addCone(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb);
 	public void done();
 	}

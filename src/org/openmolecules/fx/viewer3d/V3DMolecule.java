@@ -28,7 +28,6 @@ import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.paint.Color;
@@ -76,7 +75,7 @@ public class V3DMolecule extends RotatableGroup {
 	private int[]           mSurfaceMode,mSurfaceColorMode;
 	private int				mConstructionMode,mHydrogenMode;
 	private LinkedList<Sphere> mPickedAtomList;
-	private boolean			mIsMouseDown,mOverrideCarbonOnly;
+	private boolean			mOverrideCarbonOnly;
 	private double[]        mSurfaceTransparency;
 	private ArrayList<MoleculeChangeListener> mListeners;
 

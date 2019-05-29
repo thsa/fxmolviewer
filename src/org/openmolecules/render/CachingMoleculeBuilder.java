@@ -9,17 +9,20 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 	private MoleculeBuilder mRenderer;
 	private ArrayList<CachedSphere> mSphereList;
 	private ArrayList<CachedCylinder> mCylinderList;
+	private ArrayList<CachedCone> mConeList;
 
 	public CachingMoleculeBuilder(MoleculeBuilder renderer) {
 		mRenderer = renderer;
 		mSphereList = new ArrayList<CachedSphere>();
 		mCylinderList = new  ArrayList<CachedCylinder>();
+		mConeList = new  ArrayList<CachedCone>();
 		}
 
 	@Override
 	public void init() {
 		mSphereList.clear();
 		mCylinderList.clear();
+		mConeList.clear();
 		}
 
 	@Override
@@ -28,9 +31,14 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		}
 
 	@Override
-	public void addCylinder(int bond, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
-		mCylinderList.add(new CachedCylinder(bond, radius, length, c, rotationY, rotationZ, argb));
+	public void addCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
+		mCylinderList.add(new CachedCylinder(role, radius, length, c, rotationY, rotationZ, argb));
 		}
+
+	@Override
+	public void addCone(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
+		mConeList.add(new CachedCone(role, radius, length, c, rotationY, rotationZ, argb));
+	}
 
 	@Override
 	public void done() {
@@ -82,5 +90,26 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		public int compareTo(CachedCylinder o) {
 			return (argb == o.argb) ? 0 : (argb < o.argb) ? -1 : 1;
 			}
+		}
+
+	private class CachedCone implements Comparable<CachedCone> {
+		int role,argb;
+		Coordinates c;
+		double radius,length,rotationY,rotationZ;
+
+		public CachedCone(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
+			this.role = role;
+			this.radius = radius;
+			this.length = length;
+			this.c = new Coordinates(c);
+			this.rotationY = rotationY;
+			this.rotationZ = rotationZ;
+			this.argb = argb;
+			}
+
+		@Override
+		public int compareTo(CachedCone o) {
+			return (argb == o.argb) ? 0 : (argb < o.argb) ? -1 : 1;
+		}
 		}
 	}

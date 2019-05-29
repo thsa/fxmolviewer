@@ -138,8 +138,6 @@ public class MoleculeArchitect {
 		buildMolecule(null, mol, fromAtom, fromBond);
 		}
 	
-
-
 	private void buildMolecule(Conformer conformer, StereoMolecule mol, int fromAtom, int fromBond) {
 		mConformer = conformer;
 		mMol = mol;
@@ -166,16 +164,25 @@ public class MoleculeArchitect {
 			for (int atom=fromAtom; atom<toAtom; atom++) {
 				if (includeAtom(atom)) {
 					int atomicNo = mMol.getAtomicNo(atom);
-					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-								  : (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
-								  : (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-								  :							VDWRadii.VDW_RADIUS[atomicNo]/4;
-					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
+					if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
+						double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+								:							VDWRadii.VDW_RADIUS[atomicNo]/4;
+						buildConnection(atom, radius);
+						}
+					else {
+						double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+								: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
+								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+								:							VDWRadii.VDW_RADIUS[atomicNo]/4;
+						mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
+						}
 					}
 				}
 			}
 
 		}
+
 	//added by JW
 	public void buildMolecule(StereoMolecule mol, ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
 		mMol = mol;
@@ -195,11 +202,19 @@ public class MoleculeArchitect {
 			for (Integer atom:atoms) {
 				if (includeAtom(atom)) {
 					int atomicNo = mol.getAtomicNo(atom);
-					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-								  : (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
-								  : (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-								  :							VDWRadii.VDW_RADIUS[atomicNo]/4;
-					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
+					if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
+						double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+								:							VDWRadii.VDW_RADIUS[atomicNo]/4;
+						buildConnection(atom, radius);
+						}
+					else {
+						double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo] / 4
+								: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
+								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo] * 0.95  // to avoid collision with vdw-radii based surface
+								: VDWRadii.VDW_RADIUS[atomicNo] / 4;
+						mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
+						}
 					}
 				}
 			}
@@ -217,6 +232,26 @@ public class MoleculeArchitect {
 			|| mMol.getConnAtoms(atom) != 1
 			|| (mHydrogenMode == HYDROGEN_MODE_POLAR
 			 && mMol.getAtomicNo(mMol.getConnAtom(atom, 0)) != 6);
+		}
+
+	/**
+	 * @param atom wild card atom drawn as cone, which defines a connection to some other not included part of the molecule
+	 */
+	private void buildConnection(int atom, double radius) {
+		int coreAtom = mMol.getConnAtom(atom, 0);
+		Coordinates c1 = getCoordinates(atom);
+		Coordinates c2 = getCoordinates(coreAtom);
+		delta.set(c2).sub(c1);
+
+		double d = delta.getLength();
+		double dxy = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
+		double b = Math.asin(c2.z > c1.z ? dxy / d : -dxy / d);
+		double c = (delta.x < 0.0) ? Math.atan(delta.y / delta.x) + Math.PI
+				: (delta.x > 0.0) ? Math.atan(delta.y / delta.x)
+				: (delta.y > 0.0) ? Math.PI / 2 : -Math.PI / 2;
+
+		System.out.println(delta.x+"\t"+delta.y+"\t"+delta.z+"\t"+b+"\t"+c);
+		mBuilder.addCone(atomRole(atom), radius, 2*radius, c1, b, c, getAtomColor(atom));
 		}
 
 	private void buildBond(int bond) {

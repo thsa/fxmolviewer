@@ -8,6 +8,7 @@ import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
+import org.openmolecules.mesh.Cone;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
 
@@ -75,6 +76,22 @@ public class V3DMoleculeUpdater implements MoleculeBuilder {
 		Node node = mNodeMap.get(role);
 		if (node != null) {
 			((Cylinder)node).setHeight(length);
+			node.setTranslateX(center.x);
+			node.setTranslateY(center.y);
+			node.setTranslateZ(center.z);
+
+			Transform r1 = new Rotate(90+180/Math.PI*rotationY, Rotate.X_AXIS);
+			Transform r2 = new Rotate(90+180/Math.PI*rotationZ, Rotate.Z_AXIS);
+			node.getTransforms().clear();
+			node.getTransforms().add(r2);
+			node.getTransforms().add(r1);
+		}
+	}
+
+	@Override
+	public void addCone(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
+		Node node = mNodeMap.get(role);
+		if (node != null) {
 			node.setTranslateX(center.x);
 			node.setTranslateY(center.y);
 			node.setTranslateZ(center.z);

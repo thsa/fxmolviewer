@@ -28,6 +28,7 @@ import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
+import org.openmolecules.mesh.Cone;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
 
@@ -126,6 +127,25 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		cylinder.setUserData(new NodeDetail(material, role, isOverridable));
 		mV3DMolecule.getChildren().add(cylinder);
 		}
+
+	@Override
+	public void addCone(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
+		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
+							  || argb == MoleculeArchitect.ATOM_ARGB[6]);
+		PhongMaterial material = getMaterial(argb);
+		Cone cone = new Cone(radius, length);
+		cone.setMaterial(material);
+		cone.setTranslateX(center.x);
+		cone.setTranslateY(center.y);
+		cone.setTranslateZ(center.z);
+
+		Transform r1 = new Rotate(90+180/Math.PI*rotationY, Rotate.X_AXIS);
+		Transform r2 = new Rotate(90+180/Math.PI*rotationZ, Rotate.Z_AXIS);
+		cone.getTransforms().add(r2);
+		cone.getTransforms().add(r1);
+		cone.setUserData(new NodeDetail(material, role, isOverridable));
+		mV3DMolecule.getChildren().add(cone);
+	}
 
 	@Override
 	public void done() {}

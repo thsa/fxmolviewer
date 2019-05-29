@@ -6,6 +6,7 @@ import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.VDWRadii;
+import javafx.scene.shape.TriangleMesh;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.shader.ColorProvider;
 import org.sunflow.math.Point3;
@@ -49,7 +50,7 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 
 	private float	mCameraDistance,mCameraX, mCameraZ,mFieldOfView, mMaxAtomY, mMinAtomY, mBrightness;
 	private double  mFloorZ,mXShift,mYShift,mZShift;
-	private int     mRenderMode,mCylinderNo,mLastRGB,mLastMaterial,mSphereNo,mAtomMaterial,mBondMaterial,mOverrideARGB;
+	private int     mRenderMode,mMeshNo,mCylinderNo,mLastRGB,mLastMaterial,mSphereNo,mAtomMaterial,mBondMaterial,mOverrideARGB;
 	private boolean mFlipFeaturesToFront,mFlipXAndZ,mIsGlossyFloor;
 	private Color   mBackgroundColor,mFloorColor;
 	private StereoMolecule mMol;
@@ -536,6 +537,58 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 		drawCylinder("c" + mCylinderNo++, (float) radius, (float) radius, (float) length / 2f,
 				(float) c.x, (float) c.y, (float) c.z, 0f, (float) rotationY, (float) rotationZ);
 		}
+
+	@Override
+	public void addCone(int role, double radius, double height, Coordinates c, double rotationY, double rotationZ, int argb) {
+		if (mOverrideARGB != ARGB_NONE)
+			argb = mOverrideARGB;
+
+		if (mLastRGB != argb || mLastMaterial != mAtomMaterial) {
+			mLastRGB = argb;
+			mLastMaterial = mAtomMaterial;
+
+			Color color = createColor(argb, mAtomMaterial);
+			createShader("cs" + Integer.toHexString(argb), color, mAtomMaterial);
+			}
+
+		final int DIVISIONS = 36;
+		float[] vertexes = new float[2+DIVISIONS];
+		int[] triangles = new int[2*DIVISIONS];
+		double segmentAngle = 2.0 * Math.PI / DIVISIONS;
+
+		int vertex = 0;
+		int triangle = 0;
+
+		vertexes[vertex++] = 0;
+		vertexes[vertex++] = 0;
+		vertexes[vertex++] = -(float)(height/(2*radius));
+
+		double angle = 0;
+		for(int i=0; i<DIVISIONS; i++) {
+			vertexes[vertex++] = (float)(radius * Math.cos(angle));
+			vertexes[vertex++] = (float)(radius * Math.sin(angle));
+			vertexes[vertex++] = -(float)(height/(2*radius));
+			angle += segmentAngle;
+			}
+
+		vertexes[vertex++] = 0;
+		vertexes[vertex++] = 0;
+		vertexes[vertex++] = (float)(height/(2*radius));
+
+		for(int i=0; i<DIVISIONS; i++) {
+			int next = (i == DIVISIONS-1) ? 1 : i+2;
+			triangles[triangle++] = i+1;
+			triangles[triangle++] = 0;
+			triangles[triangle++] = next;
+
+			triangles[triangle++] = i+1;
+			triangles[triangle++] = next;
+			triangles[triangle++] = DIVISIONS+1;
+			}
+
+		drawMesh("m" + mMeshNo++, vertexes, triangles, (float) radius,
+				(float) c.x, (float) c.y, (float) c.z, 0f, (float) rotationY, (float) rotationZ);
+	}
 
 	/**
 	 * For matt and shiny materials all atom colors are reduced somewhat in brightness.
