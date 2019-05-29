@@ -241,16 +241,19 @@ public class MoleculeArchitect {
 		int coreAtom = mMol.getConnAtom(atom, 0);
 		Coordinates c1 = getCoordinates(atom);
 		Coordinates c2 = getCoordinates(coreAtom);
-		delta.set(c2).sub(c1);
+		delta.set(c1).sub(c2);
 
 		double d = delta.getLength();
 		double dxy = Math.sqrt(delta.x * delta.x + delta.y * delta.y);
-		double b = Math.asin(c2.z > c1.z ? dxy / d : -dxy / d);
-		double c = (delta.x < 0.0) ? Math.atan(delta.y / delta.x) + Math.PI
+		double b = Math.asin(dxy / d);
+		if (delta.z < 0.0)
+			b = Math.PI - b;
+		if (delta.x < 0.0)
+			b = -b;
+		double c = (delta.x < 0.0) ? Math.atan(delta.y / delta.x)
 				: (delta.x > 0.0) ? Math.atan(delta.y / delta.x)
 				: (delta.y > 0.0) ? Math.PI / 2 : -Math.PI / 2;
 
-		System.out.println(delta.x+"\t"+delta.y+"\t"+delta.z+"\t"+b+"\t"+c);
 		mBuilder.addCone(atomRole(atom), radius, 2*radius, c1, b, c, getAtomColor(atom));
 		}
 
