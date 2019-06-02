@@ -1,13 +1,13 @@
 package org.openmolecules.render;
 
-import java.util.ArrayList;
-
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.RingCollection;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.VDWRadii;
+
+import java.util.ArrayList;
 
 /**
  * A MoleculeArchitect is a class that constructs a 3D molecule model
@@ -158,29 +158,27 @@ public class MoleculeArchitect {
 				 && includeAtom(mMol.getBondAtom(1, bond)))
 					buildBond(bond);
 
-		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_BALLS) {
-			for (int atom=fromAtom; atom<toAtom; atom++) {
-				if (includeAtom(atom)) {
-					int atomicNo = mMol.getAtomicNo(atom);
-					if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
-						double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-								:							VDWRadii.VDW_RADIUS[atomicNo]/4;
-						buildConnection(atom, radius);
-						}
-					else {
-						double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-								: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
-								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-								:							VDWRadii.VDW_RADIUS[atomicNo]/4;
-						mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
-						}
+		for (int atom=fromAtom; atom<toAtom; atom++) {
+			if (includeAtom(atom)
+			 && (mConstructionMode != CONSTRUCTION_MODE_WIRES || mMol.getConnAtoms(atom) == 0)) {
+				int atomicNo = mMol.getAtomicNo(atom);
+				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
+					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+							:							VDWRadii.VDW_RADIUS[atomicNo]/4;
+					buildConnection(atom, radius);
+					}
+				else {
+					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ?
+									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.VDW_RADIUS[atomicNo]/6 : STICK_SBOND_RADIUS)
+							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+							: VDWRadii.VDW_RADIUS[atomicNo]/8;
+					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
 				}
 			}
-
 		}
 
 	//added by JW
@@ -196,29 +194,27 @@ public class MoleculeArchitect {
 					buildBond(bond);
 			}
 
-		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_BALLS) {
-			for (Integer atom:atoms) {
-				if (includeAtom(atom)) {
-					int atomicNo = mol.getAtomicNo(atom);
-					if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
-						double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-								:							VDWRadii.VDW_RADIUS[atomicNo]/4;
-						buildConnection(atom, radius);
-						}
-					else {
-						double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo] / 4
-								: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ? STICK_SBOND_RADIUS
-								: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo] * 0.95  // to avoid collision with vdw-radii based surface
-								: VDWRadii.VDW_RADIUS[atomicNo] / 4;
-						mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
-						}
+		for (Integer atom:atoms) {
+			if (includeAtom(atom)
+			 && (mConstructionMode != CONSTRUCTION_MODE_WIRES || mMol.getConnAtoms(atom) == 0)) {
+				int atomicNo = mol.getAtomicNo(atom);
+				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
+					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+							:							VDWRadii.VDW_RADIUS[atomicNo]/4;
+					buildConnection(atom, radius);
+					}
+				else {
+					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ?
+									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.VDW_RADIUS[atomicNo]/6 : STICK_SBOND_RADIUS)
+							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo] * 0.95  // to avoid collision with vdw-radii based surface
+							: VDWRadii.VDW_RADIUS[atomicNo]/8;
+					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
 				}
 			}
-
 		}
 
 

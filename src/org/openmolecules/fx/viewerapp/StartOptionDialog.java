@@ -29,14 +29,6 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 public class StartOptionDialog extends Dialog<StartOptions> implements EventHandler<ActionEvent> {
-	private static final String[] MODE_OPTIONS = {
-			"Get from PDB",
-			"Test small molecules",
-			"Test molecules surfaces",
-			"Test Conformers",
-//			"Test protein",
-//			"Test surface from voxel data"
-	};
 
 	private ComboBox mComboboxMode;
 	private TextField mTextFieldPDBCode;
@@ -67,7 +59,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 
 		grid.add(new Label("Viewer Mode:"), 0, ++yIndex);
 		mComboboxMode = new ComboBox();
-		for (String mode:MODE_OPTIONS)
+		for (String mode:StartOptions.MODE_OPTIONS)
 			mComboboxMode.getItems().add(mode);
 		mComboboxMode.getSelectionModel().select(options == null ? 0 : options.getMode());
 		mComboboxMode.addEventHandler(ActionEvent.ACTION, this);
