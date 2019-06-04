@@ -63,9 +63,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
 	protected static final double CAMERA_FIELD_OF_VIEW = 30.0;	// default field of view
-	protected static final double CAMERA_NEAR_CLIP = 10.0;
-	protected static final double CAMERA_FAR_CLIP = 250.0;
+	protected static final double CAMERA_NEAR_CLIP = 1.0;
+	protected static final double CAMERA_FAR_CLIP = 1000.0;
 	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2;
+	private static final double CLIP_ATOM_PADDING = 3.0;
 
 	public enum MEASUREMENT { NONE(0), DISTANCE(2), ANGLE(3), TORSION(4);
 		private final int requiredAtoms;
@@ -127,8 +128,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMeasurementMode = measurement;
 		}
 	
-
-
 	public boolean isIndividualRotationModus() {
 		return mIsIndividualRotationModus;
 		}
@@ -293,6 +292,46 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		getCamera().setTranslateX(0);
 		getCamera().setTranslateY(0);
 		getCamera().setTranslateZ(cameraZ);
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public double[] getVisibleZRange() {
+		double[] zr = new double[2];
+		zr[0] = Double.MAX_VALUE;
+		zr[1] = Double.MIN_VALUE;
+		for (Node node1:mWorld.getChildren()) {
+			if (node1 instanceof V3DMolecule) {
+				V3DMolecule fxmol = (V3DMolecule)node1;
+				if (fxmol.isVisible()) {
+					for (Node node2:fxmol.getChildren()) {
+						NodeDetail detail = (NodeDetail)node2.getUserData();
+						if (detail != null) {
+							if (detail.isAtom()) {
+								Point3D p = node2.localToScene(0.0, 0.0, 0.0);
+								if (zr[0] > p.getZ())
+									zr[0] = p.getZ();
+								if (zr[1] < p.getZ())
+									zr[1] = p.getZ();
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (zr[0] == Double.MAX_VALUE) {
+			zr[0] = CAMERA_NEAR_CLIP;
+			zr[1] = CAMERA_FAR_CLIP;
+		}
+		else {
+			zr[0] -= CLIP_ATOM_PADDING;
+			zr[1] += CLIP_ATOM_PADDING;
+		}
+
+		return zr;
 	}
 
 	public Point3D getCenterOfGravity() {

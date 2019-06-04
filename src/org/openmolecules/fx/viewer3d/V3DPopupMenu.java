@@ -241,11 +241,17 @@ public class V3DPopupMenu extends ContextMenu {
 
 		getItems().add(new SeparatorMenuItem());
 
-		Slider slider1 = createSlider(0, CLIP_STEEPNESS, clipValueToSlider(scene.getCamera().nearClipProperty().get()));
+		final double[] zrange = scene.getVisibleZRange();
+		final double sliderMin = 0;
+		final double sliderMax = CLIP_STEEPNESS;
+
+		Slider slider1 = createSlider(sliderMin, sliderMax, Math.min(sliderMax, Math.max(sliderMin, clipValueToSlider(scene.getCamera().nearClipProperty().get(), zrange[0], zrange[1]))));
 		slider1.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				double newClipStart = sliderToClipValue(newValue.doubleValue());
+				double newClipStart = newValue.doubleValue() == sliderMin ? V3DScene.CAMERA_NEAR_CLIP
+									: newValue.doubleValue() == sliderMax ? V3DScene.CAMERA_FAR_CLIP
+									: sliderToClipValue(newValue.doubleValue(), zrange[0], zrange[1]);
 				double thickness = scene.getCamera().farClipProperty().getValue()
 								 - scene.getCamera().nearClipProperty().getValue();
 				double newFarClip = Math.min(V3DScene.CAMERA_FAR_CLIP, newClipStart + thickness);
@@ -323,18 +329,18 @@ public class V3DPopupMenu extends ContextMenu {
 		
 	}
 
-	private double clipValueToSlider(double clipValue) {
+	private double clipValueToSlider(double clipValue, double minClip, double maxClip) {
 		double en = Math.exp(CLIP_STEEPNESS);
-		double b = (MAX_CLIP - en * MIN_CLIP) / (1.0 - en);
-		double a = MIN_CLIP - b;
+		double b = (maxClip - en * minClip) / (1.0 - en);
+		double a = minClip - b;
 //System.out.println("clipValueToSlider("+clipValue+") : "+(Math.log((clipValue - b) / a)));
 		return Math.log((clipValue - b) / a);
 	}
 
-	private double sliderToClipValue(double sliderValue) {
+	private double sliderToClipValue(double sliderValue, double minClip, double maxClip) {
 		double en = Math.exp(CLIP_STEEPNESS);
-		double b = (MAX_CLIP - en * MIN_CLIP) / (1.0 - en);
-		double a = MIN_CLIP - b;
+		double b = (maxClip - en * minClip) / (1.0 - en);
+		double a = minClip - b;
 //System.out.println("sliderToClipValue("+sliderValue+") : "+(a * Math.exp(sliderValue) + b));
 		return a * Math.exp(sliderValue) + b;
 	}
