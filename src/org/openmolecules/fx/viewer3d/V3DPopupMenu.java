@@ -242,35 +242,53 @@ public class V3DPopupMenu extends ContextMenu {
 		getItems().add(new SeparatorMenuItem());
 
 		final double[] zrange = scene.getVisibleZRange();
-		final double sliderMin = 0;
-		final double sliderMax = CLIP_STEEPNESS;
+		zrange[0] -= scene.getCamera().getTranslateZ();
+		zrange[1] -= scene.getCamera().getTranslateZ();
 
-		Slider slider1 = createSlider(sliderMin, sliderMax, Math.min(sliderMax, Math.max(sliderMin, clipValueToSlider(scene.getCamera().nearClipProperty().get(), zrange[0], zrange[1]))));
+		final double slider1Min = clipValueToSlider(zrange[0]);
+		final double slider1Max = clipValueToSlider(zrange[1]);
+		final double slider2Min = clipValueToSlider(V3DScene.CAMERA_MIN_CLIP_THICKNESS);
+		final double slider2Max = clipValueToSlider(zrange[1] - zrange[0]);
+
+		Slider slider1 = createSlider(slider1Min, slider1Max, Math.min(slider1Max, Math.max(slider1Min, clipValueToSlider(scene.getCamera().nearClipProperty().get()))));
 		slider1.valueProperty().addListener(new ChangeListener<Number>() {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				double newClipStart = newValue.doubleValue() == sliderMin ? V3DScene.CAMERA_NEAR_CLIP
-									: newValue.doubleValue() == sliderMax ? V3DScene.CAMERA_FAR_CLIP
-									: sliderToClipValue(newValue.doubleValue(), zrange[0], zrange[1]);
-				double thickness = scene.getCamera().farClipProperty().getValue()
-								 - scene.getCamera().nearClipProperty().getValue();
-				double newFarClip = Math.min(V3DScene.CAMERA_FAR_CLIP, newClipStart + thickness);
-				scene.getCamera().nearClipProperty().setValue(newClipStart);
-				scene.getCamera().farClipProperty().setValue(newFarClip);
+				double nearClip = scene.getCamera().nearClipProperty().getValue();
+				double farClip = scene.getCamera().farClipProperty().getValue();
+
+				if (newValue.doubleValue() == slider1Min && farClip == V3DScene.CAMERA_FAR_CLIP) {
+					scene.getCamera().nearClipProperty().setValue(V3DScene.CAMERA_NEAR_CLIP);
+				}
+				else {
+					double newClipStart = sliderToClipValue(newValue.doubleValue());
+					scene.getCamera().nearClipProperty().setValue(newClipStart);
+
+					if (farClip != V3DScene.CAMERA_FAR_CLIP) {
+						double thickness = farClip - nearClip;
+						double newFarClip = Math.min(V3DScene.CAMERA_FAR_CLIP, newClipStart + thickness);
+						scene.getCamera().farClipProperty().setValue(newFarClip);
+					}
+				}
 			}
 		});
 
-		double oldThickness = Math.min(MAX_CLIP, scene.getCamera().farClipProperty().get()
-				- scene.getCamera().nearClipProperty().get());
-		Slider slider2 = createSlider(0, CLIP_STEEPNESS, clipThicknessToSlider(oldThickness));
+		double oldThickness = scene.getCamera().farClipProperty().get()
+				- scene.getCamera().nearClipProperty().get();
+
+		Slider slider2 = createSlider(slider2Min, slider2Max, Math.max(slider2Min, Math.min(slider2Max, clipValueToSlider(oldThickness))));
 		slider2.valueProperty().addListener(newValue -> {
 			double slider = ((DoubleProperty)newValue).doubleValue();
-			if (slider > 0.99 * CLIP_STEEPNESS) {
+			if (slider == slider2Max) {
 				scene.getCamera().farClipProperty().setValue(V3DScene.CAMERA_FAR_CLIP);
 			}
 			else {
-				double newThickness = sliderToClipThickness(slider);
+				double newThickness = sliderToClipValue(slider);
 				double clipStart = scene.getCamera().nearClipProperty().getValue();
+				if (clipStart < zrange[0]) {
+					clipStart = zrange[0];
+					scene.getCamera().nearClipProperty().setValue(clipStart);
+					}
 				double newFarClip = Math.min(V3DScene.CAMERA_FAR_CLIP, clipStart + newThickness);
 				scene.getCamera().farClipProperty().setValue(newFarClip);
 			}
@@ -329,7 +347,17 @@ public class V3DPopupMenu extends ContextMenu {
 		
 	}
 
-	private double clipValueToSlider(double clipValue, double minClip, double maxClip) {
+	private double clipValueToSlider(double clipValue) {
+		double en = Math.exp(CLIP_STEEPNESS);
+		return Math.log(1.0 + (en - 1.0) * clipValue / MAX_CLIP) / CLIP_STEEPNESS;
+	}
+
+	private double sliderToClipValue(double sliderValue) {
+		double en = Math.exp(CLIP_STEEPNESS);
+		return MAX_CLIP * (Math.exp(sliderValue*CLIP_STEEPNESS) - 1.0) / (en - 1);
+	}
+
+/*	private double clipValueToSlider(double clipValue, double minClip, double maxClip) {
 		double en = Math.exp(CLIP_STEEPNESS);
 		double b = (maxClip - en * minClip) / (1.0 - en);
 		double a = minClip - b;
@@ -343,7 +371,7 @@ public class V3DPopupMenu extends ContextMenu {
 		double a = minClip - b;
 //System.out.println("sliderToClipValue("+sliderValue+") : "+(a * Math.exp(sliderValue) + b));
 		return a * Math.exp(sliderValue) + b;
-	}
+	}*/
 
 	private double clipThicknessToSlider(double clipThickness) {
 		double en = Math.exp(CLIP_STEEPNESS);

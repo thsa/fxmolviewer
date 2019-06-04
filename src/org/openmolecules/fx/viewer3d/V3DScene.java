@@ -65,7 +65,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	protected static final double CAMERA_FIELD_OF_VIEW = 30.0;	// default field of view
 	protected static final double CAMERA_NEAR_CLIP = 1.0;
 	protected static final double CAMERA_FAR_CLIP = 1000.0;
-	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2;
+	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2.0;
 	private static final double CLIP_ATOM_PADDING = 3.0;
 
 	public enum MEASUREMENT { NONE(0), DISTANCE(2), ANGLE(3), TORSION(4);
