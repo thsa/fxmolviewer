@@ -24,6 +24,7 @@ import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableIntegerArray;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
 import javafx.scene.shape.Polygon;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
@@ -76,8 +77,13 @@ public class PolygonSurfaceCutter extends SurfaceCutter {
 			for (int i=0; i<pointCount; i++) {
 				if (isInsidePolygon(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2))) {
 					inPolygonIndex[i] = inPolygonCount++;
-					if (frontZ > points.get(3 * i + 2)) {
-						frontZ = points.get(3 * i + 2);
+//					if (frontZ > points.get(3 * i + 2)) {
+//						frontZ = points.get(3 * i + 2);
+//						frontVertex = i;
+//						}
+					Point3D p = mFXMol.localToScene(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2));
+					if (frontZ > p.getZ()) {
+						frontZ = (float)p.getZ();
 						frontVertex = i;
 						}
 					}
