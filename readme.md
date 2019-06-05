@@ -24,7 +24,7 @@ All dependencies are part of this project and can be found in the ./lib folder:
 * OpenChemLib: Cheminformatics base functionality to handle molecules and generate conformers
 * SunFlow source code and janino.jar: Ray-Tracer to build photo-realistic images of 3-dimensional scenes
 * mmtf-all: Java library to download and parse binary structure files from the PDB-database
-* controlsfx-8.40.14.jar: Controls extending JavaFX functionality, used for the molecule side panel
+* controlsfx-8.40.15.jar: Controls extending JavaFX functionality, used for the molecule side panel
 
 
 ### How to download the project
@@ -39,7 +39,9 @@ On Linux or Macintosh just run the 'buildAll' shell script.
 
 ### How to run the project
 
-After building it double click fxmolviewer.jar or type in a shell: 'java -jar fxmolviewer.jar'. **Note that this project requires Java 8.** For Java 9 and above you need to replace controlsfx-8.40.14.jar by a newer version.
+After building it double click fxmolviewer.jar or type in a shell: 'java -jar fxmolviewer.jar'.
+**Note that this project requires Java 8.** For Java 9 and above you need to replace controlsfx-8.40.15.jar
+by controlsfx-11.0.0.jar or a newer version.
 
 
 ### How to contribute
