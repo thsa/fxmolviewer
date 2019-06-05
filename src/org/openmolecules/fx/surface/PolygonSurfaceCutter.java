@@ -77,10 +77,6 @@ public class PolygonSurfaceCutter extends SurfaceCutter {
 			for (int i=0; i<pointCount; i++) {
 				if (isInsidePolygon(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2))) {
 					inPolygonIndex[i] = inPolygonCount++;
-//					if (frontZ > points.get(3 * i + 2)) {
-//						frontZ = points.get(3 * i + 2);
-//						frontVertex = i;
-//						}
 					Point3D p = mFXMol.localToScene(points.get(3 * i), points.get(3 * i + 1), points.get(3 * i + 2));
 					if (frontZ > p.getZ()) {
 						frontZ = (float)p.getZ();
@@ -91,8 +87,6 @@ public class PolygonSurfaceCutter extends SurfaceCutter {
 					inPolygonIndex[i] = -1;
 					}
 				}
-
-System.out.println("pointCount:"+pointCount+" inPolygonCount:"+inPolygonCount);
 
 			if (frontVertex != -1) {
 				int[] neighborVertex = new int[inPolygonCount * MAX_NEIGHBOR_VERTEXES];

@@ -47,7 +47,7 @@ public class V3DMouseHandler {
 	private V3DScene mScene;
 	private double mMouseX,mMouseY;
 	private long mRecentWheelMillis;
-	private V3DMolecule mHighlightedMol,mMousePressedMol,mAffectedMol;
+	private V3DMolecule mHighlightedMol,mAffectedMol;
 	private long mMousePressedMillis;
 	private Node mSelectedNode;
 
@@ -78,8 +78,6 @@ public class V3DMouseHandler {
 				}
 			}
 			else {
-				trackHighlightedMol(se.getPickResult());
-				trackAffectedMol(isSingleMolecule(se), true);
 				if (mAffectedMol == null)
 					translateCameraZ(-delta);    // this does not change the world rotation center
 				else
@@ -92,7 +90,7 @@ public class V3DMouseHandler {
 			mMouseY = me.getScreenY();
 
 			mAffectedMol = null;
-			mMousePressedMol = mHighlightedMol;
+			trackAffectedMol(isSingleMolecule(me));
 
 			// setOnMouseClicked() is strangely often not triggered. Therefore we simulate...
 			long millis = System.currentTimeMillis();
@@ -185,15 +183,12 @@ public class V3DMouseHandler {
 				createPopupMenu(mSelectedNode, me.getScreenX(), me.getScreenY());
 			}
 			mScene.setMouseDragged(false);
-//			mAffectedMol = null;
 		} );
 		scene.setOnMouseMoved(me -> {
 			trackHighlightedMol(me.getPickResult());
+			trackAffectedMol(isSingleMolecule(me));
 		} );
 		scene.setOnMouseDragged(me -> {
-			trackHighlightedMol(me.getPickResult());
-			trackAffectedMol(isSingleMolecule(me), false);
-
 			double oldMouseX = mMouseX;
 			double oldMouseY = mMouseY;
 			mMouseX = me.getScreenX();
@@ -216,14 +211,12 @@ public class V3DMouseHandler {
 		} );
 	}
 
-	private void trackAffectedMol(boolean moleculeKeyIsDown, boolean isScrollWheel) {
-		if (!moleculeKeyIsDown)
+	private void trackAffectedMol(boolean moleculeKeyIsDown) {
+		if (!moleculeKeyIsDown) {
 			mAffectedMol = null;
-		else if (mAffectedMol == null) {
-			if (isScrollWheel)
-				mAffectedMol = mHighlightedMol;
-			else
-				mAffectedMol = mMousePressedMol;
+		}
+		else if (mHighlightedMol != null) {
+			mAffectedMol = mHighlightedMol;
 		}
 	}
 
