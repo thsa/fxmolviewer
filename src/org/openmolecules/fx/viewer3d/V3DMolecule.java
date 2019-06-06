@@ -78,6 +78,7 @@ public class V3DMolecule extends RotatableGroup {
 	private boolean			mOverrideCarbonOnly;
 	private double[]        mSurfaceTransparency;
 	private ArrayList<MoleculeChangeListener> mListeners;
+	private Point3D			mRotationCenter;
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -226,35 +227,30 @@ public class V3DMolecule extends RotatableGroup {
 		return new Point3D(x / atomCount, y / atomCount, z / atomCount);
 	}
 
+	/**
+	 * @param p rotation center to be used by rotate(); if null, then rotate() uses highlighted shape or center of gravity
+	 */
+	public void setCenterOfRotation(Point3D p) {
+		mRotationCenter = p;
+	}
+
 	@Override
 	public void rotate(Rotate r) {
-		if (mHighlightedShape != null) {
-			double x = mHighlightedShape.getTranslateX();
-			double y = mHighlightedShape.getTranslateY();
-			double z = mHighlightedShape.getTranslateZ();
+		Point3D cor = (mRotationCenter != null) ? mRotationCenter
+					: (mHighlightedShape != null) ? new Point3D(mHighlightedShape.getTranslateX(),
+																mHighlightedShape.getTranslateY(),
+																mHighlightedShape.getTranslateZ())
+					: getCenterOfGravity();
 
-			Point3D p1 = getRotation().transform(x, y, z);
-			Point3D p2 = r.transform(p1.getX(), p1.getY(), p1.getZ());
+		Point3D p1 = getRotation().transform(cor);
+		Point3D p2 = r.transform(p1.getX(), p1.getY(), p1.getZ());
 
-			super.rotate(r);
+		super.rotate(r);
 
-			setTranslateX(getTranslateX()+p1.getX()-p2.getX());
-			setTranslateY(getTranslateY()+p1.getY()-p2.getY());
-			setTranslateZ(getTranslateZ()+p1.getZ()-p2.getZ());
-			fireCoordinatesChange();
-			}
-		else {
-			Point3D cog = getCenterOfGravity();
-			Point3D p1 = getRotation().transform(cog);
-			Point3D p2 = r.transform(p1.getX(), p1.getY(), p1.getZ());
-
-			super.rotate(r);
-
-			setTranslateX(getTranslateX()+p1.getX()-p2.getX());
-			setTranslateY(getTranslateY()+p1.getY()-p2.getY());
-			setTranslateZ(getTranslateZ()+p1.getZ()-p2.getZ());
-			fireCoordinatesChange();
-			}
+		setTranslateX(getTranslateX()+p1.getX()-p2.getX());
+		setTranslateY(getTranslateY()+p1.getY()-p2.getY());
+		setTranslateZ(getTranslateZ()+p1.getZ()-p2.getZ());
+		fireCoordinatesChange();
 		}
 
 	public int getConstructionMode() {
