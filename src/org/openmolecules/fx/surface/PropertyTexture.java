@@ -21,7 +21,6 @@
 package org.openmolecules.fx.surface;
 
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.VDWRadii;
 import com.actelion.research.chem.prediction.CLogPPredictor;
 import com.actelion.research.util.SortedList;
