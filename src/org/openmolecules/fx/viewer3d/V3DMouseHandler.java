@@ -103,44 +103,37 @@ public class V3DMouseHandler {
 					mScene.selectMolecule(mHighlightedMol, me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0);
 				else {
 					if(mScene.getMeasurementMode()!=V3DScene.MEASUREMENT.NONE) {
-					Node parent = mSelectedNode;
-					while (parent != null && !(parent instanceof V3DMolecule)) {
-						parent = parent.getParent();
-					}
-					if(parent!=null) {
-						V3DMolecule fxmol = (V3DMolecule) parent;
-						boolean molPicked = fxmol.pickShape(me);
-						if(molPicked) {
-							mScene.getPickedMolsList().add(fxmol);
-							mScene.tryAddMeasurement();
+						Node parent = mSelectedNode;
+						while (parent != null && !(parent instanceof V3DMolecule)) {
+							parent = parent.getParent();
+						}
+						if(parent!=null) {
+							V3DMolecule fxmol = (V3DMolecule) parent;
+							boolean molPicked = fxmol.pickShape(me);
+							if(molPicked) {
+								mScene.getPickedMolsList().add(fxmol);
+								mScene.tryAddMeasurement();
+							}
 						}
 					}
 				}
 			}
-		}
 
 			if (me.getButton() == MouseButton.SECONDARY) {
 				mShowPopup = true;
-				new Thread() {
-					@Override
-					public void run() {
-						try {
-							Thread.sleep(POPUP_DELAY);
-						} catch (InterruptedException ie) {}
-						if (mShowPopup) {
-							Platform.runLater(new Runnable() {
-								@Override
-								public void run() {
-									if (mShowPopup) {
-										mShowPopup = false;
-										Node node = me.getPickResult().getIntersectedNode();
-										createPopupMenu(node, me.getScreenX(), me.getScreenY());
-									}
-								}
-							});
-						}
+				new Thread(() -> {
+					try {
+						Thread.sleep(POPUP_DELAY);
+					} catch (InterruptedException ie) {}
+					if (mShowPopup) {
+						Platform.runLater(() -> {
+							if (mShowPopup) {
+								mShowPopup = false;
+								createPopupMenu(mSelectedNode, me.getScreenX(), me.getScreenY());
+							}
+						});
 					}
-				}.start();
+				}).start();
 			}
 		} );
 		scene.setOnMouseReleased(me -> {
