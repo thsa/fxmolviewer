@@ -182,6 +182,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void delete(V3DMolecule fxmol) {
 		removeMeasurements(fxmol);
+		fxmol.removePharmacophore();
 //		fxmol.deactivateEvents();
 		mWorld.getChildren().remove(fxmol);
 		if (mSceneListener != null)

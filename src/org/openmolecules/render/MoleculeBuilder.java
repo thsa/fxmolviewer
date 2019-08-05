@@ -7,7 +7,8 @@ import com.actelion.research.chem.Coordinates;
  * to construct a molecule for a 3D environment for rendering.
  */
 public interface MoleculeBuilder {
-	public static final int ROLE_INDEX_BITS = 0x00FFFFFF;
+	public static final int ROLE_INDEX_BITS = 0x007FFFFF;
+	public static final int ROLE_IS_PHARMACOPHORE = 0x00800000;
 	public static final int ROLE_IS_ATOM = 0x01000000;
 	public static final int ROLE_IS_BOND = 0x02000000;
 	public static final int ROLE_DETAIL_SHIFT = 26;

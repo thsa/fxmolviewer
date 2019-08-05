@@ -26,6 +26,8 @@ public class V3DMoleculeModifier {
 	}
 	
 	public static void addFragment(V3DMolecule v3dMol,int atom, String[] fragmentIDCode) {
+		if(v3dMol.getMolecule().getAtomicNo(atom)!=1) 
+			return;
 		int dummyAtomFragment = -1;
 		int attachmentPointFragment = -1;
 		IDCodeParserWithoutCoordinateInvention parser = new IDCodeParserWithoutCoordinateInvention();
@@ -46,7 +48,20 @@ public class V3DMoleculeModifier {
 					dummyAtomFragment = at;
 					attachmentPointFragment = fragment.getConnAtom(dummyAtomFragment, 0);
 				}
-				else fragment.setAtomicNo(at, 1);
+				else {
+					fragment.setAtomicNo(at, 1);
+					int aa1 = fragment.getConnAtom(at, 0);
+					int bond = fragment.getBond(at, aa1);
+					Coordinates c1 = fragment.getCoordinates(at);
+					Coordinates cc1 = fragment.getCoordinates(aa1);
+					double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(fragment,bond));
+					Coordinates v = c1.subC(cc1);
+					double l = v.dist();
+					Coordinates c1New=cc1.addC(v.scale(lNew/l));
+					c1.x = c1New.x;
+					c1.y = c1New.y;
+					c1.z = c1New.z;
+				}
 			}
 		}
 		if(dummyAtomFragment==-1 || attachmentPointFragment==-1) return; //no attachment point in fragment
@@ -231,16 +246,7 @@ public class V3DMoleculeModifier {
 		cleanNodes(v3dMol,atomsToBeRemoved,bondsToBeRemoved);
 		
 		mol.setAtomicNo(atom, atomicNo); 
-		//cleaning up the geometry
-		Coordinates c1 = mol.getCoordinates(atom);
-		Coordinates cc1 = mol.getCoordinates(aa1);
-		double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(mol,bond));
-		Coordinates v = c1.subC(cc1);
-		double l = v.dist();
-		Coordinates c1New=cc1.addC(v.scale(lNew/l));
-		c1.x = c1New.x;
-		c1.y = c1New.y;
-		c1.z = c1New.z;
+
 
 		int[] atomMap = mol.getHandleHydrogenMap();
 		int[] bondMap = mol.getHandleHydrogenBondMap();
@@ -251,6 +257,16 @@ public class V3DMoleculeModifier {
 		}
 		
 		mol.ensureHelperArrays(Molecule.cHelperRings); //now the indeces of bonds and atoms changed
+		//cleaning up the geometry
+		Coordinates c1 = mol.getCoordinates(atomMap[atom]);
+		Coordinates cc1 = mol.getCoordinates(atomMap[aa1]);
+		double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(mol,bondMap[bond]));
+		Coordinates v = c1.subC(cc1);
+		double l = v.dist();
+		Coordinates c1New=cc1.addC(v.scale(lNew/l));
+		c1.x = c1New.x;
+		c1.y = c1New.y;
+		c1.z = c1New.z;
 		for(Integer at: new ArrayList<Integer>(atomConstructionList))
 			constructHydrogens(mol,at,atomConstructionList,bondConstructionList);
 		//v3dMol.setConformer(new Conformer(mol));
@@ -288,6 +304,7 @@ public class V3DMoleculeModifier {
 		}
 		cleanNodes(v3dMol,atomsToBeRemoved,bondsToBeRemoved);
 		mol.setAtomicNo(atom, atomicNo);
+
 		int[] hydrogensToBeDeleted = hydrogensToBeRemoved.stream().mapToInt(i->i).toArray();
 		int[] bondMap = mol.getDeleteAtomsBondMap(hydrogensToBeDeleted);
 		int[] atomMap = mol.deleteAtoms(hydrogensToBeDeleted);

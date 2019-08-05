@@ -53,6 +53,10 @@ public class NodeDetail {
     public boolean isBond() {
         return (mRole & MoleculeBuilder.ROLE_IS_BOND) != 0;
         }
+    
+    public boolean isPharmacophore() {
+        return (mRole & MoleculeBuilder.ROLE_IS_PHARMACOPHORE) != 0;
+        }
 
     public boolean isSelected() {
         return mIsSelected;
@@ -79,6 +83,10 @@ public class NodeDetail {
 
     public int getBond() {
 	    return (mRole & MoleculeBuilder.ROLE_IS_BOND) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
+    }
+    
+    public int getPharmacophoreAtom() {
+	    return (mRole & MoleculeBuilder.ROLE_IS_PHARMACOPHORE) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
     }
 
     public void setIndex(int index) {

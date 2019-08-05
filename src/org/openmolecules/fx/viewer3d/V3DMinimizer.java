@@ -1,7 +1,6 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.forcefield.ForceField;
 import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
 import com.actelion.research.chem.forcefield.mmff.ForceFieldMMFF94;
@@ -20,7 +19,6 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	private V3DMolecule[] mFXMol;
 	private V3DMoleculeUpdater[] mFXMolUpdater;
 	private ForceField mForceField;
-	private V3DScene mScene3D;
 	private V3DSceneEditor mEditor;
 	private volatile Thread mMinimizationThread;
 
@@ -37,7 +35,6 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	}
 
 	private V3DMinimizer(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol)  {
-		mScene3D = scene3D;
 		mEditor = editor;
 
 		if (fxmol != null) {
@@ -139,8 +136,8 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 							mol.setAtomZ(atom, p.getZ());
 							posIndex += 3;
 						}
-						mFXMolUpdater[i].update();
 						mFXMol[i].fireCoordinatesChange();
+						mFXMolUpdater[i].update();
 					}
 
 					if (mEditor != null)

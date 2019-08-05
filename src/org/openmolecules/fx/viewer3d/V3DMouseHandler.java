@@ -21,7 +21,10 @@
 package org.openmolecules.fx.viewer3d;
 
 import javafx.scene.shape.Shape3D;
+import javafx.scene.shape.Sphere;
+
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
+
 
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
@@ -50,6 +53,7 @@ public class V3DMouseHandler {
 	private V3DMolecule mHighlightedMol,mAffectedMol;
 	private long mMousePressedMillis;
 	private Node mSelectedNode;
+	private ExclusionSphere mHighlightedExclusionSphere, mAffectedExclusionSphere;
 
 
 	public V3DMouseHandler(final V3DScene scene) {
@@ -164,6 +168,7 @@ public class V3DMouseHandler {
 						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 							fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
 						mScene.removeMeasurements(fxmol);
+						fxmol.removePharmacophore();
 					}
 
 					}
@@ -180,6 +185,7 @@ public class V3DMouseHandler {
 		scene.setOnMouseMoved(me -> {
 			trackHighlightedMol(me.getPickResult());
 			trackAffectedMol(isSingleMolecule(me));
+			
 		} );
 		scene.setOnMouseDragged(me -> {
 			double oldMouseX = mMouseX;
@@ -190,12 +196,16 @@ public class V3DMouseHandler {
 			double dy = (mMouseY - oldMouseY);
 
 			if (me.isMiddleButtonDown() || (me.isPrimaryButtonDown() && me.isMetaDown())) {
-				if (mAffectedMol == null)
+				if (mAffectedMol == null && mAffectedExclusionSphere == null)
 					translateCameraXY(-dx, -dy);
-				else {
+				else if (mAffectedExclusionSphere != null){
+					translateExclusionSphere(mAffectedExclusionSphere, dx, dy, 0);
+				}
+				else if (mAffectedMol != null){
 					translateMolecule(mAffectedMol, dx, dy, 0);
 					mAffectedMol.fireCoordinatesChange();
 				}
+
 			}
 			else if (me.isSecondaryButtonDown()) {
 				mShowPopup = false;
@@ -207,10 +217,18 @@ public class V3DMouseHandler {
 	private void trackAffectedMol(boolean moleculeKeyIsDown) {
 		if (!moleculeKeyIsDown) {
 			mAffectedMol = null;
+			mAffectedExclusionSphere = null;
+		}
+		
+		else if (mHighlightedExclusionSphere != null) {
+			mAffectedExclusionSphere = mHighlightedExclusionSphere;
 		}
 		else if (mHighlightedMol != null) {
 			mAffectedMol = mHighlightedMol;
 		}
+		
+
+		
 	}
 
 	private boolean isSingleMolecule(MouseEvent me) {
@@ -235,7 +253,19 @@ public class V3DMouseHandler {
 
 	private void trackHighlightedMol(PickResult pr) {
 		Node node = pr.getIntersectedNode();
-
+		if(node instanceof ExclusionSphere) 
+			mHighlightedExclusionSphere = (ExclusionSphere) node;
+		else 
+			mHighlightedExclusionSphere = null;
+		
+		//	V3DMolecule parentMol = (V3DMolecule) mHighlightedExclusionSphere.getParent();
+		//	parentMol.setHighlightedShape(mHighlightedExclusionSphere);
+		//	if(mHighlightedMol!=null) {
+		//		mHighlightedMol.removeHilite();
+		//		mHighlightedMol = null;
+		//	}
+		//	return;
+		//}
 		Node molecule = node;
 		while (molecule != null && !(molecule instanceof V3DMolecule))
 			molecule = molecule.getParent();
@@ -244,8 +274,8 @@ public class V3DMouseHandler {
 			mHighlightedMol.removeHilite();
 
 		mHighlightedMol = (V3DMolecule) molecule;
-		if (mHighlightedMol != null && node instanceof Shape3D)
-			mHighlightedMol.setHighlightedShape((Shape3D)node);
+		if (mHighlightedMol != null && node instanceof Shape3D) {
+			mHighlightedMol.setHighlightedShape((Shape3D)node); }
 	}
 
 	/**
@@ -309,6 +339,18 @@ public class V3DMouseHandler {
 		fxmol.setTranslateX(fxmol.getTranslateX() + p0.getX() - p1.getX());
 		fxmol.setTranslateY(fxmol.getTranslateY() + p0.getY() - p1.getY());
 		fxmol.setTranslateZ(fxmol.getTranslateZ() + p0.getZ() - p1.getZ());
+	}
+	
+	private void translateExclusionSphere(ExclusionSphere eSphere, double dx, double dy, double dz) {
+		RotatableGroup world = mScene.getWorld();
+		V3DMolecule fxmol = (V3DMolecule) eSphere.getParent();
+		double f = getScreenToObjectFactor(eSphere.localToScene(0, 0, 0).getZ());
+		Point3D p0 = fxmol.localToParent(eSphere.localToParent(0, 0, 0));
+		Point3D p1 = world.sceneToLocal(eSphere.localToScene(0, 0, 0).subtract(f*dx, f*dy, f*dz));
+		eSphere.setTranslateX(eSphere.getTranslateX() + p0.getX() - p1.getX());
+		eSphere.setTranslateY(eSphere.getTranslateY() + p0.getY() - p1.getY());
+		eSphere.setTranslateZ(eSphere.getTranslateZ() + p0.getZ() - p1.getZ());
+		
 	}
 
 	private void translateCameraXY(double dx, double dy) {
@@ -405,6 +447,13 @@ public class V3DMouseHandler {
 		// if we have an active node, create a node specific popup
 		if(node.getParent() instanceof NonRotatingLabel) {
 			((NonRotatingLabel) node.getParent()).showMenu(x,y);
+		}
+		else if(node instanceof ExclusionSphere) {
+			((ExclusionSphere)node).showMenu(x,y);
+		}
+		
+		else if(node.getParent() instanceof SphereWith3DArrow) {
+			((SphereWith3DArrow)node.getParent()).showMenu(x,y);
 		}
 		else {
 		Node parent = node;

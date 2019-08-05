@@ -24,6 +24,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
+
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -79,6 +80,7 @@ public class V3DMolecule extends RotatableGroup {
 	private double[]        mSurfaceTransparency;
 	private ArrayList<MoleculeChangeListener> mListeners;
 	private Point3D			mRotationCenter;
+	private V3DPharmacophore mPharmacophore;
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -165,6 +167,16 @@ public class V3DMolecule extends RotatableGroup {
 		}
 
 
+	public void addPharmacophore() {
+		this.removePharmacophore();
+		mPharmacophore = new V3DPharmacophore(this);
+		mPharmacophore.buildPharmacophore();
+	}
+	
+	public V3DPharmacophore getPharmacophore() {
+		return mPharmacophore;
+	}
+	
 	
 	public boolean addImplicitHydrogens() {
 		int oldAtoms = mMol.getAllAtoms();
@@ -745,15 +757,7 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 
-	private double calculateAtomDistance(int atom1, int atom2) {
-		return mMol.getCoordinates(atom2).distance(mMol.getCoordinates(atom1));
-		}
 
-	private double calculateAtomAngle(int atom, int conn1, int conn2) {
-		Coordinates v1 = mMol.getCoordinates(atom).subC(mMol.getCoordinates(conn1));
-		Coordinates v2 = mMol.getCoordinates(atom).subC(mMol.getCoordinates(conn2));
-		return v1.getAngle(v2);
-		}
 
 	public void clearPickedAtomList() {
 		// clear picked atoms
@@ -829,11 +833,18 @@ public class V3DMolecule extends RotatableGroup {
 		}
 
 	public void updateAppearance(Node node) {
+		
 		if (!(node instanceof Shape3D))
 			return;
 
 		if (node instanceof MeshView)
 			return;
+		
+		if(node.getParent() instanceof SphereWith3DArrow) {
+			node = ((SphereWith3DArrow)node.getParent()).getCylinder();
+
+		}
+			
 
 		Shape3D shape = (Shape3D)node;
 
@@ -916,6 +927,15 @@ public class V3DMolecule extends RotatableGroup {
 				updateAppearance(shape);
 			}
 		}
+	
+	public void removePharmacophore() {
+		if(mPharmacophore!=null) {
+			mPharmacophore.cleanup();
+			mPharmacophore = null;
+		}
+	}
+
+
 
 
 

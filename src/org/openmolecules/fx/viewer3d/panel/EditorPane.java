@@ -123,7 +123,7 @@ public class EditorPane extends Pane  {
 	                },
 	                {
 	                    new V3DAddFragmentAction(V3DAddFragmentAction.CYCLOHEPTYL,false),
-	                    new V3DAddFragmentAction(V3DAddFragmentAction.PHENYL,false)
+	                    new V3DAddFragmentAction(V3DAddFragmentAction.PHENYL,true)
 	                },
 	                {
 	                    new V3DIncreaseChargeAction(),

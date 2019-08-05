@@ -227,6 +227,14 @@ public class V3DPopupMenu extends ContextMenu {
 			MenuItem itemHide = new MenuItem("Hide Molecule");
 			itemHide.setOnAction(e -> fxmol.setVisible(false));
 			getItems().add(itemHide);
+			MenuItem itemPP = new MenuItem("Add Pharmacophores");
+			itemPP.setOnAction(e -> fxmol.addPharmacophore());
+			getItems().add(itemPP);
+			MenuItem itemES = new MenuItem("Add ExclusionSphere");
+			itemES.setDisable(fxmol.getPharmacophore()==null);
+			itemES.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere());
+			getItems().add(itemES);
+			
 		}
 		else {
 			getItems().add(new SeparatorMenuItem());
@@ -307,6 +315,10 @@ public class V3DPopupMenu extends ContextMenu {
 		menuClippingPlanes.getItems().addAll(sliderItem, useWheelForClipping);
 		getItems().add(menuClippingPlanes);
 
+		MenuItem alignMols = new MenuItem("Align Molecules");
+		alignMols.setOnAction(e -> V3DShapeAligner.align(scene));
+		getItems().add(alignMols);
+		
 		getItems().add(new SeparatorMenuItem());
 		MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
 		itemMinimizeMol.setOnAction(e -> V3DMinimizer.minimize(scene, null, fxmol));

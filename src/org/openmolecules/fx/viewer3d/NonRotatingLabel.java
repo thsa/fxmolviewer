@@ -86,7 +86,7 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 		updatePosition();
 		
 		mMenu = new ContextMenu();
-		MenuItem deleteMeasurement = new MenuItem("remove");
+		MenuItem deleteMeasurement = new MenuItem("Remove");
 		deleteMeasurement.setOnAction(e -> {mDeleted = true;
 		mListener.labelDeleted(this);
 		});
