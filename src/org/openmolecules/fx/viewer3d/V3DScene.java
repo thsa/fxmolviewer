@@ -37,6 +37,9 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
 
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
+import org.openmolecules.fx.viewer3d.nodes.DashedRod;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
+import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;

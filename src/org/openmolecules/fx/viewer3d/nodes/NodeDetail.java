@@ -18,10 +18,12 @@
  * @author Thomas Sander
  */
 
-package org.openmolecules.fx.viewer3d;
+package org.openmolecules.fx.viewer3d.nodes;
 
 import com.actelion.research.chem.Molecule;
 import javafx.scene.paint.PhongMaterial;
+
+import org.openmolecules.fx.viewer3d.V3DMoleculeBuilder;
 import org.openmolecules.render.MoleculeBuilder;
 
 /**

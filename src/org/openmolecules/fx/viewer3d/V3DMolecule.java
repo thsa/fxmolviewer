@@ -25,6 +25,7 @@ import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -40,6 +41,10 @@ import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.RemovedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
+import org.openmolecules.fx.viewer3d.nodes.PPArrow;
+import org.openmolecules.fx.viewer3d.nodes.PPSphere;
+import org.openmolecules.fx.viewer3d.nodes.Rod;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 
@@ -171,6 +176,8 @@ public class V3DMolecule extends RotatableGroup {
 		this.removePharmacophore();
 		mPharmacophore = new V3DPharmacophore(this);
 		mPharmacophore.buildPharmacophore();
+		Platform.runLater(() -> getChildren().add(mPharmacophore));
+		mListeners.add(mPharmacophore);
 	}
 	
 	public V3DPharmacophore getPharmacophore() {
@@ -834,20 +841,28 @@ public class V3DMolecule extends RotatableGroup {
 
 	public void updateAppearance(Node node) {
 		
+		if(node.getParent() instanceof PPArrow) {
+			node = ((PPArrow)node.getParent()).getCylinder();
+
+		}
+		
+		if(node.getParent() instanceof PPSphere) {
+			node = ((PPSphere)node.getParent()).getSphere();
+
+		}
+
 		if (!(node instanceof Shape3D))
 			return;
 
 		if (node instanceof MeshView)
 			return;
 		
-		if(node.getParent() instanceof SphereWith3DArrow) {
-			node = ((SphereWith3DArrow)node.getParent()).getCylinder();
 
-		}
-			
 
 		Shape3D shape = (Shape3D)node;
+		
 
+		
 		boolean isInvisibleShape = (shape.getUserData() != null
 				&& ((NodeDetail)shape.getUserData()).getMaterial().getDiffuseColor().getOpacity() == 0.0);
 
@@ -889,8 +904,9 @@ public class V3DMolecule extends RotatableGroup {
 				material = detail.getMaterial();
 			}
 
-		if (shape.getMaterial() != material)
+		if (shape.getMaterial() != material) {
 			shape.setMaterial(material);
+		}
 		}
 
 	private Material getHiliteMaterial(Shape3D shape) {
@@ -918,6 +934,9 @@ public class V3DMolecule extends RotatableGroup {
 	}
 
 	public void setHighlightedShape(Shape3D shape) {
+		if(shape!=null && shape.getParent() instanceof PPSphere) {
+			shape = ((PPSphere)shape.getParent()).getSphere();
+		}
 		if (mHighlightedShape != shape) {
 			Shape3D previousShape = mHighlightedShape;
 			mHighlightedShape = shape;

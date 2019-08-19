@@ -1,9 +1,9 @@
 package org.openmolecules.fx.viewer3d.editor.actions;
 
-import org.openmolecules.fx.viewer3d.NodeDetail;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeModifier;
 import org.openmolecules.fx.viewer3d.V3DScene;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 
 public class V3DDeleteAction implements V3DEditorAction {
 	

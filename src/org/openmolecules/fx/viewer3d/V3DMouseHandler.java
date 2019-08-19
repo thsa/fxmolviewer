@@ -23,6 +23,10 @@ package org.openmolecules.fx.viewer3d;
 import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Sphere;
 
+import org.openmolecules.fx.viewer3d.nodes.ExclusionSphere;
+import org.openmolecules.fx.viewer3d.nodes.IPPNode;
+import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
+import org.openmolecules.fx.viewer3d.nodes.PPArrow;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 
@@ -343,7 +347,7 @@ public class V3DMouseHandler {
 	
 	private void translateExclusionSphere(ExclusionSphere eSphere, double dx, double dy, double dz) {
 		RotatableGroup world = mScene.getWorld();
-		V3DMolecule fxmol = (V3DMolecule) eSphere.getParent();
+		V3DMolecule fxmol = (V3DMolecule) eSphere.getParent().getParent();
 		double f = getScreenToObjectFactor(eSphere.localToScene(0, 0, 0).getZ());
 		Point3D p0 = fxmol.localToParent(eSphere.localToParent(0, 0, 0));
 		Point3D p1 = world.sceneToLocal(eSphere.localToScene(0, 0, 0).subtract(f*dx, f*dy, f*dz));
@@ -451,9 +455,12 @@ public class V3DMouseHandler {
 		else if(node instanceof ExclusionSphere) {
 			((ExclusionSphere)node).showMenu(x,y);
 		}
+		else if(node instanceof IPPNode) {
+			((IPPNode)node).showMenu(x,y);
+		}
 		
-		else if(node.getParent() instanceof SphereWith3DArrow) {
-			((SphereWith3DArrow)node.getParent()).showMenu(x,y);
+		else if(node.getParent() instanceof IPPNode) {
+			((IPPNode)node.getParent()).showMenu(x,y);
 		}
 		else {
 		Node parent = node;

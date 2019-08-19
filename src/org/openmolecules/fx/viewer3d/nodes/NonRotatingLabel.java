@@ -18,9 +18,13 @@
  * @author Thomas Sander
  */
 
-package org.openmolecules.fx.viewer3d;
+package org.openmolecules.fx.viewer3d.nodes;
 
 
+
+import org.openmolecules.fx.viewer3d.LabelDeletionListener;
+import org.openmolecules.fx.viewer3d.RotatableGroup;
+import org.openmolecules.fx.viewer3d.TransformationListener;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;

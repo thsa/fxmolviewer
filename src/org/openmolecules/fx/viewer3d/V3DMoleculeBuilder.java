@@ -28,6 +28,8 @@ import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
+
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.mesh.Cone;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;

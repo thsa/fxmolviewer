@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.IDCodeParserWithoutCoordinateInvention;

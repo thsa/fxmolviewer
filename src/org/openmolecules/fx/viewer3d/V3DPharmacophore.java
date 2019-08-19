@@ -2,39 +2,46 @@ package org.openmolecules.fx.viewer3d;
 
 import java.util.ArrayList;
 
+import org.openmolecules.fx.viewer3d.nodes.ExclusionSphere;
+import org.openmolecules.fx.viewer3d.nodes.FXColorHelper;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
+import org.openmolecules.fx.viewer3d.nodes.PPArrow;
+import org.openmolecules.fx.viewer3d.nodes.PPSphere;
 import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreArchitect;
 import org.openmolecules.render.PharmacophoreBuilder;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.phesa.DonorPoint;
 import com.actelion.research.chem.phesa.ExclusionGaussian;
-import com.actelion.research.chem.phesa.AcceptorPoint;
 import com.actelion.research.chem.phesa.Gaussian3D;
-import com.actelion.research.chem.phesa.IPharmacophorePoint;
 import com.actelion.research.chem.phesa.MolecularVolume;
-import com.actelion.research.chem.phesa.PPGaussian;
+import com.actelion.research.chem.phesa.pharmacophore.AcceptorPoint;
+import com.actelion.research.chem.phesa.pharmacophore.ChargePoint;
+import com.actelion.research.chem.phesa.pharmacophore.DonorPoint;
+import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
+import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
 
 import javafx.application.Platform;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Cylinder;
-import javafx.scene.shape.Sphere;
-import javafx.scene.transform.Rotate;
-import javafx.scene.transform.Transform;
 
 import java.util.Random;
 
 
 
-public class V3DPharmacophore implements MoleculeChangeListener, PharmacophoreBuilder{
+public class V3DPharmacophore extends Group implements MoleculeChangeListener, PharmacophoreBuilder{
 	
 	public static PhongMaterial sDonorMaterial;
 	public static PhongMaterial sAcceptorMaterial;
-	private int exclusionDetail;
+	public static PhongMaterial sPosChargeMaterial;
+	public static PhongMaterial sPosChargeMaterialFrame;
+	public static PhongMaterial sNegChargeMaterial;
+	public static PhongMaterial sNegChargeMaterialFrame;
+	public static Color crimson;
+	
 
 	
 	private MolecularVolume molVol;
@@ -44,13 +51,25 @@ public class V3DPharmacophore implements MoleculeChangeListener, PharmacophoreBu
 		fxMol.addMoleculeChangeListener(this);
 		this.fxMol = fxMol;
 		molVol = new MolecularVolume(fxMol.getMolecule());			
-		sDonorMaterial = new PhongMaterial();
-		sDonorMaterial.setSpecularColor(new Color(1.0,0.0,0.0,0.1));
-		sDonorMaterial.setDiffuseColor(new Color(1.0,0.0,0.0,0.1).darker());
 		sAcceptorMaterial = new PhongMaterial();
-		sAcceptorMaterial.setSpecularColor(new Color(0.0,0.0,1.0,0.1));
-		sAcceptorMaterial.setDiffuseColor(new Color(0.0,0.0,1.0,0.1).darker());		
-		exclusionDetail = 3;
+		sAcceptorMaterial.setSpecularColor(new Color(1.0,0.2,0.2,0.01));
+		sAcceptorMaterial.setDiffuseColor(new Color(1.0,0.2,0.2,0.01).darker());
+		sDonorMaterial = new PhongMaterial();
+		sDonorMaterial.setSpecularColor(new Color(0.2,0.2,1.0,0.01));
+		sDonorMaterial.setDiffuseColor(new Color(0.2,0.2,1.0,0.01).darker());
+		sNegChargeMaterial = new PhongMaterial();
+		sNegChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.001));
+		sNegChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.001).darker());
+		sPosChargeMaterial = new PhongMaterial();
+		sPosChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
+		sPosChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
+		sNegChargeMaterialFrame = new PhongMaterial();
+		sNegChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.5));
+		sNegChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.5));
+		sPosChargeMaterialFrame = new PhongMaterial();
+		sPosChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
+		sPosChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
+
 	
 	}
 
@@ -58,6 +77,7 @@ public class V3DPharmacophore implements MoleculeChangeListener, PharmacophoreBu
 	public void coordinatesChanged() {
 		updateCoordinates(molVol.getAtomicGaussians(),fxMol.getMolecule());
 		updateCoordinates(molVol.getPPGaussians(),fxMol.getMolecule());
+		molVol.updateCOM();
 			
 	}
 	
@@ -88,7 +108,9 @@ public class V3DPharmacophore implements MoleculeChangeListener, PharmacophoreBu
 				toBeRemoved.add(node);
 			}
 		}
-		Platform.runLater(() -> this.fxMol.getChildren().removeAll(toBeRemoved));
+		Platform.runLater(() -> {getChildren().removeAll(toBeRemoved);
+			this.fxMol.getChildren().remove(this);
+		});
 		
 	}
 	
@@ -97,23 +119,34 @@ public class V3DPharmacophore implements MoleculeChangeListener, PharmacophoreBu
 	public void addPharmacophorePoint(int role, PPGaussian ppg) {
 		IPharmacophorePoint pp = ppg.getPharmacophorePoint();
 		PhongMaterial material;
-		if(pp instanceof DonorPoint)
+		PhongMaterial frameMaterial;
+		if(pp instanceof DonorPoint) {
 			material = sDonorMaterial;
-		else if(pp instanceof AcceptorPoint)
+			PPArrow ppNode = new PPArrow(ppg, material, role); 
+			getChildren().add(ppNode);}
+		else if(pp instanceof AcceptorPoint) {
 			material = sAcceptorMaterial;
-		else 
-			return;
-
-		SphereWith3DArrow ppNode = new SphereWith3DArrow(ppg, material, role); 
-		fxMol.getChildren().add(ppNode);
-		
-		
+			PPArrow ppNode = new PPArrow(ppg, material, role); 
+			getChildren().add(ppNode);}
+		else if (pp instanceof ChargePoint) {
+			ChargePoint cp = (ChargePoint) pp;
+			if(cp.getCharge()<0) {
+				material = sNegChargeMaterial;
+				frameMaterial = sNegChargeMaterialFrame;
+			}
+			else {
+				material = sPosChargeMaterial;
+				frameMaterial = sPosChargeMaterialFrame;
+			}
+			PPSphere ppNode = new PPSphere(ppg, material,frameMaterial, role);
+			getChildren().add(ppNode);
+		}		
 	}
 
 	@Override
 	public void addExclusionSphere(int role, ExclusionGaussian eg) {
 		ExclusionSphere es = new ExclusionSphere(eg, role);
-		fxMol.getChildren().add(es);
+		getChildren().add(es);
 	}
 	
 	public void placeExclusionSphere() {
@@ -122,7 +155,7 @@ public class V3DPharmacophore implements MoleculeChangeListener, PharmacophoreBu
 		Coordinates shift = new Coordinates(3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1));
 		ExclusionGaussian eg = new ExclusionGaussian(atom, 6, fxMol.getMolecule().getCoordinates(atom), shift);
 		molVol.getExclusionGaussians().add(eg);
-		int role = (exclusionDetail++ << MoleculeBuilder.ROLE_DETAIL_SHIFT) |MoleculeBuilder.ROLE_IS_PHARMACOPHORE | atom;
+		int role = PharmacophoreArchitect.exclusionRole(eg);
 		addExclusionSphere(role,eg);
 	}
 

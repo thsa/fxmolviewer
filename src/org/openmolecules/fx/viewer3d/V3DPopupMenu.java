@@ -28,14 +28,19 @@ import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.fx.sunflow.RayTraceDialog;
 import org.openmolecules.fx.sunflow.RayTraceOptions;
 import org.openmolecules.fx.surface.ClipSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
+import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
+import java.io.File;
 import java.util.Optional;
 
 public class V3DPopupMenu extends ContextMenu {
@@ -58,6 +63,21 @@ public class V3DPopupMenu extends ContextMenu {
 		sPopupMenu = this;
 
 		mMolecule = fxmol;
+		
+		
+		
+		MenuItem loadMols = new MenuItem("Load Molecules");
+		loadMols.setOnAction(e -> 	{	
+			File selectedFile = this.getMolFileLoader().showOpenDialog(null);
+			 if (selectedFile != null) {
+				    V3DMolecule[] mols = V3DMoleculeParser.readMolFile(selectedFile.toString());
+				    for(V3DMolecule vm: mols) {
+						scene.addMolecule(vm);
+				    }
+				 }
+
+		});
+		getItems().add(loadMols);
 
 		MenuItem itemCenter = new MenuItem("Center View");
 		itemCenter.setOnAction(e -> scene.optimizeView());
@@ -230,6 +250,14 @@ public class V3DPopupMenu extends ContextMenu {
 			MenuItem itemPP = new MenuItem("Add Pharmacophores");
 			itemPP.setOnAction(e -> fxmol.addPharmacophore());
 			getItems().add(itemPP);
+			MenuItem itemHidePP = new MenuItem("Hide Pharmacophore");
+			itemHidePP.setDisable(fxmol.getPharmacophore()==null || !fxmol.getPharmacophore().isVisible());
+			itemHidePP.setOnAction(e -> fxmol.getPharmacophore().setVisible(false));
+			getItems().add(itemHidePP);
+			MenuItem itemShowPP = new MenuItem("Show Pharmacophore");
+			itemShowPP.setDisable(fxmol.getPharmacophore()==null || fxmol.getPharmacophore().isVisible());
+			itemShowPP.setOnAction(e -> fxmol.getPharmacophore().setVisible(true));
+			getItems().add(itemShowPP);
 			MenuItem itemES = new MenuItem("Add ExclusionSphere");
 			itemES.setDisable(fxmol.getPharmacophore()==null);
 			itemES.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere());
@@ -440,4 +468,16 @@ public class V3DPopupMenu extends ContextMenu {
 		slider.setValue(value);
 		return slider;
 	}
+	
+	private FileChooser getMolFileLoader() {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open Molecule File");
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("SD Files", "*.sdf"));
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
+		//pane.setPinnedSide(Side.RIGHT);
+		
+		return fileChooser;
+	}
+	
+
 }

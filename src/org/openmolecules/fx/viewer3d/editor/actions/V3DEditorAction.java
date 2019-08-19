@@ -1,8 +1,8 @@
 package org.openmolecules.fx.viewer3d.editor.actions;
 
-import org.openmolecules.fx.viewer3d.NodeDetail;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 
 import com.actelion.research.share.gui.editor.geom.IDrawContext;
 import com.actelion.research.share.gui.editor.io.IKeyEvent;

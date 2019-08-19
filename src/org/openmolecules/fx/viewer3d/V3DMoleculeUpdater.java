@@ -3,7 +3,7 @@ package org.openmolecules.fx.viewer3d;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.phesa.ExclusionGaussian;
-import com.actelion.research.chem.phesa.PPGaussian;
+import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -12,6 +12,10 @@ import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
+
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
+import org.openmolecules.fx.viewer3d.nodes.PPArrow;
+import org.openmolecules.fx.viewer3d.nodes.IPPNode;
 import org.openmolecules.mesh.Cone;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
@@ -32,6 +36,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 	private PharmacophoreArchitect mPPArchitect;
 	private V3DMolecule mV3DMolecule;
 	private TreeMap<Integer,Node> mNodeMap;
+	private TreeMap<Integer,IPPNode> mPPNodeMap;
 
 	public V3DMoleculeUpdater(V3DMolecule fxmol) {
 		mArchitect = new MoleculeArchitect(this);
@@ -40,10 +45,18 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 		mV3DMolecule = fxmol;
 
 		mNodeMap = new TreeMap<Integer,Node>();
+		mPPNodeMap = new TreeMap<Integer,IPPNode>();
 		for (Node node:fxmol.getChildren()) {
 			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
-			if ((role & (MoleculeBuilder.ROLE_IS_ATOM | MoleculeBuilder.ROLE_IS_BOND | MoleculeBuilder.ROLE_IS_PHARMACOPHORE)) != 0)
+			if ((role & (MoleculeBuilder.ROLE_IS_ATOM | MoleculeBuilder.ROLE_IS_BOND )) != 0)
 				mNodeMap.put(role, node);
+		}
+		if(fxmol.getPharmacophore()!=null) {
+			for (Node node:fxmol.getPharmacophore().getChildren()) {
+				int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
+				if ((role & (MoleculeBuilder.ROLE_IS_PHARMACOPHORE)) != 0)
+				mPPNodeMap.put(role, (IPPNode)node);
+		}
 		}
 	}
 
@@ -127,9 +140,9 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 
 	@Override
 	public void addPharmacophorePoint(int role, PPGaussian ppg) {
-		Node node = mNodeMap.get(role);
+		IPPNode node = mPPNodeMap.get(role);
 		if(node!=null) {
-			((SphereWith3DArrow) node).update(ppg);
+			((IPPNode) node).update();
 		}
 		// TODO Auto-generated method stub
 		

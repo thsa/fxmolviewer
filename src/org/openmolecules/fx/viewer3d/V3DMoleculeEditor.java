@@ -1,6 +1,7 @@
 package org.openmolecules.fx.viewer3d;
 
 import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 
 import com.actelion.research.chem.StereoMolecule;
 import javafx.scene.Node;

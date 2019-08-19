@@ -2,6 +2,8 @@ package org.openmolecules.fx.viewer3d;
 
 import java.util.ArrayList;
 
+import org.openmolecules.fx.viewer3d.nodes.DashedRod;
+import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.util.DoubleFormat;

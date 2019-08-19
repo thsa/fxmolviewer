@@ -18,7 +18,9 @@
  * @author Thomas Sander
  */
 
-package org.openmolecules.fx.viewer3d;
+package org.openmolecules.fx.viewer3d.nodes;
+
+import org.openmolecules.fx.viewer3d.RotatableGroup;
 
 import javafx.geometry.Point3D;
 import javafx.scene.paint.Color;

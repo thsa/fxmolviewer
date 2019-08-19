@@ -2,8 +2,8 @@ package org.openmolecules.render;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.phesa.ExclusionGaussian;
-import com.actelion.research.chem.phesa.IPharmacophorePoint;
-import com.actelion.research.chem.phesa.PPGaussian;
+import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
+import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
 
 import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
@@ -15,7 +15,8 @@ import javafx.scene.paint.PhongMaterial;
 public interface PharmacophoreBuilder {
 	
 	public static final double PP_RADIUS = 0.5;
-	public static final double CYLINDER_RADIUS = 0.2;
+	public static final double PP_RADIUS_CHARGE = 0.4;
+	public static final double CYLINDER_RADIUS = 0.1;
 	public static final double VECTOR_LENGTH = 1.5;
 
 	public void addPharmacophorePoint(int role, PPGaussian pp);
