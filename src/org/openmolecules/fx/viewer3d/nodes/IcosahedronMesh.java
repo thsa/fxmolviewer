@@ -110,7 +110,7 @@ public class IcosahedronMesh extends MeshView {
     
 
     public final TriangleMesh generateMesh(){
-        Collector<Float, List<Float>, float[]> toFloatArray =
+        Collector<Float, ?, float[]> toFloatArray =
                 Collectors.collectingAndThen(Collectors.toList(), floatList -> {
                     float[] array = new float[floatList.size()];
                     for (ListIterator<Float> iterator = floatList.listIterator(); iterator.hasNext();) {
