@@ -1,7 +1,183 @@
 .root {
-    -fx-base: #C0C0C0;
+-fx-base: rgba(50, 50, 50,0.3);
+-fx-background: rgba(50, 50, 50,0.2);
+-fx-control-inner-background:  -fx-base;
+-fx-focus-color: -fx-base;
+-fx-select-color: -fx-base;
+-fx-faint-focus-color: -fx-base;
 }
 
-.side-panel {
-    -fx-background-color: #002040E0;
+
+.table-view {
+  -fx-background-color: -fx-base; 
+  -fx-selection-bar-non-focused: rgba(0, 153, 153,0.2);
+  -fx-padding: 1; 
 }
+
+.table-view:focused {
+  /*-fx-border-color: transparent;*/
+  -fx-background-color: -fx-base ;
+  -fx-selection-bar: rgba(0, 153, 153,0.2);
+  -fx-padding: 1; 
+
+}
+
+.table-row-cell:focused {
+	-fx-background-color: transparent;
+}
+
+.table-view .scroll-bar:horizontal * {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+
+.titled-pane > .title > .arrow-button .arrow {
+  -fx-background-color: whitesmoke;
+}
+
+.table-cell{
+	-fx-border-color: transparent;
+	-fx-text-fill:white;
+	-fx-font-size: 15;
+
+}
+
+.titled-pane {
+	-fx-animated: false;
+	-fx-text-fill: lightgrey;
+	}
+
+.titled-pane .title {
+	-fx-font-weight: bold;
+	-fx-font-size: 15;
+    -fx-background-color: transparent;
+}
+
+
+.scroll-pane {
+    -fx-background-color: -fx-base;
+}
+
+.table-row-cell:selected{
+	-fx-background-color: rgba(0, 153, 153,0.2);
+}
+
+
+
+.check-box{
+	-fx-focus-color: transparent;
+}
+
+.check-box .mark {
+-fx-background-color: 
+        #3c7fb1,
+        linear-gradient(#fafdfe, #e8f5fc),
+        linear-gradient(#eaf6fd 0%, #d9f0fc 49%, #bee6fd 50%, #a7d9f5 100%);
+-fx-background-insets: 0,1,2;
+-fx-background-radius: 3,2,1;
+-fx-shape:none;}
+
+.check-box:selected .mark {
+-fx-background-color:         deepskyblue,
+        linear-gradient(to bottom right, deepskyblue, black);
+-fx-background-insets: 0,1,2;
+-fx-background-radius: 3,2,1;
+-fx-shape:none;}
+
+.check-box .box {
+    -fx-background-color: transparent;
+}
+
+/* 
+.table-cell{
+	-fx-text-fill:white;
+	-fx-background-color: -fx-background;
+
+}
+
+.table-row-cell:selected{
+	-fx-background-color: red; 
+}
+
+.table-row-cell:focus{
+	-fx-background-color: green; 
+}
+
+
+
+
+.split-pane:horizontal > * > .split-pane-divider {
+-fx-border-color: transparent -fx-base transparent -fx-base;
+-fx-background-color: transparent, derive(-fx-base,20%);
+-fx-background-insets: 0, 0 1 0 1;
+}
+ 
+.table-view {
+-fx-table-cell-border-color:derive(-fx-base,+10%);
+-fx-table-header-border-color:derive(-fx-base,+20%);
+}
+
+
+/* 
+.table-view:focused .table-row-cell:focused {
+    -fx-background-color: -fx-background;
+    -fx-background-insets: 0, 0 0 1 0;
+}
+
+
+.table-view .scroll-bar:horizontal ,
+.table-view  .scroll-bar:vertical{
+    -fx-background-color:transparent;
+ 
+}
+ 
+
+.table-view .increment-button ,.table-view .decrement-button {
+    -fx-background-color:transparent;
+	-fx-border-color:derive(-fx-base,80%);
+}
+ 
+
+.table-view .scroll-bar:horizontal .track ,
+.table-view .scroll-bar:vertical .track{
+     -fx-background-color: transparent;
+	 -fx-border-color:derive(gray,80%);
+	 -fx-background-radius: 0em;
+}
+ 
+
+.table-view .scroll-bar:horizontal .thumb,
+.table-view .scroll-bar:vertical .thumb {
+    -fx-background-color:derive(-fx-base,90%);
+	-fx-background-insets: 0, 0, 0;
+	-fx-background-radius: 0em;
+ 
+}
+
+.check-box{
+	-fx-focus-color: transparent;
+}
+
+.check-box .mark {
+-fx-background-color: 
+        #3c7fb1,
+        linear-gradient(#fafdfe, #e8f5fc),
+        linear-gradient(#eaf6fd 0%, #d9f0fc 49%, #bee6fd 50%, #a7d9f5 100%);
+-fx-background-insets: 0,1,2;
+-fx-background-radius: 3,2,1;
+-fx-shape:none;}
+
+.check-box:selected .mark {
+-fx-background-color:         deepskyblue,
+        linear-gradient(to bottom right, deepskyblue, black);
+-fx-background-insets: 0,1,2;
+-fx-background-radius: 3,2,1;
+-fx-shape:none;}
+
+*/
+
