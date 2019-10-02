@@ -1,10 +1,8 @@
 package org.sunflow;
 
 import org.codehaus.janino.ClassBodyEvaluator;
-import org.codehaus.janino.CompileException;
-import org.codehaus.janino.Parser.ParseException;
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Scanner;
-import org.codehaus.janino.Scanner.ScanException;
 import org.sunflow.core.*;
 import org.sunflow.core.ParameterList.InterpolationType;
 import org.sunflow.image.ColorFactory;
@@ -567,14 +565,6 @@ public class SunflowAPI implements SunflowAPIInterface {
                 UI.printError(Module.API, "Could not compile: \"%s\"", filename);
                 UI.printError(Module.API, "%s", e.getMessage());
                 return null;
-            } catch (ParseException e) {
-                UI.printError(Module.API, "Could not compile: \"%s\"", filename);
-                UI.printError(Module.API, "%s", e.getMessage());
-                return null;
-            } catch (ScanException e) {
-                UI.printError(Module.API, "Could not compile: \"%s\"", filename);
-                UI.printError(Module.API, "%s", e.getMessage());
-                return null;
             } catch (IOException e) {
                 UI.printError(Module.API, "Could not compile: \"%s\"", filename);
                 UI.printError(Module.API, "%s", e.getMessage());
@@ -656,12 +646,6 @@ public class SunflowAPI implements SunflowAPIInterface {
             UI.printInfo(Module.API, "Compile time: %s", t.toString());
             return api;
         } catch (CompileException e) {
-            UI.printError(Module.API, "%s", e.getMessage());
-            return null;
-        } catch (ParseException e) {
-            UI.printError(Module.API, "%s", e.getMessage());
-            return null;
-        } catch (ScanException e) {
             UI.printError(Module.API, "%s", e.getMessage());
             return null;
         } catch (IOException e) {
