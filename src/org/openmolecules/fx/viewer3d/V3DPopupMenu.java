@@ -70,7 +70,7 @@ public class V3DPopupMenu extends ContextMenu {
 		loadMols.setOnAction(e -> 	{	
 			File selectedFile = this.getMolFileLoader().showOpenDialog(null);
 			 if (selectedFile != null) {
-				    V3DMolecule[] mols = V3DMoleculeParser.readMolFile(selectedFile.toString());
+				    V3DMolecule[] mols = V3DMoleculeParser.readMolFile(selectedFile.toString(),scene.getMaxGroupID());
 				    for(V3DMolecule vm: mols) {
 						scene.addMolecule(vm);
 				    }
@@ -85,10 +85,18 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuReset = new Menu("Reset Location");
 		MenuItem itemResetMolecule = new MenuItem("Of This Molecule");
 		itemResetMolecule.setDisable(fxmol == null);
-		itemResetMolecule.setOnAction(e -> fxmol.clearTransform());
+		itemResetMolecule.setOnAction(e -> {
+			fxmol.clearTransform();
+			fxmol.resetCoordinates();
+		});
 		MenuItem itemResetAll = new MenuItem("Of All Molecules");
-		itemResetAll.setOnAction(e -> { for (Node n:scene.getWorld().getChildren())
-			if (n instanceof V3DMolecule) ((V3DMolecule)n).clearTransform(); } );
+		itemResetAll.setOnAction(e -> { for (Node n:scene.getWorld().getChildren()) {
+			if (n instanceof V3DMolecule) {
+				((V3DMolecule)n).clearTransform(); 
+				((V3DMolecule)n).resetCoordinates();
+			}
+			}
+		});
 		menuReset.getItems().addAll(itemResetMolecule, itemResetAll);
 
 		Menu menuView = new Menu("View");

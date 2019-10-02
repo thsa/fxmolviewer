@@ -43,7 +43,7 @@ import java.io.IOException;
 
 
 /**
- * Created by JW on 15.1.17
+ * Created by JW on 15.1.19
  */
 public class EditorPane extends Pane  {
     static double IMAGE_HEIGHT = 285;

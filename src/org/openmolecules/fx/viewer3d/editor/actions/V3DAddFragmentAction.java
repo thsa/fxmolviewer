@@ -42,21 +42,26 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
 		if(detail.isAtom()) {
 			V3DMoleculeModifier.addFragment(v3dMol, detail.getAtom(), mIDCodes);
+			v3dMol.setInitialCoordinates();
+		
 		}
 		else if(detail.isBond() && mAllowFusion) {
 			V3DMoleculeModifier.fuseRing(v3dMol, detail.getBond(), mIDCodes);	
-			
+			v3dMol.setInitialCoordinates();
 		}
+		
+		
 		
 	}
 	
 	@Override
 	public V3DMolecule onMouseUp(V3DScene scene3D) {
-		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule());
+		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule(), V3DMolecule.getNextID(), scene3D.getMaxGroupID(), V3DMolecule.MoleculeRole.LIGAND);
 		v3dMol.setId("Molecule");
 		scene3D.addMolecule(v3dMol);
 //		v3dMol.activateEvents();
 		V3DMoleculeModifier.placeFragment(v3dMol, mIDCodes);
+		v3dMol.setInitialCoordinates();
 		return v3dMol;
 	}
 	

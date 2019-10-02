@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
+import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.io.CompoundFileParser;
 import com.actelion.research.chem.io.DWARFileParser;
@@ -39,15 +40,16 @@ public class V3DMoleculeParser {
 	}
 
 
-	public static V3DMolecule[] readMolFile(String sdfile) {
+	public static V3DMolecule[] readMolFile(String sdfile, int group) {
 		ArrayList<StereoMolecule> mols = parseFile(sdfile);
 		V3DMolecule[] v3d_mols = new V3DMolecule[mols.size()];
 		int i = 0;
 		for(StereoMolecule mol: mols) {
+			mol.ensureHelperArrays(Molecule.cHelperRings);
 			if(mol==null) continue;
 			if(mol.getName()==null || mol.getName().equals(""))
 				mol.setName("Molecule");
-			v3d_mols[i] = new V3DMolecule(mol);
+			v3d_mols[i] = new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND);
 			i++;
 
 		}

@@ -26,8 +26,10 @@ public class V3DDecreaseChargeAction implements V3DEditorAction {
 
 	@Override
 	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
-		if(detail.isAtom())
+		if(detail.isAtom()) {
 			V3DMoleculeModifier.decreaseCharge(v3dMol, detail.getAtom());
+			v3dMol.setInitialCoordinates();
+		}
 		
 	}
 	

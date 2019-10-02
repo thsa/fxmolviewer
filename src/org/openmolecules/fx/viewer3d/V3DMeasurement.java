@@ -13,7 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.paint.Color;
 import javafx.scene.Group;
 
-public class V3DMeasurement implements MoleculeChangeListener {
+public class V3DMeasurement implements MolCoordinatesChangeListener {
 	
 	private ArrayList<Integer> mAtoms;
 	private ArrayList<V3DMolecule> mFXmols;
@@ -24,7 +24,7 @@ public class V3DMeasurement implements MoleculeChangeListener {
 	
 	public V3DMeasurement(ArrayList<Integer> atoms, ArrayList<V3DMolecule> fxMols, DashedRod rod, NonRotatingLabel label, Parent parent) {
 		for(V3DMolecule fxmol:fxMols) {
-			fxmol.addMoleculeChangeListener(this);
+			fxmol.addMoleculeCoordinatesChangeListener(this);
 		}
 		mAtoms = atoms;
 		mFXmols = fxMols;
@@ -41,7 +41,7 @@ public class V3DMeasurement implements MoleculeChangeListener {
 		((Group)mParent).getChildren().remove(mRod);
 		mLabel.remove(mParent);
 		for(V3DMolecule fxmol:mFXmols) {
-			fxmol.removeMoleculeChangeListener(this);
+			fxmol.removeMoleculeCoordinatesChangeListener(this);
 		}
 	}
 

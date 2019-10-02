@@ -18,12 +18,15 @@ public class V3DDeleteAction implements V3DEditorAction {
 
 	@Override
 	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
-		if(detail.isBond()) 
+		if(detail.isBond()) {
 			V3DMoleculeModifier.deleteBond(v3dMol, detail.getBond());
+			v3dMol.setInitialCoordinates();
+		}
 		else if(detail.isAtom()) {
 			V3DMoleculeModifier.deleteAtom(v3dMol, detail.getAtom());
-			return;
+			v3dMol.setInitialCoordinates();
 		}
+
 		
 	}
 	

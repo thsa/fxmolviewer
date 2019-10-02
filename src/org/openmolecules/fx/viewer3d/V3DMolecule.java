@@ -50,12 +50,13 @@ import org.openmolecules.render.MoleculeArchitect;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.stream.IntStream;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
 public class V3DMolecule extends RotatableGroup {
 	private static final float HIGHLIGHT_SCALE = 1.2f;
-
+	private static int MAX_ID = 1;
 	private static final double DEFAULT_SURFACE_TRANSPARENCY = 0.1;
 	private static final int DEFAULT_SURFACE_COLOR_MODE = SURFACE_COLOR_PLAIN;
 
@@ -70,6 +71,8 @@ public class V3DMolecule extends RotatableGroup {
 
 	private static PhongMaterial sSolidHighlightedMaterial,sTransparentHighlightedMaterial,
 			sPickedMaterial,sSelectedMaterial;
+	
+	
 
 	private StereoMolecule	mMol;
 	private Node			mLastPickedNode;
@@ -83,9 +86,32 @@ public class V3DMolecule extends RotatableGroup {
 	private LinkedList<Sphere> mPickedAtomList;
 	private boolean			mOverrideCarbonOnly;
 	private double[]        mSurfaceTransparency;
-	private ArrayList<MoleculeChangeListener> mListeners;
+	private ArrayList<MolCoordinatesChangeListener> mListeners;
+	private ArrayList<MolStructureChangeListener> mStructureListeners;
 	private Point3D			mRotationCenter;
 	private V3DPharmacophore mPharmacophore;
+	private MoleculeRole mRole;
+	private int mID;
+	private int mGroup;
+	public enum MoleculeRole{LIGAND {
+        public String toString(){
+            return "Ligand";
+        }
+    },  
+		COFACTOR { public String toString(){
+			return "Cofactor";
+    }
+    }, 
+		MACROMOLECULE {public String toString(){
+			return "Protein";
+		}
+    },  
+		SOLVENT {public String toString(){
+        return "Solvent";
+    }
+    }, }
+	private Coordinates[] mInitialCoordinates;
+	
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -94,8 +120,8 @@ public class V3DMolecule extends RotatableGroup {
 	 * - shows no surface
 	 * @param mol
 	 */
-	public V3DMolecule(StereoMolecule mol) {
-		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
+	public V3DMolecule(StereoMolecule mol, int id, int group, MoleculeRole role) {
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, id, group, role );
 		}
 
 	/**
@@ -105,8 +131,8 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param mol
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 */
-	public V3DMolecule(StereoMolecule mol, int constructionMode) {
-		this(mol, constructionMode, MoleculeArchitect.HYDROGEN_MODE_DEFAULT);
+	public V3DMolecule(StereoMolecule mol, int constructionMode, int id, int group, MoleculeRole role) {
+		this(mol, constructionMode, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, group, role);
 	}
 
 	/**
@@ -115,9 +141,10 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options
 	 */
-	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode) {
+	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode, 
+			int id, int group, MoleculeRole role) {
 		this(mol, constructionMode, hydrogenMode, SURFACE_NONE,
-				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY);
+				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, group, role);
 		}
 
 	/**
@@ -131,12 +158,15 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param transparency
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode,
-						int surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency) {
+						int surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
+						int id, int group, MoleculeRole role) {
 		mMol = mol;
 		mPickedAtomList = new LinkedList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
-
+		mRole = role;
+		mID = id;
+		mGroup = group;
 		int surfaceCount = MoleculeSurfaceAlgorithm.SURFACE_TYPE.length;
 		mSurface = new MeshView[surfaceCount];
 		mSurfaceMesh = new SurfaceMesh[surfaceCount];
@@ -145,12 +175,17 @@ public class V3DMolecule extends RotatableGroup {
 		mSurfaceColorMode = new int[surfaceCount];
 		mSurfaceTransparency = new double[surfaceCount];
 		
-		mListeners = new ArrayList<MoleculeChangeListener>();
+		mListeners = new ArrayList<MolCoordinatesChangeListener>();
+		mStructureListeners = new ArrayList<MolStructureChangeListener>();
 
 		mSurfaceMode[0] = surfaceMode;
 		mSurfaceColor[0] = (surfaceColor == null) ? DEFAULT_SURFACE_COLOR : surfaceColor;
 		mSurfaceColorMode[0] = surfaceColorMode;
 		mSurfaceTransparency[0] = transparency;
+		mInitialCoordinates = new Coordinates[mol.getAllAtoms()];
+		IntStream.range(0,mol.getAllAtoms()).forEach(i -> {
+			mInitialCoordinates[i] = new Coordinates(mol.getCoordinates(i));
+		});
 		
 
 		for (int i=1; i<surfaceCount; i++) {
@@ -171,6 +206,28 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 
+	
+	public void setInitialCoordinates() {
+		mInitialCoordinates = new Coordinates[mMol.getAllAtoms()];
+		IntStream.range(0,mMol.getAllAtoms()).forEach(i -> {
+			mInitialCoordinates[i] = new Coordinates(mMol.getCoordinates(i));
+		});
+	}
+	
+	public void resetCoordinates() {
+		if(mInitialCoordinates!=null && mInitialCoordinates.length==mMol.getAllAtoms()) {
+			IntStream.range(0,mMol.getAllAtoms()).forEach(i -> {
+				mMol.setAtomX(i, mInitialCoordinates[i].x);
+				mMol.setAtomY(i, mInitialCoordinates[i].y);
+				mMol.setAtomZ(i, mInitialCoordinates[i].z);
+			});
+		}
+		Platform.runLater(() -> {
+			fireCoordinatesChange();
+			V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(this);
+			mFXMolUpdater.update();
+		});
+	}
 
 	public void addPharmacophore() {
 		this.removePharmacophore();
@@ -183,6 +240,8 @@ public class V3DMolecule extends RotatableGroup {
 	public V3DPharmacophore getPharmacophore() {
 		return mPharmacophore;
 	}
+
+	
 	
 	
 	public boolean addImplicitHydrogens() {
@@ -201,17 +260,27 @@ public class V3DMolecule extends RotatableGroup {
 
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 		builder.buildMolecule(oldAtoms, oldBonds);
-
+		setInitialCoordinates();
 		return true;
 	}
 	
-	public void addMoleculeChangeListener(MoleculeChangeListener listener) {
+	public void addMoleculeCoordinatesChangeListener(MolCoordinatesChangeListener listener) {
 		mListeners.add(listener);
 	}
 	
-	public void removeMoleculeChangeListener(MoleculeChangeListener listener) {
+	public void removeMoleculeCoordinatesChangeListener(MolCoordinatesChangeListener listener) {
 		mListeners.remove(listener);
 	}
+	
+	public void addMoleculeStructureChangeListener(MolStructureChangeListener listener) {
+		mStructureListeners.add(listener);
+	}
+	
+	public void removeMoleculeStructureChangeListener(MolStructureChangeListener listener) {
+		mStructureListeners.remove(listener);
+	}
+	
+
 	
 
 
@@ -423,6 +492,38 @@ public class V3DMolecule extends RotatableGroup {
 	public int getSurfaceMode(int surfaceType) {
 		return mSurfaceMode[surfaceType];
 		}
+	
+	public static int getNextID() {
+		return MAX_ID++;
+	}
+	
+	public int getID() {
+		return mID;
+	}
+	
+	
+	public int getGroup() {
+		return mGroup;
+	}
+	
+
+	public MoleculeRole getMoleculeRole() {
+		return mRole;
+	}
+	
+	public void setMoleculeRole(MoleculeRole role) {
+		mRole = role;
+	}
+	
+	public void setID(int id) {
+		mID = id;
+	}
+	
+	
+	public void setGroup(int group) {
+		mGroup = group;
+	}
+
 
 	/**
 	 * Use this method to create or remove a molecules surface
@@ -614,17 +715,20 @@ public class V3DMolecule extends RotatableGroup {
 	}
 	
 	public void fireCoordinatesChange() {
-		for(MoleculeChangeListener listener : mListeners) {
+		for(MolCoordinatesChangeListener listener : mListeners) {
 			listener.coordinatesChanged();
+		}
+	}
+	
+	public void fireStructureChange() {
+		removePharmacophore();
+		for(MolStructureChangeListener listener : mStructureListeners) {
+			listener.structureChanged();
 		}
 	}
 	
 
 	
-
-
-
-
 	private boolean pickedAtomsAreStrand() {
 		int atom1 = ((NodeDetail)mPickedAtomList.get(0).getUserData()).getAtom();
 		for (int i=1; i<mPickedAtomList.size(); i++) {
@@ -748,6 +852,8 @@ public class V3DMolecule extends RotatableGroup {
 		getChildren().removeAll(nodesToBeDeleted);
 
 		mMol.deleteAtoms(isToBeDeleted);
+		
+		setInitialCoordinates();
 		}
 
 	/**
@@ -953,7 +1059,15 @@ public class V3DMolecule extends RotatableGroup {
 			mPharmacophore = null;
 		}
 	}
+	
+	public MoleculeRole getRole() {
+		return mRole;
+	}
 
+	
+	public void setRole(MoleculeRole role) {
+		mRole = role;
+	}
 
 
 

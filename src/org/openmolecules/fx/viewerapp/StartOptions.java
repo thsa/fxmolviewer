@@ -374,7 +374,7 @@ public class StartOptions {
 							SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+shift),
 							SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+2*shift), 1.0);
 				}
-
+				int group = scene.getMaxGroupID();
 				int largeMoleculeIndex = 0;
 				for (int i=0; i<mol.length; i++) {
 
@@ -386,12 +386,12 @@ public class StartOptions {
 
 					V3DMolecule vm;
 					if (isWater)
-						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS, V3DMolecule.getNextID(), group, V3DMolecule.MoleculeRole.SOLVENT);
 					else if (isLargeMolecule)
 						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_WIRES, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
-								V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[largeMoleculeIndex++], 0.5);
+								V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[largeMoleculeIndex++], 0.5, V3DMolecule.getNextID(),group,V3DMolecule.MoleculeRole.MACROMOLECULE);
 					else
-						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS, V3DMolecule.getNextID(),group,V3DMolecule.MoleculeRole.LIGAND);
 
 					if (i == ligandIndex)
 						ligand = vm;
@@ -425,7 +425,7 @@ public class StartOptions {
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
 			mol.center();
 			mol.translate(dx, dy, dz);
-			V3DMolecule vm = new V3DMolecule(mol);
+			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),scene.getMaxGroupID(),V3DMolecule.MoleculeRole.LIGAND);
 			scene.addMolecule(vm);
 		}
 	}
@@ -442,7 +442,7 @@ public class StartOptions {
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
 			mol.center();
 			mol.translate(dx, dy, dz);
-			V3DMolecule vm = new V3DMolecule(mol);
+			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(), scene.getMaxGroupID(),V3DMolecule.MoleculeRole.LIGAND);
 			scene.addMolecule(vm);
 		}
 	}
@@ -459,7 +459,7 @@ public class StartOptions {
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
 			mol.center();
 			mol.translate(dx, dy, dz);
-			V3DMolecule vm = new V3DMolecule(mol);
+			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),scene.getMaxGroupID(),V3DMolecule.MoleculeRole.LIGAND);
 			scene.addMolecule(vm);
 		}
 	}
@@ -477,7 +477,7 @@ public class StartOptions {
 			StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(code[1], code[0]);
 			mol.center();
 			mol.translate(dx, dy, dz);
-			V3DMolecule vm = new V3DMolecule(mol);
+			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(), scene.getMaxGroupID(),V3DMolecule.MoleculeRole.LIGAND);
 			double transparency = 0.20 + 0.1 * (i % 7);
 			vm.setSurface(0, V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, transparency);
 
@@ -540,7 +540,7 @@ public class StartOptions {
 				conformer.translate(dx, dy, dz);
 			}
 
-			V3DMolecule vm = new V3DMolecule(conformer.toMolecule(null));
+			V3DMolecule vm = new V3DMolecule(conformer.toMolecule(null), V3DMolecule.getNextID(),scene.getMaxGroupID(),V3DMolecule.MoleculeRole.LIGAND);
 			vm.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			vm.setColor(Color.hsb(hue, 1.0, 0.5), true);
 //			vm.activateEvents();
@@ -566,12 +566,13 @@ public class StartOptions {
 //				Molecule3D[] mol = MMTFParser.getStructureFromFile(path, "1JJ2", MMTFParser.MODE_SPLIT_CHAINS);
 
 			MMTFParser.centerMolecules(mol);
-
+			int group = scene.getMaxGroupID();
 			for (int i=0; i<mol.length; i++) {
 				millis = printDelay(millis);
 				System.out.print("Creating V3DMolecule...  ");
 
-				V3DMolecule vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
+				V3DMolecule vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_STICKS,
+						 V3DMolecule.getNextID(),group,V3DMolecule.MoleculeRole.LIGAND);
 				//				V3DMolecule vm = new V3DMolecule(conformer, -1, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 				//						V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.5);
 

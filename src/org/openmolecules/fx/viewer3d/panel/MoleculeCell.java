@@ -22,6 +22,9 @@ package org.openmolecules.fx.viewer3d.panel;
 
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
+
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -29,155 +32,93 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+
+import org.jmol.modelsetbio.ProteinStructure;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
 /**
  * Created by thomas on 20.10.16.
  */
-public class MoleculeCell extends ListCell<MoleculeModel> implements ChangeListener<Boolean> {
+public class MoleculeCell extends TableCell<MoleculeModel,MoleculeModel> implements ChangeListener<Boolean> {
 	private Control mView;
 	private MoleculeModel mModel;
 	BooleanProperty mShowStructure;
 
 	public MoleculeCell(BooleanProperty showStructure) {
 		mShowStructure = showStructure;
-		showStructure.addListener(this);
-		setOnMousePressed(me -> mousePressed(me));
-		setOnMouseReleased(me -> mouseReleased(me));
-		setStyle("-fx-background-color: #00000000; -fx-padding: 0;");
+		showStructure.addListener((ChangeListener<Boolean>)this);
+
 	}
 
 	@Override
 	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
 		updateView(false);
-		if (mModel != null)
-			configureView();
+		//if (mModel != null) {
+		//	configureView();
+
+		//}
 	}
 
 	@Override
 	public void updateItem(MoleculeModel item, boolean empty) {
 		super.updateItem(item, empty);
-
 		mModel = item;
-		updateView(empty);
+		if (empty || item == null) {
+		     setText(null);
+		     setGraphic(null);}
+		else {
+			 updateView(empty);
+		 }
 	}
 
 	public void updateView(boolean empty) {
 		if (mShowStructure.get()) {
 			mView = (empty || mModel == null) ? null : new MoleculeView(mModel.getMolecule2D());
 			if (mView != null) {
-				((MoleculeView)mView).setBackgroundColor(new Color(0, 0, 0, 0));   // for transparency
+				((MoleculeView)mView).setBackgroundColor(new Color(0, 0, 0, 0));
 				configureView();
 			}
 		}
 		else {
-			mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName());
+			mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName(), RoleShapeFactory.fromRole(mModel.getMolecule3D().getRole()));
 			if (mView != null) {
+				((Label)mView).setFont(Font.font(15));
 				configureView();
 			}
 		}
-
-		setGraphic(mView);
+		setGraphic(mView);	
+		this.getTableView().refresh();
 	}
 
-	private void mousePressed(MouseEvent me) {
-		if (me.isPopupTrigger()) {
-			handlePopupMenu(me);
-		}
-		else if (mModel != null) {
-			mModel.getMolecule3D().setVisible(!mModel.getMolecule3D().isVisible());
-		}
-	}
+
 
 	private void configureView() {
 		if (mView instanceof MoleculeView) {
 			MoleculeViewSkin skin = (MoleculeViewSkin)mView.getSkin();
-			if (mModel.getMolecule3D().isVisible())
-				skin.setOverruleColors(null, null);
-			else
-				skin.setOverruleColors(new Color(0.3, 0.3, 0.3, 1), null);
+			//if (mModel.getMolecule3D().isVisible()) {
+			skin.setOverruleColors(null, null);
+			//}
+			//else
+			//	skin.setOverruleColors(new Color(0.3, 0.3, 0.3, 1), null);
 		}
 		else {
-			if (mModel.getMolecule3D().isVisible())
+			//if (mModel.getMolecule3D().isVisible()) {
 				((Label)mView).textFillProperty().setValue(Color.WHITE);
-			else
-				((Label)mView).textFillProperty().setValue(new Color(0.3, 0.3, 0.3, 1));
+				((Label)mView).setGraphic(RoleShapeFactory.fromRole(mModel.roleProperty().get()));
+			//}
+			//else
+			//	((Label)mView).textFillProperty().setValue(new Color(0.3, 0.3, 0.3, 1));
 		}
 	}
+	
 
-	private void mouseReleased(MouseEvent me) {
-		if (me.isPopupTrigger()) {
-			handlePopupMenu(me);
-		}
-	}
 
-	private void handlePopupMenu(MouseEvent me) {
-		if (mModel == null)
-			return;
 
-		V3DMolecule fxmol = mModel.getMolecule3D();
-		V3DScene scene = getScene3D();
 
-		MenuItem itemShow = new MenuItem("This Molecule");
-		itemShow.setDisable(mModel.getMolecule3D().isVisible());
-		itemShow.setOnAction(e -> fxmol.setVisible(true));
 
-		MenuItem itemHide = new MenuItem("This Molecule");
-		itemHide.setDisable(!mModel.getMolecule3D().isVisible());
-		itemHide.setOnAction(e -> fxmol.setVisible(false));
-
-		MenuItem itemShowAll = new MenuItem("All Molecules");
-		itemShowAll.setOnAction(e -> scene.setAllVisible(true));
-
-		MenuItem itemHideAll = new MenuItem("All Molecules");
-		itemHideAll.setOnAction(e -> scene.setAllVisible(false));
-
-		MenuItem itemDelete = new MenuItem("This Molecule");
-		itemDelete.setOnAction(e -> scene.delete(mModel.getMolecule3D()));
-
-		MenuItem itemDeleteHidden = new MenuItem("Hidden Molecules");
-		itemDeleteHidden.setOnAction(e -> scene.deleteInvisibleMolecules());
-
-		MenuItem itemDeleteAll = new MenuItem("All Molecules");
-		itemDeleteAll.setOnAction(e -> scene.deleteAllMolecules());
-
-		RadioMenuItem itemModeText = new RadioMenuItem("Show Name");
-		itemModeText.setSelected(!mShowStructure.get());
-		itemModeText.setOnAction(e -> mShowStructure.setValue(false));
-		RadioMenuItem itemModeStructure = new RadioMenuItem("Show Structure");
-		itemModeStructure.setSelected(mShowStructure.get());
-		itemModeStructure.setOnAction(e -> mShowStructure.setValue(true));
-		Menu menuMode = new Menu("List Style");
-		menuMode.getItems().addAll(itemModeText, itemModeStructure);
-
-		ContextMenu popup = new ContextMenu();
-
-		Menu menuShow = new Menu("Show");
-		menuShow.getItems().addAll(itemShow, itemShowAll);
-		popup.getItems().add(menuShow);
-
-		Menu menuHide = new Menu("Hide");
-		menuHide.getItems().addAll(itemHide, itemHideAll);
-		popup.getItems().add(menuHide);
-
-		popup.getItems().add(new SeparatorMenuItem());
-
-		Menu menuDelete = new Menu("Delete");
-		menuDelete.getItems().addAll(itemDelete, itemDeleteHidden, itemDeleteAll);
-		popup.getItems().add(menuDelete);
-
-		popup.getItems().add(new SeparatorMenuItem());
-
-		popup.getItems().add(menuMode);
-
-		popup.show(this, me.getScreenX(), me.getScreenY());
-	}
-
-	private V3DScene getScene3D() {
-		Node parent = getParent();
-		while (!(parent instanceof SidePane))
-			parent = parent.getParent();
-		return ((SidePane)parent).getV3DScene();
-	}
 }

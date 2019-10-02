@@ -23,6 +23,8 @@ package org.openmolecules.fx.viewer3d;
 import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Sphere;
 
+import java.util.stream.IntStream;
+
 import org.openmolecules.fx.viewer3d.nodes.ExclusionSphere;
 import org.openmolecules.fx.viewer3d.nodes.IPPNode;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
@@ -161,9 +163,26 @@ public class V3DMouseHandler {
 							double dx = me.getScreenX()-origin.getX();
 							double dy = me.getScreenY()-origin.getY();
 							Point3D p1 = world.parentToLocal(f*dx,f*dy , 0.0);
-							fxmol.setTranslateX(fxmol.getTranslateX() +  p1.getX());
-							fxmol.setTranslateY(fxmol.getTranslateY() +  p1.getY());
-							fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
+							
+							IntStream.range(0,fxmol.getMolecule().getAllAtoms())
+							.forEach(i -> {
+								double x = fxmol.getMolecule().getAtomX(i) + p1.getX();
+								double y = fxmol.getMolecule().getAtomY(i) + p1.getY();
+								double z = fxmol.getMolecule().getAtomZ(i) + p1.getZ();
+								fxmol.getMolecule().setAtomX(i,x);
+								fxmol.getMolecule().setAtomY(i,y);
+								fxmol.getMolecule().setAtomZ(i,z);
+								fxmol.setInitialCoordinates();
+							});
+							Platform.runLater(() -> {
+								fxmol.fireCoordinatesChange();
+								V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(fxmol);
+								mFXMolUpdater.update();
+							});
+							
+							//fxmol.setTranslateX(fxmol.getTranslateX() +  p1.getX());
+							//fxmol.setTranslateY(fxmol.getTranslateY() +  p1.getY());
+							//fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
 						}
 					}
 					else {
@@ -172,7 +191,7 @@ public class V3DMouseHandler {
 						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 							fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
 						mScene.removeMeasurements(fxmol);
-						fxmol.removePharmacophore();
+						fxmol.fireStructureChange();
 					}
 
 					}

@@ -30,12 +30,15 @@ public class V3DDrawBondAction implements V3DEditorAction {
 			}
 			else {
 				V3DMoleculeModifier.drawBond(v3dMol, atom, mPartnerAtom);
+				v3dMol.setInitialCoordinates();
 				mPartnerAtom=-1;
 			}
 		}
 		else if(detail.isBond()) {
 			mPartnerAtom=-1;
 			V3DMoleculeModifier.toggleBondOrder(v3dMol, detail.getBond());
+			v3dMol.setInitialCoordinates();
+		
 			
 			
 			

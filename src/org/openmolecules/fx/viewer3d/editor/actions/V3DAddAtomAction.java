@@ -31,14 +31,16 @@ public class V3DAddAtomAction implements V3DEditorAction {
 
 	@Override
 	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
-		if(detail.isAtom())
+		if(detail.isAtom()) {
 			V3DMoleculeModifier.changeAtomElement(v3dMol, detail.getAtom(),mAtomicNo);
+			v3dMol.setInitialCoordinates();
+		}
 		
 	}
 	
 	@Override
 	public V3DMolecule onMouseUp(V3DScene scene3D) {
-		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule());
+		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule(), V3DMolecule.getNextID(),scene3D.getMaxGroupID(), V3DMolecule.MoleculeRole.LIGAND);
 		v3dMol.setId("Molecule");
 		scene3D.addMolecule(v3dMol);
 //		v3dMol.activateEvents();

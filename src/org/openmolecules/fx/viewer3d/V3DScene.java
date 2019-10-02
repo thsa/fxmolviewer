@@ -42,9 +42,16 @@ import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
+
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
 	private ClipboardHandler mClipboardHandler;
@@ -62,6 +69,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private MEASUREMENT     mMeasurementMode;
 	private ArrayList<NonRotatingLabel> mLabelList;
 	private ArrayList<V3DMeasurement> mMeasurements;
+	private V3DMolecule mCopiedMol;
 	
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
@@ -89,17 +97,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public V3DScene(Group root, double width, double height) {
 		super(root , width, height, true, SceneAntialiasing.BALANCED);
 		mRoot = root;
-
 		mWorld = new RotatableGroup();
 		mEditor = new V3DMoleculeEditor();
 		mRoot.getChildren().add(mWorld);
 		mRoot.setDepthTest(DepthTest.ENABLE);
-
 		// gradients work well in a Scene, but don't seem to work in SubScenes
 //		Stop[] stops = new Stop[] { new Stop(0, Color.MIDNIGHTBLUE), new Stop(1, Color.MIDNIGHTBLUE.darker().darker().darker())};
 //		LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
-		setFill(Color.MIDNIGHTBLUE.darker().darker());
 
+		setFill(Color.BLACK);
 		buildLight();
 		buildCamera();
 		mMeasurements = new ArrayList<V3DMeasurement>();
@@ -111,6 +117,20 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mPickedMolsList = new ArrayList<V3DMolecule>();
 		mLabelList = new ArrayList<NonRotatingLabel>();
 		}
+	
+	public int getMaxGroupID() {
+		int id = mWorld.getChildren().stream().filter(node -> node instanceof V3DMolecule).mapToInt(node ->
+		((V3DMolecule)node).getGroup()).max().orElse(1);
+		return id;
+	}
+	
+	public TreeMap<Integer,List<V3DMolecule>> getMoleculeGroups() {
+		return mWorld.getChildren().stream().filter(node -> node instanceof V3DMolecule)
+		.map(n -> (V3DMolecule)n)
+		.distinct().collect(Collectors.groupingBy(V3DMolecule::getGroup,TreeMap::new, Collectors.toList()));
+		
+	}
+
 
 	public void setSceneListener(V3DSceneListener sl) {
 		mSceneListener = sl;
@@ -145,18 +165,21 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 
 	public void copy3D(V3DMolecule fxmol) {
+		mCopiedMol = fxmol;
 		mClipboardHandler.copyMolecule(fxmol.getMolecule());
 		}
 
 	public void copy2D(V3DMolecule fxmol) {
+		mCopiedMol = fxmol;
 		StereoMolecule mol = fxmol.getMolecule().getCompactCopy();
 		new CoordinateInventor().invent(mol);
 		mClipboardHandler.copyMolecule(mol);
 		}
+	
 
 	public void paste() {
 		StereoMolecule mol = mClipboardHandler.pasteMolecule(false);
-		if (mol == null) {   // TODO interactive message
+		if (mol == null || mCopiedMol == null) {   // TODO interactive message
 			System.out.println("No molecule on clipboard!");
 			return;
 			}
@@ -178,10 +201,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			conformer.toMolecule(mol);	// copy atom coordinates to molecule
 			}
 
-		V3DMolecule fxmol = new V3DMolecule(mol);
+		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), mCopiedMol.getGroup(),mCopiedMol.getMoleculeRole());
 //		fxmol.activateEvents();
+		mCopiedMol = null;
 		addMolecule(fxmol);
 		}
+	
 
 	public void delete(V3DMolecule fxmol) {
 		removeMeasurements(fxmol);
@@ -191,6 +216,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		if (mSceneListener != null)
 			mSceneListener.removeMolecule(fxmol);
 		}
+	
+	public void delete(List<V3DMolecule> fxmols) {
+		for(V3DMolecule fxmol:fxmols)
+			delete(fxmol);
+	}
 
 	
 	public void removeMeasurements(V3DMolecule fxmol) {
@@ -199,7 +229,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			if (measurement.getV3DMolecules().contains(fxmol)){
 				toDelete.add(measurement);
 				measurement.cleanup();
-				fxmol.removeMoleculeChangeListener(measurement);
+				fxmol.removeMoleculeCoordinatesChangeListener(measurement);
 			}
 		}
 		mMeasurements.removeAll(toDelete);
@@ -401,12 +431,17 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		optimizeView();
 	}
+	
 
 	public void addMolecule(V3DMolecule fxmol) {
+
 		mWorld.getChildren().add(fxmol);
 		if (mSceneListener != null)
 			mSceneListener.addMolecule(fxmol);
 		}
+	
+
+	
 	
 /*	public double getDistanceToScreenFactor(double z) {
 		PerspectiveCamera camera = (PerspectiveCamera)getCamera();
@@ -604,7 +639,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				for (Node node : mWorld.getChildren())
 					if (node instanceof V3DMolecule) {
 						V3DMolecule fxmol = (V3DMolecule) node;
-						fxmol.removeMoleculeChangeListener(measurement);
+						fxmol.removeMoleculeCoordinatesChangeListener(measurement);
 					}
 			}
 		}

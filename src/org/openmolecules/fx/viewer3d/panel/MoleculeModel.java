@@ -23,21 +23,45 @@ package org.openmolecules.fx.viewer3d.panel;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.coords.CoordinateInventor;
+
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+
+import java.util.ArrayList;
+
+import org.openmolecules.fx.viewer3d.MolStructureChangeListener;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 
 /**
  * Created by thomas on 09/10/16.
  */
-public class MoleculeModel {
+public class MoleculeModel implements MolStructureChangeListener, ChangeListener<Boolean> {
 	private V3DMolecule mMol3D;
-	private StereoMolecule mMol2D;
-	private int mID;
-	private static int sStructureCount;
+	private SimpleObjectProperty<StereoMolecule> mMol2D;
+	private SimpleObjectProperty<MoleculeRole> mRole;
+	private SimpleIntegerProperty mGroup;
+	private ArrayList<InvalidationListener> iListeners;
+	private BooleanProperty isMolVisible;
 
 	public MoleculeModel(V3DMolecule mol3D) {
 		mMol3D = mol3D;
-		mMol2D = null;
-		mID = ++sStructureCount;
+		mMol3D.addMoleculeStructureChangeListener(this);
+		mMol2D = new SimpleObjectProperty<StereoMolecule>();
+		mRole = new SimpleObjectProperty<MoleculeRole>(mMol3D.getRole());
+		mRole.addListener((o,ov,nv) -> mMol3D.setRole(mRole.get()));
+		mGroup = new SimpleIntegerProperty(mMol3D.getGroup());
+		mGroup.addListener((o,ov,nv) -> {mMol3D.setGroup((Integer)nv);});
+		iListeners = new ArrayList<InvalidationListener>();
+		isMolVisible =  new SimpleBooleanProperty(true);
+		isMolVisible.addListener(this);
 	}
 
 	private StereoMolecule createMolecule2D(V3DMolecule mol3D) {
@@ -50,20 +74,62 @@ public class MoleculeModel {
 	}
 
 	public String getMoleculeName() {
-		if (mMol3D.getMolecule().getName() != null)
-			return mMol3D.getMolecule().getName();
+		if (mMol3D.getMolecule().getName() == null)
+			mMol3D.getMolecule().setName("Structure "+ mMol3D.getID());
 
-		return "Structure "+mID;
+		return mMol3D.getMolecule().getName();
 	}
 
 	public StereoMolecule getMolecule2D() {
-		if (mMol2D == null && mMol3D != null)
-			mMol2D = createMolecule2D(mMol3D);
+		if (mMol3D != null) {
+			mMol2D.set(createMolecule2D(mMol3D));
+		}
 
-		return mMol2D;
+		return mMol2D.get();
 	}
 
 	public V3DMolecule getMolecule3D() {
 		return mMol3D;
+	}
+
+	
+	public BooleanProperty visibleProperty() {
+		return this.isMolVisible;
+	}
+	
+	public ObjectProperty<StereoMolecule> twoDProperty() {
+		return mMol2D;
+	}
+	
+	public void setVisibleProperty(boolean isVisible) {
+		isMolVisible.set(isVisible);
+	}
+	
+	public void setGroupProperty(int group) {
+		mGroup.set(group);
+	}
+	
+	
+	public IntegerProperty groupProperty() {
+		return mGroup;
+	}
+	
+	public ObjectProperty<MoleculeRole> roleProperty() {
+		return mRole;
+	}
+	
+	public void setRoleProperty(MoleculeRole role) {
+		mRole.set(role);
+	}
+
+	@Override
+	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+		mMol3D.setVisible(isMolVisible.get());
+		
+	}
+
+	@Override
+	public void structureChanged() {
+		mMol2D.set(this.createMolecule2D(mMol3D));
 	}
 }

@@ -59,7 +59,6 @@ public class V3DShapeAligner {
 						mMolSizeAlert.showAndWait();
 						return;
 					}
-					fxmol.addImplicitHydrogens();
 					fxmolList.add(fxmol);
 				}
 			}

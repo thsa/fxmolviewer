@@ -50,17 +50,17 @@ public class ViewerApp extends Application {
 		scene.getStylesheets().add(css);
 		mViewer.getScene3D().widthProperty().bind(scene.widthProperty());
 		mViewer.getScene3D().heightProperty().bind(scene.heightProperty());
-
 		primaryStage.setTitle("Molecule Viewer");
 		primaryStage.setScene(scene);
 		primaryStage.show();
-
+		/*
 		if (path.length() != 0)
 			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path.substring(0, path.lastIndexOf(File.separatorChar)+1), true).initializeScene(mViewer.getScene3D()) );
 		else if (mode != -1)
 			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(mViewer.getScene3D()) );
 		else
 			Platform.runLater(() -> showStartOptionDialog(mViewer.getScene3D()) );
+			*/
 	}
 
 	private static void showStartOptionDialog(V3DScene scene) {

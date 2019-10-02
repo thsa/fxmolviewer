@@ -23,19 +23,25 @@ package org.openmolecules.fx.viewer3d.panel;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.util.Callback;
 
 /**
  * Created by thomas on 20.10.16.
  */
-public class MoleculeCellFactory implements Callback<ListView<MoleculeModel>, ListCell<MoleculeModel>> {
+public class MoleculeCellFactory implements Callback<TableColumn<MoleculeModel,MoleculeModel>, TableCell<MoleculeModel,MoleculeModel>> {
 	private BooleanProperty mShowStructure;
 	public MoleculeCellFactory(BooleanProperty showStructure) {
 		mShowStructure = showStructure;
 	}
 
+
+
 	@Override
-	public ListCell<MoleculeModel> call(ListView<MoleculeModel> listview) {
+	public TableCell<MoleculeModel, MoleculeModel> call(TableColumn<MoleculeModel, MoleculeModel> param) {
+		// TODO Auto-generated method stub
 		return new MoleculeCell(mShowStructure);
 	}
 }

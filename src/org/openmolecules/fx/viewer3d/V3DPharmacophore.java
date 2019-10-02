@@ -32,7 +32,7 @@ import java.util.Random;
 
 
 
-public class V3DPharmacophore extends Group implements MoleculeChangeListener, PharmacophoreBuilder{
+public class V3DPharmacophore extends Group implements MolCoordinatesChangeListener, PharmacophoreBuilder{
 	
 	public static PhongMaterial sDonorMaterial;
 	public static PhongMaterial sAcceptorMaterial;
@@ -48,7 +48,7 @@ public class V3DPharmacophore extends Group implements MoleculeChangeListener, P
 	private V3DMolecule fxMol;
 	
 	public V3DPharmacophore(V3DMolecule fxMol) {
-		fxMol.addMoleculeChangeListener(this);
+		fxMol.addMoleculeCoordinatesChangeListener(this);
 		this.fxMol = fxMol;
 		molVol = new MolecularVolume(fxMol.getMolecule());			
 		sAcceptorMaterial = new PhongMaterial();
@@ -100,7 +100,7 @@ public class V3DPharmacophore extends Group implements MoleculeChangeListener, P
 	}
 	
 	public void cleanup() {
-		this.fxMol.removeMoleculeChangeListener(this);
+		this.fxMol.removeMoleculeCoordinatesChangeListener(this);
 		ArrayList<Node> toBeRemoved = new ArrayList<Node>();
 		for (Node node:fxMol.getChildren()) {
 			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
