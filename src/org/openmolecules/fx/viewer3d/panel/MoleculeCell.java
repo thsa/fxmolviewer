@@ -22,24 +22,13 @@ package org.openmolecules.fx.viewer3d.panel;
 
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
-
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 
-import org.jmol.modelsetbio.ProteinStructure;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DScene;
 
 /**
  * Created by thomas on 20.10.16.
