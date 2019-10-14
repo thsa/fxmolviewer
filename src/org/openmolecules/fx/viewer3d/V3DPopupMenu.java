@@ -61,23 +61,24 @@ public class V3DPopupMenu extends ContextMenu {
 		}
 
 		sPopupMenu = this;
-
 		mMolecule = fxmol;
-		
-		
-		
-		MenuItem loadMols = new MenuItem("Load Molecules");
-		loadMols.setOnAction(e -> 	{	
-			File selectedFile = this.getMolFileLoader().showOpenDialog(null);
-			 if (selectedFile != null) {
-				    V3DMolecule[] mols = V3DMoleculeParser.readMolFile(selectedFile.toString(),scene.getMaxGroupID());
-				    for(V3DMolecule vm: mols) {
-						scene.addMolecule(vm);
-				    }
-				 }
 
-		});
-		getItems().add(loadMols);
+		V3DPopupMenuController controller = scene.getPopupMenuController();
+
+		if (controller == null || controller.allowEditing()) {
+			MenuItem loadMols = new MenuItem("Open Molecule File...");
+			loadMols.setOnAction(e -> {
+				File selectedFile = this.getMolFileLoader().showOpenDialog(null);
+				if (selectedFile != null) {
+					V3DMolecule[] mols = V3DMoleculeParser.readMolFile(selectedFile.toString(), scene.getMaxGroupID());
+					for (V3DMolecule vm : mols) {
+						scene.addMolecule(vm);
+					}
+				}
+			});
+			getItems().add(loadMols);
+			getItems().add(new SeparatorMenuItem());
+		}
 
 		MenuItem itemCenter = new MenuItem("Center View");
 		itemCenter.setOnAction(e -> scene.optimizeView());
@@ -104,49 +105,70 @@ public class V3DPopupMenu extends ContextMenu {
 
 		getItems().add(menuView);
 
-		MenuItem itemCut = new MenuItem("Cut Molecule");
-		itemCut.setDisable(fxmol == null);
-		itemCut.setOnAction(e -> scene.cut(fxmol));
+		if (controller == null || controller.allowEditing()) {
+			MenuItem itemCut = new MenuItem("Cut Molecule");
+			itemCut.setDisable(fxmol == null);
+			itemCut.setOnAction(e -> scene.cut(fxmol));
 
-		MenuItem itemCopy3D = new MenuItem("Copy Molecule 3D");
-		itemCopy3D.setDisable(fxmol == null);
-		itemCopy3D.setOnAction(e -> scene.copy3D(fxmol));
+			MenuItem itemCopy3D = new MenuItem("Copy Molecule 3D");
+			itemCopy3D.setDisable(fxmol == null);
+			itemCopy3D.setOnAction(e -> scene.copy3D(fxmol));
 
-		MenuItem itemCopy2D = new MenuItem("Copy Molecule 2D");
-		itemCopy2D.setDisable(fxmol == null);
-		itemCopy2D.setOnAction(e -> scene.copy2D(fxmol));
+			MenuItem itemCopy2D = new MenuItem("Copy Molecule 2D");
+			itemCopy2D.setDisable(fxmol == null);
+			itemCopy2D.setOnAction(e -> scene.copy2D(fxmol));
 
-		MenuItem itemPaste = new MenuItem("Paste Molecule");
-		itemPaste.setOnAction(e -> scene.paste());
+			MenuItem itemPaste = new MenuItem("Paste Molecule");
+			itemPaste.setOnAction(e -> scene.paste());
 
-		MenuItem itemDelete = new MenuItem("Delete Molecule");
-		itemDelete.setDisable(fxmol == null);
-		itemDelete.setOnAction(e -> scene.delete(fxmol));
+			MenuItem itemDelete = new MenuItem("Delete Molecule");
+			itemDelete.setDisable(fxmol == null);
+			itemDelete.setOnAction(e -> scene.delete(fxmol));
 
-		MenuItem itemCrop6 = new MenuItem("0.6 nm");
-		itemCrop6.setOnAction(e -> scene.crop(fxmol, 6.0));
+			MenuItem itemCrop6 = new MenuItem("0.6 nm");
+			itemCrop6.setOnAction(e -> scene.crop(fxmol, 6.0));
 
-		MenuItem itemCrop8 = new MenuItem("0.8 nm");
-		itemCrop8.setOnAction(e -> scene.crop(fxmol, 8.0));
+			MenuItem itemCrop8 = new MenuItem("0.8 nm");
+			itemCrop8.setOnAction(e -> scene.crop(fxmol, 8.0));
 
-		MenuItem itemCrop10 = new MenuItem("1.0 nm");
-		itemCrop10.setOnAction(e -> scene.crop(fxmol, 10.0));
+			MenuItem itemCrop10 = new MenuItem("1.0 nm");
+			itemCrop10.setOnAction(e -> scene.crop(fxmol, 10.0));
 
-		MenuItem itemCrop12 = new MenuItem("1.2 nm");
-		itemCrop12.setOnAction(e -> scene.crop(fxmol, 12.0));
+			MenuItem itemCrop12 = new MenuItem("1.2 nm");
+			itemCrop12.setOnAction(e -> scene.crop(fxmol, 12.0));
 
-		Menu menuCrop = new Menu("Crop all beyond");
-		menuCrop.getItems().addAll(itemCrop6, itemCrop8,itemCrop10, itemCrop12);
+			Menu menuCrop = new Menu("Crop all beyond");
+			menuCrop.getItems().addAll(itemCrop6, itemCrop8, itemCrop10, itemCrop12);
 
-		MenuItem itemClear = new MenuItem("Clear All");
-		itemClear.setOnAction(e -> scene.clearAll(true));
+			MenuItem itemClear = new MenuItem("Clear All");
+			itemClear.setOnAction(e -> scene.clearAll(true));
 
-		Menu menuClipboard = new Menu("Edit");
-		menuClipboard.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete,
-				new SeparatorMenuItem(), menuCrop, new SeparatorMenuItem(), itemClear);
+			Menu menuEdit = new Menu("Edit");
+			menuEdit.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete,
+					new SeparatorMenuItem(), menuCrop, new SeparatorMenuItem(), itemClear);
 
-		getItems().add(new SeparatorMenuItem());
-		getItems().add(menuClipboard);
+			getItems().add(new SeparatorMenuItem());
+			getItems().add(menuEdit);
+		}
+		else {
+			MenuItem itemCopy3D = new MenuItem("Molecule 3D");
+			itemCopy3D.setDisable(fxmol == null);
+			itemCopy3D.setOnAction(e -> scene.copy3D(fxmol));
+
+			MenuItem itemCopy2D = new MenuItem("Molecule 2D");
+			itemCopy2D.setDisable(fxmol == null);
+			itemCopy2D.setOnAction(e -> scene.copy2D(fxmol));
+
+			Menu menuCopy = new Menu("Copy");
+			menuCopy.getItems().addAll(itemCopy3D, itemCopy2D);
+
+			getItems().add(new SeparatorMenuItem());
+			getItems().add(menuCopy);
+		}
+
+		if (controller != null) {
+			controller.addExternalMenuItems(this);
+		}
 
 		if (fxmol != null) {
 			getItems().add(new SeparatorMenuItem());
@@ -252,9 +274,11 @@ public class V3DPopupMenu extends ContextMenu {
 
 
 			getItems().add(new SeparatorMenuItem());
-			MenuItem itemHide = new MenuItem("Hide Molecule");
-			itemHide.setOnAction(e -> fxmol.setVisible(false));
-			getItems().add(itemHide);
+			if (controller == null || controller.allowHiding()) {
+				MenuItem itemHide = new MenuItem("Hide Molecule");
+				itemHide.setOnAction(e -> fxmol.setVisible(false));
+				getItems().add(itemHide);
+			}
 			MenuItem itemPP = new MenuItem("Add Pharmacophores");
 			itemPP.setOnAction(e -> fxmol.addPharmacophore());
 			getItems().add(itemPP);
@@ -272,7 +296,7 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(itemES);
 			
 		}
-		else {
+		else if (controller == null || controller.allowHiding()) {
 			getItems().add(new SeparatorMenuItem());
 			MenuItem itemHideAll = new MenuItem("Hide All Molecules");
 			itemHideAll.setOnAction(e -> scene.setAllVisible(false));

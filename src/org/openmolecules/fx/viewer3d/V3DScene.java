@@ -47,10 +47,8 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
@@ -70,7 +68,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private ArrayList<NonRotatingLabel> mLabelList;
 	private ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
-	
+	private V3DPopupMenuController mPopupMenuController;
+
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
 	protected static final double CAMERA_FIELD_OF_VIEW = 30.0;	// default field of view
@@ -117,7 +116,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mPickedMolsList = new ArrayList<V3DMolecule>();
 		mLabelList = new ArrayList<NonRotatingLabel>();
 		}
-	
+
+	public V3DPopupMenuController getPopupMenuController() {
+		return mPopupMenuController;
+	}
+
+	public void setPopupMenuController(V3DPopupMenuController controller) {
+		mPopupMenuController = controller;
+	}
+
 	public int getMaxGroupID() {
 		int id = mWorld.getChildren().stream().filter(node -> node instanceof V3DMolecule).mapToInt(node ->
 		((V3DMolecule)node).getGroup()).max().orElse(1);
