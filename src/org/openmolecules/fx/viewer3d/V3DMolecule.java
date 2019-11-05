@@ -98,25 +98,36 @@ public class V3DMolecule extends RotatableGroup {
 	private boolean mIsIncluded;
 	private Color mCarbonColor;
 	
-	public enum MoleculeRole{LIGAND {
-        public String toString(){
+	public enum MoleculeRole{
+		LIGAND { public String toString(){
             return "Ligand";
-        }
-    },  
+        } },
 		COFACTOR { public String toString(){
 			return "Cofactor";
-    }
-    }, 
-		MACROMOLECULE {public String toString(){
+    } },
+		MACROMOLECULE { public String toString(){
 			return "Protein";
-		}
-    },  
+		} },
 		SOLVENT {public String toString(){
         return "Solvent";
-    }
-    }, }
+    } },
+	}
 	private Coordinates[] mInitialCoordinates;
 	
+
+	/**
+	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
+	 * - construction mode: sticks<br>
+	 * - default hydrogen mode, i.e. shows all explicit hydrogens<br>
+	 * - shows no surface<br>
+	 * - id = 0<br>
+	 * - group = 0<br>
+	 * - role = LIGAND
+	 * @param mol
+	 */
+	public V3DMolecule(StereoMolecule mol) {
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, 0, 0, MoleculeRole.LIGAND );
+	}
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -126,7 +137,7 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param mol
 	 */
 	public V3DMolecule(StereoMolecule mol, int id, int group, MoleculeRole role) {
-		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, id, group, role );
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, group, role );
 		}
 
 	/**
@@ -146,8 +157,7 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options
 	 */
-	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode, 
-			int id, int group, MoleculeRole role) {
+	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode, int id, int group, MoleculeRole role) {
 		this(mol, constructionMode, hydrogenMode, SURFACE_NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, group, role);
 		}
