@@ -102,6 +102,7 @@ public class V3DMouseHandler {
 			mAffectedMol = null;
 			trackAffectedMol(isSingleMolecule(me));
 
+
 			// setOnMouseClicked() is strangely often not triggered. Therefore we simulate...
 			long millis = System.currentTimeMillis();
 			boolean isDoubleClick = (millis - mMousePressedMillis < 300);
@@ -109,8 +110,10 @@ public class V3DMouseHandler {
 
 			//System.out.println("mouse pressed isPrimaryButtonDown:"+me.isPrimaryButtonDown()+" isMiddleButtonDown:"+me.isMiddleButtonDown());
 			if (me.getButton() == MouseButton.PRIMARY) {
-				if (isDoubleClick)
+				if (isDoubleClick) {
 					mScene.selectMolecule(mHighlightedMol, me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0);
+
+				}
 				else {
 					if(mScene.getMeasurementMode()!=V3DScene.MEASUREMENT.NONE) {
 						Node parent = mSelectedNode;
@@ -192,6 +195,7 @@ public class V3DMouseHandler {
 							fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
 						mScene.removeMeasurements(fxmol);
 						fxmol.fireStructureChange();
+						fxmol.updateColor(true);
 					}
 
 					}

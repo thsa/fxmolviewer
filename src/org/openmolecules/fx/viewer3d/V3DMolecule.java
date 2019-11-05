@@ -24,6 +24,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
+import com.actelion.research.chem.phesa.MolecularVolume;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableFloatArray;
@@ -93,6 +94,10 @@ public class V3DMolecule extends RotatableGroup {
 	private MoleculeRole mRole;
 	private int mID;
 	private int mGroup;
+	private boolean mIsSelected;
+	private boolean mIsIncluded;
+	private Color mCarbonColor;
+	
 	public enum MoleculeRole{LIGAND {
         public String toString(){
             return "Ligand";
@@ -167,6 +172,8 @@ public class V3DMolecule extends RotatableGroup {
 		mRole = role;
 		mID = id;
 		mGroup = group;
+		mIsSelected = false;
+		mIsIncluded = false;
 		int surfaceCount = MoleculeSurfaceAlgorithm.SURFACE_TYPE.length;
 		mSurface = new MeshView[surfaceCount];
 		mSurfaceMesh = new SurfaceMesh[surfaceCount];
@@ -230,11 +237,22 @@ public class V3DMolecule extends RotatableGroup {
 	}
 
 	public void addPharmacophore() {
+		V3DPharmacophore pharmacophore = new V3DPharmacophore(this);
+		constructPharmacophore(pharmacophore);
+	}
+	
+	public void addPharmacophore(MolecularVolume molVol) {
+		V3DPharmacophore pharmacophore = new V3DPharmacophore(this,molVol);
+		constructPharmacophore(pharmacophore);
+	}
+	
+	private void constructPharmacophore(V3DPharmacophore pharmacophore) {
 		this.removePharmacophore();
-		mPharmacophore = new V3DPharmacophore(this);
+		mPharmacophore = pharmacophore;
 		mPharmacophore.buildPharmacophore();
 		Platform.runLater(() -> getChildren().add(mPharmacophore));
 		mListeners.add(mPharmacophore);
+		
 	}
 	
 	public V3DPharmacophore getPharmacophore() {
@@ -387,7 +405,14 @@ public class V3DMolecule extends RotatableGroup {
 		return (mOverrideMaterial == null) ? null : mOverrideMaterial.getDiffuseColor();
 		}
 
+	
+	public void updateColor(boolean carbonOnly) {
+		if(mCarbonColor!=null)
+			setColor(mCarbonColor,carbonOnly);
+	}
+	
 	public void setColor(Color color, boolean carbonOnly) {
+		mCarbonColor = color;
 		if (color == null) {
 			mOverrideMaterial = null;
 			}
@@ -506,6 +531,14 @@ public class V3DMolecule extends RotatableGroup {
 		return mGroup;
 	}
 	
+	public boolean isSelected() {
+		return mIsSelected;
+	}
+	
+	public boolean isIncluded() {
+		return mIsIncluded;
+	}
+	
 
 	public MoleculeRole getMoleculeRole() {
 		return mRole;
@@ -517,6 +550,10 @@ public class V3DMolecule extends RotatableGroup {
 	
 	public void setID(int id) {
 		mID = id;
+	}
+	
+	public void setIncluded(boolean included) {
+		mIsIncluded = included;
 	}
 	
 	
@@ -744,16 +781,20 @@ public class V3DMolecule extends RotatableGroup {
 	 *
 	 * @param isSelect if false this is a deselection
 	 */
-	public void select(boolean isSelect) {
+	public void toggleSelection() {
+		if(mIsSelected==false)
+			mIsSelected=true;
+		else 
+			mIsSelected=false;
 		for (Node node:getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && !detail.isTransparent()) {
-				detail.setSelected(isSelect);
+				detail.setSelected(mIsSelected);
 				updateAppearance(node);
 				}
 			}
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++)
-			mMol.setAtomSelection(atom, isSelect);
+			mMol.setAtomSelection(atom, mIsSelected);
 		}
 
 	/**
@@ -762,6 +803,10 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param paneOnScreen top let point of parent pane on screen
 	 */
 	public void select(Polygon polygon, int mode, Point2D paneOnScreen) {
+		if(mIsSelected==false)
+			mIsSelected=true;
+		else 
+			toggleSelection();
 		for (Node node:getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && !detail.isTransparent()) {
@@ -1006,8 +1051,8 @@ public class V3DMolecule extends RotatableGroup {
 			if (mOverrideMaterial == null
 			 || isInvisibleShape
 			 || (mOverrideCarbonOnly
-			  && !detail.mayOverrideMaterial()))
-				material = detail.getMaterial();
+			  && !detail.mayOverrideMaterial())) {
+				material = detail.getMaterial();}
 			}
 
 		if (shape.getMaterial() != material) {

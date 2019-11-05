@@ -20,27 +20,45 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.util.Callback;
 
 import org.openmolecules.render.MoleculeArchitect;
+
+import com.actelion.research.chem.phesa.PheSAMolecule;
+
 import org.openmolecules.fx.sunflow.RayTraceDialog;
 import org.openmolecules.fx.sunflow.RayTraceOptions;
 import org.openmolecules.fx.surface.ClipSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
+import org.openmolecules.fx.tasks.IAlignmentTask;
+import org.openmolecules.fx.tasks.V3DFlexiblePheSARefinement;
+import org.openmolecules.fx.tasks.V3DMinimizer;
+import org.openmolecules.fx.tasks.V3DShapeAlignerFromFile;
+import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
+import org.openmolecules.fx.viewerapp.StartOptionDialog;
+import org.openmolecules.fx.viewerapp.StartOptions;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 
 public class V3DPopupMenu extends ContextMenu {
@@ -54,6 +72,7 @@ public class V3DPopupMenu extends ContextMenu {
 	protected static boolean sUseMouseWheelForClipping = DEFAULT_USE_WHEEL_FOR_CLIPPING;
 
 	private V3DMolecule mMolecule;
+	private V3DScene mScene;
 
 	public V3DPopupMenu(V3DScene scene, V3DMolecule fxmol) {
 		if (sPopupMenu != null && sPopupMenu.isShowing()) {
@@ -61,16 +80,15 @@ public class V3DPopupMenu extends ContextMenu {
 		}
 
 		sPopupMenu = this;
-
 		mMolecule = fxmol;
-		
+		mScene = scene;
 		
 		
 		MenuItem loadMols = new MenuItem("Load Molecules");
 		loadMols.setOnAction(e -> 	{	
 			File selectedFile = this.getMolFileLoader().showOpenDialog(null);
 			 if (selectedFile != null) {
-				    V3DMolecule[] mols = V3DMoleculeParser.readMolFile(selectedFile.toString(),scene.getMaxGroupID());
+				    List<V3DMolecule> mols = V3DMoleculeParser.readMolFile(selectedFile.toString(),scene.getMaxGroupID());
 				    for(V3DMolecule vm: mols) {
 						scene.addMolecule(vm);
 				    }
@@ -78,6 +96,17 @@ public class V3DPopupMenu extends ContextMenu {
 
 		});
 		getItems().add(loadMols);
+		
+		
+		
+		MenuItem fetchPDB = new MenuItem("Fetch PDB");
+		fetchPDB.setOnAction(e -> 	{	
+			Optional<StartOptions> result = new StartOptionDialog(scene.getScene().getWindow(), null).showAndWait();
+			result.ifPresent(options -> {
+				options.initializeScene(scene);
+			} );
+		});
+		getItems().add(fetchPDB);
 
 		MenuItem itemCenter = new MenuItem("Center View");
 		itemCenter.setOnAction(e -> scene.optimizeView());
@@ -258,6 +287,12 @@ public class V3DPopupMenu extends ContextMenu {
 			MenuItem itemPP = new MenuItem("Add Pharmacophores");
 			itemPP.setOnAction(e -> fxmol.addPharmacophore());
 			getItems().add(itemPP);
+
+			//MenuItem flexRefine = new MenuItem("Refine Alignment");
+			//flexRefine.setOnAction( e -> {
+			//	V3DFlexiblePheSARefinement.align(mScene, fxmol);
+			//});
+			//getItems().add(flexRefine);
 			MenuItem itemHidePP = new MenuItem("Hide Pharmacophore");
 			itemHidePP.setDisable(fxmol.getPharmacophore()==null || !fxmol.getPharmacophore().isVisible());
 			itemHidePP.setOnAction(e -> fxmol.getPharmacophore().setVisible(false));
@@ -270,6 +305,8 @@ public class V3DPopupMenu extends ContextMenu {
 			itemES.setDisable(fxmol.getPharmacophore()==null);
 			itemES.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere());
 			getItems().add(itemES);
+			
+
 			
 		}
 		else {
@@ -351,9 +388,6 @@ public class V3DPopupMenu extends ContextMenu {
 		menuClippingPlanes.getItems().addAll(sliderItem, useWheelForClipping);
 		getItems().add(menuClippingPlanes);
 
-		MenuItem alignMols = new MenuItem("Align Molecules");
-		alignMols.setOnAction(e -> V3DShapeAligner.align(scene));
-		getItems().add(alignMols);
 		
 		getItems().add(new SeparatorMenuItem());
 		MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
@@ -364,6 +398,21 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuMinimize = new Menu("Minimize Energy");
 		menuMinimize.getItems().addAll(itemMinimizeMol, itemMinimizeScene);
 		getItems().add(menuMinimize);
+		
+		MenuItem alignMols = new MenuItem("Align Molecules");
+		alignMols.setOnAction( e -> {
+			if(fxmol==null) {
+				IAlignmentTask task = new V3DShapeAlignerInPlace(scene,fxmol,false);
+				task.align();
+			}
+			else {
+				Dialog<IAlignmentTask> dialog = getAlignmentDialog();
+				Optional<IAlignmentTask> alignmentTaskOptional = dialog.showAndWait();
+				if(alignmentTaskOptional.isPresent())
+					alignmentTaskOptional.get().align();
+			}
+		});
+		getItems().add(alignMols);
 
 		getItems().add(new SeparatorMenuItem());
 		MenuItem itemRayTraceMol = new MenuItem("Of This Molecule...");
@@ -486,6 +535,83 @@ public class V3DPopupMenu extends ContextMenu {
 		
 		return fileChooser;
 	}
+	
+	private Dialog<IAlignmentTask> getAlignmentDialog() {
+		
+		BooleanProperty strucFromInput = new SimpleBooleanProperty(true);
+		ObjectProperty<File> file = new SimpleObjectProperty<File>();
+		Dialog<IAlignmentTask> dialog = new Dialog<>();
+		dialog.setTitle("Alignment Specifications");
+		dialog.setResizable(false);
+		
+		HBox hbox1 = new HBox();
+		
+		Label label = new Label("Align Molecules from : ");
+		
+		ToggleGroup toggleGroupInput = new ToggleGroup();
+		RadioButton fromScene = new RadioButton("Selected in Scene");
+		fromScene.setSelected(true);
+		RadioButton fromFile = new RadioButton("From File");
+		fromScene.setToggleGroup(toggleGroupInput);
+		fromFile.setToggleGroup(toggleGroupInput);
+		hbox1.getChildren().addAll(label, fromScene, fromFile);
+		
+		fromFile.setOnAction(e -> {
+			file.set(getMolFileLoader().showOpenDialog(null));
+		});
+		
+		fromScene.setOnAction(e -> {
+			file.set(null);
+		});
+		
+		HBox hbox2 = new HBox();
+		
+		Label label2 = new Label("Take 3D Structures from : ");
+		
+		ToggleGroup toggleGroupConf = new ToggleGroup();
+		RadioButton fromInput = new RadioButton("Input Structure (if available)");
+		fromInput.setSelected(true);
+		RadioButton fromConfGen = new RadioButton("Generate Conformers and Identify Best Match");
+		fromInput.setToggleGroup(toggleGroupConf);
+		fromConfGen.setToggleGroup(toggleGroupConf);
+		
+		hbox2.getChildren().addAll(label2, fromInput, fromConfGen);
+		
+		fromInput.setOnAction(e -> {
+			strucFromInput.set(true);
+		});
+		
+		fromConfGen.setOnAction(e -> {
+			strucFromInput.set(false);
+		});
+		
+		VBox content = new VBox();
+		content.getChildren().addAll(hbox1,hbox2);
+		dialog.getDialogPane().setContent(content);
+		ButtonType buttonTypeOk = new ButtonType("Run", ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
+		dialog.setResultConverter(new Callback<ButtonType, IAlignmentTask>() {
+		    @Override
+		    public IAlignmentTask call(ButtonType b) {
+		    	IAlignmentTask task = null;
+		        if (b == buttonTypeOk) {
+		        	if(file.get()!=null) {
+		        		List<PheSAMolecule> shapes = V3DMoleculeParser.readPhesaScreeningLib(file.get(), strucFromInput.get());
+		        		task = new V3DShapeAlignerFromFile(mScene,mMolecule,shapes);
+		        	}
+		        	else {
+		        		task = new V3DShapeAlignerInPlace(mScene,mMolecule,!strucFromInput.get());
+		        	}
+		           
+		        }
+		        return task;
+		        
+		    }
+		});
+		
+		return dialog;
+	}
+
 	
 
 }

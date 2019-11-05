@@ -1,4 +1,4 @@
-package org.openmolecules.fx.viewer3d;
+package org.openmolecules.fx.tasks;
 
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.forcefield.ForceField;
@@ -10,6 +10,10 @@ import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
 
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
+import org.openmolecules.fx.viewer3d.V3DScene;
+import org.openmolecules.fx.viewer3d.V3DSceneEditor;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;

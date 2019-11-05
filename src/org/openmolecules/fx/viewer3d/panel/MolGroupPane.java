@@ -160,10 +160,11 @@ public class MolGroupPane extends ScrollPane implements V3DSceneListener {
 
 	}
 	
-	public void changeGroupSelected(int group) {
-		Iterator<MoleculeGroupTable> iterator = mGroupTable.values().iterator();
-		while(iterator.hasNext()) 
-			iterator.next().changeGroupSelected(group);
+	public void changeGroupSelected(int targetGroup) {
+		ArrayList<Integer> groups = new ArrayList<Integer>(mGroupTable.keySet());
+		for(int group : groups) {
+			mGroupTable.get(group).changeGroupSelected(targetGroup);
+		}
 	}
 	
 	public VBox getContainer() {

@@ -46,7 +46,15 @@ public class MoleculeGroupTable {
 		mPane = pane;
 		initTable();
 		construct();
-	
+		mMolTable.getSelectionModel().selectedItemProperty().addListener((v,ov,nv) -> {
+			List<MoleculeModel> selectedModels = mMolTable.getSelectionModel().getSelectedItems();
+			for(MoleculeModel model : mMolTable.getItems()) {
+				if (selectedModels.contains(model))
+					model.getMolecule3D().setIncluded(true);
+				else 
+					model.getMolecule3D().setIncluded(false);
+			}
+			});
 
 	}
 	

@@ -40,7 +40,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 
 	public V3DSceneWithSidePane(int width, int height) {
 		mScene3D = new V3DScene(new Group(), width, height);
-
 		mMoleculePanel = new MolGroupPane(mScene3D);
 		mMoleculePanel.getStyleClass().add("side-panel");
 		Pane dummyPane = new Pane();
@@ -55,7 +54,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 	    stackPane.getChildren().add(sceneWithSelection);
 	    stackPane.getChildren().add(center);
 	    center.setPickOnBounds(false);
-
 		setCenter(stackPane);
 		
 		

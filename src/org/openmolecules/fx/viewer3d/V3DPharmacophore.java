@@ -44,13 +44,17 @@ public class V3DPharmacophore extends Group implements MolCoordinatesChangeListe
 	
 
 	
-	private MolecularVolume molVol;
-	private V3DMolecule fxMol;
+	private MolecularVolume mMolVol;
+	private V3DMolecule mFXMol;
 	
 	public V3DPharmacophore(V3DMolecule fxMol) {
+		this(fxMol,new MolecularVolume(fxMol.getMolecule()));
+	}
+	
+	public V3DPharmacophore(V3DMolecule fxMol, MolecularVolume molVol) {
 		fxMol.addMoleculeCoordinatesChangeListener(this);
-		this.fxMol = fxMol;
-		molVol = new MolecularVolume(fxMol.getMolecule());			
+		this.mFXMol = fxMol;
+		mMolVol = molVol;	
 		sAcceptorMaterial = new PhongMaterial();
 		sAcceptorMaterial.setSpecularColor(new Color(1.0,0.2,0.2,0.01));
 		sAcceptorMaterial.setDiffuseColor(new Color(1.0,0.2,0.2,0.01).darker());
@@ -69,47 +73,43 @@ public class V3DPharmacophore extends Group implements MolCoordinatesChangeListe
 		sPosChargeMaterialFrame = new PhongMaterial();
 		sPosChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
 		sPosChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
-
 	
 	}
 
 	@Override
 	public void coordinatesChanged() {
-		updateCoordinates(molVol.getAtomicGaussians(),fxMol.getMolecule());
-		updateCoordinates(molVol.getPPGaussians(),fxMol.getMolecule());
-		molVol.updateCOM();
+		/*TODO
+		 * add hydrogens?
+		 */
+		mMolVol.update(mFXMol.getMolecule());
+		mMolVol.updateCOM();
 			
 	}
 	
-	public void updateCoordinates(ArrayList<? extends Gaussian3D> gaussians, StereoMolecule mol) {
-		for(Gaussian3D gaussian : gaussians) {
-			gaussian.updateCoordinates(mol);
-		}
-		
-	}
+
 	
 
 	
 	public void buildPharmacophore() {
 		PharmacophoreArchitect architect = new PharmacophoreArchitect(this);
-		architect.buildPharmacophore(molVol, 0);
+		architect.buildPharmacophore(mMolVol, 0);
 		}
 	
 	public MolecularVolume getMolVol() {
-		return molVol;
+		return mMolVol;
 	}
 	
 	public void cleanup() {
-		this.fxMol.removeMoleculeCoordinatesChangeListener(this);
+		this.mFXMol.removeMoleculeCoordinatesChangeListener(this);
 		ArrayList<Node> toBeRemoved = new ArrayList<Node>();
-		for (Node node:fxMol.getChildren()) {
+		for (Node node:mFXMol.getChildren()) {
 			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
 			if ((role &  MoleculeBuilder.ROLE_IS_PHARMACOPHORE)!= 0) {
 				toBeRemoved.add(node);
 			}
 		}
 		Platform.runLater(() -> {getChildren().removeAll(toBeRemoved);
-			this.fxMol.getChildren().remove(this);
+			this.mFXMol.getChildren().remove(this);
 		});
 		
 	}
@@ -151,20 +151,12 @@ public class V3DPharmacophore extends Group implements MolCoordinatesChangeListe
 	
 	public void placeExclusionSphere() {
 		Random random = new Random();
-		int atom = random.nextInt(fxMol.getMolecule().getAllAtoms());
+		int atom = random.nextInt(mFXMol.getMolecule().getAllAtoms());
 		Coordinates shift = new Coordinates(3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1));
-		ExclusionGaussian eg = new ExclusionGaussian(atom, 6, fxMol.getMolecule().getCoordinates(atom), shift);
-		molVol.getExclusionGaussians().add(eg);
+		ExclusionGaussian eg = new ExclusionGaussian(atom, 6, mFXMol.getMolecule().getCoordinates(atom), shift);
+		mMolVol.getExclusionGaussians().add(eg);
 		int role = PharmacophoreArchitect.exclusionRole(eg);
 		addExclusionSphere(role,eg);
 	}
-
-
-	
-	
-	
-	
-	
-	
 
 }

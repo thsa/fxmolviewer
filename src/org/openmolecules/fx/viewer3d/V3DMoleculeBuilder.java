@@ -94,8 +94,9 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 
 	@Override
 	public void addSphere(int role, Coordinates c, double radius, int argb) {
-		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
-							  || argb == MoleculeArchitect.ATOM_ARGB[6]);
+		//boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
+		//					  || argb == MoleculeArchitect.ATOM_ARGB[6]);
+		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[6]);
 		PhongMaterial material = getMaterial(argb);
 		Sphere sphere = new Sphere(radius, mSphereDivisions);
 		sphere.setMaterial(material);
@@ -112,8 +113,10 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 
 	@Override
 	public void addCylinder(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
-		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
-							  || argb == MoleculeArchitect.ATOM_ARGB[6]
+		//boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
+		//					  || argb == MoleculeArchitect.ATOM_ARGB[6]
+		//					  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
+		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[6]
 							  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
 		PhongMaterial material = getMaterial(argb);
 		Cylinder cylinder = new Cylinder(radius, length, mCylinderDivisions);
@@ -132,8 +135,9 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 
 	@Override
 	public void addCone(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
-		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
-							  || argb == MoleculeArchitect.ATOM_ARGB[6]);
+		//boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
+		//					  || argb == MoleculeArchitect.ATOM_ARGB[6]);
+		boolean isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[6]);
 		PhongMaterial material = getMaterial(argb);
 		Cone cone = new Cone(radius, length);
 		cone.setMaterial(material);

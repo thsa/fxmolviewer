@@ -27,6 +27,7 @@ import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
 import com.actelion.research.util.DoubleFormat;
 
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -434,12 +435,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 
 	public void addMolecule(V3DMolecule fxmol) {
-
 		mWorld.getChildren().add(fxmol);
 		if (mSceneListener != null)
 			mSceneListener.addMolecule(fxmol);
-		}
-	
+		Color color = CarbonAtomColorPalette.getNextColor(fxmol.getID());
+		Platform.runLater(() ->fxmol.setColor(color, true));	
+	}
+		
 
 	
 	
@@ -510,11 +512,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		if (mode == 0) {
 			for (Node node : mWorld.getChildren())
 				if (node instanceof V3DMolecule)
-					((V3DMolecule)node).select(node == mol3D);
+					if(((V3DMolecule)node).isSelected() || node==mol3D)
+						((V3DMolecule)node).toggleSelection();
 			}
 		else {
 			if (mol3D != null)
-				mol3D.select(mode == 1);
+				mol3D.toggleSelection();
 			}
 		}
 

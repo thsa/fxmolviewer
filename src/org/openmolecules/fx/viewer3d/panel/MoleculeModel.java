@@ -50,6 +50,7 @@ public class MoleculeModel implements MolStructureChangeListener, ChangeListener
 	private SimpleIntegerProperty mGroup;
 	private ArrayList<InvalidationListener> iListeners;
 	private BooleanProperty isMolVisible;
+	private BooleanProperty isSelected;
 
 	public MoleculeModel(V3DMolecule mol3D) {
 		mMol3D = mol3D;
@@ -62,6 +63,8 @@ public class MoleculeModel implements MolStructureChangeListener, ChangeListener
 		iListeners = new ArrayList<InvalidationListener>();
 		isMolVisible =  new SimpleBooleanProperty(true);
 		isMolVisible.addListener(this);
+		isSelected = new SimpleBooleanProperty(false);
+		isSelected.addListener((o,ov,nv) -> mMol3D.setIncluded(nv));
 	}
 
 	private StereoMolecule createMolecule2D(V3DMolecule mol3D) {
@@ -107,6 +110,10 @@ public class MoleculeModel implements MolStructureChangeListener, ChangeListener
 	
 	public void setGroupProperty(int group) {
 		mGroup.set(group);
+	}
+	
+	public void setSelectionProperty(boolean selection) {
+		isSelected.set(selection);
 	}
 	
 	

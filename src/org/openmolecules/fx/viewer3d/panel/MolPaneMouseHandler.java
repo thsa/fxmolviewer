@@ -1,10 +1,14 @@
 package org.openmolecules.fx.viewer3d.panel;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.openmolecules.fx.tasks.V3DPheSAScreener;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
+import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
 
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -17,6 +21,8 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 
 public class MolPaneMouseHandler {
 	
@@ -87,11 +93,11 @@ public class MolPaneMouseHandler {
 			MenuItem menuRole = new MenuItem("Change Role");
 			menuRole.setOnAction(e -> this.createRoleChooserDialog(model));
 			popup.getItems().add(menuRole);
-			MenuItem menuGroup = new MenuItem("Change Group");
-			menuGroup.setOnAction(e -> this.createGroupChangeDialog(model));
-			popup.getItems().add(menuGroup);
 		}
-
+		
+		MenuItem menuGroup = new MenuItem("Change Group");
+		menuGroup.setOnAction(e -> this.createGroupChangeDialog());
+		popup.getItems().add(menuGroup);
 
 		RadioMenuItem itemModeText = new RadioMenuItem("Show Name");
 		itemModeText.setSelected(!mMolPane.isShowStructure());
@@ -155,23 +161,58 @@ public class MolPaneMouseHandler {
 		});
 		
 		popup.getItems().add(move);
+		
+		MenuItem savePheSA = new MenuItem("Save as PheSA Queries");
+		savePheSA.setOnAction(e -> {
+			File saveFile = createFileSaverDialog();
+			if(saveFile!=null) {
+				List<V3DMolecule> fxmols = mMolPane.getAllSelectedMols();
+				V3DMoleculeWriter.savePhesaQueries(saveFile, fxmols);
+			}
+		});
+		
+		popup.getItems().add(savePheSA);
+		
+		MenuItem loadPheSA = new MenuItem("Load PheSA Queries");
+		loadPheSA.setOnAction(e -> {
+			File loadFile = createDWARParserDialog();
+			if(loadFile!=null) {
+				List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(loadFile, 0);
+			    for(V3DMolecule fxMol: fxMols) {
+			    	mMolPane.getV3DScene().addMolecule(fxMol);
+			    }
+			}
+		});
+		
+		popup.getItems().add(loadPheSA);
+		
+		
+		MenuItem screenPheSA = new MenuItem("Run PheSA Screening");
+		screenPheSA.setOnAction(e -> {
+			FileChooser fileChooser =  getMolFileLoader();
+			File loadFile = fileChooser.showOpenDialog(null);
+			if(loadFile!=null) {
+				V3DPheSAScreener.screen(mMolPane.getV3DScene(),loadFile);
+			    }
+			});
+		
+		popup.getItems().add(screenPheSA);
 
 
 		popup.show(mMolPane, me.getScreenX(), me.getScreenY());
 	}
 	
-	private void createGroupChangeDialog(MoleculeModel model) {
+	private void createGroupChangeDialog() {
 		List<String> choices = new ArrayList<>();
 		for(Integer group : mMolPane.getGroups())
 			choices.add(Integer.toString(group));
 
-		ChoiceDialog<String> dialog = new ChoiceDialog<>(Integer.toString(model.groupProperty().get()), choices);
+		ChoiceDialog<String> dialog = new ChoiceDialog<>("1",choices);
 		dialog.setTitle("Molecule Group Dialog");
 		dialog.setContentText("Select Group: ");
 		Optional<String> result = dialog.showAndWait();
 		result.ifPresent(group -> {
-			model.setGroupProperty(Integer.parseInt(group));
-			
+			mMolPane.changeGroupSelected(Integer.parseInt(group));
 		});
 	}
 	
@@ -198,5 +239,32 @@ public class MolPaneMouseHandler {
 			}
 		});
 	}
+	
+	private File createDWARParserDialog() {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open DWAR File");
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
+		//pane.setPinnedSide(Side.RIGHT);
+        File file = fileChooser.showOpenDialog(null);
+        return file;
 
+	}
+	
+	private FileChooser getMolFileLoader() {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open Molecule File");
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("SD Files", "*.sdf"));
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
+		//pane.setPinnedSide(Side.RIGHT);
+		
+		return fileChooser;
+	}
+	
+	private File createFileSaverDialog() {
+		FileChooser fileChooser = new FileChooser();
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(null);
+        return file;
+
+    }
 }
