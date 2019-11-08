@@ -97,7 +97,7 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 		Platform.runLater(() -> {
 		for (int i=0; i<fittedFXMols.size(); i++) {
 			mScene.addMolecule(fittedFXMols.get(i));
-			fittedFXMols.get(i).setColor(CarbonAtomColorPalette.getNextColor(fittedFXMols.get(i).getID()), true);
+			fittedFXMols.get(i).setColor(CarbonAtomColorPalette.getNextColor(fittedFXMols.get(i).getID()));
 			fittedFXMols.get(i).fireCoordinatesChange();
 			V3DMoleculeUpdater fxMolUpdater = new V3DMoleculeUpdater(fittedFXMols.get(i));
 			fxMolUpdater.update();

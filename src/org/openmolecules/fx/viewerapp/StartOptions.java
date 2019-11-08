@@ -542,7 +542,7 @@ public class StartOptions {
 
 			V3DMolecule vm = new V3DMolecule(conformer.toMolecule(null), V3DMolecule.getNextID(),scene.getMaxGroupID(),V3DMolecule.MoleculeRole.LIGAND);
 			vm.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
-			vm.setColor(Color.hsb(hue, 1.0, 0.5), true);
+			vm.setColor(Color.hsb(hue, 1.0, 0.5));
 //			vm.activateEvents();
 			scene.addMolecule(vm);
 			hue += 37;
