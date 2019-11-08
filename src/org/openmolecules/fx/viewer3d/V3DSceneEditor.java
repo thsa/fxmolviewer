@@ -9,8 +9,13 @@ public class V3DSceneEditor extends V3DSceneWithSidePane  {
 	
 	private TextArea mOutputLog;
 	
+	
 	public V3DSceneEditor() {
-		super();
+		this(true);
+	}
+	
+	public V3DSceneEditor(boolean showSidePanel) {
+		super(showSidePanel);
 		mOutputLog = new TextArea();
 		mOutputLog.setEditable(false);
 		//mOutputLog.setStyle("-fx-control-inner-background:black");

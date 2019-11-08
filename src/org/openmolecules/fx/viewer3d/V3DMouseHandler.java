@@ -195,7 +195,7 @@ public class V3DMouseHandler {
 							fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
 						mScene.removeMeasurements(fxmol);
 						fxmol.fireStructureChange();
-						fxmol.updateColor(true);
+						fxmol.updateColor();
 					}
 
 					}

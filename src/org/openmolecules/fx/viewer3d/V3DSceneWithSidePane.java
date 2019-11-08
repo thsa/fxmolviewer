@@ -33,22 +33,28 @@ import org.openmolecules.fx.viewer3d.panel.SlidingHBox;
 public class V3DSceneWithSidePane extends BorderPane {
 	private V3DScene mScene3D;
 	private MolGroupPane mMoleculePanel;
-
-	public V3DSceneWithSidePane() {
-		this(1024, 768);
+	
+	public V3DSceneWithSidePane(boolean showSidePanel) {
+		this(1024, 768, showSidePanel);
 	}
 
-	public V3DSceneWithSidePane(int width, int height) {
+	public V3DSceneWithSidePane() {
+		this(1024, 768, true);
+	}
+
+	public V3DSceneWithSidePane(int width, int height, boolean showSidePanel) {
 		mScene3D = new V3DScene(new Group(), width, height);
-		mMoleculePanel = new MolGroupPane(mScene3D);
-		mMoleculePanel.getStyleClass().add("side-panel");
+		BorderPane center = new BorderPane();
+		if(showSidePanel) {
+			mMoleculePanel = new MolGroupPane(mScene3D);
+			mMoleculePanel.getStyleClass().add("side-panel");
+			SlidingHBox slidingBox = new SlidingHBox(mMoleculePanel);
+			center.setLeft(slidingBox.getBox());
+		}
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
-		BorderPane center = new BorderPane();
 		center.setCenter(dummyPane);
-		SlidingHBox slidingBox = new SlidingHBox(mMoleculePanel);
-		center.setLeft(slidingBox.getBox());
 	    StackPane stackPane = new StackPane();
 	    V3DSceneWithSelection sceneWithSelection = new V3DSceneWithSelection(mScene3D);
 	    stackPane.getChildren().add(sceneWithSelection);

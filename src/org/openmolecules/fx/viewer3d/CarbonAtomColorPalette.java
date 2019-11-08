@@ -21,7 +21,7 @@ public class CarbonAtomColorPalette {
 				}
 			}
 		}
-		int nr = (id % sInstance.mColors.size());
+		int nr = (id % sInstance.mColors.size())-1;
 		return sInstance.mColors.get(nr);
 		
 		
@@ -32,7 +32,7 @@ public class CarbonAtomColorPalette {
 	
 	public void init() {
 		
-		mColors = Arrays.asList(new Color[] {Color.ALICEBLUE, Color.ANTIQUEWHITE, Color.AQUAMARINE,
+		mColors = Arrays.asList(new Color[] {Color.GREY, Color.ALICEBLUE, Color.ANTIQUEWHITE, Color.AQUAMARINE,
 			Color.BLUEVIOLET, 
 			Color.BROWN,Color.BURLYWOOD, Color.CADETBLUE, Color.CHARTREUSE, Color.CHOCOLATE,
 			Color.CORAL, Color.CORNFLOWERBLUE, Color.CORNSILK, Color.CRIMSON, Color.CYAN, 

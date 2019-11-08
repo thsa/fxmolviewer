@@ -45,6 +45,7 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -70,6 +71,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
 	private V3DPopupMenuController mPopupMenuController;
+	private EnumSet<ViewerSettings> mSettings;
+	private boolean mMayOverrideHydrogens;
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
@@ -88,6 +91,16 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			return requiredAtoms;
 		}
 	}
+	
+	public enum ViewerSettings {
+		MINIMIZATION, ALIGNMENT, EDITING, SIDEPANEL, STRUCTUREVIEW, LOAD_MOLS, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND
+	}
+	
+	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND);
+
+	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(ViewerSettings.MINIMIZATION, ViewerSettings.ALIGNMENT,
+			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.LOAD_MOLS, ViewerSettings.WHITE_HYDROGENS,
+			ViewerSettings.BLACK_BACKGROUND);
 	
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
@@ -116,6 +129,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMeasurementMode = MEASUREMENT.NONE;
 		mPickedMolsList = new ArrayList<V3DMolecule>();
 		mLabelList = new ArrayList<NonRotatingLabel>();
+		mMayOverrideHydrogens = true;
 		}
 
 	public V3DPopupMenuController getPopupMenuController() {
@@ -143,6 +157,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void setSceneListener(V3DSceneListener sl) {
 		mSceneListener = sl;
 		}
+	
+	
+	public boolean mayOverrideHydrogenColor() {
+		return mMayOverrideHydrogens;
+	}
 	
 	public MEASUREMENT getMeasurementMode() {
 		return mMeasurementMode;
@@ -442,14 +461,30 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 
 	public void addMolecule(V3DMolecule fxmol) {
+		Color color = CarbonAtomColorPalette.getNextColor(fxmol.getID());
+		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
+		Platform.runLater(() -> fxmol.setColor(color));
 		mWorld.getChildren().add(fxmol);
 		if (mSceneListener != null)
 			mSceneListener.addMolecule(fxmol);
-		Color color = CarbonAtomColorPalette.getNextColor(fxmol.getID());
-		Platform.runLater(() ->fxmol.setColor(color, true));	
+	}
+	
+	public void applySettings(EnumSet<ViewerSettings> settings) {
+		mSettings = settings;
+		if(settings.contains(ViewerSettings.WHITE_HYDROGENS))
+			setOverrideHydrogens(false);
+		if(settings.contains(ViewerSettings.WHITE_BACKGROUND))
+			setFill(Color.WHITE);
+		if(settings.contains(ViewerSettings.BLACK_BACKGROUND))
+			setFill(Color.BLACK);
+		if(settings.contains(ViewerSettings.BLUE_BACKGROUND))
+			setFill(Color.MIDNIGHTBLUE);
+		
 	}
 		
-
+	public EnumSet<ViewerSettings> getSettings() {
+		return mSettings;
+	}
 	
 	
 /*	public double getDistanceToScreenFactor(double z) {
@@ -470,6 +505,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 	public boolean isMouseDragged() {
 		return mMouseDragged;
+	}
+	
+	public void setOverrideHydrogens(boolean override) {
+		mMayOverrideHydrogens = override;
 	}
 
 	public double getFieldOfView() {

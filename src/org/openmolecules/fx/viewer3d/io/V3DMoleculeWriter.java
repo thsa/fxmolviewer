@@ -93,7 +93,6 @@ public class V3DMoleculeWriter {
 					}
 				}
 					
-
 				int[] atomMap = new int[mol.getAllAtoms()];
 				for(int i=0; i<hydrogens1.length;i++)
 					atomMap[hydrogens1[i]] = hydrogens2[i];
@@ -102,7 +101,7 @@ public class V3DMoleculeWriter {
 				MolecularVolume molVolOut = new MolecularVolume(fxmol.getPharmacophore().getMolVol());
 				molVols.add(molVolOut);
 				molVolOut.updateAtomIndeces(atomMap);
-				PheSAMolecule shapeMol = new PheSAMolecule(mol,molVols);
+				PheSAMolecule shapeMol = new PheSAMolecule(mol2,molVols);
 				String PheSAString = dhs.encode(shapeMol);
 				String idcoords = can.getEncodedCoordinates(true);
 				String idcode = can.getIDCode();

@@ -63,9 +63,9 @@ public class V3DMoleculeParser {
 		List<StereoMolecule> mols = parseFile(sdfile);
 		List<V3DMolecule> v3dMols = new ArrayList<V3DMolecule>();
 		for(StereoMolecule mol: mols) {
-			mol.ensureHelperArrays(Molecule.cHelperRings);
 			if(mol==null) 
 				continue;
+			mol.ensureHelperArrays(Molecule.cHelperRings);
 			if(mol.getName()==null || mol.getName().equals(""))
 				mol.setName("Molecule");
 			v3dMols.add(new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND));
@@ -147,6 +147,7 @@ public class V3DMoleculeParser {
 				PheSAMolecule shapeMol = dhs.decode(pheSAString);
 				if(shapeMol.getVolumes().size()==1) {
 					MolecularVolume molVol = shapeMol.getVolumes().get(0);
+					molVol.update(mol);
 					V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND);
 					fxMol.addPharmacophore(molVol);
 					fxMols.add(fxMol);

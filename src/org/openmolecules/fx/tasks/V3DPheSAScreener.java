@@ -12,12 +12,9 @@ import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
 
-import com.actelion.research.calc.Matrix;
 import com.actelion.research.chem.Canonizer;
-import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.descriptor.DescriptorConstants;
-import com.actelion.research.chem.io.CompoundTableConstants;
+import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.io.DWARFileCreator;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
@@ -50,8 +47,11 @@ public class V3DPheSAScreener {
 						if(fxmol.getPharmacophore()==null) 
 							fxmol.addPharmacophore();
 						molVol = fxmol.getPharmacophore().getMolVol();
-						PheSAAlignment.preProcess(fxmol.getMolecule(), molVol);
-						mQueryMols.add(new PheSAMolecule(fxmol.getMolecule(),molVol));
+						StereoMolecule mol = fxmol.getMolecule();
+						Conformer conf = new Conformer(mol);
+						PheSAAlignment.preProcess(conf, molVol);
+						conf.toMolecule(mol);
+						mQueryMols.add(new PheSAMolecule(mol,molVol));
 						mFXQueries.add(fxmol);
 					}
 							

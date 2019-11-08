@@ -58,6 +58,7 @@ import org.openmolecules.fx.viewerapp.StartOptions;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.io.File;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,13 +84,14 @@ public class V3DPopupMenu extends ContextMenu {
 		mMolecule = fxmol;
 		mScene = scene;
 		V3DPopupMenuController controller = scene.getPopupMenuController();
+		EnumSet<V3DScene.ViewerSettings> settings = scene.getSettings();
 	
-		if (controller == null || controller.allowEditing()) {
+		if (settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) {
 			MenuItem loadMols = new MenuItem("Open Molecule File...");
 			loadMols.setOnAction(e -> {
 				File selectedFile = this.getMolFileLoader().showOpenDialog(null);
 				if (selectedFile != null) {
-					V3DMolecule[] mols = V3DMoleculeParser.readMolFile(selectedFile.toString(), scene.getMaxGroupID());
+					List<V3DMolecule> mols = V3DMoleculeParser.readMolFile(selectedFile.toString(), scene.getMaxGroupID());
 					for (V3DMolecule vm : mols) {
 						scene.addMolecule(vm);
 					}
@@ -97,22 +99,20 @@ public class V3DPopupMenu extends ContextMenu {
 			});
 			getItems().add(loadMols);
 			getItems().add(new SeparatorMenuItem());
+			
+			MenuItem fetchPDB = new MenuItem("Fetch PDB");
+			fetchPDB.setOnAction(e -> 	{	
+				Optional<StartOptions> result = new StartOptionDialog(scene.getScene().getWindow(), null).showAndWait();
+				result.ifPresent(options -> {
+					options.initializeScene(scene);
+				} );
+			});
+			getItems().add(fetchPDB);
 		}
 		
 		
-		
-		MenuItem fetchPDB = new MenuItem("Fetch PDB");
-		fetchPDB.setOnAction(e -> 	{	
-			Optional<StartOptions> result = new StartOptionDialog(scene.getScene().getWindow(), null).showAndWait();
-			result.ifPresent(options -> {
-				options.initializeScene(scene);
-			} );
-		});
-		getItems().add(fetchPDB);
-
 		MenuItem itemCenter = new MenuItem("Center View");
 		itemCenter.setOnAction(e -> scene.optimizeView());
-
 		Menu menuReset = new Menu("Reset Location");
 		MenuItem itemResetMolecule = new MenuItem("Of This Molecule");
 		itemResetMolecule.setDisable(fxmol == null);
@@ -135,7 +135,7 @@ public class V3DPopupMenu extends ContextMenu {
 
 		getItems().add(menuView);
 
-		if (controller == null || controller.allowEditing()) {
+		if (settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) {
 			MenuItem itemCut = new MenuItem("Cut Molecule");
 			itemCut.setDisable(fxmol == null);
 			itemCut.setOnAction(e -> scene.cut(fxmol));
@@ -222,9 +222,9 @@ public class V3DPopupMenu extends ContextMenu {
 			Menu menuColor = new Menu("Molecule Color");
 			RadioMenuItem colorNone = new RadioMenuItem("By Atomic No");
 			colorNone.setSelected(fxmol.getColor() == null);
-			colorNone.setOnAction(e -> mMolecule.setColor(null, true));
+			colorNone.setOnAction(e -> mMolecule.setColor(null));
 			ColorPicker molColorPicker = new ColorPicker(fxmol.getColor());
-			molColorPicker.setOnAction(t -> { fxmol.setColor(molColorPicker.getValue(), true); hide(); });
+			molColorPicker.setOnAction(t -> { fxmol.setColor(molColorPicker.getValue()); hide(); });
 			CustomMenuItem colorExplicit = new CustomMenuItem(molColorPicker);
 			colorExplicit.setHideOnClick(false);
 			menuColor.getItems().addAll(colorNone, colorExplicit);
@@ -304,7 +304,7 @@ public class V3DPopupMenu extends ContextMenu {
 
 
 			getItems().add(new SeparatorMenuItem());
-			if (controller == null || controller.allowHiding()) {
+			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 				MenuItem itemHide = new MenuItem("Hide Molecule");
 				itemHide.setOnAction(e -> fxmol.setVisible(false));
 				getItems().add(itemHide);
@@ -334,7 +334,7 @@ public class V3DPopupMenu extends ContextMenu {
 
 			
 		}
-		else if (controller == null || controller.allowHiding()) {
+		if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 			getItems().add(new SeparatorMenuItem());
 			MenuItem itemHideAll = new MenuItem("Hide All Molecules");
 			itemHideAll.setOnAction(e -> scene.setAllVisible(false));
@@ -412,32 +412,33 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuClippingPlanes = new Menu("Clipping Planes");
 		menuClippingPlanes.getItems().addAll(sliderItem, useWheelForClipping);
 		getItems().add(menuClippingPlanes);
-
-		
-		getItems().add(new SeparatorMenuItem());
-		MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
-		itemMinimizeMol.setOnAction(e -> V3DMinimizer.minimize(scene, null, fxmol));
-		itemMinimizeMol.setDisable(fxmol == null);
-		MenuItem itemMinimizeScene = new MenuItem("Of Visible Scene");
-		itemMinimizeScene.setOnAction(e -> V3DMinimizer.minimize(scene, null, null));
-		Menu menuMinimize = new Menu("Minimize Energy");
-		menuMinimize.getItems().addAll(itemMinimizeMol, itemMinimizeScene);
-		getItems().add(menuMinimize);
-		
-		MenuItem alignMols = new MenuItem("Align Molecules");
-		alignMols.setOnAction( e -> {
-			if(fxmol==null) {
-				IAlignmentTask task = new V3DShapeAlignerInPlace(scene,fxmol,false);
-				task.align();
-			}
-			else {
-				Dialog<IAlignmentTask> dialog = getAlignmentDialog();
-				Optional<IAlignmentTask> alignmentTaskOptional = dialog.showAndWait();
-				if(alignmentTaskOptional.isPresent())
-					alignmentTaskOptional.get().align();
-			}
-		});
-		getItems().add(alignMols);
+		if (settings == null || settings.contains(V3DScene.ViewerSettings.MINIMIZATION)) {
+			getItems().add(new SeparatorMenuItem());
+			MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
+			itemMinimizeMol.setOnAction(e -> V3DMinimizer.minimize(scene, null, fxmol));
+			itemMinimizeMol.setDisable(fxmol == null);
+			MenuItem itemMinimizeScene = new MenuItem("Of Visible Scene");
+			itemMinimizeScene.setOnAction(e -> V3DMinimizer.minimize(scene, null, null));
+			Menu menuMinimize = new Menu("Minimize Energy");
+			menuMinimize.getItems().addAll(itemMinimizeMol, itemMinimizeScene);
+			getItems().add(menuMinimize);
+		}
+		if (settings == null || settings.contains(V3DScene.ViewerSettings.ALIGNMENT)) {
+			MenuItem alignMols = new MenuItem("Align Molecules");
+			alignMols.setOnAction( e -> {
+				if(fxmol==null) {
+					IAlignmentTask task = new V3DShapeAlignerInPlace(scene,fxmol,false);
+					task.align();
+				}
+				else {
+					Dialog<IAlignmentTask> dialog = getAlignmentDialog();
+					Optional<IAlignmentTask> alignmentTaskOptional = dialog.showAndWait();
+					if(alignmentTaskOptional.isPresent())
+						alignmentTaskOptional.get().align();
+				}
+			});
+			getItems().add(alignMols);
+		}
 
 		getItems().add(new SeparatorMenuItem());
 		MenuItem itemRayTraceMol = new MenuItem("Of This Molecule...");

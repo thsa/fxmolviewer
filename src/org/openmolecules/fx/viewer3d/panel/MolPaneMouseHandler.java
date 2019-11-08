@@ -98,15 +98,8 @@ public class MolPaneMouseHandler {
 		MenuItem menuGroup = new MenuItem("Change Group");
 		menuGroup.setOnAction(e -> this.createGroupChangeDialog());
 		popup.getItems().add(menuGroup);
+		
 
-		RadioMenuItem itemModeText = new RadioMenuItem("Show Name");
-		itemModeText.setSelected(!mMolPane.isShowStructure());
-		itemModeText.setOnAction(e -> mMolPane.setShowStructure(false));
-		RadioMenuItem itemModeStructure = new RadioMenuItem("Show Structure");
-		itemModeStructure.setSelected(mMolPane.isShowStructure());
-		itemModeStructure.setOnAction(e -> {mMolPane.setShowStructure(true);});
-		Menu menuMode = new Menu("List Style");
-		menuMode.getItems().addAll(itemModeText, itemModeStructure);
 
 		
 		MenuItem itemDelete = new MenuItem("Selected Molecules");
@@ -152,7 +145,6 @@ public class MolPaneMouseHandler {
 		
 		popup.getItems().add(new SeparatorMenuItem());
 
-		popup.getItems().add(menuMode);
 		
 		MenuItem move = new MenuItem("Move to new Group");
 		move.setOnAction(e -> {

@@ -38,6 +38,7 @@ import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
+
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.RemovedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
@@ -50,7 +51,9 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
@@ -85,10 +88,10 @@ public class V3DMolecule extends RotatableGroup {
 	private int[]           mSurfaceMode,mSurfaceColorMode;
 	private int				mConstructionMode,mHydrogenMode;
 	private LinkedList<Sphere> mPickedAtomList;
-	private boolean			mOverrideCarbonOnly;
+	private boolean			mOverrideHydrogens;
 	private double[]        mSurfaceTransparency;
-	private ArrayList<MolCoordinatesChangeListener> mListeners;
-	private ArrayList<MolStructureChangeListener> mStructureListeners;
+	private Set<MolCoordinatesChangeListener> mListeners;
+	private Set<MolStructureChangeListener> mStructureListeners;
 	private Point3D			mRotationCenter;
 	private V3DPharmacophore mPharmacophore;
 	private MoleculeRole mRole;
@@ -139,6 +142,10 @@ public class V3DMolecule extends RotatableGroup {
 	public V3DMolecule(StereoMolecule mol, int id, int group, MoleculeRole role) {
 		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, group, role );
 		}
+	
+	public V3DMolecule(StereoMolecule mol, int id, int group, MoleculeRole role, boolean overrideHydrogen) {
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, group, role, overrideHydrogen);
+		}
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -159,7 +166,12 @@ public class V3DMolecule extends RotatableGroup {
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode, int id, int group, MoleculeRole role) {
 		this(mol, constructionMode, hydrogenMode, SURFACE_NONE,
-				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, group, role);
+				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, group, role, true);
+		}
+	
+	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode, int id, int group, MoleculeRole role, boolean overrideHydrogen) {
+		this(mol, constructionMode, hydrogenMode, SURFACE_NONE,
+				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, group, role, overrideHydrogen);
 		}
 
 	/**
@@ -174,7 +186,7 @@ public class V3DMolecule extends RotatableGroup {
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, int hydrogenMode,
 						int surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
-						int id, int group, MoleculeRole role) {
+						int id, int group, MoleculeRole role, boolean overrideHydrogens) {
 		mMol = mol;
 		mPickedAtomList = new LinkedList<>();
 		mConstructionMode = constructionMode;
@@ -184,6 +196,7 @@ public class V3DMolecule extends RotatableGroup {
 		mGroup = group;
 		mIsSelected = false;
 		mIsIncluded = false;
+		mOverrideHydrogens = overrideHydrogens;
 		int surfaceCount = MoleculeSurfaceAlgorithm.SURFACE_TYPE.length;
 		mSurface = new MeshView[surfaceCount];
 		mSurfaceMesh = new SurfaceMesh[surfaceCount];
@@ -192,8 +205,8 @@ public class V3DMolecule extends RotatableGroup {
 		mSurfaceColorMode = new int[surfaceCount];
 		mSurfaceTransparency = new double[surfaceCount];
 		
-		mListeners = new ArrayList<MolCoordinatesChangeListener>();
-		mStructureListeners = new ArrayList<MolStructureChangeListener>();
+		mListeners = new HashSet<MolCoordinatesChangeListener>();
+		mStructureListeners = new HashSet<MolStructureChangeListener>();
 
 		mSurfaceMode[0] = surfaceMode;
 		mSurfaceColor[0] = (surfaceColor == null) ? DEFAULT_SURFACE_COLOR : surfaceColor;
@@ -289,6 +302,7 @@ public class V3DMolecule extends RotatableGroup {
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 		builder.buildMolecule(oldAtoms, oldBonds);
 		setInitialCoordinates();
+		updateColor();
 		return true;
 	}
 	
@@ -416,12 +430,12 @@ public class V3DMolecule extends RotatableGroup {
 		}
 
 	
-	public void updateColor(boolean carbonOnly) {
+	public void updateColor() {
 		if(mCarbonColor!=null)
-			setColor(mCarbonColor,carbonOnly);
+			setColor(mCarbonColor);
 	}
 	
-	public void setColor(Color color, boolean carbonOnly) {
+	public void setColor(Color color) {
 		mCarbonColor = color;
 		if (color == null) {
 			mOverrideMaterial = null;
@@ -430,7 +444,6 @@ public class V3DMolecule extends RotatableGroup {
 			mOverrideMaterial = new PhongMaterial();
 			mOverrideMaterial.setDiffuseColor(color);
 			mOverrideMaterial.setSpecularColor(color.darker());
-			mOverrideCarbonOnly = carbonOnly;
 			}
 
 		for (int i=0; i<mSurface.length; i++) {
@@ -453,7 +466,6 @@ public class V3DMolecule extends RotatableGroup {
 				mSurface[i].setMaterial(material);
 			}
 		}
-
 		for (Node node:getChildren())
 			updateAppearance(node);
 		}
@@ -545,6 +557,14 @@ public class V3DMolecule extends RotatableGroup {
 		return mIsSelected;
 	}
 	
+	public boolean overrideHydrogens() {
+		return mOverrideHydrogens;
+	}
+	
+	public void setOverrideHydrogens(boolean override) {
+		mOverrideHydrogens = override;
+	}
+		
 	public boolean isIncluded() {
 		return mIsIncluded;
 	}
@@ -1060,8 +1080,7 @@ public class V3DMolecule extends RotatableGroup {
 		if (detail != null) {
 			if (mOverrideMaterial == null
 			 || isInvisibleShape
-			 || (mOverrideCarbonOnly
-			  && !detail.mayOverrideMaterial())) {
+			 || (!detail.mayOverrideMaterial())) {
 				material = detail.getMaterial();}
 			}
 
