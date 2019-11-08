@@ -21,7 +21,7 @@ public class CarbonAtomColorPalette {
 				}
 			}
 		}
-		int nr = (id % sInstance.mColors.size())-1;
+		int nr = id % sInstance.mColors.size();
 		return sInstance.mColors.get(nr);
 		
 		

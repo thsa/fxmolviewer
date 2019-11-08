@@ -60,7 +60,7 @@ import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
 public class V3DMolecule extends RotatableGroup {
 	private static final float HIGHLIGHT_SCALE = 1.2f;
-	private static int MAX_ID = 1;
+	private static int MAX_ID = 0;
 	private static final double DEFAULT_SURFACE_TRANSPARENCY = 0.1;
 	private static final int DEFAULT_SURFACE_COLOR_MODE = SURFACE_COLOR_PLAIN;
 
