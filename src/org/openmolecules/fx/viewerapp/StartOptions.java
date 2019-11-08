@@ -389,7 +389,7 @@ public class StartOptions {
 						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS, V3DMolecule.getNextID(), group, V3DMolecule.MoleculeRole.SOLVENT);
 					else if (isLargeMolecule)
 						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_WIRES, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
-								V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[largeMoleculeIndex++], 0.5, V3DMolecule.getNextID(),group,V3DMolecule.MoleculeRole.MACROMOLECULE);
+								V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[largeMoleculeIndex++], 0.5, V3DMolecule.getNextID(),group,V3DMolecule.MoleculeRole.MACROMOLECULE,false);
 					else
 						vm = new V3DMolecule(mol[i], MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS, V3DMolecule.getNextID(),group,V3DMolecule.MoleculeRole.LIGAND);
 
