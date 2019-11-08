@@ -27,6 +27,8 @@ import javafx.scene.layout.StackPane;
 import org.openmolecules.fx.viewer3d.panel.MolGroupPane;
 import org.openmolecules.fx.viewer3d.panel.SlidingHBox;
 
+import java.util.EnumSet;
+
 /**
  * Created by thomas on 25.09.16.
  */
@@ -34,23 +36,17 @@ public class V3DSceneWithSidePane extends BorderPane {
 	private V3DScene mScene3D;
 	private MolGroupPane mMoleculePanel;
 	
-	public V3DSceneWithSidePane(boolean showSidePanel) {
-		this(1024, 768, showSidePanel);
+	public V3DSceneWithSidePane(EnumSet<V3DScene.ViewerSettings> settings) {
+		this(1024, 768, settings);
 	}
 
-	public V3DSceneWithSidePane() {
-		this(1024, 768, true);
-	}
-
-	public V3DSceneWithSidePane(int width, int height, boolean showSidePanel) {
-		mScene3D = new V3DScene(new Group(), width, height);
+	public V3DSceneWithSidePane(int width, int height, EnumSet<V3DScene.ViewerSettings> settings) {
+		mScene3D = new V3DScene(new Group(), width, height, settings);
 		BorderPane center = new BorderPane();
-		if(showSidePanel) {
-			mMoleculePanel = new MolGroupPane(mScene3D);
-			mMoleculePanel.getStyleClass().add("side-panel");
-			SlidingHBox slidingBox = new SlidingHBox(mMoleculePanel);
-			center.setLeft(slidingBox.getBox());
-		}
+		mMoleculePanel = new MolGroupPane(mScene3D);
+		mMoleculePanel.getStyleClass().add("side-panel");
+		SlidingHBox slidingBox = new SlidingHBox(mMoleculePanel);
+		center.setLeft(slidingBox.getBox());
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
@@ -61,8 +57,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 	    stackPane.getChildren().add(center);
 	    center.setPickOnBounds(false);
 		setCenter(stackPane);
-		
-		
 	}
 
 	public V3DScene getScene3D() {
