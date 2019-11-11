@@ -5,17 +5,14 @@ import javafx.scene.control.TextArea;
 import org.openmolecules.fx.tasks.V3DMinimizer;
 import org.openmolecules.fx.viewer3d.panel.EditorPane;
 
+import java.util.EnumSet;
+
 public class V3DSceneEditor extends V3DSceneWithSidePane  {
 	
 	private TextArea mOutputLog;
-	
-	
-	public V3DSceneEditor() {
-		this(true);
-	}
-	
-	public V3DSceneEditor(boolean showSidePanel) {
-		super(showSidePanel);
+
+	public V3DSceneEditor(EnumSet<V3DScene.ViewerSettings> settings) {
+		super(settings);
 		mOutputLog = new TextArea();
 		mOutputLog.setEditable(false);
 		//mOutputLog.setStyle("-fx-control-inner-background:black");

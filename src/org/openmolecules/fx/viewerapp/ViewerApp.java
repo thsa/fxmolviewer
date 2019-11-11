@@ -48,8 +48,7 @@ public class ViewerApp extends Application {
 		boolean isEditor = modeString.startsWith("editor");
 		int mode = -1;
 		try { mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
-		//mViewer = isEditor ? new V3DSceneEditor() : new V3DSceneWithSidePane();
-		mViewer = V3DSceneCreator.createScene(V3DScene.GENERAL_MODE);
+		mViewer = isEditor ? new V3DSceneEditor(V3DScene.GENERAL_MODE) : new V3DSceneWithSidePane(V3DScene.GENERAL_MODE);
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		Scene scene = new Scene(mViewer, 1024, 768, true, SceneAntialiasing.BALANCED);
 		scene.getStylesheets().add(css);

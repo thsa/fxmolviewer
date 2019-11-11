@@ -73,6 +73,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private V3DPopupMenuController mPopupMenuController;
 	private EnumSet<ViewerSettings> mSettings;
 	private boolean mMayOverrideHydrogens;
+	private int mMoleculeColorID;
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
@@ -107,9 +108,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private static final Color TORSION_COLOR = Color.VIOLET;
 
 
-	public V3DScene(Group root, double width, double height) {
+	public V3DScene(Group root, double width, double height, EnumSet<V3DScene.ViewerSettings> settings) {
 		super(root , width, height, true, SceneAntialiasing.BALANCED);
 		mRoot = root;
+		mSettings = settings;
 		mWorld = new RotatableGroup();
 		mEditor = new V3DMoleculeEditor();
 		mRoot.getChildren().add(mWorld);
@@ -130,6 +132,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mPickedMolsList = new ArrayList<V3DMolecule>();
 		mLabelList = new ArrayList<NonRotatingLabel>();
 		mMayOverrideHydrogens = true;
+		mMoleculeColorID = 0;
+		applySettings();
 		}
 
 	public V3DPopupMenuController getPopupMenuController() {
@@ -273,6 +277,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 	public void deleteAllMolecules() {
+		mMoleculeColorID = 0;
 		ArrayList<V3DMolecule> list = new ArrayList<>();
 		for (Node node : mWorld.getChildren())
 			if (node instanceof V3DMolecule)
@@ -288,6 +293,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 
 	public void clearAll(boolean isSmallMoleculeMode) {
+		mMoleculeColorID = 0;
 		for (Node node:mWorld.getChildren()) {
 			if (node instanceof V3DMolecule) {
 				//((V3DMolecule) node).removeMeasurements();
@@ -461,7 +467,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 
 	public void addMolecule(V3DMolecule fxmol) {
-		Color color = CarbonAtomColorPalette.getNextColor(fxmol.getID());
+		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
 		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
 		Platform.runLater(() -> fxmol.setColor(color));
 		mWorld.getChildren().add(fxmol);
@@ -469,24 +475,21 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			mSceneListener.addMolecule(fxmol);
 	}
 	
-	public void applySettings(EnumSet<ViewerSettings> settings) {
-		mSettings = settings;
-		if(settings.contains(ViewerSettings.WHITE_HYDROGENS))
+	public void applySettings() {
+		if(mSettings.contains(ViewerSettings.WHITE_HYDROGENS))
 			setOverrideHydrogens(false);
-		if(settings.contains(ViewerSettings.WHITE_BACKGROUND))
+		if(mSettings.contains(ViewerSettings.WHITE_BACKGROUND))
 			setFill(Color.WHITE);
-		if(settings.contains(ViewerSettings.BLACK_BACKGROUND))
+		if(mSettings.contains(ViewerSettings.BLACK_BACKGROUND))
 			setFill(Color.BLACK);
-		if(settings.contains(ViewerSettings.BLUE_BACKGROUND))
+		if(mSettings.contains(ViewerSettings.BLUE_BACKGROUND))
 			setFill(Color.MIDNIGHTBLUE);
-		
 	}
 		
 	public EnumSet<ViewerSettings> getSettings() {
 		return mSettings;
 	}
-	
-	
+
 /*	public double getDistanceToScreenFactor(double z) {
 		PerspectiveCamera camera = (PerspectiveCamera)getCamera();
 		double fieldOfView = camera.getFieldOfView();
