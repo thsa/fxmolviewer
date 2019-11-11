@@ -24,6 +24,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
+import com.actelion.research.chem.conf.BondRotationHelper;
 import com.actelion.research.chem.phesa.MolecularVolume;
 
 import javafx.application.Platform;
@@ -100,6 +101,7 @@ public class V3DMolecule extends RotatableGroup {
 	private boolean mIsSelected;
 	private boolean mIsIncluded;
 	private Color mCarbonColor;
+	private BondRotationHelper mBondRotationHelper;
 	
 	public enum MoleculeRole{
 		LIGAND { public String toString(){
@@ -204,7 +206,7 @@ public class V3DMolecule extends RotatableGroup {
 		mSurfaceColor = new Color[surfaceCount];
 		mSurfaceColorMode = new int[surfaceCount];
 		mSurfaceTransparency = new double[surfaceCount];
-		
+		mBondRotationHelper = new BondRotationHelper(mol);
 		mListeners = new HashSet<MolCoordinatesChangeListener>();
 		mStructureListeners = new HashSet<MolStructureChangeListener>();
 
@@ -333,6 +335,10 @@ public class V3DMolecule extends RotatableGroup {
 	
 	public void setMolecule(StereoMolecule mol) {
 		mMol = mol;
+	}
+	
+	public BondRotationHelper getBondRotationHelper() {
+		return mBondRotationHelper;
 	}
 
 
@@ -789,6 +795,7 @@ public class V3DMolecule extends RotatableGroup {
 	
 	public void fireStructureChange() {
 		removePharmacophore();
+		mBondRotationHelper = new BondRotationHelper(mMol);
 		for(MolStructureChangeListener listener : mStructureListeners) {
 			listener.structureChanged();
 		}
@@ -980,6 +987,10 @@ public class V3DMolecule extends RotatableGroup {
 		getChildren().removeAll(nodesToBeDeleted);
 	}*/
 
+	public Shape3D getHighlightedShape() {
+		return mHighlightedShape;
+	}
+	
 	public double getHighlightedZ() {
 		return (mHighlightedShape == null) ? 0.0 : mHighlightedShape.localToScene(0, 0, 0).getZ();
 		}

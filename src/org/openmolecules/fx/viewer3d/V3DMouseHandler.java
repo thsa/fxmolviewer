@@ -27,6 +27,7 @@ import java.util.stream.IntStream;
 
 import org.openmolecules.fx.viewer3d.nodes.ExclusionSphere;
 import org.openmolecules.fx.viewer3d.nodes.IPPNode;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.fx.viewer3d.nodes.PPArrow;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
@@ -51,7 +52,8 @@ public class V3DMouseHandler {
 	private static final long WHEEL_DELAY_LIMIT = 250;	// milli seconds; above this delay we have the smallest clip change
 	private static final double WHEEL_MIN_FACTOR = 0.05;// smallest clip change = this factor * smallest mouse wheel delta
 	private static final double WHEEL_MAX_FACTOR = 50;	// largest clip change * this factor * smallest clip change (when mouse wheel is rotated quickly)
-
+	private static final double DIHEDRAL_FACTOR = 0.0015;
+	
 	private volatile boolean mShowPopup;
 	private V3DScene mScene;
 	private double mMouseX,mMouseY;
@@ -66,6 +68,7 @@ public class V3DMouseHandler {
 		mScene = scene;
 
 		scene.setOnScroll(se -> {
+
 			// we modify the wheel delta depending on how quickly the wheel is rotated
 			double delta = WHEEL_MIN_FACTOR * se.getDeltaY();	// delta is the smallest possible clip step
 			long millis = System.currentTimeMillis();
@@ -73,7 +76,20 @@ public class V3DMouseHandler {
 			if (delay < WHEEL_DELAY_LIMIT)
 				delta *= Math.pow(WHEEL_MAX_FACTOR, (1.0 - (double)delay / WHEEL_DELAY_LIMIT));
 			mRecentWheelMillis = millis;
-
+			if(mHighlightedMol!=null) {
+				NodeDetail detail = (NodeDetail) mHighlightedMol.getHighlightedShape().getUserData();
+				if(detail!= null && detail.isBond()) {
+					int bond = detail.getBond();
+					if(mHighlightedMol.getBondRotationHelper().isRotatableBond(bond)) {
+						double scale = delta/Math.PI*DIHEDRAL_FACTOR;
+						mHighlightedMol.getBondRotationHelper().rotateSmallerSide(bond, scale);
+						mHighlightedMol.fireCoordinatesChange();
+						V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(mHighlightedMol);
+						mFXMolUpdater.update();
+					}
+					return;
+				}
+			}
 			if (V3DPopupMenu.sUseMouseWheelForClipping || se.isShiftDown()) {
 				if (se.isControlDown()) {
 					delta *= getScreenToObjectFactor (mScene.getCamera().farClipProperty().getValue());

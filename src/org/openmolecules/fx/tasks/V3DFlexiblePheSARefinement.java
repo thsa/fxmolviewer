@@ -104,15 +104,20 @@ public class V3DFlexiblePheSARefinement  {
 			mFXRefMol.addPharmacophore();
 		refVol = mFXRefMol.getPharmacophore().getMolVol();
 		refMol = mFXRefMol.getMolecule();
-		Coordinates origCOM  = refVol.getCOM();
-		Matrix rotation = PheSAAlignment.preProcess(new Conformer(refMol), refVol);
-		rotation = rotation.getTranspose();
-		for(V3DMolecule fitMol : mFitMols) {
-			if(fitMol.getPharmacophore()==null) 
-				fitMol.addPharmacophore();
-			fitVol = fitMol.getPharmacophore().getMolVol();
-			PheSAAlignment.preProcess(new Conformer(fitMol.getMolecule()), fitVol);
-			FlexibleShapeAlignment flexAlign = new FlexibleShapeAlignment(refMol,fitMol.getMolecule());
+		Conformer refConf = new Conformer(refMol);
+		//Coordinates origCOM  = refVol.getCOM();
+		//Matrix rotation = PheSAAlignment.preProcess(refConf, refVol);
+		//refConf.toMolecule(refMol);
+		//rotation = rotation.getTranspose();
+		for(V3DMolecule fxFitMol : mFitMols) {
+			if(fxFitMol.getPharmacophore()==null) 
+				fxFitMol.addPharmacophore();
+			StereoMolecule fitMol = fxFitMol.getMolecule();
+			fitVol = fxFitMol.getPharmacophore().getMolVol();
+			Conformer fitConf = new Conformer(fxFitMol.getMolecule());
+			//PheSAAlignment.preProcess(fitConf, fitVol);
+			//fitConf.toMolecule(fitMol);
+			FlexibleShapeAlignment flexAlign = new FlexibleShapeAlignment(refMol,fitMol);
 			flexAlign.align();
 		}
 		
@@ -130,11 +135,11 @@ public class V3DFlexiblePheSARefinement  {
 		double refY = mFXRefMol.getTranslateY();
 		double refZ = mFXRefMol.getTranslateZ();
 		
-		PheSAAlignment.rotateMol(mFXRefMol.getMolecule(), rotation);
-		mFXRefMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
+		//PheSAAlignment.rotateMol(mFXRefMol.getMolecule(), rotation);
+		//mFXRefMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
 		for(V3DMolecule fitMol : mFitMols) {
-			PheSAAlignment.rotateMol(fitMol.getMolecule(), rotation);
-			fitMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
+			//PheSAAlignment.rotateMol(fitMol.getMolecule(), rotation);
+			//fitMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
 
 			if(refTransform!=null) {
 				fitMol.setTransform(refTransform);

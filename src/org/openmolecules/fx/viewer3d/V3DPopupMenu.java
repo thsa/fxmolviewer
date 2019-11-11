@@ -313,11 +313,6 @@ public class V3DPopupMenu extends ContextMenu {
 			itemPP.setOnAction(e -> fxmol.addPharmacophore());
 			getItems().add(itemPP);
 
-			//MenuItem flexRefine = new MenuItem("Refine Alignment");
-			//flexRefine.setOnAction( e -> {
-			//	V3DFlexiblePheSARefinement.align(mScene, fxmol);
-			//});
-			//getItems().add(flexRefine);
 			MenuItem itemHidePP = new MenuItem("Hide Pharmacophore");
 			itemHidePP.setDisable(fxmol.getPharmacophore()==null || !fxmol.getPharmacophore().isVisible());
 			itemHidePP.setOnAction(e -> fxmol.getPharmacophore().setVisible(false));
@@ -424,6 +419,12 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(menuMinimize);
 		}
 		if (settings == null || settings.contains(V3DScene.ViewerSettings.ALIGNMENT)) {
+			MenuItem flexRefine = new MenuItem("Refine Alignment");
+			flexRefine.setOnAction( e -> {
+				V3DFlexiblePheSARefinement.align(mScene, fxmol);
+			});
+			getItems().add(flexRefine);
+			
 			MenuItem alignMols = new MenuItem("Align Molecules");
 			alignMols.setOnAction( e -> {
 				if(fxmol==null) {
