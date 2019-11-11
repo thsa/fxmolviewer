@@ -22,20 +22,15 @@ public class V3DAddAtomAction implements V3DEditorAction {
 		mAtomicNo = atomicNo;
 	}
 
-	@Override
-	public boolean onMouseDown() {
-		
-		// TODO Auto-generated method stub
-		return false;
-	}
+
 
 	@Override
-	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
+	public boolean onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
 		if(detail.isAtom()) {
 			V3DMoleculeModifier.changeAtomElement(v3dMol, detail.getAtom(),mAtomicNo);
 			v3dMol.setInitialCoordinates();
 		}
-		
+		return true;
 	}
 	
 	@Override
@@ -46,6 +41,14 @@ public class V3DAddAtomAction implements V3DEditorAction {
 //		v3dMol.activateEvents();
 		V3DMoleculeModifier.placeAtom(v3dMol, mAtomicNo);
 		return v3dMol;
+	}
+
+
+
+	@Override
+	public boolean onMouseScrolled(V3DMolecule v3dMol, NodeDetail detail, double delta) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 

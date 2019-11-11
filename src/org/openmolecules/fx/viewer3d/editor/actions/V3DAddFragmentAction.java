@@ -32,14 +32,10 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 		mAllowFusion = allowFusion;
 	}
 
-	@Override
-	public boolean onMouseDown() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+
 
 	@Override
-	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
+	public boolean onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
 		if(detail.isAtom()) {
 			V3DMoleculeModifier.addFragment(v3dMol, detail.getAtom(), mIDCodes);
 			v3dMol.setInitialCoordinates();
@@ -49,7 +45,7 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 			V3DMoleculeModifier.fuseRing(v3dMol, detail.getBond(), mIDCodes);	
 			v3dMol.setInitialCoordinates();
 		}
-		
+		return true;
 		
 		
 	}
@@ -63,6 +59,12 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 		V3DMoleculeModifier.placeFragment(v3dMol, mIDCodes);
 		v3dMol.setInitialCoordinates();
 		return v3dMol;
+	}
+	
+	@Override
+	public boolean onMouseScrolled(V3DMolecule v3dMol, NodeDetail detail, double delta) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 	

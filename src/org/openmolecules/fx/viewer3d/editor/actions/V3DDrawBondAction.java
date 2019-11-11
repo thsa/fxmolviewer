@@ -14,19 +14,12 @@ public class V3DDrawBondAction implements V3DEditorAction {
 	}
 
 	@Override
-	public boolean onMouseDown() {
-		
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
+	public boolean onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
 		if(detail.isAtom()) {
 			int atom = detail.getAtom();
 			if(mPartnerAtom==-1) {
 				mPartnerAtom = atom;
-				return;
+				return true;
 			}
 			else {
 				V3DMoleculeModifier.drawBond(v3dMol, atom, mPartnerAtom);
@@ -37,18 +30,21 @@ public class V3DDrawBondAction implements V3DEditorAction {
 		else if(detail.isBond()) {
 			mPartnerAtom=-1;
 			V3DMoleculeModifier.toggleBondOrder(v3dMol, detail.getBond());
-			v3dMol.setInitialCoordinates();
-		
-			
-			
-			
+			v3dMol.setInitialCoordinates();			
 		}
+		return true;
 
 	}
 	
 	@Override
 	public V3DMolecule onMouseUp(V3DScene scene3D) {
 		return null;
+	}
+	
+	@Override
+	public boolean onMouseScrolled(V3DMolecule v3dMol, NodeDetail detail, double delta) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 

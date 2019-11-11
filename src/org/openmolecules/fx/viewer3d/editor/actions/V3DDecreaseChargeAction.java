@@ -17,19 +17,14 @@ import com.actelion.research.share.gui.editor.io.IMouseEvent;
 public class V3DDecreaseChargeAction implements V3DEditorAction { 
 	
 
-	@Override
-	public boolean onMouseDown() {
-		
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	@Override
-	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
+	public boolean onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
 		if(detail.isAtom()) {
 			V3DMoleculeModifier.decreaseCharge(v3dMol, detail.getAtom());
 			v3dMol.setInitialCoordinates();
 		}
+		return true;
 		
 	}
 	
@@ -38,6 +33,11 @@ public class V3DDecreaseChargeAction implements V3DEditorAction {
 		return null;
 	}
 	
+	@Override
+	public boolean onMouseScrolled(V3DMolecule v3dMol, NodeDetail detail, double delta) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	
 }

@@ -34,8 +34,7 @@ import org.openmolecules.fx.viewer3d.editor.actions.V3DDeleteAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DDrawBondAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DIncreaseChargeAction;
-
-
+import org.openmolecules.fx.viewer3d.editor.actions.V3DRotateBondAction;
 
 import java.awt.Point;
 import java.io.IOException;
@@ -102,7 +101,7 @@ public class EditorPane extends Pane  {
 	            {
 	                {
 	                    null,
-	                    null
+	                    new V3DRotateBondAction(),
 	                },
 	                {
 	                    null,

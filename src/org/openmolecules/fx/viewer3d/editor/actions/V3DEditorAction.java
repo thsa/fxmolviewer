@@ -11,12 +11,7 @@ import com.actelion.research.share.gui.editor.io.IMouseEvent;
 import javafx.scene.Node;
 
 public interface V3DEditorAction {
-    /**
-     * Handles Mouse down events
-     * @param ev
-     * @return true if the action handles the event
-     */
-    boolean onMouseDown();
+
 
     /**
      * Handles the MouseUp event
@@ -24,10 +19,12 @@ public interface V3DEditorAction {
      * @return true if the action handles the event
      */
     
-    void onMouseUp(V3DMolecule v3dMol, NodeDetail detail);
+    boolean onMouseUp(V3DMolecule v3dMol, NodeDetail detail);
     
-
-	V3DMolecule onMouseUp(V3DScene scene3d);
+    boolean onMouseScrolled(V3DMolecule v3dMol, NodeDetail detail, double delta);
+	
+    
+    V3DMolecule onMouseUp(V3DScene scene3d);
     
     //void onMouseUp(V3DMolecule v3dMol, int index1, int index2);
     

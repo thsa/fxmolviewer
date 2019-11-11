@@ -77,16 +77,17 @@ public class V3DMouseHandler {
 				delta *= Math.pow(WHEEL_MAX_FACTOR, (1.0 - (double)delay / WHEEL_DELAY_LIMIT));
 			mRecentWheelMillis = millis;
 			if(mHighlightedMol!=null) {
-				NodeDetail detail = (NodeDetail) mHighlightedMol.getHighlightedShape().getUserData();
-				if(detail!= null && detail.isBond()) {
-					int bond = detail.getBond();
-					if(mHighlightedMol.getBondRotationHelper().isRotatableBond(bond)) {
-						double scale = delta/Math.PI*DIHEDRAL_FACTOR;
-						mHighlightedMol.getBondRotationHelper().rotateSmallerSide(bond, scale);
+				boolean actionPerformed=false;
+				actionPerformed = mScene.getEditor().scrolledOnMolecule(mHighlightedMol, mHighlightedMol.getHighlightedShape(), delta);
+				if(actionPerformed) {
+					for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
+						mHighlightedMol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+					mHighlightedMol.fireCoordinatesChange();
+					Platform.runLater(() -> {
 						mHighlightedMol.fireCoordinatesChange();
 						V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(mHighlightedMol);
 						mFXMolUpdater.update();
-					}
+					});
 					return;
 				}
 			}

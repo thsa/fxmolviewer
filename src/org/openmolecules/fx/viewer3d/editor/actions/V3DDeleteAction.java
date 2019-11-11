@@ -9,15 +9,9 @@ public class V3DDeleteAction implements V3DEditorAction {
 	
 	
 
-	@Override
-	public boolean onMouseDown() {
-		
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	@Override
-	public void onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
+	public boolean onMouseUp(V3DMolecule v3dMol, NodeDetail detail) {
 		if(detail.isBond()) {
 			V3DMoleculeModifier.deleteBond(v3dMol, detail.getBond());
 			v3dMol.setInitialCoordinates();
@@ -26,13 +20,19 @@ public class V3DDeleteAction implements V3DEditorAction {
 			V3DMoleculeModifier.deleteAtom(v3dMol, detail.getAtom());
 			v3dMol.setInitialCoordinates();
 		}
-
+		return true;
 		
 	}
 	
 	@Override
 	public V3DMolecule onMouseUp(V3DScene scene3d) {
 		return null;
+	}
+	
+	@Override
+	public boolean onMouseScrolled(V3DMolecule v3dMol, NodeDetail detail, double delta) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 

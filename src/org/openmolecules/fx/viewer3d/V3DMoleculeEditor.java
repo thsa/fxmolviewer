@@ -23,17 +23,25 @@ public class V3DMoleculeEditor {
 	public V3DMolecule sceneClicked(V3DScene scene3D) {
 		return mAction.onMouseUp(scene3D);
 		
-
-		
-		
 	}
 	
 	
-	public void moleculeClicked(V3DMolecule v3dMol, Node node) {
+	public boolean moleculeClicked(V3DMolecule v3dMol, Node node) {
 		if(mAction!=null) {
 		NodeDetail detail = (NodeDetail)node.getUserData();
 				if(detail != null)
-					mAction.onMouseUp(v3dMol,detail);
+					 return mAction.onMouseUp(v3dMol,detail);
 		}
+		return false;
 	}
+	
+	public boolean scrolledOnMolecule(V3DMolecule v3dMol, Node node, double delta) {
+		if(mAction!=null) {
+		NodeDetail detail = (NodeDetail)node.getUserData();
+				if(detail != null)
+					return mAction.onMouseScrolled(v3dMol, detail, delta);
+		}
+		return false;
+	}
+	
 }
