@@ -1,40 +1,22 @@
 package org.openmolecules.fx.tasks;
 
-import com.actelion.research.calc.Matrix;
-import com.actelion.research.chem.Coordinates;
+
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
-import com.actelion.research.chem.forcefield.ForceField;
-import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
-import com.actelion.research.chem.forcefield.mmff.ForceFieldMMFF94;
-import com.actelion.research.chem.phesa.DescriptorHandlerShape;
-import com.actelion.research.chem.phesa.DescriptorHandlerShapeOneConf;
 import com.actelion.research.chem.phesa.MolecularVolume;
-import com.actelion.research.chem.phesa.PheSAAlignment;
-import com.actelion.research.chem.phesa.PheSAMolecule;
 import com.actelion.research.chem.phesaflex.FlexibleShapeAlignment;
-import com.actelion.research.util.ArrayUtils;
-import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.geometry.Point3D;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
-
-import org.openmolecules.fx.viewer3d.CarbonAtomColorPalette;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
-import org.openmolecules.fx.viewer3d.V3DPharmacophore;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class V3DFlexiblePheSARefinement  {
 	private V3DMolecule mFXRefMol;
@@ -102,22 +84,16 @@ public class V3DFlexiblePheSARefinement  {
 		StereoMolecule refMol;
 		if(mFXRefMol.getPharmacophore()==null) 
 			mFXRefMol.addPharmacophore();
+		mFXRefMol.getPharmacophore().setVisible(false);
 		refVol = mFXRefMol.getPharmacophore().getMolVol();
 		refMol = mFXRefMol.getMolecule();
-		Conformer refConf = new Conformer(refMol);
-		//Coordinates origCOM  = refVol.getCOM();
-		//Matrix rotation = PheSAAlignment.preProcess(refConf, refVol);
-		//refConf.toMolecule(refMol);
-		//rotation = rotation.getTranspose();
 		for(V3DMolecule fxFitMol : mFitMols) {
 			if(fxFitMol.getPharmacophore()==null) 
 				fxFitMol.addPharmacophore();
+			fxFitMol.getPharmacophore().setVisible(false);
 			StereoMolecule fitMol = fxFitMol.getMolecule();
 			fitVol = fxFitMol.getPharmacophore().getMolVol();
-			Conformer fitConf = new Conformer(fxFitMol.getMolecule());
-			//PheSAAlignment.preProcess(fitConf, fitVol);
-			//fitConf.toMolecule(fitMol);
-			FlexibleShapeAlignment flexAlign = new FlexibleShapeAlignment(refMol,fitMol);
+			FlexibleShapeAlignment flexAlign = new FlexibleShapeAlignment(refMol,fitMol, refVol, fitVol);
 			flexAlign.align();
 		}
 		
@@ -134,13 +110,8 @@ public class V3DFlexiblePheSARefinement  {
 		double refX = mFXRefMol.getTranslateX()	;
 		double refY = mFXRefMol.getTranslateY();
 		double refZ = mFXRefMol.getTranslateZ();
-		
-		//PheSAAlignment.rotateMol(mFXRefMol.getMolecule(), rotation);
-		//mFXRefMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
-		for(V3DMolecule fitMol : mFitMols) {
-			//PheSAAlignment.rotateMol(fitMol.getMolecule(), rotation);
-			//fitMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
 
+		for(V3DMolecule fitMol : mFitMols) {
 			if(refTransform!=null) {
 				fitMol.setTransform(refTransform);
 				fitMol.setTranslateX(refX);

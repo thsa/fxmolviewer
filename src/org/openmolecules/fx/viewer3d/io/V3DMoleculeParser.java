@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DScene;
 
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
@@ -59,7 +60,7 @@ public class V3DMoleculeParser {
 	}
 
 
-	public static List<V3DMolecule> readMolFile(String sdfile, int group) {
+	public static List<V3DMolecule> readMolFile(V3DScene scene,String sdfile, int group) {
 		List<StereoMolecule> mols = parseFile(sdfile);
 		List<V3DMolecule> v3dMols = new ArrayList<V3DMolecule>();
 		for(StereoMolecule mol: mols) {
@@ -68,7 +69,7 @@ public class V3DMoleculeParser {
 			mol.ensureHelperArrays(Molecule.cHelperRings);
 			if(mol.getName()==null || mol.getName().equals(""))
 				mol.setName("Molecule");
-			v3dMols.add(new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND));
+			v3dMols.add(new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND,scene.mayOverrideHydrogenColor()));
 		}
 		return v3dMols;
 	}
@@ -134,7 +135,7 @@ public class V3DMoleculeParser {
 	
 	}
 	
-	public static List<V3DMolecule> readPheSAQuery(File pheSAFile, int group) {
+	public static List<V3DMolecule> readPheSAQuery(V3DScene scene, File pheSAFile, int group) {
 		DescriptorHandlerShape dhs = new DescriptorHandlerShape();
 		DWARFileParser dwParser = new DWARFileParser(pheSAFile, DWARFileParser.MODE_COORDINATES_REQUIRE_3D);
 		List<V3DMolecule> fxMols = new ArrayList<V3DMolecule>();
@@ -148,7 +149,7 @@ public class V3DMoleculeParser {
 				if(shapeMol.getVolumes().size()==1) {
 					MolecularVolume molVol = shapeMol.getVolumes().get(0);
 					molVol.update(mol);
-					V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND);
+					V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
 					fxMol.addPharmacophore(molVol);
 					fxMols.add(fxMol);
 				}

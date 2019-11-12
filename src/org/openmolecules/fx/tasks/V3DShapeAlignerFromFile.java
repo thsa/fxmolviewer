@@ -45,6 +45,7 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 		StereoMolecule refMol;
 		if(mFXRefMol.getPharmacophore()==null) 
 			mFXRefMol.addPharmacophore();
+		mFXRefMol.getPharmacophore().setVisible(false);
 		refVol = mFXRefMol.getPharmacophore().getMolVol();
 		Coordinates origCOM  = refVol.getCOM();
 		refMol = mFXRefMol.getMolecule();
@@ -55,7 +56,7 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 		for(PheSAMolecule fitShape : mFitShapes) {
 			dhs.getSimilarity(refShape, fitShape);
 			try {
-				fittedFXMols.add(new V3DMolecule(dhs.getPreviousAlignment()[1], V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND));
+				fittedFXMols.add(new V3DMolecule(dhs.getPreviousAlignment()[1], V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND, mScene.mayOverrideHydrogenColor()));
 			}
 			catch(Exception e) {
 				continue;

@@ -91,7 +91,7 @@ public class V3DPopupMenu extends ContextMenu {
 			loadMols.setOnAction(e -> {
 				File selectedFile = this.getMolFileLoader().showOpenDialog(null);
 				if (selectedFile != null) {
-					List<V3DMolecule> mols = V3DMoleculeParser.readMolFile(selectedFile.toString(), scene.getMaxGroupID());
+					List<V3DMolecule> mols = V3DMoleculeParser.readMolFile(mScene,selectedFile.toString(), scene.getMaxGroupID());
 					for (V3DMolecule vm : mols) {
 						scene.addMolecule(vm);
 					}

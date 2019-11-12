@@ -169,7 +169,7 @@ public class MolPaneMouseHandler {
 		loadPheSA.setOnAction(e -> {
 			File loadFile = createDWARParserDialog();
 			if(loadFile!=null) {
-				List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(loadFile, 0);
+				List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(mMolPane.getV3DScene(), loadFile, 0);
 			    for(V3DMolecule fxMol: fxMols) {
 			    	mMolPane.getV3DScene().addMolecule(fxMol);
 			    }
