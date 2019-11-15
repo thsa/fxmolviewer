@@ -6,10 +6,11 @@ echo and JavaFX.12 installed at $FXPATH
 rm -rf ./bin
 mkdir ./bin
 cp -r ./src/resources ./bin/
-$JDKBIN/javac -d ./bin --module-path $FXPATH --add-modules ALL-MODULE-PATH -sourcepath ./src -classpath ./lib/controlsfx-11.0.0.jar:./lib/janino.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewerapp/ViewerApp.java
+$JDKBIN/javac -d ./bin --module-path $FXPATH --add-modules ALL-MODULE-PATH -sourcepath ./src -classpath ./lib/commons-compiler-2.7.0.jar:./lib/janino-2.7.0.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewerapp/ViewerApp.java
 cd ./bin
 jar xf ../lib/controlsfx-11.0.0.jar 
-jar xf ../lib/janino.jar 
+jar xf ../lib/commons-compiler-2.7.0.jar
+jar xf ../lib/janino-2.7.0.jar
 jar xf ../lib/mmtf-all.jar 
 jar xf ../lib/openchemlib.jar 
 cd ..
