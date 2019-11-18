@@ -4,9 +4,9 @@
 rm -rf ./bin
 mkdir ./bin
 cp -r ./src/resources ./bin/
-javac -d ./bin -sourcepath ./src -classpath ./lib/controlsfx-11.0.0.jar:./lib/janino.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewer3d/V3DSceneWithSidePane.java src/org/openmolecules/render/MoleculeRaytraceDialog.java
+javac -d ./bin -sourcepath ./src -classpath ./lib/commons-compiler-2.7.0.jar:./lib/janino-2.7.0.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewer3d/V3DSceneWithSidePane.java src/org/openmolecules/render/MoleculeRaytraceDialog.java
 cd ./bin
-jar xf ../lib/controlsfx-11.0.0.jar 
-jar xf ../lib/janino.jar
+jar xf ../lib/commons-compiler-2.7.0.jar
+jar xf ../lib/janino-2.7.0.jar
 cd ..
 jar -cf molviewerlib_j11.jar -C ./bin .
