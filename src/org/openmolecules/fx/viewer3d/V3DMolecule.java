@@ -429,6 +429,7 @@ public class V3DMolecule extends RotatableGroup {
 				if (mSurfaceMode[i] != SURFACE_NONE)
 					updateSurfaceFromMesh(i);
 			}
+			updateColor();
 		}
 
 	public Color getColor() {
