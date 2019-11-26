@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.openmolecules.fx.tasks.V3DPheSAScreener;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
 
@@ -221,13 +222,17 @@ public class MolPaneMouseHandler {
 		result.ifPresent(role -> {
 			if (!role.equals(model.roleProperty().get().toString())) {
 				if(role.equals(V3DMolecule.MoleculeRole.LIGAND.toString()))
-					model.setRoleProperty(V3DMolecule.MoleculeRole.LIGAND);
+					mMolPane.changeRoleSelected(MoleculeRole.LIGAND);
+					//model.setRoleProperty(V3DMolecule.MoleculeRole.LIGAND);
 				else if(role.equals(V3DMolecule.MoleculeRole.MACROMOLECULE.toString()))
-					model.setRoleProperty(V3DMolecule.MoleculeRole.MACROMOLECULE);
+					mMolPane.changeRoleSelected(MoleculeRole.MACROMOLECULE);
+					//model.setRoleProperty(V3DMolecule.MoleculeRole.MACROMOLECULE);
 				else if(role.equals(V3DMolecule.MoleculeRole.COFACTOR.toString()))
-					model.setRoleProperty(V3DMolecule.MoleculeRole.COFACTOR);
+					mMolPane.changeRoleSelected(MoleculeRole.COFACTOR);
+					//model.setRoleProperty(V3DMolecule.MoleculeRole.COFACTOR);
 				else if(role.equals(V3DMolecule.MoleculeRole.SOLVENT.toString()))
-					model.setRoleProperty(V3DMolecule.MoleculeRole.SOLVENT);
+					mMolPane.changeRoleSelected(MoleculeRole.SOLVENT);
+					//model.setRoleProperty(V3DMolecule.MoleculeRole.SOLVENT);
 			}
 		});
 	}

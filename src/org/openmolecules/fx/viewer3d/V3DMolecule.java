@@ -28,6 +28,10 @@ import com.actelion.research.chem.conf.BondRotationHelper;
 import com.actelion.research.chem.phesa.MolecularVolume;
 
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -94,14 +98,15 @@ public class V3DMolecule extends RotatableGroup {
 	private Set<MolCoordinatesChangeListener> mListeners;
 	private Set<MolStructureChangeListener> mStructureListeners;
 	private Point3D			mRotationCenter;
-	private V3DPharmacophore mPharmacophore;
-	private MoleculeRole mRole;
-	private int mID;
-	private int mGroup;
+	private V3DCustomizablePheSA mPharmacophore;
+	private ObjectProperty<MoleculeRole> mRoleProperty;
+	private IntegerProperty mIDProperty;
+	private IntegerProperty mGroupProperty;
 	private boolean mIsSelected;
 	private boolean mIsIncluded;
 	private Color mCarbonColor;
 	private BondRotationHelper mBondRotationHelper;
+	private int mnUnconnectedFragments;
 	
 	public enum MoleculeRole{
 		LIGAND { public String toString(){
@@ -190,12 +195,13 @@ public class V3DMolecule extends RotatableGroup {
 						int surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
 						int id, int group, MoleculeRole role, boolean overrideHydrogens) {
 		mMol = mol;
+		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true);
 		mPickedAtomList = new LinkedList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
-		mRole = role;
-		mID = id;
-		mGroup = group;
+		mRoleProperty = new SimpleObjectProperty<MoleculeRole>(role);
+		mIDProperty = new SimpleIntegerProperty(id);
+		mGroupProperty = new SimpleIntegerProperty(group);
 		mIsSelected = false;
 		mIsIncluded = false;
 		mOverrideHydrogens = overrideHydrogens;
@@ -262,16 +268,16 @@ public class V3DMolecule extends RotatableGroup {
 	}
 
 	public void addPharmacophore() {
-		V3DPharmacophore pharmacophore = new V3DPharmacophore(this);
+		V3DCustomizablePheSA pharmacophore = new V3DCustomizablePheSA(this);
 		constructPharmacophore(pharmacophore);
 	}
 	
 	public void addPharmacophore(MolecularVolume molVol) {
-		V3DPharmacophore pharmacophore = new V3DPharmacophore(this,molVol);
+		V3DCustomizablePheSA pharmacophore = new V3DCustomizablePheSA(this,molVol);
 		constructPharmacophore(pharmacophore);
 	}
 	
-	private void constructPharmacophore(V3DPharmacophore pharmacophore) {
+	private void constructPharmacophore(V3DCustomizablePheSA pharmacophore) {
 		this.removePharmacophore();
 		mPharmacophore = pharmacophore;
 		mPharmacophore.buildPharmacophore();
@@ -280,7 +286,7 @@ public class V3DMolecule extends RotatableGroup {
 		
 	}
 	
-	public V3DPharmacophore getPharmacophore() {
+	public V3DCustomizablePheSA getPharmacophore() {
 		return mPharmacophore;
 	}
 
@@ -297,9 +303,12 @@ public class V3DMolecule extends RotatableGroup {
 
 		// mark new hydrogen atoms, if their neighbour atom is also marked
 		mMol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		for (int i=oldAtoms; i<mMol.getAllAtoms(); i++)
-			if (mMol.isMarkedAtom(mMol.getConnAtom(i, 0)))
-				mMol.setAtomMarker(i, true);
+		/*
+		 * hydrogen positions should not be constrained
+		 */
+		//for (int i=oldAtoms; i<mMol.getAllAtoms(); i++)
+		//	if (mMol.isMarkedAtom(mMol.getConnAtom(i, 0)))
+		//		mMol.setAtomMarker(i, true);
 
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 		builder.buildMolecule(oldAtoms, oldBonds);
@@ -552,12 +561,20 @@ public class V3DMolecule extends RotatableGroup {
 	}
 	
 	public int getID() {
-		return mID;
+		return mIDProperty.get();
 	}
 	
 	
 	public int getGroup() {
-		return mGroup;
+		return mGroupProperty.get();
+	}
+	
+	public IntegerProperty GroupProperty() {
+		return mGroupProperty;
+	}
+	
+	public IntegerProperty IDProperty() {
+		return mIDProperty;
 	}
 	
 	public boolean isSelected() {
@@ -577,16 +594,13 @@ public class V3DMolecule extends RotatableGroup {
 	}
 	
 
-	public MoleculeRole getMoleculeRole() {
-		return mRole;
-	}
 	
 	public void setMoleculeRole(MoleculeRole role) {
-		mRole = role;
+		mRoleProperty.set(role);
 	}
 	
 	public void setID(int id) {
-		mID = id;
+		mIDProperty.set(id);
 	}
 	
 	public void setIncluded(boolean included) {
@@ -595,7 +609,7 @@ public class V3DMolecule extends RotatableGroup {
 	
 	
 	public void setGroup(int group) {
-		mGroup = group;
+		mGroupProperty.set(group);
 	}
 
 
@@ -800,6 +814,7 @@ public class V3DMolecule extends RotatableGroup {
 		for(MolStructureChangeListener listener : mStructureListeners) {
 			listener.structureChanged();
 		}
+		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true); 
 	}
 	
 
@@ -1147,14 +1162,21 @@ public class V3DMolecule extends RotatableGroup {
 	}
 	
 	public MoleculeRole getRole() {
-		return mRole;
+		return mRoleProperty.get();
+	}
+	
+	public ObjectProperty<MoleculeRole> RoleProperty() {
+		return mRoleProperty;
 	}
 
 	
 	public void setRole(MoleculeRole role) {
-		mRole = role;
+		mRoleProperty.set(role);
 	}
 
+	public int getUnconnectedFragmentNo() {
+		return mnUnconnectedFragments;
+	}
 
 
 

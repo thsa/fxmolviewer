@@ -5,30 +5,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
-import javafx.event.EventHandler;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
 import javafx.util.Callback;
-import javafx.util.converter.IntegerStringConverter;
 
 public class MoleculeGroupTable {
 	private int mGroup;
@@ -175,6 +168,16 @@ public class MoleculeGroupTable {
 			mPane.updateGroups(selectedModel.getMolecule3D());
 		}
 
+	}
+	
+	public void changeRoleSelected(MoleculeRole role) {
+		List<MoleculeModel> selectedModels = new ArrayList<MoleculeModel>();
+		mMolTable.getSelectionModel().getSelectedItems().stream().forEach(e -> {
+			selectedModels.add(e);
+		});
+		for(MoleculeModel selectedModel : selectedModels) {
+			selectedModel.setRoleProperty(role);
+		}
 	}
 	
 	public void cleanup() {

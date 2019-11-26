@@ -34,35 +34,40 @@ public class DashedRod extends RotatableGroup {
 	private static final float DASH_LENGTH = 0.18f;
 	private static final float GAP_LENGTH = 0.12f;
 	private Color mColor;
+	
 
 	public DashedRod(Point3D p1, Point3D p2, Color color) {
+		this(p1,p2,color,RADIUS,DASH_LENGTH,GAP_LENGTH);
+	}
+	
+	public DashedRod(Point3D p1, Point3D p2, Color color, float radius, float dashLength, float gapLength) {
 		PhongMaterial material = createMaterial(color, 1.0);
 		mColor = color;
 
 		float distance = (float)p1.distance(p2);
-		int gaps = (distance <= DASH_LENGTH) ? 0
-				 : (int)((distance+DASH_LENGTH)/(DASH_LENGTH+GAP_LENGTH));
+		int gaps = (distance <= dashLength) ? 0
+				 : (int)((distance+dashLength)/(dashLength+gapLength));
 
 		if (gaps == 0) {
-			Cylinder cylinder = new Cylinder(RADIUS, distance);
+			Cylinder cylinder = new Cylinder(radius, distance);
 			cylinder.setMaterial(material);
 			getChildren().add(cylinder);
 			}
 		else {
-			float firstLength = (distance + DASH_LENGTH - gaps*(DASH_LENGTH+GAP_LENGTH))/2;
-			Cylinder cylinder1 = new Cylinder(RADIUS, firstLength);
+			float firstLength = (distance + dashLength - gaps*(dashLength+gapLength))/2;
+			Cylinder cylinder1 = new Cylinder(radius, firstLength);
 			cylinder1.setTranslateY(firstLength/2-distance/2);
 			cylinder1.setMaterial(material);
 			getChildren().add(cylinder1);
 
 			for (int i=0; i<gaps-1; i++) {
-				Cylinder cylinder = new Cylinder(RADIUS, DASH_LENGTH);
-				cylinder.setTranslateY(firstLength+GAP_LENGTH+i*(DASH_LENGTH+GAP_LENGTH)+DASH_LENGTH/2-distance/2);
+				Cylinder cylinder = new Cylinder(radius, dashLength);
+				cylinder.setTranslateY(firstLength+gapLength+i*(dashLength+gapLength)+dashLength/2-distance/2);
 				cylinder.setMaterial(material);
 				getChildren().add(cylinder);
 				}
 
-			Cylinder cylinder2 = new Cylinder(RADIUS, firstLength);
+			Cylinder cylinder2 = new Cylinder(radius, firstLength);
 			cylinder2.setTranslateY(distance/2-firstLength/2);
 			cylinder2.setMaterial(material);
 			getChildren().add(cylinder2);

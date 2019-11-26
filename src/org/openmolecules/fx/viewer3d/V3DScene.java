@@ -38,6 +38,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
 
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
+import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
@@ -59,7 +60,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private RotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
 	private V3DMouseHandler mMouseHandler;
 	private V3DKeyHandler mKeyHandler;
-	private V3DSceneListener mSceneListener;
+	private List<V3DSceneListener> mSceneListeners;
 	private boolean mIsIndividualRotationModus;
 	private int mSurfaceCutMode;
 	private V3DMolecule mSurfaceCutMolecule;
@@ -74,6 +75,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private EnumSet<ViewerSettings> mSettings;
 	private boolean mMayOverrideHydrogens;
 	private int mMoleculeColorID;
+	private V3DInteractionHandler mInteractionHandler;
+	
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
@@ -134,6 +137,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMayOverrideHydrogens = true;
 		mMoleculeColorID = 0;
 		applySettings();
+		mSceneListeners = new ArrayList<V3DSceneListener>();
 		}
 
 	public V3DPopupMenuController getPopupMenuController() {
@@ -156,10 +160,22 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		.distinct().collect(Collectors.groupingBy(V3DMolecule::getGroup,TreeMap::new, Collectors.toList()));
 		
 	}
+	
+	public List<V3DMolecule> getMolsInScene() {
+		V3DMolecule fxmol;
+		ArrayList<V3DMolecule> fxmols = new ArrayList<V3DMolecule>();
+		for (Node node : getWorld().getChildren()) {
+			if (node instanceof V3DMolecule) {
+				fxmol = (V3DMolecule)node;
+				fxmols.add(fxmol);
+			}
+		}
+		return fxmols;
+	}
 
 
-	public void setSceneListener(V3DSceneListener sl) {
-		mSceneListener = sl;
+	public void addSceneListener(V3DSceneListener sl) {
+		mSceneListeners.add(sl);
 		}
 	
 	
@@ -232,7 +248,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			conformer.toMolecule(mol);	// copy atom coordinates to molecule
 			}
 
-		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), mCopiedMol.getGroup(),mCopiedMol.getMoleculeRole());
+		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), mCopiedMol.getGroup(),mCopiedMol.getRole());
 //		fxmol.activateEvents();
 		mCopiedMol = null;
 		addMolecule(fxmol);
@@ -244,8 +260,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		fxmol.removePharmacophore();
 //		fxmol.deactivateEvents();
 		mWorld.getChildren().remove(fxmol);
-		if (mSceneListener != null)
-			mSceneListener.removeMolecule(fxmol);
+		for(V3DSceneListener listener : mSceneListeners)
+			listener.removeMolecule(fxmol);
 		}
 	
 	public void delete(List<V3DMolecule> fxmols) {
@@ -297,12 +313,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		for (Node node:mWorld.getChildren()) {
 			if (node instanceof V3DMolecule) {
 				//((V3DMolecule) node).removeMeasurements();
-				if (mSceneListener != null)
-					mSceneListener.removeMolecule((V3DMolecule) node);
+				for(V3DSceneListener listener : mSceneListeners)
+					listener.removeMolecule((V3DMolecule)node);
 			}
 		}
-		if (mSceneListener != null)
-			mSceneListener.initialize(isSmallMoleculeMode);
+		for(V3DSceneListener listener : mSceneListeners)
+			listener.initialize(isSmallMoleculeMode);
 		mWorld.getChildren().clear();	// this does not remove the measurements
 	}
 
@@ -471,8 +487,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
 		Platform.runLater(() -> fxmol.setColor(color));
 		mWorld.getChildren().add(fxmol);
-		if (mSceneListener != null)
-			mSceneListener.addMolecule(fxmol);
+		for(V3DSceneListener listener : mSceneListeners)
+			listener.addMolecule(fxmol);
 	}
 	
 	public void applySettings() {
@@ -699,4 +715,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMeasurements.removeAll(toBeRemoved);
 		// TODO Auto-generated method stub
 	}
+	
+	public void handleInteractions() {
+		if(mInteractionHandler==null)
+			mInteractionHandler = new V3DInteractionHandler(this);
+		mInteractionHandler.displayInteractions();
+	}
+	
+
 }

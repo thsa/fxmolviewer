@@ -2,7 +2,6 @@ package org.openmolecules.fx.tasks;
 
 
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesaflex.FlexibleShapeAlignment;
 import javafx.application.Platform;
@@ -93,8 +92,10 @@ public class V3DFlexiblePheSARefinement  {
 			fxFitMol.getPharmacophore().setVisible(false);
 			StereoMolecule fitMol = fxFitMol.getMolecule();
 			fitVol = fxFitMol.getPharmacophore().getMolVol();
+			long t0 = System.currentTimeMillis();
 			FlexibleShapeAlignment flexAlign = new FlexibleShapeAlignment(refMol,fitMol, refVol, fitVol);
 			flexAlign.align();
+			long t1 = System.currentTimeMillis();
 		}
 		
 		ObservableList<Transform> refTransforms = mFXRefMol.getTransforms();

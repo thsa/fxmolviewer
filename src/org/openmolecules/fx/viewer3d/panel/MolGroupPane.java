@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.V3DSceneListener;
 
@@ -52,7 +53,7 @@ public class MolGroupPane extends ScrollPane implements V3DSceneListener {
 	public MolGroupPane(final V3DScene scene3D) {
 		super();
 		mScene3D = scene3D;
-		mScene3D.setSceneListener(this);
+		mScene3D.addSceneListener(this);
 		mGroupTable = new HashMap<Integer,MoleculeGroupTable>();
 		//mGroups = new HashMap<Integer,ArrayList<V3DMolecule>>();
 		mContainer = new VBox();
@@ -114,6 +115,14 @@ public class MolGroupPane extends ScrollPane implements V3DSceneListener {
 			mGroupTable.get(group).changeGroupSelected(targetGroup);
 		}
 	}
+	
+	public void changeRoleSelected(MoleculeRole role) {
+		ArrayList<Integer> groups = new ArrayList<Integer>(mGroupTable.keySet());
+		for(int group : groups) {
+			mGroupTable.get(group).changeRoleSelected(role);
+		}
+	}
+	
 	
 	public VBox getContainer() {
 		return mContainer;

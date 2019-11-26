@@ -1,7 +1,7 @@
 package org.openmolecules.render;
 
 import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DPharmacophore;
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.phesa.MolecularVolume;

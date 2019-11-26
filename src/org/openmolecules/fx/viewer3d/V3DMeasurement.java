@@ -33,6 +33,9 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 		mPoints = new Point3D[atoms.size()];
 		mParent = parent;
 		((Group)parent).getChildren().add(mRod);
+		for(V3DMolecule fxmol:mFXmols) {
+			fxmol.visibleProperty().addListener((v,ov,nv) -> setVisibility(nv));
+		}
 
 		
 	}
@@ -86,6 +89,11 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 		}
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private void setVisibility(boolean visible) {
+		mRod.setVisible(visible);
+		mLabel.setVisible(visible);
 	}
 	
 	

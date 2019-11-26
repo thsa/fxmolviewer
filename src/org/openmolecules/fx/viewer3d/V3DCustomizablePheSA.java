@@ -32,7 +32,7 @@ import java.util.Random;
 
 
 
-public class V3DPharmacophore extends Group implements MolCoordinatesChangeListener, PharmacophoreBuilder{
+public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeListener, PharmacophoreBuilder{
 	
 	public static PhongMaterial sDonorMaterial;
 	public static PhongMaterial sAcceptorMaterial;
@@ -47,11 +47,11 @@ public class V3DPharmacophore extends Group implements MolCoordinatesChangeListe
 	private MolecularVolume mMolVol;
 	private V3DMolecule mFXMol;
 	
-	public V3DPharmacophore(V3DMolecule fxMol) {
+	public V3DCustomizablePheSA(V3DMolecule fxMol) {
 		this(fxMol,new MolecularVolume(fxMol.getMolecule()));
 	}
 	
-	public V3DPharmacophore(V3DMolecule fxMol, MolecularVolume molVol) {
+	public V3DCustomizablePheSA(V3DMolecule fxMol, MolecularVolume molVol) {
 		fxMol.addMoleculeCoordinatesChangeListener(this);
 		this.mFXMol = fxMol;
 		mMolVol = molVol;	

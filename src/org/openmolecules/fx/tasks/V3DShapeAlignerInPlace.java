@@ -26,7 +26,7 @@ import javafx.scene.transform.Transform;
 import org.openmolecules.fx.viewer3d.CarbonAtomColorPalette;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
-import org.openmolecules.fx.viewer3d.V3DPharmacophore;
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
@@ -148,7 +148,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 		Matrix rotation = PheSAAlignment.preProcess(refConf, refVol).getTranspose();
 		refShape = new PheSAMolecule(refMol,refVol);
 		for(V3DMolecule fxFitMol : mPheSAMap.keySet()) {
-			dhs.getSimilarity(refShape, mPheSAMap.get(fxFitMol));
+			System.out.println(dhs.getSimilarity(refShape, mPheSAMap.get(fxFitMol)));
 			try {
 				alignedMol = dhs.getPreviousAlignment()[1];
 				fitMol = fxFitMol.getMolecule();

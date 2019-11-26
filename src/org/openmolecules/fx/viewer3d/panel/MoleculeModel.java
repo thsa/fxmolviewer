@@ -45,10 +45,9 @@ import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
  */
 public class MoleculeModel implements MolStructureChangeListener, ChangeListener<Boolean> {
 	private V3DMolecule mMol3D;
-	private SimpleObjectProperty<StereoMolecule> mMol2D;
-	private SimpleObjectProperty<MoleculeRole> mRole;
-	private SimpleIntegerProperty mGroup;
-	private ArrayList<InvalidationListener> iListeners;
+	private ObjectProperty<StereoMolecule> mMol2D;
+	private ObjectProperty<MoleculeRole> mRole;
+	private IntegerProperty mGroup;
 	private BooleanProperty isMolVisible;
 	private BooleanProperty isSelected;
 
@@ -60,7 +59,6 @@ public class MoleculeModel implements MolStructureChangeListener, ChangeListener
 		mRole.addListener((o,ov,nv) -> mMol3D.setRole(mRole.get()));
 		mGroup = new SimpleIntegerProperty(mMol3D.getGroup());
 		mGroup.addListener((o,ov,nv) -> {mMol3D.setGroup((Integer)nv);});
-		iListeners = new ArrayList<InvalidationListener>();
 		isMolVisible =  new SimpleBooleanProperty(true);
 		isMolVisible.addListener(this);
 		isSelected = new SimpleBooleanProperty(false);

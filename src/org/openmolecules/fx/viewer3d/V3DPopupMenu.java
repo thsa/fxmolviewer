@@ -111,6 +111,11 @@ public class V3DPopupMenu extends ContextMenu {
 		}
 		
 		
+		
+		MenuItem itemInteraction = new MenuItem("Display Interactions");
+		itemInteraction.setOnAction(e -> scene.handleInteractions());
+		getItems().add(itemInteraction);
+		
 		MenuItem itemCenter = new MenuItem("Center View");
 		itemCenter.setOnAction(e -> scene.optimizeView());
 		Menu menuReset = new Menu("Reset Location");
