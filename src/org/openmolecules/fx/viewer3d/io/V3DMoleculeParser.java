@@ -1,9 +1,13 @@
 package org.openmolecules.fx.viewer3d.io;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.actelion.research.chem.MolfileParser;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
@@ -26,46 +30,50 @@ public class V3DMoleculeParser {
 	
 	private static ArrayList<StereoMolecule> parseFile(String file) {
 		ArrayList<StereoMolecule> mols = new ArrayList<StereoMolecule>();
-		CompoundFileParser parser;
 		StereoMolecule mol;
-		ConformerGenerator confGen = new ConformerGenerator();
-		if(file.endsWith(".sdf")) {
-			parser = new SDFileParser(file);
-		}
-		else if(file.endsWith(".dwar")) {
-			parser = new DWARFileParser(file);
+
+		if(file.endsWith(".mol")) {
+			try {
+				mol = new MolfileParser().getCompactMolecule(new BufferedReader(new FileReader(file)));
+				if (mol != null) {
+					if (!mol.is3D())
+						new ConformerGenerator().getOneConformerAsMolecule(mol);
+					mols.add(mol);
+				}
+			}
+			catch (FileNotFoundException fnfe) {}
 		}
 		else {
-			parser = null;
-		}
-		if(parser!=null) {
-			boolean notDone = parser.next();
-			while(notDone) {
-				try {
-					mol = parser.getMolecule();
-					mol.ensureHelperArrays(Molecule.cHelperCIP);
-					boolean has3Dcoordinates = V3DMoleculeParser.hasMolecule3DCoords(mol);
-					if(!has3Dcoordinates) {
-						mol = confGen.getOneConformerAsMolecule(mol);
+			CompoundFileParser parser = null;
+
+			if(file.endsWith(".sdf"))
+				parser = new SDFileParser(file);
+			else if(file.endsWith(".dwar"))
+				parser = new DWARFileParser(file);
+
+			if(parser!=null) {
+				ConformerGenerator confGen = new ConformerGenerator();
+				while(parser.next()) {
+					try {
+						mol = parser.getMolecule();
+						if (mol != null) {
+							if(!mol.is3D())
+								confGen.getOneConformerAsMolecule(mol);
+							mols.add(mol);
+						}
 					}
-					mols.add(parser.getMolecule());
-					notDone = parser.next();
-				}
-				catch(Exception e) {
-					notDone = parser.next();
+					catch(Exception e) {}
 				}
 			}
 		}
-			return mols;
+		return mols;
 	}
 
 
-	public static List<V3DMolecule> readMolFile(V3DScene scene,String sdfile, int group) {
-		List<StereoMolecule> mols = parseFile(sdfile);
+	public static List<V3DMolecule> readMoleculeFile(V3DScene scene, String filename, int group) {
+		List<StereoMolecule> mols = parseFile(filename);
 		List<V3DMolecule> v3dMols = new ArrayList<V3DMolecule>();
 		for(StereoMolecule mol: mols) {
-			if(mol==null) 
-				continue;
 			mol.ensureHelperArrays(Molecule.cHelperRings);
 			if(mol.getName()==null || mol.getName().equals(""))
 				mol.setName("Molecule");
@@ -162,17 +170,4 @@ public class V3DMoleculeParser {
 		return fxMols;
 	
 	}
-	
-	private static boolean hasMolecule3DCoords(StereoMolecule mol) {
-		boolean has3Dcoordinates = false;
-		for (int atom=1; atom<mol.getAllAtoms(); atom++) {
-			if (Math.abs(mol.getAtomZ(atom) - mol.getAtomZ(0)) > 0.1) {
-				has3Dcoordinates = true;
-				break;
-			}
-		}
-		return has3Dcoordinates;
-	}
-	
-
 }
