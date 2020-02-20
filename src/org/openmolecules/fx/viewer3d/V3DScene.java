@@ -21,9 +21,12 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
+import com.actelion.research.chem.IDCodeParser;
+import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.coords.CoordinateInventor;
+import com.actelion.research.chem.dnd.ChemistryDataFormats;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
 import com.actelion.research.util.DoubleFormat;
 
@@ -33,6 +36,8 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Label;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
@@ -43,7 +48,6 @@ import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
-
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -112,7 +116,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 
 	public V3DScene(Group root, double width, double height, EnumSet<V3DScene.ViewerSettings> settings) {
-		super(root , width, height, true, SceneAntialiasing.BALANCED);
+		super(root, width, height, true, SceneAntialiasing.BALANCED);
 		mRoot = root;
 		mSettings = settings;
 		mWorld = new RotatableGroup();
@@ -132,13 +136,54 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mClipboardHandler = new ClipboardHandler();
 		mMouseDragged = false;
 		mMeasurementMode = MEASUREMENT.NONE;
-		mPickedMolsList = new ArrayList<V3DMolecule>();
-		mLabelList = new ArrayList<NonRotatingLabel>();
+		mPickedMolsList = new ArrayList<>();
+		mLabelList = new ArrayList<>();
 		mMayOverrideHydrogens = true;
 		mMoleculeColorID = 0;
 		applySettings();
-		mSceneListeners = new ArrayList<V3DSceneListener>();
-		}
+		mSceneListeners = new ArrayList<>();
+		initializeDragAndDrop();
+	}
+
+	private void initializeDragAndDrop() {
+		Platform.runLater(() -> {
+			getScene().setOnDragOver((DragEvent event) -> {
+				if (!event.getDragboard().getContentTypes().isEmpty())
+					event.acceptTransferModes(TransferMode.ANY);
+
+				event.consume();
+			});
+
+			getScene().setOnDragDropped((DragEvent event) -> {
+				StereoMolecule mol = null;
+				Object o = event.getDragboard().getContent(ChemistryDataFormats.DF_SERIALIZED_OBJECT);
+				if (o != null && o instanceof StereoMolecule)
+					mol = (StereoMolecule)o;
+
+				if (mol == null) {
+					o = event.getDragboard().getContent(ChemistryDataFormats.DF_IDCODE);
+					if (o != null && o instanceof String)
+						mol = new IDCodeParser(false).getCompactMolecule((String)o);
+					}
+
+				if (mol == null) {
+					o = event.getDragboard().getContent(ChemistryDataFormats.DF_MDLMOLFILEV3);
+					if (o == null)
+						o = event.getDragboard().getContent(ChemistryDataFormats.DF_MDLMOLFILE);
+					if (o != null && o instanceof String)
+						new MolfileParser().getCompactMolecule((String)o);
+					}
+
+				if (mol != null && !mol.is3D())
+					new ConformerGenerator().getOneConformerAsMolecule(mol);
+
+				if (mol != null)
+					addMolecule(new V3DMolecule(mol));
+
+				event.consume();
+			});
+		} );
+	}
 
 	public V3DPopupMenuController getPopupMenuController() {
 		return mPopupMenuController;
