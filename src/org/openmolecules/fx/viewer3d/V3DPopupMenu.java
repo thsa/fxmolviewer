@@ -581,7 +581,6 @@ public class V3DPopupMenu extends ContextMenu {
 		return fileChooser;
 	}
 	
-<<<<<<< HEAD
 	private void showMinimizerDialog(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol) {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		ToggleGroup group = new ToggleGroup();
@@ -612,10 +611,9 @@ public class V3DPopupMenu extends ContextMenu {
 		
 	}
 	
-	private Dialog<IAlignmentTask> getAlignmentDialog() {
-=======
+
 	private Dialog<IAlignmentTask> getAlignmentDialog(V3DScene scene) {
->>>>>>> 1b599b2513e5b5d3c2b1eb4fca2215cad5281e29
+
 		
 		BooleanProperty strucFromInput = new SimpleBooleanProperty(true);
 		ObjectProperty<File> file = new SimpleObjectProperty<File>();
