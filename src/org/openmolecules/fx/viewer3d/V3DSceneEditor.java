@@ -26,7 +26,7 @@ public class V3DSceneEditor extends V3DSceneWithSidePane  {
 	
 	public void minimizeVisibleMols() {
 		createOutput("start minimization");
-		V3DMinimizer.minimize(getScene3D(), this, null);
+		V3DMinimizer.minimize(getScene3D(), this, null , false);
 	}
 	
 	public void createOutput(String output) {
