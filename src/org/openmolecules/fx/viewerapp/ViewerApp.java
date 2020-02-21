@@ -28,15 +28,11 @@ import javafx.stage.Stage;
 import org.openmolecules.fx.viewer3d.*;
 
 import java.io.File;
-import java.util.EnumSet;
 import java.util.Optional;
 
 public class ViewerApp extends Application {
 	private V3DSceneWithSidePane mViewer;
-	
-	
-	
-	
+
 	public static void main(String[] args) {
 		launch(args);
 		}

@@ -88,12 +88,12 @@ public class V3DPopupMenu extends ContextMenu {
 		V3DPopupMenuController controller = scene.getPopupMenuController();
 		EnumSet<V3DScene.ViewerSettings> settings = scene.getSettings();
 	
-		if (settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) {
+		if (settings == null || settings.contains(V3DScene.ViewerSettings.LOAD_MOLS)) {
 			MenuItem loadMols = new MenuItem("Open Molecule File...");
 			loadMols.setOnAction(e -> {
-				File selectedFile = this.getMolFileLoader().showOpenDialog(null);
+				File selectedFile = getMoleculeFileChooser().showOpenDialog(scene.getScene().getWindow());
 				if (selectedFile != null) {
-					List<V3DMolecule> mols = V3DMoleculeParser.readMolFile(mScene,selectedFile.toString(), scene.getMaxGroupID());
+					List<V3DMolecule> mols = V3DMoleculeParser.readMoleculeFile(mScene,selectedFile.toString(), scene.getMaxGroupID());
 					for (V3DMolecule vm : mols) {
 						scene.addMolecule(vm);
 					}
@@ -448,7 +448,7 @@ public class V3DPopupMenu extends ContextMenu {
 					task.align();
 				}
 				else {
-					Dialog<IAlignmentTask> dialog = getAlignmentDialog();
+					Dialog<IAlignmentTask> dialog = getAlignmentDialog(scene);
 					Optional<IAlignmentTask> alignmentTaskOptional = dialog.showAndWait();
 					if(alignmentTaskOptional.isPresent())
 						alignmentTaskOptional.get().align();
@@ -569,7 +569,7 @@ public class V3DPopupMenu extends ContextMenu {
 		return slider;
 	}
 	
-	private FileChooser getMolFileLoader() {
+	private FileChooser getMoleculeFileChooser() {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open Molecule File");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("SD Files", "*.sdf"));
@@ -581,6 +581,7 @@ public class V3DPopupMenu extends ContextMenu {
 		return fileChooser;
 	}
 	
+<<<<<<< HEAD
 	private void showMinimizerDialog(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol) {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		ToggleGroup group = new ToggleGroup();
@@ -612,6 +613,9 @@ public class V3DPopupMenu extends ContextMenu {
 	}
 	
 	private Dialog<IAlignmentTask> getAlignmentDialog() {
+=======
+	private Dialog<IAlignmentTask> getAlignmentDialog(V3DScene scene) {
+>>>>>>> 1b599b2513e5b5d3c2b1eb4fca2215cad5281e29
 		
 		BooleanProperty strucFromInput = new SimpleBooleanProperty(true);
 		ObjectProperty<File> file = new SimpleObjectProperty<File>();
@@ -632,7 +636,7 @@ public class V3DPopupMenu extends ContextMenu {
 		hbox1.getChildren().addAll(label, fromScene, fromFile);
 		
 		fromFile.setOnAction(e -> {
-			file.set(getMolFileLoader().showOpenDialog(null));
+			file.set(getMoleculeFileChooser().showOpenDialog(scene.getScene().getWindow()));
 		});
 		
 		fromScene.setOnAction(e -> {
