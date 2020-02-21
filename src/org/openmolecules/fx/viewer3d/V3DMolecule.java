@@ -71,7 +71,12 @@ public class V3DMolecule extends RotatableGroup {
 	private static final double DEFAULT_SURFACE_TRANSPARENCY = 0.1;
 	private static final int DEFAULT_SURFACE_COLOR_MODE = SURFACE_COLOR_PLAIN;
 
-	public enum SurfaceMode {NONE, WIRES,FILLED}; 
+	public enum SurfaceMode {NONE(0), WIRES(1),FILLED(2); 
+		public int mode;
+		SurfaceMode(int mode) {
+			this.mode = mode;
+		}
+	}
 
 	private static final Color HIGHLIGHT_COLOR = Color.RED;
 	private static final Color PICKED_COLOR = Color.BLUEVIOLET;

@@ -19,7 +19,12 @@ import java.util.ArrayList;
 public class MoleculeArchitect {
 	public final static String[] MODE_TEXT = { "Ball & Sticks", "Sticks", "Balls", "Wires" };
 	
-	public enum ConstructionMode {BALL_AND_STICKS, STICKS, BALLS, WIRES;}
+	public enum ConstructionMode {BALL_AND_STICKS (0), STICKS(1), BALLS(2), WIRES(3);
+		public int mode;
+		ConstructionMode(int mode) {
+			this.mode = mode;
+		}
+	}
 	public final ConstructionMode CONSTRUCTION_MODE_DEFAULT = ConstructionMode.BALL_AND_STICKS;
 
 	public enum HydrogenMode {ALL, POLAR, NONE;}
@@ -110,6 +115,17 @@ public class MoleculeArchitect {
 
 	public void setConstructionMode(ConstructionMode mode) {
 		mConstructionMode = mode;
+	}
+	
+	public void setConstructionMode(int mode) {
+		if(mode==ConstructionMode.BALL_AND_STICKS.mode)
+			mConstructionMode = ConstructionMode.BALL_AND_STICKS;
+		else if(mode==ConstructionMode.STICKS.mode)
+			mConstructionMode = ConstructionMode.STICKS;
+		else if(mode==ConstructionMode.WIRES.mode)
+			mConstructionMode = ConstructionMode.WIRES;
+		else if(mode==ConstructionMode.BALLS.mode)
+			mConstructionMode = ConstructionMode.BALLS;
 	}
 
 	public void setHydrogenMode(HydrogenMode mode) {
@@ -278,7 +294,9 @@ public class MoleculeArchitect {
 		case WIRES:
 			buildStickBond(bond, d, b, c);
 			break;
-			}
+		default:
+			buildStickBond(bond, d, b, c);
+		}
 		}
 
 	private void buildBallAndStickBond(int bond, double d, double b, double c) {

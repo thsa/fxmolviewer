@@ -486,9 +486,9 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 
 	private double getAtomRadius(StereoMolecule mol, int atom, double surfaceSurplus) {
 		return (surfaceSurplus >= 0) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)] + surfaceSurplus
-			 : (mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)]
-			 : (mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)] / 4f
-			 : (mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_STICKS) ? MoleculeArchitect.STICK_SBOND_RADIUS
+			 : (mRenderMode == MoleculeArchitect.ConstructionMode.BALLS.mode) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)]
+			 : (mRenderMode == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS.mode) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)] / 4f
+			 : (mRenderMode == MoleculeArchitect.ConstructionMode.STICKS.mode) ? MoleculeArchitect.STICK_SBOND_RADIUS
 			 : MoleculeArchitect.WIRE_SBOND_RADIUS;
 		}
 
@@ -507,8 +507,8 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 
 		// if is bond -> stickbond or dotted bond
 		boolean useBondMaterial = ((role & MoleculeBuilder.ROLE_IS_BOND) != 0
-								|| mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_STICKS
-								|| mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
+								|| mRenderMode == MoleculeArchitect.ConstructionMode.STICKS.mode
+								|| mRenderMode == MoleculeArchitect.ConstructionMode.WIRES.mode);
 		int material = useBondMaterial? mBondMaterial : mAtomMaterial;
 		if (mLastRGB != argb || mLastMaterial != material) {
 			mLastRGB = argb;
