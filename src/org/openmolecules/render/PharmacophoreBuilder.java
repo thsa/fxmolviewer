@@ -1,7 +1,7 @@
 package org.openmolecules.render;
 
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.phesa.ExclusionGaussian;
+import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
 import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
 
@@ -20,7 +20,7 @@ public interface PharmacophoreBuilder {
 	public static final double VECTOR_LENGTH = 1.5;
 
 	public void addPharmacophorePoint(int role, PPGaussian pp);
-	public void addExclusionSphere(int role, ExclusionGaussian eg);
+	public void addExclusionSphere(int role, VolumeGaussian eg);
 	//public void addDirectionalityArrow(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, PhongMaterial material);
 
 	}

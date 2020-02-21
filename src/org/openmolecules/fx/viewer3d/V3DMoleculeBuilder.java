@@ -58,12 +58,12 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 			}
 		}
 
-	public void setConstructionMode(int mode) {
+	public void setConstructionMode(MoleculeArchitect.ConstructionMode mode) {
 		mArchitect.setConstructionMode(mode);
 		calculateDivisions();
 		}
 
-	public void setHydrogenMode(int mode) {
+	public void setHydrogenMode(MoleculeArchitect.HydrogenMode mode) {
 		mArchitect.setHydrogenMode(mode);
 		}
 
@@ -110,7 +110,7 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		mV3DMolecule.getChildren().add(sphere);
 
 		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0
-		 && mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS)
+		 && mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.STICKS)
 			addTransparentSphere(role, c, STICK_MODE_ATOM_PICK_RADIUS);
 		}
 
@@ -166,12 +166,12 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 	public void done() {}
 
 	private void calculateDivisions() {
-		mSphereDivisions = (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALLS) ? 64
-				   : (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS) ? 32
-				   : (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS) ? 16 : 8;
-		mCylinderDivisions = (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALLS) ? 10
-				: (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS) ? 10
-				: (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS) ? 10 : 5;
+		mSphereDivisions = (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALLS) ? 64
+				   : (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS) ? 32
+				   : (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.STICKS) ? 16 : 8;
+		mCylinderDivisions = (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALLS) ? 10
+				: (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS) ? 10
+				: (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.STICKS) ? 10 : 5;
 		}
 
 	private PhongMaterial getMaterial(int argb) {

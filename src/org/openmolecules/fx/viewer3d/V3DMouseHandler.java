@@ -25,7 +25,7 @@ import javafx.scene.shape.Sphere;
 
 import java.util.stream.IntStream;
 
-import org.openmolecules.fx.viewer3d.nodes.ExclusionSphere;
+import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.fx.viewer3d.nodes.IPPNode;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
@@ -61,7 +61,7 @@ public class V3DMouseHandler {
 	private V3DMolecule mHighlightedMol,mAffectedMol;
 	private long mMousePressedMillis;
 	private Node mSelectedNode;
-	private ExclusionSphere mHighlightedExclusionSphere, mAffectedExclusionSphere;
+	private VolumeSphere mHighlightedExclusionSphere, mAffectedExclusionSphere;
 
 
 	public V3DMouseHandler(final V3DScene scene) {
@@ -81,7 +81,7 @@ public class V3DMouseHandler {
 				actionPerformed = mScene.getEditor().scrolledOnMolecule(mHighlightedMol, mHighlightedMol.getHighlightedShape(), delta);
 				if(actionPerformed) {
 					for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-						mHighlightedMol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+						mHighlightedMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
 					mHighlightedMol.fireCoordinatesChange();
 					Platform.runLater(() -> {
 						mHighlightedMol.fireCoordinatesChange();
@@ -209,7 +209,7 @@ public class V3DMouseHandler {
 						V3DMolecule fxmol = (V3DMolecule)parent;
 						mScene.getEditor().moleculeClicked(fxmol, mSelectedNode);
 						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-							fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+							fxmol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
 						mScene.removeMeasurements(fxmol);
 						fxmol.fireStructureChange();
 						fxmol.updateColor();
@@ -297,8 +297,8 @@ public class V3DMouseHandler {
 
 	private void trackHighlightedMol(PickResult pr) {
 		Node node = pr.getIntersectedNode();
-		if(node instanceof ExclusionSphere) 
-			mHighlightedExclusionSphere = (ExclusionSphere) node;
+		if(node.getParent() instanceof VolumeSphere) 
+			mHighlightedExclusionSphere = (VolumeSphere) (node.getParent());
 		else 
 			mHighlightedExclusionSphere = null;
 		
@@ -385,15 +385,16 @@ public class V3DMouseHandler {
 		fxmol.setTranslateZ(fxmol.getTranslateZ() + p0.getZ() - p1.getZ());
 	}
 	
-	private void translateExclusionSphere(ExclusionSphere eSphere, double dx, double dy, double dz) {
+	private void translateExclusionSphere(VolumeSphere eSphere, double dx, double dy, double dz) {
 		RotatableGroup world = mScene.getWorld();
 		V3DMolecule fxmol = (V3DMolecule) eSphere.getParent().getParent();
 		double f = getScreenToObjectFactor(eSphere.localToScene(0, 0, 0).getZ());
-		Point3D p0 = fxmol.localToParent(eSphere.localToParent(0, 0, 0));
-		Point3D p1 = world.sceneToLocal(eSphere.localToScene(0, 0, 0).subtract(f*dx, f*dy, f*dz));
-		eSphere.setTranslateX(eSphere.getTranslateX() + p0.getX() - p1.getX());
-		eSphere.setTranslateY(eSphere.getTranslateY() + p0.getY() - p1.getY());
-		eSphere.setTranslateZ(eSphere.getTranslateZ() + p0.getZ() - p1.getZ());
+		Point3D p0 = eSphere.localToParent(eSphere.localToParent(0, 0, 0));
+		Point3D p1 = fxmol.sceneToLocal(eSphere.localToScene(0, 0, 0).subtract(f*dx, f*dy, f*dz));
+		Point3D change = new Point3D(p0.getX() - p1.getX(), p0.getY() - p1.getY(), p0.getZ() - p1.getZ());
+		eSphere.addTranslate(change.getX(), change.getY(),  change.getZ());
+
+
 		
 	}
 
@@ -492,8 +493,8 @@ public class V3DMouseHandler {
 		if(node.getParent() instanceof NonRotatingLabel) {
 			((NonRotatingLabel) node.getParent()).showMenu(x,y);
 		}
-		else if(node instanceof ExclusionSphere) {
-			((ExclusionSphere)node).showMenu(x,y);
+		else if(node.getParent() instanceof VolumeSphere) {
+			((VolumeSphere)node.getParent()).showMenu(x,y);
 		}
 		else if(node instanceof IPPNode) {
 			((IPPNode)node).showMenu(x,y);

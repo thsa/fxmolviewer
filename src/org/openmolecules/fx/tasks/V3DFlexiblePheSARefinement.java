@@ -56,7 +56,7 @@ public class V3DFlexiblePheSARefinement  {
 
 		for(V3DMolecule v3dMol : mFitMols) {
 			for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-				v3dMol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+				v3dMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
 				mScene.removeMeasurements(v3dMol);
 		}
 		

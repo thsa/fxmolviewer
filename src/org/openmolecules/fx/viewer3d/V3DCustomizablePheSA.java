@@ -2,7 +2,7 @@ package org.openmolecules.fx.viewer3d;
 
 import java.util.ArrayList;
 
-import org.openmolecules.fx.viewer3d.nodes.ExclusionSphere;
+import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.fx.viewer3d.nodes.FXColorHelper;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.PPArrow;
@@ -13,7 +13,7 @@ import org.openmolecules.render.PharmacophoreBuilder;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.phesa.ExclusionGaussian;
+import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.chem.phesa.Gaussian3D;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.pharmacophore.AcceptorPoint;
@@ -144,17 +144,17 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 	}
 
 	@Override
-	public void addExclusionSphere(int role, ExclusionGaussian eg) {
-		ExclusionSphere es = new ExclusionSphere(eg, role);
+	public void addExclusionSphere(int role, VolumeGaussian eg) {
+		VolumeSphere es = new VolumeSphere(eg, role);
 		getChildren().add(es);
 	}
 	
-	public void placeExclusionSphere() {
+	public void placeExclusionSphere(int function) {
 		Random random = new Random();
 		int atom = random.nextInt(mFXMol.getMolecule().getAllAtoms());
 		Coordinates shift = new Coordinates(3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1));
-		ExclusionGaussian eg = new ExclusionGaussian(atom, 6, mFXMol.getMolecule().getCoordinates(atom), shift);
-		mMolVol.getExclusionGaussians().add(eg);
+		VolumeGaussian eg = new VolumeGaussian(atom, 6, new Coordinates(mFXMol.getMolecule().getCoordinates(atom)), shift,function);
+		mMolVol.getVolumeGaussians().add(eg);
 		int role = PharmacophoreArchitect.exclusionRole(eg);
 		addExclusionSphere(role,eg);
 	}

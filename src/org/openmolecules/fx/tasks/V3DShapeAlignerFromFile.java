@@ -27,17 +27,18 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 	private V3DScene mScene;
 	private V3DMolecule mFXRefMol;
 	private List<PheSAMolecule> mFitShapes;
-
+	private double ppWeight;
 	
 
-	public V3DShapeAlignerFromFile(V3DScene scene3D,V3DMolecule fxRefMol, List<PheSAMolecule> fitShapes)  {
+	public V3DShapeAlignerFromFile(V3DScene scene3D,V3DMolecule fxRefMol, List<PheSAMolecule> fitShapes, double ppWeight)  {
 		mScene = scene3D;
 		mFXRefMol = fxRefMol;
 		mFitShapes = fitShapes;
+		this.ppWeight = ppWeight;
 	}
 	
 	private void run() {
-		DescriptorHandlerShape dhs = new DescriptorHandlerShape();
+		DescriptorHandlerShape dhs = new DescriptorHandlerShape(200,ppWeight);
 		List<V3DMolecule> fittedFXMols = new ArrayList<V3DMolecule>();
 		int group = mScene.getMaxGroupID();
 		MolecularVolume refVol;
@@ -46,7 +47,7 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 		if(mFXRefMol.getPharmacophore()==null) 
 			mFXRefMol.addPharmacophore();
 		mFXRefMol.getPharmacophore().setVisible(false);
-		refVol = mFXRefMol.getPharmacophore().getMolVol();
+		refVol = new MolecularVolume(mFXRefMol.getPharmacophore().getMolVol());
 		Coordinates origCOM  = refVol.getCOM();
 		refMol = mFXRefMol.getMolecule();
 		Conformer refConf = new Conformer(refMol);
@@ -77,10 +78,8 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 		double refY = mFXRefMol.getTranslateY();
 		double refZ = mFXRefMol.getTranslateZ();
 		
-		//PheSAAlignment.rotateMol(mFXRefMol.getMolecule(), rotation);
-		//mFXRefMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
+
 		for(int i=0;i<fittedFXMols.size();i++) {
-			//TODO 
 			PheSAAlignment.rotateMol(fittedFXMols.get(i).getMolecule(), rotation);
 			fittedFXMols.get(i).getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
 			if(refTransform!=null) {

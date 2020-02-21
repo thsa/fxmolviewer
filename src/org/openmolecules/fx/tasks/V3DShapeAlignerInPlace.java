@@ -12,6 +12,7 @@ import com.actelion.research.chem.phesa.DescriptorHandlerShapeOneConf;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.PheSAAlignment;
 import com.actelion.research.chem.phesa.PheSAMolecule;
+import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.util.ArrayUtils;
 import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
@@ -46,6 +47,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 	molSizeAlert.setContentText("PheSA alignment not possible for molecules with more than 100 heavy atoms");
 	}
 	private Map<V3DMolecule, PheSAMolecule> mPheSAMap;
+	private double ppWeight;
 
 	/**
 	 *
@@ -56,16 +58,17 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 	
 
 
-	public V3DShapeAlignerInPlace(V3DScene scene3D, V3DMolecule fxRefMol, boolean generateConfs)  {
+	public V3DShapeAlignerInPlace(V3DScene scene3D, V3DMolecule fxRefMol, boolean generateConfs, double ppWeight)  {
 		mScene = scene3D;
 		mFXRefMol = fxRefMol;
 		mPheSAMap = new HashMap<V3DMolecule,PheSAMolecule>();
+		this.ppWeight = ppWeight;
 		V3DMolecule fxmol;
 		DescriptorHandlerShape dhs;
 		if(generateConfs)
-			dhs = new DescriptorHandlerShape();
+			dhs = new DescriptorHandlerShape(200,ppWeight);
 		else
-			dhs = new DescriptorHandlerShapeOneConf();
+			dhs = new DescriptorHandlerShapeOneConf(200,ppWeight);
 		mFitMols = new ArrayList<V3DMolecule>();
 		if(mFXRefMol==null) { //no mol clicked in scene -> align all visible mols
 			int counter = 0;
@@ -111,7 +114,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 
 		for(V3DMolecule v3dMol : mFitMols) {
 			for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-				v3dMol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+				v3dMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
 				mScene.removeMeasurements(v3dMol);
 		}
 		
@@ -132,7 +135,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 	}
 
 	private void run() {
-		DescriptorHandlerShape dhs = new DescriptorHandlerShape();
+		DescriptorHandlerShape dhs = new DescriptorHandlerShape(200,ppWeight);
 		MolecularVolume refVol;
 		PheSAMolecule refShape;
 		StereoMolecule refMol;
@@ -141,7 +144,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 		if(mFXRefMol.getPharmacophore()==null) 
 			mFXRefMol.addPharmacophore();
 		mFXRefMol.getPharmacophore().setVisible(false);
-		refVol = mFXRefMol.getPharmacophore().getMolVol();
+		refVol = new MolecularVolume(mFXRefMol.getPharmacophore().getMolVol());
 		Coordinates origCOM  = new Coordinates(refVol.getCOM());
 		refMol = mFXRefMol.getMolecule();
 		Conformer refConf = new Conformer(refMol);

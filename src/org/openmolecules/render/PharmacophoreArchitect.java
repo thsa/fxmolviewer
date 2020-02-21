@@ -9,7 +9,7 @@ import com.actelion.research.chem.phesa.pharmacophore.AcceptorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.ChargePoint;
 import com.actelion.research.chem.phesa.pharmacophore.DonorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
-import com.actelion.research.chem.phesa.ExclusionGaussian;
+import com.actelion.research.chem.phesa.VolumeGaussian;
 
 import javafx.application.Platform;
 import javafx.scene.paint.PhongMaterial;
@@ -38,7 +38,7 @@ public class PharmacophoreArchitect {
 		return ((id << MoleculeBuilder.ROLE_DETAIL_SHIFT) |MoleculeBuilder.ROLE_IS_PHARMACOPHORE | atom);
 		}
 	
-	public static int exclusionRole(ExclusionGaussian eg) {
+	public static int exclusionRole(VolumeGaussian eg) {
 		return ((exclusionDetail++ << MoleculeBuilder.ROLE_DETAIL_SHIFT) |MoleculeBuilder.ROLE_IS_EXCLUSION | eg.getAtomId());
 		
 		
@@ -52,7 +52,7 @@ public class PharmacophoreArchitect {
 				//buildDirectionalityVector(pp);
 			}
 		}
-		for(ExclusionGaussian eg : molVol.getExclusionGaussians()) {
+		for(VolumeGaussian eg : molVol.getVolumeGaussians()) {
 				if(fromAtom<=eg.getAtomId()) {
 					Platform.runLater(() -> {
 					builder.addExclusionSphere(exclusionRole(eg), eg);});

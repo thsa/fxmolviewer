@@ -18,20 +18,15 @@ import java.util.ArrayList;
  */
 public class MoleculeArchitect {
 	public final static String[] MODE_TEXT = { "Ball & Sticks", "Sticks", "Balls", "Wires" };
-	public final static int CONSTRUCTION_MODE_BALL_AND_STICKS = 0;
-	public final static int CONSTRUCTION_MODE_STICKS = 1;
-	public final static int CONSTRUCTION_MODE_BALLS = 2;
-	public final static int CONSTRUCTION_MODE_WIRES = 3;
-	public static final int CONSTRUCTION_MODE_DEFAULT = CONSTRUCTION_MODE_BALL_AND_STICKS;
+	
+	public enum ConstructionMode {BALL_AND_STICKS, STICKS, BALLS, WIRES;}
+	public final ConstructionMode CONSTRUCTION_MODE_DEFAULT = ConstructionMode.BALL_AND_STICKS;
 
-	public final static int HYDROGEN_MODE_ALL = 0;
-	public final static int HYDROGEN_MODE_POLAR = 1;
-	public final static int HYDROGEN_MODE_NONE = 2;
-	public static final int HYDROGEN_MODE_DEFAULT = HYDROGEN_MODE_ALL;
-
-	public final static int COLOR_MODE_ATOMIC_NO = 0;
-	public final static int COLOR_MODE_WIRES = 1;
-	public static final int COLOR_MODE_DEFAULT = COLOR_MODE_ATOMIC_NO;
+	public enum HydrogenMode {ALL, POLAR, NONE;}
+	public static final HydrogenMode HYDROGEN_MODE_DEFAULT = HydrogenMode.ALL;
+	
+	public enum ColorMode {ATOMIC_NO, WIRES;}
+	public static final ColorMode COLOR_MODE_DEFAULT = ColorMode.ATOMIC_NO;
 
 	private static final double BALL_AND_STICK_SBOND_RADIUS = 0.18;
 	private static final double BALL_AND_STICK_DBOND_RADIUS = 0.10;
@@ -81,7 +76,10 @@ public class MoleculeArchitect {
 	private Conformer mConformer;
 	private MoleculeBuilder mBuilder;
 	private Coordinates center,delta,point1,point2;    // reused Coordinate objects
-	private int mColorMode,mConstructionMode,mHydrogenMode,mBondDetail;
+	private ColorMode mColorMode;
+	private ConstructionMode mConstructionMode;
+	private HydrogenMode mHydrogenMode;
+	private int mBondDetail;
 
 	public MoleculeArchitect(MoleculeBuilder builder) {
 		mBuilder = builder;
@@ -90,31 +88,31 @@ public class MoleculeArchitect {
 		point1 = new Coordinates();
 		point2 = new Coordinates();
 		mConstructionMode = CONSTRUCTION_MODE_DEFAULT;
-		mHydrogenMode = HYDROGEN_MODE_ALL;
+		mHydrogenMode = HydrogenMode.ALL;
 		mColorMode = COLOR_MODE_DEFAULT;
 		}
 
-	public int getColorMode() {
+	public ColorMode getColorMode() {
 		return mColorMode;
 	}
 
-	public int getConstructionMode() {
+	public ConstructionMode getConstructionMode() {
 		return mConstructionMode;
 	}
 
-	public int getHydrogenMode() {
+	public HydrogenMode getHydrogenMode() {
 		return mHydrogenMode;
 	}
 
-	public void setColorMode(int mode) {
+	public void setColorMode(ColorMode mode) {
 		mColorMode = mode;
 	}
 
-	public void setConstructionMode(int mode) {
+	public void setConstructionMode(ConstructionMode mode) {
 		mConstructionMode = mode;
 	}
 
-	public void setHydrogenMode(int mode) {
+	public void setHydrogenMode(HydrogenMode mode) {
 		mHydrogenMode = mode;
 	}
 
@@ -150,9 +148,9 @@ public class MoleculeArchitect {
 		}
 
 	private void buildMolecule(int fromAtom, int toAtom, int fromBond, int toBond) {
-		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_WIRES)
+		if (mConstructionMode == ConstructionMode.STICKS
+		 || mConstructionMode == ConstructionMode.BALL_AND_STICKS
+		 || mConstructionMode == ConstructionMode.WIRES)
 			for (int bond=fromBond; bond<toBond; bond++)
 				if (includeAtom(mMol.getBondAtom(0, bond))
 				 && includeAtom(mMol.getBondAtom(1, bond)))
@@ -160,20 +158,20 @@ public class MoleculeArchitect {
 
 		for (int atom=fromAtom; atom<toAtom; atom++) {
 			if (includeAtom(atom)
-			 && (mConstructionMode != CONSTRUCTION_MODE_WIRES || mMol.getConnAtoms(atom) == 0)) {
+			 && (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0)) {
 				int atomicNo = mMol.getAtomicNo(atom);
 				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
 					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
 							:							VDWRadii.VDW_RADIUS[atomicNo]/4;
 					buildConnection(atom, radius);
 					}
 				else {
 					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ?
+							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == ConstructionMode.STICKS) ?
 									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.VDW_RADIUS[atomicNo]/6 : STICK_SBOND_RADIUS)
-							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.VDW_RADIUS[atomicNo]/8;
 					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
@@ -185,9 +183,9 @@ public class MoleculeArchitect {
 	public void buildMolecule(StereoMolecule mol, ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
 		mMol = mol;
 
-		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
-		 || mConstructionMode == CONSTRUCTION_MODE_WIRES)
+		if (mConstructionMode == ConstructionMode.STICKS
+		 || mConstructionMode == ConstructionMode.BALL_AND_STICKS
+		 || mConstructionMode == ConstructionMode.WIRES)
 			for (Integer bond:bonds) {
 				if (includeAtom(mol.getBondAtom(0, bond))
 				 && includeAtom(mol.getBondAtom(1, bond)))
@@ -196,20 +194,20 @@ public class MoleculeArchitect {
 
 		for (Integer atom:atoms) {
 			if (includeAtom(atom)
-			 && (mConstructionMode != CONSTRUCTION_MODE_WIRES || mMol.getConnAtoms(atom) == 0)) {
+			 && (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0)) {
 				int atomicNo = mol.getAtomicNo(atom);
 				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
 					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
 							:							VDWRadii.VDW_RADIUS[atomicNo]/4;
 					buildConnection(atom, radius);
 					}
 				else {
 					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ?
+							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+							: (mConstructionMode == ConstructionMode.STICKS) ?
 									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.VDW_RADIUS[atomicNo]/6 : STICK_SBOND_RADIUS)
-							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.VDW_RADIUS[atomicNo] * 0.95  // to avoid collision with vdw-radii based surface
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo] * 0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.VDW_RADIUS[atomicNo]/8;
 					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
@@ -223,10 +221,10 @@ public class MoleculeArchitect {
 		}
 
 	private boolean includeAtom(int atom) {
-		return mHydrogenMode == HYDROGEN_MODE_ALL
+		return mHydrogenMode == HydrogenMode.ALL
 			|| !mMol.isSimpleHydrogen(atom)
 			|| mMol.getConnAtoms(atom) != 1
-			|| (mHydrogenMode == HYDROGEN_MODE_POLAR
+			|| (mHydrogenMode == HydrogenMode.POLAR
 			 && mMol.getAtomicNo(mMol.getConnAtom(atom, 0)) != 6);
 		}
 
@@ -271,13 +269,13 @@ public class MoleculeArchitect {
 		mBondDetail = 0;	// incremented with every primitiv to give a unique id for the primitiv
 
 		switch (mConstructionMode) {
-		case CONSTRUCTION_MODE_BALL_AND_STICKS:
+		case BALL_AND_STICKS:
 			buildBallAndStickBond(bond, d, b, c);
 			break;
-		case CONSTRUCTION_MODE_STICKS:
+		case STICKS:
 			buildStickBond(bond, d, b, c);
 			break;
-		case CONSTRUCTION_MODE_WIRES:
+		case WIRES:
 			buildStickBond(bond, d, b, c);
 			break;
 			}
@@ -342,20 +340,20 @@ public class MoleculeArchitect {
 		int order = mMol.getBondOrder(bond);
 
 		if (order == 0) {
-			double r = (mConstructionMode == CONSTRUCTION_MODE_WIRES) ? WIRE_DOT_RADIUS : STICK_DOT_RADIUS;
+			double r = (mConstructionMode == ConstructionMode.WIRES) ? WIRE_DOT_RADIUS : STICK_DOT_RADIUS;
 			buildDottedBond(bond, color1, color2, p1, p2, r, d);
 			return;
 			}
 
-		double r1 = (mConstructionMode == CONSTRUCTION_MODE_WIRES) ? WIRE_SBOND_RADIUS : STICK_SBOND_RADIUS;
+		double r1 = (mConstructionMode == ConstructionMode.WIRES) ? WIRE_SBOND_RADIUS : STICK_SBOND_RADIUS;
 
 		if (order == 1) {
 			buildStickBond(bond, color1, color2, p1, p2, r1, d, b, c);
 			return;
 			}
 
-		double r2 = (mConstructionMode == CONSTRUCTION_MODE_WIRES) ? WIRE_DBOND_RADIUS : STICK_DBOND_RADIUS;
-		double piShift = (mConstructionMode == CONSTRUCTION_MODE_WIRES) ? WIRE_PI_BOND_SHIFT : STICK_PI_BOND_SHIFT;
+		double r2 = (mConstructionMode == ConstructionMode.WIRES) ? WIRE_DBOND_RADIUS : STICK_DBOND_RADIUS;
+		double piShift = (mConstructionMode == ConstructionMode.WIRES) ? WIRE_PI_BOND_SHIFT : STICK_PI_BOND_SHIFT;
 
 		if (order == 2) {
 			Coordinates ds = calculateDoubleBondShift(bond).scale(piShift);
@@ -433,7 +431,7 @@ public class MoleculeArchitect {
 			l2 -= piShift / 2;
 			}
 
-		if (mConstructionMode != CONSTRUCTION_MODE_WIRES) {
+		if (mConstructionMode != ConstructionMode.WIRES) {
 			mBuilder.addSphere(bondRole(bond), p1, r, color1); //modified by JW
 			mBuilder.addSphere(bondRole(bond), p2, r, color2); // modified by JW
 			}

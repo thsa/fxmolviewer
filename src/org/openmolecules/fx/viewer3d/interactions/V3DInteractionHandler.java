@@ -106,7 +106,6 @@ public class V3DInteractionHandler implements V3DSceneListener{
 		fxmol.GroupProperty().addListener((v,ov,nv) -> update());
 		fxmol.IDProperty().addListener((v,ov,nv) -> update());
 		mInteractionSites.put(fxmol, new V3DInteractionSites(fxmol));
-		mInteractionSites.forEach((k,v) -> System.out.println(v.getSites()));
 		if(fxmol.getUnconnectedFragmentNo()>1) {
 			V3DInteractingPair interactingPair = new V3DInteractingPair(fxmol, fxmol, mInteractionSites.get(fxmol),
 					mInteractionSites.get(fxmol), mScene3D);

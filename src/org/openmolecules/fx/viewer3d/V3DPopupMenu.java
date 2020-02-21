@@ -31,6 +31,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -41,6 +42,7 @@ import javafx.util.Callback;
 import org.openmolecules.render.MoleculeArchitect;
 
 import com.actelion.research.chem.phesa.PheSAMolecule;
+import com.actelion.research.chem.phesa.VolumeGaussian;
 
 import org.openmolecules.fx.sunflow.RayTraceDialog;
 import org.openmolecules.fx.sunflow.RayTraceOptions;
@@ -209,17 +211,17 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(new SeparatorMenuItem());
 
 			RadioMenuItem modeBallAndSticks = new RadioMenuItem("Ball And Sticks");
-			modeBallAndSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
-			modeBallAndSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS));
+			modeBallAndSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS);
+			modeBallAndSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.BALL_AND_STICKS));
 			RadioMenuItem modeBalls = new RadioMenuItem("Balls");
-			modeBalls.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALLS);
-			modeBalls.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALLS));
+			modeBalls.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALLS);
+			modeBalls.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.BALLS));
 			RadioMenuItem modeSticks = new RadioMenuItem("Sticks");
-			modeSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
-			modeSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS));
+			modeSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.STICKS);
+			modeSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.STICKS));
 			RadioMenuItem modeWires = new RadioMenuItem("Wires");
-			modeWires.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
-			modeWires.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES));
+			modeWires.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.WIRES);
+			modeWires.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.WIRES));
 			Menu menuMode = new Menu("Molecule Style");
 			menuMode.getItems().addAll(modeBallAndSticks, modeBalls, modeSticks, modeWires);
 			getItems().add(menuMode);
@@ -238,14 +240,14 @@ public class V3DPopupMenu extends ContextMenu {
 			for (int i = 0; i<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; i++) {
 				final int type = i;
 				RadioMenuItem surfaceNone = new RadioMenuItem("None");
-				surfaceNone.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SURFACE_NONE);
-				surfaceNone.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SURFACE_NONE));
+				surfaceNone.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.NONE);
+				surfaceNone.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SurfaceMode.NONE));
 				RadioMenuItem surfaceMesh = new RadioMenuItem("Triangles");
-				surfaceMesh.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SURFACE_WIRES);
-				surfaceMesh.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SURFACE_WIRES));
+				surfaceMesh.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.WIRES);
+				surfaceMesh.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SurfaceMode.WIRES));
 				RadioMenuItem surfaceOpaque = new RadioMenuItem("Filled");
-				surfaceOpaque.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SURFACE_FILLED);
-				surfaceOpaque.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SURFACE_FILLED));
+				surfaceOpaque.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.FILLED);
+				surfaceOpaque.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SurfaceMode.FILLED));
 
 				RadioMenuItem surfaceColorInherit = new RadioMenuItem("From Molecule");
 				surfaceColorInherit.setSelected(fxmol.getSurfaceColorMode(type) == SurfaceMesh.SURFACE_COLOR_INHERIT);
@@ -328,8 +330,13 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(itemShowPP);
 			MenuItem itemES = new MenuItem("Add ExclusionSphere");
 			itemES.setDisable(fxmol.getPharmacophore()==null);
-			itemES.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere());
+			itemES.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere(VolumeGaussian.EXCLUSION));
 			getItems().add(itemES);
+			
+			MenuItem itemIS = new MenuItem("Add InclusionSphere");
+			itemIS.setDisable(fxmol.getPharmacophore()==null);
+			itemIS.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere(VolumeGaussian.INCLUSION));
+			getItems().add(itemIS);
 			
 
 			
@@ -415,10 +422,14 @@ public class V3DPopupMenu extends ContextMenu {
 		if (settings == null || settings.contains(V3DScene.ViewerSettings.MINIMIZATION)) {
 			getItems().add(new SeparatorMenuItem());
 			MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
-			itemMinimizeMol.setOnAction(e -> V3DMinimizer.minimize(scene, null, fxmol));
+			itemMinimizeMol.setOnAction(e -> {
+				showMinimizerDialog(scene,null,fxmol);
+			});
 			itemMinimizeMol.setDisable(fxmol == null);
 			MenuItem itemMinimizeScene = new MenuItem("Of Visible Scene");
-			itemMinimizeScene.setOnAction(e -> V3DMinimizer.minimize(scene, null, null));
+			itemMinimizeScene.setOnAction(e -> {
+				showMinimizerDialog(scene, null, null);
+			});
 			Menu menuMinimize = new Menu("Minimize Energy");
 			menuMinimize.getItems().addAll(itemMinimizeMol, itemMinimizeScene);
 			getItems().add(menuMinimize);
@@ -433,7 +444,7 @@ public class V3DPopupMenu extends ContextMenu {
 			MenuItem alignMols = new MenuItem("Align Molecules");
 			alignMols.setOnAction( e -> {
 				if(fxmol==null) {
-					IAlignmentTask task = new V3DShapeAlignerInPlace(scene,fxmol,false);
+					IAlignmentTask task = new V3DShapeAlignerInPlace(scene,fxmol,false,0.5);
 					task.align();
 				}
 				else {
@@ -563,9 +574,41 @@ public class V3DPopupMenu extends ContextMenu {
 		fileChooser.setTitle("Open Molecule File");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("SD Files", "*.sdf"));
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("Mol2 Files", "*.mol2"));
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("PDB Files", "*.pdb"));
 		//pane.setPinnedSide(Side.RIGHT);
 		
 		return fileChooser;
+	}
+	
+	private void showMinimizerDialog(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol) {
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		ToggleGroup group = new ToggleGroup();
+		 
+		RadioButton buttonAllAtoms = new RadioButton("All Atoms");
+		buttonAllAtoms.setToggleGroup(group);
+		buttonAllAtoms.setSelected(true);
+		
+		BooleanProperty hydrogensOnly = new SimpleBooleanProperty(false);
+		RadioButton buttonHydrogens = new RadioButton("Hydrogens Only");
+		buttonHydrogens.setToggleGroup(group);
+		
+		buttonHydrogens.setOnAction(e -> {
+			hydrogensOnly.set(buttonHydrogens.isSelected());});
+
+		buttonAllAtoms.setOnAction(e -> {
+			hydrogensOnly.set(!buttonAllAtoms.isSelected());});
+		
+		VBox content = new VBox();
+		
+		content.getChildren().addAll(buttonHydrogens,buttonAllAtoms);
+		dialog.getDialogPane().setContent(content);
+		ButtonType buttonTypeOk = new ButtonType("Run", ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
+		Optional<ButtonType> type = dialog.showAndWait();
+		if(type.get().equals(buttonTypeOk))
+			V3DMinimizer.minimize(scene3D, editor, fxmol,hydrogensOnly.get());
+		
 	}
 	
 	private Dialog<IAlignmentTask> getAlignmentDialog() {
@@ -619,20 +662,26 @@ public class V3DPopupMenu extends ContextMenu {
 		
 		VBox content = new VBox();
 		content.getChildren().addAll(hbox1,hbox2);
+		Label label3 = new Label("PharmacophoreWeight (from 0 to 1) : ");
+		TextField field = new TextField("0.5");
+		HBox hbox3 = new HBox();
+		hbox3.getChildren().addAll(label3, field);
+		content.getChildren().add(hbox3);
 		dialog.getDialogPane().setContent(content);
 		ButtonType buttonTypeOk = new ButtonType("Run", ButtonData.OK_DONE);
 		dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
 		dialog.setResultConverter(new Callback<ButtonType, IAlignmentTask>() {
 		    @Override
 		    public IAlignmentTask call(ButtonType b) {
+		    	Double ppWeight = Double.parseDouble(field.getText());
 		    	IAlignmentTask task = null;
 		        if (b == buttonTypeOk) {
 		        	if(file.get()!=null) {
 		        		List<PheSAMolecule> shapes = V3DMoleculeParser.readPhesaScreeningLib(file.get(), strucFromInput.get());
-		        		task = new V3DShapeAlignerFromFile(mScene,mMolecule,shapes);
+		        		task = new V3DShapeAlignerFromFile(mScene,mMolecule,shapes,ppWeight);
 		        	}
 		        	else {
-		        		task = new V3DShapeAlignerInPlace(mScene,mMolecule,!strucFromInput.get());
+		        		task = new V3DShapeAlignerInPlace(mScene,mMolecule,!strucFromInput.get(),ppWeight);
 		        	}
 		           
 		        }

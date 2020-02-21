@@ -25,6 +25,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	private ForceField mForceField;
 	private V3DSceneEditor mEditor;
 	private volatile Thread mMinimizationThread;
+	private boolean mHydrogensOnly;
 
 	/**
 	 *
@@ -32,15 +33,15 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	 * @param editor
 	 * @param fxmol if null, then all visible molecules are minimized
 	 */
-	public static void minimize(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol) {
+	public static void minimize(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol, boolean hydrogensOnly) {
 		stopMinimization();
-		sInstance = new V3DMinimizer(scene3D, editor, fxmol);
+		sInstance = new V3DMinimizer(scene3D, editor, fxmol,hydrogensOnly);
 		sInstance.minimize();
 	}
 
-	private V3DMinimizer(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol)  {
+	private V3DMinimizer(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol, boolean hydrogensOnly)  {
 		mEditor = editor;
-
+		mHydrogensOnly = hydrogensOnly;
 		if (fxmol != null) {
 			mFXMol = new V3DMolecule[1];
 			mFXMol[0] = fxmol;
@@ -82,7 +83,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 		for(V3DMolecule fxmol : mFXMol) {
 			// remove any surfaces
 			for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-				fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_NONE);
+				fxmol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
 
 			StereoMolecule mol = fxmol.getMolecule();
 			molScenery.addMolecule(mol);
@@ -92,7 +93,9 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 				molScenery.setAtomX(atom, globalCoords.getX());
 				molScenery.setAtomY(atom, globalCoords.getY());
 				molScenery.setAtomZ(atom, globalCoords.getZ());
-				if (mol.isMarkedAtom(a))
+				if(mHydrogensOnly && mol.getAtomicNo(a)!=1)
+					fixedAtom[fixedAtomCount++] = atom;
+				else if (mol.isMarkedAtom(a))
 					fixedAtom[fixedAtomCount++] = atom;
 				if (mol.getAtomicNo(a) == 0)
 					molScenery.setAtomicNo(atom, 6);

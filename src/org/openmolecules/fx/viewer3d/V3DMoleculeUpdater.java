@@ -2,7 +2,7 @@ package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.conf.Conformer;
-import com.actelion.research.chem.phesa.ExclusionGaussian;
+import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
 
 import javafx.collections.ObservableList;
@@ -86,7 +86,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 			node.setTranslateY(c.y);
 			node.setTranslateZ(c.z);
 
-			if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS && (role & MoleculeBuilder.ROLE_IS_ATOM) != 0) {
+			if (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.STICKS && (role & MoleculeBuilder.ROLE_IS_ATOM) != 0) {
 				// update coordinates of transparent spheres
 				node = mNodeMap.get(role | 0x80000000);
 				if (node != null) {
@@ -149,7 +149,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 	}
 
 	@Override
-	public void addExclusionSphere(int role, ExclusionGaussian eg) {
+	public void addExclusionSphere(int role, VolumeGaussian eg) {
 		// TODO Auto-generated method stub
 		
 	}
