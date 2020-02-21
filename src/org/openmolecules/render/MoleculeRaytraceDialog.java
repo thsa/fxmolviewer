@@ -73,7 +73,7 @@ public class MoleculeRaytraceDialog extends JDialog implements ActionListener {
 
 		getContentPane().add(new JLabel("Render mode:"), "1,3");
 		mComboboxMode = new JComboBox(MoleculeArchitect.MODE_TEXT);
-		mComboboxMode.setSelectedIndex(MoleculeArchitect.CONSTRUCTION_MODE_DEFAULT);
+		mComboboxMode.setSelectedIndex(MoleculeArchitect.CONSTRUCTION_MODE_DEFAULT.mode);
 		getContentPane().add(mComboboxMode, "3,3");
 
 		getContentPane().add(new JLabel("Atom material:"), "1,5");

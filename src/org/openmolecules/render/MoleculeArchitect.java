@@ -25,7 +25,7 @@ public class MoleculeArchitect {
 			this.mode = mode;
 		}
 	}
-	public final ConstructionMode CONSTRUCTION_MODE_DEFAULT = ConstructionMode.BALL_AND_STICKS;
+	public final static ConstructionMode CONSTRUCTION_MODE_DEFAULT = ConstructionMode.BALL_AND_STICKS;
 
 	public enum HydrogenMode {ALL, POLAR, NONE;}
 	public static final HydrogenMode HYDROGEN_MODE_DEFAULT = HydrogenMode.ALL;
