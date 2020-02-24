@@ -36,8 +36,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.control.Label;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
@@ -766,6 +765,4 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			mInteractionHandler = new V3DInteractionHandler(this);
 		mInteractionHandler.displayInteractions();
 	}
-	
-
 }
