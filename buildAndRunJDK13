@@ -1,8 +1,8 @@
 #!/bin/bash
-JDKBIN="/opt/openjava/jdk-12.0.1/bin"
-FXPATH="/opt/openjava/javafx-sdk-12.0.1/lib"
-echo This batch file assumes JDK.12 installed at $JDKBIN
-echo and JavaFX.12 installed at $FXPATH
+JDKBIN="/opt/openjava/jdk-13.0.1/bin"
+FXPATH="/opt/openjava/javafx-sdk-13.0.2/lib"
+echo This batch file assumes JDK.13 installed at $JDKBIN
+echo and JavaFX.13 installed at $FXPATH
 rm -rf ./bin
 mkdir ./bin
 cp -r ./src/resources ./bin/
@@ -14,6 +14,6 @@ jar xf ../lib/janino-2.7.0.jar
 jar xf ../lib/mmtf-all.jar 
 jar xf ../lib/openchemlib.jar 
 cd ..
-jar -cfm fxmolviewerJ12.jar manifest_additions.txt -C ./bin .
-chmod 755 fxmolviewerJ12.jar
-$JDKBIN/java --module-path $FXPATH --add-modules ALL-MODULE-PATH -jar fxmolviewerJ12.jar
+jar -cfm fxmolviewerJ13.jar manifest_additions.txt -C ./bin .
+chmod 755 fxmolviewerJ13.jar
+$JDKBIN/java --module-path $FXPATH --add-modules ALL-MODULE-PATH -jar fxmolviewerJ13.jar
