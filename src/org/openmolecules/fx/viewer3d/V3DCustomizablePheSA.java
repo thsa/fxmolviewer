@@ -17,6 +17,7 @@ import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.chem.phesa.Gaussian3D;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.pharmacophore.AcceptorPoint;
+import com.actelion.research.chem.phesa.pharmacophore.AromRingPoint;
 import com.actelion.research.chem.phesa.pharmacophore.ChargePoint;
 import com.actelion.research.chem.phesa.pharmacophore.DonorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
@@ -40,6 +41,8 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 	public static PhongMaterial sPosChargeMaterialFrame;
 	public static PhongMaterial sNegChargeMaterial;
 	public static PhongMaterial sNegChargeMaterialFrame;
+	public static PhongMaterial sAromRingMaterial;
+	public static PhongMaterial sAromRingMaterialFrame;
 	public static Color crimson;
 	
 
@@ -55,24 +58,44 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 		fxMol.addMoleculeCoordinatesChangeListener(this);
 		this.mFXMol = fxMol;
 		mMolVol = molVol;	
+		
 		sAcceptorMaterial = new PhongMaterial();
 		sAcceptorMaterial.setSpecularColor(new Color(1.0,0.2,0.2,0.01));
 		sAcceptorMaterial.setDiffuseColor(new Color(1.0,0.2,0.2,0.01).darker());
+		
 		sDonorMaterial = new PhongMaterial();
 		sDonorMaterial.setSpecularColor(new Color(0.2,0.2,1.0,0.01));
 		sDonorMaterial.setDiffuseColor(new Color(0.2,0.2,1.0,0.01).darker());
+		
 		sNegChargeMaterial = new PhongMaterial();
 		sNegChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.001));
 		sNegChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.001).darker());
+		
 		sPosChargeMaterial = new PhongMaterial();
 		sPosChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
 		sPosChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
+		
 		sNegChargeMaterialFrame = new PhongMaterial();
 		sNegChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.5));
 		sNegChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.5));
+		
+		sAromRingMaterial = new PhongMaterial();
+		sAromRingMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
+		sAromRingMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
+		
 		sPosChargeMaterialFrame = new PhongMaterial();
 		sPosChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
 		sPosChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
+		sPosChargeMaterialFrame = new PhongMaterial();
+		sPosChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
+		sPosChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
+		
+		sAromRingMaterialFrame = new PhongMaterial();
+		sAromRingMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
+		sAromRingMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
+		sAromRingMaterialFrame = new PhongMaterial();
+		sAromRingMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
+		sAromRingMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
 	
 	}
 
@@ -107,6 +130,9 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 			if ((role &  MoleculeBuilder.ROLE_IS_PHARMACOPHORE)!= 0) {
 				toBeRemoved.add(node);
 			}
+			else if ((role &  MoleculeBuilder.ROLE_IS_EXCLUSION)!= 0) {
+				toBeRemoved.add(node);
+			}
 		}
 		Platform.runLater(() -> {getChildren().removeAll(toBeRemoved);
 			this.mFXMol.getChildren().remove(this);
@@ -116,17 +142,17 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 	
 
 	@Override
-	public void addPharmacophorePoint(int role, PPGaussian ppg) {
+	public void addPharmacophorePoint(PPGaussian ppg) {
 		IPharmacophorePoint pp = ppg.getPharmacophorePoint();
 		PhongMaterial material;
 		PhongMaterial frameMaterial;
 		if(pp instanceof DonorPoint) {
 			material = sDonorMaterial;
-			PPArrow ppNode = new PPArrow(ppg, material, role); 
+			PPArrow ppNode = new PPArrow(ppg, material); 
 			getChildren().add(ppNode);}
 		else if(pp instanceof AcceptorPoint) {
 			material = sAcceptorMaterial;
-			PPArrow ppNode = new PPArrow(ppg, material, role); 
+			PPArrow ppNode = new PPArrow(ppg, material); 
 			getChildren().add(ppNode);}
 		else if (pp instanceof ChargePoint) {
 			ChargePoint cp = (ChargePoint) pp;
@@ -138,14 +164,23 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 				material = sPosChargeMaterial;
 				frameMaterial = sPosChargeMaterialFrame;
 			}
-			PPSphere ppNode = new PPSphere(ppg, material,frameMaterial, role);
+			PPSphere ppNode = new PPSphere(ppg, material,frameMaterial);
 			getChildren().add(ppNode);
 		}		
+		
+		else if (pp instanceof AromRingPoint) {
+
+			material = sAromRingMaterial;
+			frameMaterial = sAromRingMaterialFrame;
+
+			PPSphere ppNode = new PPSphere(ppg, material,frameMaterial);
+			getChildren().add(ppNode);
+		}	
 	}
 
 	@Override
-	public void addExclusionSphere(int role, VolumeGaussian eg) {
-		VolumeSphere es = new VolumeSphere(eg, role);
+	public void addExclusionSphere(VolumeGaussian eg) {
+		VolumeSphere es = new VolumeSphere(eg);
 		getChildren().add(es);
 	}
 	
@@ -155,8 +190,7 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 		Coordinates shift = new Coordinates(3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1));
 		VolumeGaussian eg = new VolumeGaussian(atom, 6, new Coordinates(mFXMol.getMolecule().getCoordinates(atom)), shift,function);
 		mMolVol.getVolumeGaussians().add(eg);
-		int role = PharmacophoreArchitect.exclusionRole(eg);
-		addExclusionSphere(role,eg);
+		addExclusionSphere(eg);
 	}
 
 }

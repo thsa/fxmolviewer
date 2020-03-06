@@ -1,6 +1,7 @@
 package org.openmolecules.fx.viewer3d.nodes;
 
 
+import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreBuilder;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
@@ -20,8 +21,8 @@ public class PPSphere extends AbstractPPNode{
 	protected PhongMaterial icoMaterial;
 
 	
-	public PPSphere(PPGaussian ppg,PhongMaterial material, PhongMaterial icoMaterial, int role) {
-		super(ppg,material,role);		
+	public PPSphere(PPGaussian ppg,PhongMaterial material, PhongMaterial icoMaterial) {
+		super(ppg,material,MoleculeBuilder.ROLE_IS_PHARMACOPHORE);		
 		this.icoMaterial = icoMaterial;
 		construct();
 	}
@@ -40,7 +41,7 @@ public class PPSphere extends AbstractPPNode{
 		icosahedron.setCullFace(CullFace.NONE);
 
 		updateSphere(sphereCenter);
-		sphere.setUserData(new NodeDetail(material, role , false));
+		sphere.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
 		getChildren().add(sphere);
 		getChildren().add(icosahedron);
 

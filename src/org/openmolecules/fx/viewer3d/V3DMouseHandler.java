@@ -387,10 +387,12 @@ public class V3DMouseHandler {
 	
 	private void translateExclusionSphere(VolumeSphere eSphere, double dx, double dy, double dz) {
 		RotatableGroup world = mScene.getWorld();
+		Point3D point = new Point3D(eSphere.getSphere().getTranslateX(), eSphere.getSphere().getTranslateY(),
+				eSphere.getSphere().getTranslateZ());
 		V3DMolecule fxmol = (V3DMolecule) eSphere.getParent().getParent();
-		double f = getScreenToObjectFactor(eSphere.localToScene(0, 0, 0).getZ());
-		Point3D p0 = eSphere.localToParent(eSphere.localToParent(0, 0, 0));
-		Point3D p1 = fxmol.sceneToLocal(eSphere.localToScene(0, 0, 0).subtract(f*dx, f*dy, f*dz));
+		double f = getScreenToObjectFactor(eSphere.localToScene(point).getZ());
+		Point3D p0 = eSphere.localToParent(point);
+		Point3D p1 = fxmol.sceneToLocal(eSphere.localToScene(point).subtract(f*dx, f*dy, f*dz));
 		Point3D change = new Point3D(p0.getX() - p1.getX(), p0.getY() - p1.getY(), p0.getZ() - p1.getZ());
 		eSphere.addTranslate(change.getX(), change.getY(),  change.getZ());
 

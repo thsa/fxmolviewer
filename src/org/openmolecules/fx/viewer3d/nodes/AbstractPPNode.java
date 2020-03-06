@@ -16,7 +16,6 @@ public abstract class AbstractPPNode extends Group implements IPPNode {
 
 	protected PPGaussian ppg;
 	protected PhongMaterial material;
-	protected int role;
 	private ContextMenu menu;
 	
 	
@@ -24,9 +23,9 @@ public abstract class AbstractPPNode extends Group implements IPPNode {
 		setUserData(new NodeDetail(material, role , false));
 		this.ppg = ppg;
 		this.material = material;
-		this.role = role;
 		createMenu();
 	}
+	
 	
 	
 	private void createMenu() {
@@ -75,7 +74,6 @@ public abstract class AbstractPPNode extends Group implements IPPNode {
 	}
 	
 	@Override 
-	
 	public final double getScalingFactor() {
 		double scalingFactor = 1.0;
 		if(ppg.getWeight()>=1.0)
@@ -85,6 +83,10 @@ public abstract class AbstractPPNode extends Group implements IPPNode {
 			scalingFactor = 1 + (ppg.getWeight()-1.0)*(10.0/18.0);
 		
 		return scalingFactor;
+	}
+	
+	public PPGaussian getPPGaussian() {
+		return ppg;
 	}
 
 

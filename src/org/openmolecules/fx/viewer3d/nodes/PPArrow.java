@@ -3,6 +3,7 @@ package org.openmolecules.fx.viewer3d.nodes;
 
 
 import org.openmolecules.mesh.Cone;
+import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreBuilder;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
@@ -23,8 +24,8 @@ public class PPArrow extends AbstractPPNode {
 	private static final double CONE_WIDTH_RATIO = 2.0;
 	private static final Coordinates YAXIS = new Coordinates(0.0,1.0,0.0);
 	
-	public PPArrow(PPGaussian ppg,PhongMaterial material, int role) {
-		super(ppg,material,role);
+	public PPArrow(PPGaussian ppg,PhongMaterial material) {
+		super(ppg,material,MoleculeBuilder.ROLE_IS_PHARMACOPHORE);
 		construct();
 	}
 	
@@ -37,8 +38,8 @@ public class PPArrow extends AbstractPPNode {
 		Coordinates arrowCenter = center.addC(ppg.getPharmacophorePoint().getDirectionality().scaleC(0.5));
 		Coordinates endPoint = arrowCenter.addC(ppg.getPharmacophorePoint().getDirectionality().scaleC(arrowLength));
 		constructArrow(arrowCenter,endPoint, cylinderRadius);
-		cylinder.setUserData(new NodeDetail(material, role , false));
-		cone.setUserData(new NodeDetail(material, role , false));
+		cylinder.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
+		cone.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
 		getChildren().add(cylinder);
 		getChildren().add(cone);
 	}

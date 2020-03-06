@@ -2,6 +2,7 @@ package org.openmolecules.fx.viewer3d.nodes;
 
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
+import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreBuilder;
 
 import com.actelion.research.chem.Coordinates;
@@ -36,8 +37,7 @@ public class VolumeSphere extends Group  {
 	private Sphere sphere;
 	private DoubleProperty sphereRadius;
 	private PhongMaterial material;
-	private int role;
-	private Property<Coordinates> translate;
+	private Property<Coordinates> shift;
 	static {
 	sMaterialExcl = new PhongMaterial();
 	sMaterialExcl.setSpecularColor(new Color(1.0,1.0,1.0,0.1));
@@ -47,11 +47,17 @@ public class VolumeSphere extends Group  {
 	sMaterialIncl.setDiffuseColor(new Color(0.0,1.0,0.0,0.1).darker());
 	}
 	
-	public VolumeSphere (VolumeGaussian volGauss, int role) {
+	public VolumeSphere (VolumeGaussian volGauss) {
+		setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_EXCLUSION , false));
 		sphereRadius = new SimpleDoubleProperty(PeriodicTable.getElement(volGauss.getAtomicNo()).getVDWRadius());
 		
-		translate = new SimpleObjectProperty<Coordinates>(new Coordinates(volGauss.getCenter()));
+		this.setTranslateX(volGauss.getReferenceVector().x);
+		this.setTranslateY(volGauss.getReferenceVector().y);
+		this.setTranslateZ(volGauss.getReferenceVector().z);
 		
+		System.out.println("create");
+		System.out.println(volGauss.getReferenceVector());
+		shift = new SimpleObjectProperty<Coordinates>(new Coordinates(volGauss.getShiftVector()));
 		sphereRadius.addListener((o,ov,nv) -> {
 			Platform.runLater(() -> {
 			getChildren().remove(icosahedron);
@@ -60,12 +66,10 @@ public class VolumeSphere extends Group  {
 		});
 		
 		
-		this.role = role;
 		this.volGauss = volGauss;
-		translate.addListener((o,ov,nv) -> {
+		shift.addListener((o,ov,nv) -> {
 			Coordinates diff = nv.subC(ov);
-			volGauss.addShift(diff);
-			
+			volGauss.addShift(diff);			
 		});
 		
 		
@@ -124,21 +128,23 @@ public class VolumeSphere extends Group  {
 	
 	}
 	
+	
 	public void addTranslate(double x, double y, double z) {
-		Coordinates tr = translate.getValue();
-		Coordinates newCoords = new Coordinates(tr);
-		newCoords.x += x;
-		newCoords.y += y;
-		newCoords.z += z;
-		sphere.setTranslateX(newCoords.x);
-		sphere.setTranslateY(newCoords.y);
-		sphere.setTranslateZ(newCoords.z);
+		Coordinates oldShift = shift.getValue();
+		Coordinates newShift = new Coordinates(oldShift);
+		newShift.x += x;
+		newShift.y += y;
+		newShift.z += z;
+		sphere.setTranslateX(newShift.x);
+		sphere.setTranslateY(newShift.y);
+		sphere.setTranslateZ(newShift.z);
 		
-		icosahedron.setTranslateX(newCoords.x);
-		icosahedron.setTranslateY(newCoords.y);
-		icosahedron.setTranslateZ(newCoords.z);
+		icosahedron.setTranslateX(newShift.x);
+		icosahedron.setTranslateY(newShift.y);
+		icosahedron.setTranslateZ(newShift.z);
+		System.out.println(newShift);
 		
-		translate.setValue(newCoords);
+		shift.setValue(newShift);
 		
 	}
 		
@@ -151,21 +157,20 @@ public class VolumeSphere extends Group  {
 			material = sMaterialExcl;
 		icosahedron.setDrawMode(DrawMode.LINE);
 		icosahedron.setMaterial(material);
-		Coordinates tr = translate.getValue();
+		Coordinates shiftt = shift.getValue();
 		
 		sphere = new Sphere(RADIUS_SCALING*0.5*sphereRadius.get(),20);
 		sphere.setMaterial(material);
-		sphere.setTranslateX(tr.x);
-		sphere.setTranslateY(tr.y);
-		sphere.setTranslateZ(tr.z);
-		icosahedron.setTranslateX(tr.x);
-		icosahedron.setTranslateY(tr.y);
-		icosahedron.setTranslateZ(tr.z);
+		sphere.setTranslateX(shiftt.x);
+		sphere.setTranslateY(shiftt.y);
+		sphere.setTranslateZ(shiftt.z);
+		icosahedron.setTranslateX(shiftt.x);
+		icosahedron.setTranslateY(shiftt.y);
+		icosahedron.setTranslateZ(shiftt.z);
 		sphere.setCullFace(CullFace.NONE);
-
 		getChildren().add(icosahedron);
 		getChildren().add(sphere);
-		sphere.setUserData(new NodeDetail(material, role , false));
+		sphere.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_EXCLUSION , false));
 	}
 	
 	private void cleanup() {
@@ -185,5 +190,28 @@ public class VolumeSphere extends Group  {
 
 		menu.show(this, x, y);
         }
+	
+	public void updateSphere(Coordinates p1) {
+		sphere.setTranslateX(p1.x);
+		sphere.setTranslateY(p1.y);
+		sphere.setTranslateZ(p1.z);
+		icosahedron.setTranslateX(p1.x);
+		icosahedron.setTranslateY(p1.y);
+		icosahedron.setTranslateZ(p1.z);
+		
+	}
+
+	public VolumeGaussian getVolumeGaussian() {
+		return volGauss;
+	}
+
+	public void update() {
+		Coordinates newRef = volGauss.getReferenceVector();
+		this.setTranslateX(newRef.x);
+		this.setTranslateY(newRef.y);
+		this.setTranslateZ(newRef.z);
+		
+	}
+
 
 }

@@ -19,8 +19,8 @@ public interface PharmacophoreBuilder {
 	public static final double CYLINDER_RADIUS = 0.1;
 	public static final double VECTOR_LENGTH = 1.5;
 
-	public void addPharmacophorePoint(int role, PPGaussian pp);
-	public void addExclusionSphere(int role, VolumeGaussian eg);
+	public void addPharmacophorePoint(PPGaussian pp);
+	public void addExclusionSphere(VolumeGaussian eg);
 	//public void addDirectionalityArrow(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, PhongMaterial material);
 
 	}
