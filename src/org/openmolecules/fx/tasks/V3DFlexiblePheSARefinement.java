@@ -92,10 +92,8 @@ public class V3DFlexiblePheSARefinement  {
 			fxFitMol.getPharmacophore().setVisible(false);
 			StereoMolecule fitMol = fxFitMol.getMolecule();
 			fitVol = fxFitMol.getPharmacophore().getMolVol();
-			long t0 = System.currentTimeMillis();
-			FlexibleShapeAlignment flexAlign = new FlexibleShapeAlignment(refMol,fitMol, refVol, fitVol);
+			FlexibleShapeAlignment flexAlign = new FlexibleShapeAlignment(refMol,fitMol, refVol, fitVol,0.5);
 			flexAlign.align();
-			long t1 = System.currentTimeMillis();
 		}
 		
 		ObservableList<Transform> refTransforms = mFXRefMol.getTransforms();
