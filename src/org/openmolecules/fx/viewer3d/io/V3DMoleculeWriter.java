@@ -12,14 +12,18 @@ import java.util.List;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
+import com.actelion.research.calc.Matrix;
 import com.actelion.research.chem.Canonizer;
+import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileCreator;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.DWARFileCreator;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
+import com.actelion.research.chem.phesa.PheSAAlignment;
 import com.actelion.research.chem.phesa.PheSAMolecule;
 
 import javafx.scene.Node;
@@ -99,10 +103,16 @@ public class V3DMoleculeWriter {
 				for(int i=0; i<heavyAtomMap.length;i++)
 					atomMap[i] = heavyAtomMap[i];
 				MolecularVolume molVolOut = new MolecularVolume(fxmol.getPharmacophore().getMolVol());
-				molVols.add(molVolOut);
 				molVolOut.updateAtomIndeces(atomMap);
+				Conformer conf = new Conformer(mol2);
+				Coordinates origCom = molVolOut.getCOM();
+				Matrix rotation = PheSAAlignment.preProcess(conf, molVolOut);
+				molVols.add(molVolOut);
+				mol2.translate(-origCom.x,-origCom.y,-origCom.z);
+				PheSAAlignment.rotateMol(mol2, rotation);
 				PheSAMolecule shapeMol = new PheSAMolecule(mol2,molVols);
 				String PheSAString = dhs.encode(shapeMol);
+				can = new Canonizer(mol2, Canonizer.COORDS_ARE_3D);
 				String idcoords = can.getEncodedCoordinates(true);
 				String idcode = can.getIDCode();
 				creator.setRowCoordinates(idcoords, threeDColumn );

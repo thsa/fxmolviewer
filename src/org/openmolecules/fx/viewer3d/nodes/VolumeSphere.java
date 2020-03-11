@@ -141,9 +141,7 @@ public class VolumeSphere extends Group  {
 		
 		icosahedron.setTranslateX(newShift.x);
 		icosahedron.setTranslateY(newShift.y);
-		icosahedron.setTranslateZ(newShift.z);
-		System.out.println(newShift);
-		
+		icosahedron.setTranslateZ(newShift.z);		
 		shift.setValue(newShift);
 		
 	}
