@@ -20,16 +20,14 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import javafx.scene.input.*;
 import javafx.scene.shape.Shape3D;
-import javafx.scene.shape.Sphere;
 
 import java.util.stream.IntStream;
 
 import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.fx.viewer3d.nodes.IPPNode;
-import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
-import org.openmolecules.fx.viewer3d.nodes.PPArrow;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 
@@ -39,10 +37,6 @@ import javafx.geometry.Point3D;
 import javafx.scene.Camera;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.PickResult;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.transform.Rotate;
 
 public class V3DMouseHandler {
@@ -68,7 +62,6 @@ public class V3DMouseHandler {
 		mScene = scene;
 
 		scene.setOnScroll(se -> {
-
 			// we modify the wheel delta depending on how quickly the wheel is rotated
 			double delta = WHEEL_MIN_FACTOR * se.getDeltaY();	// delta is the smallest possible clip step
 			long millis = System.currentTimeMillis();
@@ -119,7 +112,6 @@ public class V3DMouseHandler {
 			mAffectedMol = null;
 			trackAffectedMol(isSingleMolecule(me));
 
-
 			// setOnMouseClicked() is strangely often not triggered. Therefore we simulate...
 			long millis = System.currentTimeMillis();
 			boolean isDoubleClick = (millis - mMousePressedMillis < 300);
@@ -129,7 +121,6 @@ public class V3DMouseHandler {
 			if (me.getButton() == MouseButton.PRIMARY) {
 				if (isDoubleClick) {
 					mScene.selectMolecule(mHighlightedMol, me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0);
-
 				}
 				else {
 					if(mScene.getMeasurementMode()!=V3DScene.MEASUREMENT.NONE) {
@@ -168,53 +159,52 @@ public class V3DMouseHandler {
 		} );
 		scene.setOnMouseReleased(me -> {
 			if(mScene.isMouseDragged()==false) {
-			if ((me.getButton() == MouseButton.PRIMARY)) {
-				Node parent = mSelectedNode;
-				while (parent != null && !(parent instanceof V3DMolecule)) {
-					parent = parent.getParent();
-				}
-				if(mScene.getEditor().getAction()!=null && mScene.getMeasurementMode()==V3DScene.MEASUREMENT.NONE) {
-					if (parent == null) {
-						V3DMolecule fxmol = mScene.getEditor().sceneClicked(mScene);
-						if(fxmol!=null) {
-							RotatableGroup world = mScene.getWorld();
-							double f = getScreenToObjectFactor(0.0);
-							Point2D origin = world.localToScreen(0,0,0);
-							double dx = me.getScreenX()-origin.getX();
-							double dy = me.getScreenY()-origin.getY();
-							Point3D p1 = world.parentToLocal(f*dx,f*dy , 0.0);
-							
-							IntStream.range(0,fxmol.getMolecule().getAllAtoms())
-							.forEach(i -> {
-								double x = fxmol.getMolecule().getAtomX(i) + p1.getX();
-								double y = fxmol.getMolecule().getAtomY(i) + p1.getY();
-								double z = fxmol.getMolecule().getAtomZ(i) + p1.getZ();
-								fxmol.getMolecule().setAtomX(i,x);
-								fxmol.getMolecule().setAtomY(i,y);
-								fxmol.getMolecule().setAtomZ(i,z);
-								fxmol.setInitialCoordinates();
-							});
-							Platform.runLater(() -> {
-								fxmol.fireCoordinatesChange();
-								V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(fxmol);
-								mFXMolUpdater.update();
-							});
-							
-							//fxmol.setTranslateX(fxmol.getTranslateX() +  p1.getX());
-							//fxmol.setTranslateY(fxmol.getTranslateY() +  p1.getY());
-							//fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
-						}
+				if ((me.getButton() == MouseButton.PRIMARY)) {
+					Node parent = mSelectedNode;
+					while (parent != null && !(parent instanceof V3DMolecule)) {
+						parent = parent.getParent();
 					}
-					else {
-						V3DMolecule fxmol = (V3DMolecule)parent;
-						mScene.getEditor().moleculeClicked(fxmol, mSelectedNode);
-						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-							fxmol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
-						mScene.removeMeasurements(fxmol);
-						fxmol.fireStructureChange();
-						fxmol.updateColor();
-					}
+					if(mScene.getEditor().getAction()!=null && mScene.getMeasurementMode()==V3DScene.MEASUREMENT.NONE) {
+						if (parent == null) {
+							V3DMolecule fxmol = mScene.getEditor().sceneClicked(mScene);
+							if(fxmol!=null) {
+								RotatableGroup world = mScene.getWorld();
+								double f = getScreenToObjectFactor(0.0);
+								Point2D origin = world.localToScreen(0,0,0);
+								double dx = me.getScreenX()-origin.getX();
+								double dy = me.getScreenY()-origin.getY();
+								Point3D p1 = world.parentToLocal(f*dx,f*dy , 0.0);
 
+								IntStream.range(0,fxmol.getMolecule().getAllAtoms())
+								.forEach(i -> {
+									double x = fxmol.getMolecule().getAtomX(i) + p1.getX();
+									double y = fxmol.getMolecule().getAtomY(i) + p1.getY();
+									double z = fxmol.getMolecule().getAtomZ(i) + p1.getZ();
+									fxmol.getMolecule().setAtomX(i,x);
+									fxmol.getMolecule().setAtomY(i,y);
+									fxmol.getMolecule().setAtomZ(i,z);
+									fxmol.setInitialCoordinates();
+								});
+								Platform.runLater(() -> {
+									fxmol.fireCoordinatesChange();
+									V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(fxmol);
+									mFXMolUpdater.update();
+								});
+
+								//fxmol.setTranslateX(fxmol.getTranslateX() +  p1.getX());
+								//fxmol.setTranslateY(fxmol.getTranslateY() +  p1.getY());
+								//fxmol.setTranslateZ(fxmol.getTranslateZ() +  p1.getZ());
+							}
+						}
+						else {
+							V3DMolecule fxmol = (V3DMolecule)parent;
+							mScene.getEditor().moleculeClicked(fxmol, mSelectedNode);
+							for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
+								fxmol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
+							mScene.removeMeasurements(fxmol);
+							fxmol.fireStructureChange();
+							fxmol.updateColor();
+						}
 					}
 				}
 			}
@@ -239,17 +229,17 @@ public class V3DMouseHandler {
 			double dx = (mMouseX - oldMouseX);
 			double dy = (mMouseY - oldMouseY);
 
-			if (me.isMiddleButtonDown() || (me.isPrimaryButtonDown() && me.isMetaDown())) {
-				if (mAffectedMol == null && mAffectedExclusionSphere == null)
-					translateCameraXY(-dx, -dy);
-				else if (mAffectedExclusionSphere != null){
+			if (isDraggingInXY(me)) {
+				if (mAffectedExclusionSphere != null) {
 					translateExclusionSphere(mAffectedExclusionSphere, dx, dy, 0);
 				}
-				else if (mAffectedMol != null){
+				else if (mAffectedMol != null) {
 					translateMolecule(mAffectedMol, dx, dy, 0);
 					mAffectedMol.fireCoordinatesChange();
 				}
-
+				else {
+					translateCameraXY(-dx, -dy);
+				}
 			}
 			else if (me.isSecondaryButtonDown()) {
 				mShowPopup = false;
@@ -258,21 +248,21 @@ public class V3DMouseHandler {
 		} );
 	}
 
+	private boolean isDraggingInXY(MouseEvent me) {
+		return me.isMiddleButtonDown() || (me.isPrimaryButtonDown() && me.isMetaDown());
+		}
+
 	private void trackAffectedMol(boolean moleculeKeyIsDown) {
 		if (!moleculeKeyIsDown) {
 			mAffectedMol = null;
 			mAffectedExclusionSphere = null;
 		}
-		
 		else if (mHighlightedExclusionSphere != null) {
 			mAffectedExclusionSphere = mHighlightedExclusionSphere;
 		}
 		else if (mHighlightedMol != null) {
 			mAffectedMol = mHighlightedMol;
 		}
-		
-
-		
 	}
 
 	private boolean isSingleMolecule(MouseEvent me) {
