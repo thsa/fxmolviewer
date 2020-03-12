@@ -105,11 +105,14 @@ public class V3DMoleculeWriter {
 				MolecularVolume molVolOut = new MolecularVolume(fxmol.getPharmacophore().getMolVol());
 				molVolOut.updateAtomIndeces(atomMap);
 				Conformer conf = new Conformer(mol2);
-				Coordinates origCom = molVolOut.getCOM();
-				Matrix rotation = PheSAAlignment.preProcess(conf, molVolOut);
+				PheSAAlignment.preProcess(conf, molVolOut);
 				molVols.add(molVolOut);
-				mol2.translate(-origCom.x,-origCom.y,-origCom.z);
-				PheSAAlignment.rotateMol(mol2, rotation);
+				for(int a=0;a<mol2.getAllAtoms();a++) {
+					Coordinates newCoords = new Coordinates(conf.getCoordinates(a));
+					mol2.setAtomX(a, newCoords.x);
+					mol2.setAtomY(a, newCoords.y);
+					mol2.setAtomZ(a, newCoords.z);
+				}
 				PheSAMolecule shapeMol = new PheSAMolecule(mol2,molVols);
 				String PheSAString = dhs.encode(shapeMol);
 				can = new Canonizer(mol2, Canonizer.COORDS_ARE_3D);

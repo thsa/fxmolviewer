@@ -186,7 +186,7 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 	
 	public void placeExclusionSphere(int function) {
 		Random random = new Random();
-		int atom = random.nextInt(mFXMol.getMolecule().getAllAtoms());
+		int atom = 0;
 		Coordinates shift = new Coordinates(3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1));
 		VolumeGaussian eg = new VolumeGaussian(atom, 6, new Coordinates(mFXMol.getMolecule().getCoordinates(atom)), shift,function);
 		mMolVol.getVolumeGaussians().add(eg);

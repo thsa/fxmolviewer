@@ -55,8 +55,7 @@ public class VolumeSphere extends Group  {
 		this.setTranslateY(volGauss.getReferenceVector().y);
 		this.setTranslateZ(volGauss.getReferenceVector().z);
 		
-		System.out.println("create");
-		System.out.println(volGauss.getReferenceVector());
+
 		shift = new SimpleObjectProperty<Coordinates>(new Coordinates(volGauss.getShiftVector()));
 		sphereRadius.addListener((o,ov,nv) -> {
 			Platform.runLater(() -> {
