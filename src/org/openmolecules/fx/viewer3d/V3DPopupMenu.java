@@ -31,7 +31,6 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -87,7 +86,10 @@ public class V3DPopupMenu extends ContextMenu {
 		mScene = scene;
 		V3DPopupMenuController controller = scene.getPopupMenuController();
 		EnumSet<V3DScene.ViewerSettings> settings = scene.getSettings();
-	
+
+		if (controller != null)	// Add external File items
+			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_FILE);
+
 		if (settings == null || settings.contains(V3DScene.ViewerSettings.LOAD_MOLS)) {
 			MenuItem loadMols = new MenuItem("Open Molecule File...");
 			loadMols.setOnAction(e -> {
@@ -111,36 +113,9 @@ public class V3DPopupMenu extends ContextMenu {
 			});
 			getItems().add(fetchPDB);
 		}
-		
-		
-		
-		MenuItem itemInteraction = new MenuItem("Display Interactions");
-		itemInteraction.setOnAction(e -> scene.handleInteractions());
-		getItems().add(itemInteraction);
-		
-		MenuItem itemCenter = new MenuItem("Center View");
-		itemCenter.setOnAction(e -> scene.optimizeView());
-		Menu menuReset = new Menu("Reset Location");
-		MenuItem itemResetMolecule = new MenuItem("Of This Molecule");
-		itemResetMolecule.setDisable(fxmol == null);
-		itemResetMolecule.setOnAction(e -> {
-			fxmol.clearTransform();
-			fxmol.resetCoordinates();
-		});
-		MenuItem itemResetAll = new MenuItem("Of All Molecules");
-		itemResetAll.setOnAction(e -> { for (Node n:scene.getWorld().getChildren()) {
-			if (n instanceof V3DMolecule) {
-				((V3DMolecule)n).clearTransform(); 
-				((V3DMolecule)n).resetCoordinates();
-			}
-			}
-		});
-		menuReset.getItems().addAll(itemResetMolecule, itemResetAll);
 
-		Menu menuView = new Menu("View");
-		menuView.getItems().addAll(itemCenter, menuReset);
-
-		getItems().add(menuView);
+		if (controller != null)	// Add external View items
+			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_EDIT);
 
 		if (settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) {
 			MenuItem itemCut = new MenuItem("Cut Molecule");
@@ -184,8 +159,8 @@ public class V3DPopupMenu extends ContextMenu {
 			menuEdit.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete,
 					new SeparatorMenuItem(), menuCrop, new SeparatorMenuItem(), itemClear);
 
-			getItems().add(new SeparatorMenuItem());
 			getItems().add(menuEdit);
+			getItems().add(new SeparatorMenuItem());
 		}
 		else {
 			MenuItem itemCopy3D = new MenuItem("Molecule 3D");
@@ -199,17 +174,60 @@ public class V3DPopupMenu extends ContextMenu {
 			Menu menuCopy = new Menu("Copy");
 			menuCopy.getItems().addAll(itemCopy3D, itemCopy2D);
 
-			getItems().add(new SeparatorMenuItem());
 			getItems().add(menuCopy);
+			getItems().add(new SeparatorMenuItem());
 		}
 
-		if (controller != null) {
-			controller.addExternalMenuItems(this);
-		}
+		if (controller != null)	// Add external View items
+			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_VIEW);
+
+		MenuItem itemInteraction = new MenuItem("Display Interactions");
+		itemInteraction.setOnAction(e -> scene.handleInteractions());
+
+		MenuItem itemCenter = new MenuItem("Center View");
+		itemCenter.setOnAction(e -> scene.optimizeView());
+		Menu menuReset = new Menu("Reset Location");
+		MenuItem itemResetMolecule = new MenuItem("Of This Molecule");
+		itemResetMolecule.setDisable(fxmol == null);
+		itemResetMolecule.setOnAction(e -> {
+			fxmol.clearTransform();
+			fxmol.resetCoordinates();
+		});
+		MenuItem itemResetAll = new MenuItem("Of All Molecules");
+		itemResetAll.setOnAction(e -> {
+			for (Node n:scene.getWorld().getChildren()) {
+				if (n instanceof V3DMolecule) {
+					((V3DMolecule)n).clearTransform();
+					((V3DMolecule)n).resetCoordinates();
+				}
+			}
+		});
+		menuReset.getItems().addAll(itemResetMolecule, itemResetAll);
+
+		RadioMenuItem measurementsNone = new RadioMenuItem("None");
+		measurementsNone.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.NONE);
+		measurementsNone.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.NONE));
+		RadioMenuItem measurementsDistance = new RadioMenuItem("Distance");
+		measurementsDistance.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.DISTANCE);
+		measurementsDistance.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.DISTANCE));
+		RadioMenuItem measurementsAngle = new RadioMenuItem("Angle");
+		measurementsAngle.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.ANGLE);
+		measurementsAngle.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.ANGLE));
+		RadioMenuItem measurementsDihedral = new RadioMenuItem("Torsion");
+		measurementsDihedral.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.TORSION);
+		measurementsDihedral.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.TORSION));
+		MenuItem measurementsRemoveAll = new MenuItem("Remove All");
+		measurementsRemoveAll.setOnAction(e -> scene.removeMeasurements());
+		Menu menuMeasurements = new Menu("Measurements");
+		menuMeasurements.getItems().addAll(measurementsNone, measurementsDistance, measurementsAngle, measurementsDihedral, new SeparatorMenuItem(), measurementsRemoveAll);
+
+		Menu menuView = new Menu("View");
+		menuView.getItems().addAll(itemCenter, menuReset, itemInteraction, menuMeasurements);
+
+		getItems().add(menuView);
+		getItems().add(new SeparatorMenuItem());
 
 		if (fxmol != null) {
-			getItems().add(new SeparatorMenuItem());
-
 			RadioMenuItem modeBallAndSticks = new RadioMenuItem("Ball And Sticks");
 			modeBallAndSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS);
 			modeBallAndSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.BALL_AND_STICKS));
@@ -309,7 +327,6 @@ public class V3DPopupMenu extends ContextMenu {
 				getItems().add(menuSurface);
 			}
 
-
 			getItems().add(new SeparatorMenuItem());
 			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 				MenuItem itemHide = new MenuItem("Hide Molecule");
@@ -337,12 +354,9 @@ public class V3DPopupMenu extends ContextMenu {
 			itemIS.setDisable(fxmol.getPharmacophore()==null);
 			itemIS.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere(VolumeGaussian.INCLUSION));
 			getItems().add(itemIS);
-			
-
-			
+			getItems().add(new SeparatorMenuItem());
 		}
 		if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
-			getItems().add(new SeparatorMenuItem());
 			MenuItem itemHideAll = new MenuItem("Hide All Molecules");
 			itemHideAll.setOnAction(e -> scene.setAllVisible(false));
 			getItems().add(itemHideAll);
@@ -350,9 +364,8 @@ public class V3DPopupMenu extends ContextMenu {
 			MenuItem itemShowAll = new MenuItem("Show All Molecules");
 			itemShowAll.setOnAction(e -> scene.setAllVisible(true));
 			getItems().add(itemShowAll);
+			getItems().add(new SeparatorMenuItem());
 		}
-
-		getItems().add(new SeparatorMenuItem());
 
 		final double[] zrange = scene.getVisibleZRange();
 		zrange[0] -= scene.getCamera().getTranslateZ();
@@ -466,25 +479,6 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuRaytrace = new Menu("Photo-Realistic Image");
 		menuRaytrace.getItems().addAll(itemRayTraceMol, itemRaytraceScene);
 		getItems().add(menuRaytrace);
-		
-		RadioMenuItem measurementsNone = new RadioMenuItem("None");
-		measurementsNone.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.NONE);
-		measurementsNone.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.NONE));
-		RadioMenuItem measurementsDistance = new RadioMenuItem("Distance");
-		measurementsDistance.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.DISTANCE);
-		measurementsDistance.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.DISTANCE));
-		RadioMenuItem measurementsAngle = new RadioMenuItem("Angle");
-		measurementsAngle.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.ANGLE);
-		measurementsAngle.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.ANGLE));
-		RadioMenuItem measurementsDihedral = new RadioMenuItem("Torsion");
-		measurementsDihedral.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.TORSION);
-		measurementsDihedral.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.TORSION));
-		MenuItem measurementsRemoveAll = new MenuItem("Remove All");
-		measurementsRemoveAll.setOnAction(e -> scene.removeMeasurements());
-		Menu menuMeasurements = new Menu("Measurements");
-		menuMeasurements.getItems().addAll(measurementsNone, measurementsDistance, measurementsAngle, measurementsDihedral, new SeparatorMenuItem(), measurementsRemoveAll);
-		getItems().add(menuMeasurements);
-		
 	}
 
 	private double clipValueToSlider(double clipValue) {
