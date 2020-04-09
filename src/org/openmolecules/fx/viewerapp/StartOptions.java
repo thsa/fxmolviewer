@@ -491,7 +491,7 @@ public class StartOptions {
 		StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(TEST_MOL_FOR_CONFORMERS);
 
 /*			if (TEST_MOL_FOR_CONFORMERS != null) {
-				ConformerGenerator cg = new ConformerGenerator(1467967297811L);
+				ConformerGenerator cg = new ConformerGenerator(1467967297811L, false);
 				cg.initializeConformers(mol, ConformerGenerator.STRATEGY_LIKELY_RANDOM, 10000, false);
 				int count = 0;
 				while (cg.getNextConformer() != null)
@@ -501,7 +501,7 @@ public class StartOptions {
 
 
 /*			for (int i=0; i<1000; i++) {
-				ConformerGenerator cg = new ConformerGenerator(i);
+				ConformerGenerator cg = new ConformerGenerator(i, false);
 				cg.initializeConformers(mol, ConformerGenerator.STRATEGY_LIKELY_RANDOM, 10000, false);
 				int count = 0;
 				while (cg.getNextConformer() != null)
@@ -514,8 +514,8 @@ public class StartOptions {
 					System.out.println(" "+i);
 				}*/
 
-//			ConformerGenerator cg = new ConformerGenerator(1);
-		ConformerGenerator cg = new ConformerGenerator(1467967297811L);
+//			ConformerGenerator cg = new ConformerGenerator(1, false);
+		ConformerGenerator cg = new ConformerGenerator(1467967297811L, false);
 		cg.initializeConformers(mol, ConformerGenerator.STRATEGY_LIKELY_RANDOM, 10000, false);
 		double hue = 0.0;
 		int count = 0;
