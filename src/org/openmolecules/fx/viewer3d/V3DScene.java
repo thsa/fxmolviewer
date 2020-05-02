@@ -270,7 +270,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void paste() {
 		StereoMolecule mol = mClipboardHandler.pasteMolecule(false);
-		if (mol == null || mCopiedMol == null) {   // TODO interactive message
+		if (mol == null) {   // TODO interactive message
 			System.out.println("No molecule on clipboard!");
 			return;
 			}
@@ -292,7 +292,17 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			conformer.toMolecule(mol);	// copy atom coordinates to molecule
 			}
 
-		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), mCopiedMol.getGroup(),mCopiedMol.getRole());
+		int group = 0;
+		V3DMolecule.MoleculeRole role = V3DMolecule.MoleculeRole.LIGAND;
+
+		// if the previous molecule copied within this viewer has the same size as the clipboard molecule,
+		// we assume that the clipboard molecule was previously copied from this viewer and use group & id from it
+		if (mCopiedMol != null && mCopiedMol.getMolecule().getAllAtoms() == mol.getAllAtoms()) {
+			group = mCopiedMol.getGroup();
+			role = mCopiedMol.getRole();
+		}
+
+		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), group, role);
 //		fxmol.activateEvents();
 		mCopiedMol = null;
 		addMolecule(fxmol);
