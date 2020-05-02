@@ -100,10 +100,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public enum ViewerSettings {
-		MINIMIZATION, ALIGNMENT, EDITING, SIDEPANEL, STRUCTUREVIEW, LOAD_MOLS, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND
+		MINIMIZATION, ALIGNMENT, EDITING, SMALL_MOLS, SIDEPANEL, STRUCTUREVIEW, LOAD_MOLS, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND
 	}
-	
-	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND);
+
+	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS);
 
 	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(ViewerSettings.MINIMIZATION, ViewerSettings.ALIGNMENT,
 			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.LOAD_MOLS, ViewerSettings.WHITE_HYDROGENS,

@@ -118,6 +118,8 @@ public class V3DPopupMenu extends ContextMenu {
 			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_EDIT);
 
 		if (settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) {
+			Menu menuEdit = new Menu("Edit");
+
 			MenuItem itemCut = new MenuItem("Cut Molecule");
 			itemCut.setDisable(fxmol == null);
 			itemCut.setOnAction(e -> scene.cut(fxmol));
@@ -137,27 +139,29 @@ public class V3DPopupMenu extends ContextMenu {
 			itemDelete.setDisable(fxmol == null);
 			itemDelete.setOnAction(e -> scene.delete(fxmol));
 
-			MenuItem itemCrop6 = new MenuItem("0.6 nm");
-			itemCrop6.setOnAction(e -> scene.crop(fxmol, 6.0));
-
-			MenuItem itemCrop8 = new MenuItem("0.8 nm");
-			itemCrop8.setOnAction(e -> scene.crop(fxmol, 8.0));
-
-			MenuItem itemCrop10 = new MenuItem("1.0 nm");
-			itemCrop10.setOnAction(e -> scene.crop(fxmol, 10.0));
-
-			MenuItem itemCrop12 = new MenuItem("1.2 nm");
-			itemCrop12.setOnAction(e -> scene.crop(fxmol, 12.0));
-
-			Menu menuCrop = new Menu("Crop all beyond");
-			menuCrop.getItems().addAll(itemCrop6, itemCrop8, itemCrop10, itemCrop12);
-
 			MenuItem itemClear = new MenuItem("Clear All");
 			itemClear.setOnAction(e -> scene.clearAll(true));
 
-			Menu menuEdit = new Menu("Edit");
-			menuEdit.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete,
-					new SeparatorMenuItem(), menuCrop, new SeparatorMenuItem(), itemClear);
+			menuEdit.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete, new SeparatorMenuItem(), itemClear);
+
+			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SMALL_MOLS)) {
+				MenuItem itemCrop6 = new MenuItem("0.6 nm");
+				itemCrop6.setOnAction(e -> scene.crop(fxmol, 6.0));
+
+				MenuItem itemCrop8 = new MenuItem("0.8 nm");
+				itemCrop8.setOnAction(e -> scene.crop(fxmol, 8.0));
+
+				MenuItem itemCrop10 = new MenuItem("1.0 nm");
+				itemCrop10.setOnAction(e -> scene.crop(fxmol, 10.0));
+
+				MenuItem itemCrop12 = new MenuItem("1.2 nm");
+				itemCrop12.setOnAction(e -> scene.crop(fxmol, 12.0));
+
+				Menu menuCrop = new Menu("Crop all beyond");
+				menuCrop.getItems().addAll(itemCrop6, itemCrop8, itemCrop10, itemCrop12);
+
+				menuEdit.getItems().addAll(new SeparatorMenuItem(), menuCrop);
+			}
 
 			getItems().add(menuEdit);
 			getItems().add(new SeparatorMenuItem());
