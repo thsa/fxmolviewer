@@ -57,7 +57,8 @@ public class RotatableGroup extends Group implements ChangeListener<Number> {
 	}
 
 	public void clearTransform() {
-		setTransform(new Rotate());
+		mRotation = new Rotate();
+		setTransform(mRotation);
 		}
 
 	public void setTransform(Transform t) {
