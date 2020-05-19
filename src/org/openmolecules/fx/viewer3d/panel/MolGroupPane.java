@@ -22,8 +22,14 @@ package org.openmolecules.fx.viewer3d.panel;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.TreeTableView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.V3DScene;
@@ -41,39 +49,37 @@ import org.openmolecules.fx.viewer3d.V3DSceneListener;
 /**
  * Created by thomas on 27.09.16.
  */
-public class MolGroupPane extends ScrollPane implements V3DSceneListener {
+public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMolGroup> {
 	//private static final boolean AUTO_HIDE_AT_START = false;
 	private V3DScene mScene3D;
 	//private CheckBox mCheckBoxPin;
 	private BooleanProperty mShowStructure;
-	private VBox mContainer;
-	private Map<Integer,MoleculeGroupTable> mGroupTable;
+	private MoleculeGroupTable mGroupTable;
 	//private Map<Integer,ArrayList<V3DMolecule>> mGroups;
 
 	public MolGroupPane(final V3DScene scene3D) {
 		super();
+		setFitToWidth(true);
+		setFitToHeight(true);
 		mScene3D = scene3D;
-		mScene3D.addSceneListener(this);
-		mGroupTable = new HashMap<Integer,MoleculeGroupTable>();
+		mScene3D.getWorld().addListener(this);
 		//mGroups = new HashMap<Integer,ArrayList<V3DMolecule>>();
-		mContainer = new VBox();
+		setFitToHeight(true);
+		setFitToWidth(true);
 		setHbarPolicy(ScrollBarPolicy.NEVER);
-		setContent(mContainer);
-		mContainer.prefWidthProperty().bind(this.widthProperty());
+		//setContent(mContainer);
 		mShowStructure = new SimpleBooleanProperty(false);
 		MolPaneMouseHandler mouseHandler = new MolPaneMouseHandler(this);
+		mGroupTable = new MoleculeGroupTable(this);
+		setContent(mGroupTable.getTable());
 
 	}
 	
 	
 	public void clearTableSelections() {
-		mGroupTable.forEach((k,v) -> v.getTable().getSelectionModel().clearSelection());
+		mGroupTable.getTable().getSelectionModel().clearSelection();
 	}
 	
-	public void clearOtherTableSelections(TableView table) {
-		mGroupTable.values().stream().map(e -> e.getTable()).filter(t -> t!=table).forEach(t -> t.getSelectionModel().clearSelection());		
-	}
-
 	public V3DScene getV3DScene() {
 		return mScene3D;
 	}
@@ -90,29 +96,24 @@ public class MolGroupPane extends ScrollPane implements V3DSceneListener {
 		mShowStructure.set(showStructure);
 	}
 	
-	public List<TableView> getMolTables() {
-		return mGroupTable.values().stream().map(e -> e.getTable()).collect(Collectors.toList());
+	public TreeTableView<MolGroupModel> getMolTable() {
+		return mGroupTable.getTable();
 	}
 	
-	public Set<Integer> getGroups() {
-		return mGroupTable.keySet();
-	}
-	
+
 	public void changeVisibilityAll(boolean isVisible) {
-		mGroupTable.values().forEach(e -> e.changeVisibility(isVisible));
+		mGroupTable.changeVisibility(isVisible);
 	}
 	
 	public void changeVisibilitySelected(boolean isVisible) {
-		Iterator<MoleculeGroupTable> iterator = mGroupTable.values().iterator();
-		while(iterator.hasNext()) 
-			iterator.next().changeVisibilitySelected(isVisible);
+		mGroupTable.changeVisibilitySelected(isVisible);
 
 	}
 	
+	/*
 	public void changeGroupSelected(int targetGroup) {
-		ArrayList<Integer> groups = new ArrayList<Integer>(mGroupTable.keySet());
-		for(int group : groups) {
-			mGroupTable.get(group).changeGroupSelected(targetGroup);
+
+			mGroupTable.changeGroupSelected(targetGroup);
 		}
 	}
 	
@@ -122,62 +123,67 @@ public class MolGroupPane extends ScrollPane implements V3DSceneListener {
 			mGroupTable.get(group).changeRoleSelected(role);
 		}
 	}
+	*/
 	
+
 	
-	public VBox getContainer() {
-		return mContainer;
-	}
-	
-	public List<V3DMolecule> getAllSelectedMols(){
-		List<V3DMolecule> allSelectedMols = new ArrayList<V3DMolecule>();
-		mGroupTable.forEach((k,v) -> allSelectedMols.addAll(v.getSelectedMols()));
+	public List<V3DMolGroup> getAllSelectedMols(){
+		List<V3DMolGroup> allSelectedMols = new ArrayList<V3DMolGroup>();
+		allSelectedMols.addAll(mGroupTable.getSelectedMols());
 		return allSelectedMols;
 	}
 	
 
 
-	@Override
-	public void addMolecule(V3DMolecule fxmol) {
-		int group = fxmol.getGroup();
-
-		if(mGroupTable.containsKey(group)) {
-			mGroupTable.get(group).addMolecule(fxmol);
+	
+	public void addMolecule(V3DMolGroup fxmol) {
+		V3DMolGroup parent = mScene3D.getWorld().getParent(fxmol);	
+		addMolecule(fxmol,parent);
+	}
+	
+	private void addMolecule(V3DMolGroup fxmol, V3DMolGroup parent) {
+		mGroupTable.addGroup(fxmol, parent);
+		if(fxmol.getMolGroups().size()>0) {
+			for(V3DMolGroup child : fxmol.getMolGroups()) {
+				addMolecule(child,fxmol);
+			}
 		}
 		else {
-			mGroupTable.put(group, new MoleculeGroupTable(this,group,new ArrayList<V3DMolecule>()));
-			mGroupTable.get(group).addMolecule(fxmol);
+			return;
 		}
-
 	}
 
-	@Override
+	
+	
+	//@Override
 	public void initialize(boolean isSmallMoleculeMode) {
 		mShowStructure.set(isSmallMoleculeMode);
 	}
 
-	@Override
-	public void removeMolecule(V3DMolecule fxmol) {
-		List<Integer> toBeDeleted = new ArrayList<Integer>();
-		mGroupTable.forEach((k,v) -> {
-			if(v.containsMolecule(fxmol))
-				if(v.removeMolecule(fxmol)) //mol list is empty
-					toBeDeleted.add(k);
+	//@Override
+	public void removeMolecule(V3DMolGroup fxmol) {
+	
+		mGroupTable.removeMolecule(fxmol);
 
-		});
-		for(Integer group : toBeDeleted) {
-			mGroupTable.get(group).cleanup();
-			mGroupTable.remove(group);
-		}
 		
 	}
 	
 
 
 
-	public void updateGroups(V3DMolecule fxmol) {
-		removeMolecule(fxmol);
-		addMolecule(fxmol);
-		
+	@Override
+	public void onChanged(Change<? extends V3DMolGroup> c) {
+		while(c.next()) {
+			List<? extends V3DMolGroup> added = c.getAddedSubList();
+			for(V3DMolGroup group : added) {
+				addMolecule(group);
+			}
+			
+			List<? extends V3DMolGroup> removed = c.getRemoved();
+			for(V3DMolGroup group : removed) {
+				removeMolecule(group);
+			}
+		}
 	}
 		
 		

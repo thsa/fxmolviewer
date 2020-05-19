@@ -1,6 +1,7 @@
 package org.openmolecules.fx.tasks;
 
 import org.openmolecules.fx.viewer3d.CarbonAtomColorPalette;
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
 import org.openmolecules.fx.viewer3d.V3DScene;
@@ -25,14 +26,24 @@ import java.util.List;
 public class V3DShapeAlignerFromFile implements IAlignmentTask {
 		
 	private V3DScene mScene;
-	private V3DMolecule mFXRefMol;
+	private MolecularVolume mRefVol;
+	private V3DMolecule mRefFXMol;
 	private List<PheSAMolecule> mFitShapes;
 	private double ppWeight;
 	
+	
+	
+	public V3DShapeAlignerFromFile(V3DScene scene3D, V3DCustomizablePheSA refModel,  List<PheSAMolecule> fitShapes, double ppWeight)  {
+		this(scene3D, ((V3DMolecule)(refModel.getParent())), new MolecularVolume(refModel.getMolVol()), fitShapes,ppWeight);
+	}
+	
+	public V3DShapeAlignerFromFile(V3DScene scene3D, V3DMolecule refFXMol,  List<PheSAMolecule> fitShapes, double ppWeight) {
+		this(scene3D,refFXMol, new MolecularVolume(refFXMol.getMolecule()), fitShapes,ppWeight);
+	}
 
-	public V3DShapeAlignerFromFile(V3DScene scene3D,V3DMolecule fxRefMol, List<PheSAMolecule> fitShapes, double ppWeight)  {
+	public V3DShapeAlignerFromFile(V3DScene scene3D,V3DMolecule refFXMol, MolecularVolume refVol, List<PheSAMolecule> fitShapes, double ppWeight)  {
 		mScene = scene3D;
-		mFXRefMol = fxRefMol;
+		mRefFXMol = refFXMol;
 		mFitShapes = fitShapes;
 		this.ppWeight = ppWeight;
 	}
@@ -40,31 +51,25 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 	private void run() {
 		DescriptorHandlerShape dhs = new DescriptorHandlerShape(200,ppWeight);
 		List<V3DMolecule> fittedFXMols = new ArrayList<V3DMolecule>();
-		int group = mScene.getMaxGroupID();
-		MolecularVolume refVol;
 		PheSAMolecule refShape;
 		StereoMolecule refMol;
-		if(mFXRefMol.getPharmacophore()==null) 
-			mFXRefMol.addPharmacophore();
-		mFXRefMol.getPharmacophore().setVisible(false);
-		refVol = new MolecularVolume(mFXRefMol.getPharmacophore().getMolVol());
-		Coordinates origCOM  = refVol.getCOM();
-		refMol = mFXRefMol.getMolecule();
+		Coordinates origCOM  = mRefVol.getCOM();
+		refMol = mRefFXMol.getMolecule();
 		Conformer refConf = new Conformer(refMol);
-		Matrix rotation = PheSAAlignment.preProcess(refConf, refVol);
+		Matrix rotation = PheSAAlignment.preProcess(refConf, mRefVol);
 		rotation = rotation.getTranspose();
-		refShape = new PheSAMolecule(refMol,refVol);
+		refShape = new PheSAMolecule(refMol,mRefVol);
 		for(PheSAMolecule fitShape : mFitShapes) {
 			dhs.getSimilarity(refShape, fitShape);
 			try {
-				fittedFXMols.add(new V3DMolecule(dhs.getPreviousAlignment()[1], V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND, mScene.mayOverrideHydrogenColor()));
+				fittedFXMols.add(new V3DMolecule(dhs.getPreviousAlignment()[1], V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, mScene.mayOverrideHydrogenColor()));
 			}
 			catch(Exception e) {
 				continue;
 		}
 		}
 		
-		ObservableList<Transform> refTransforms = mFXRefMol.getTransforms();
+		ObservableList<Transform> refTransforms = mRefFXMol.getTransforms();
 		Transform refTransform = null;
 		int nrTransforms = refTransforms.size();
 		if(nrTransforms>0) {
@@ -74,9 +79,9 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 			}
 		}
 			
-		double refX = mFXRefMol.getTranslateX()	;
-		double refY = mFXRefMol.getTranslateY();
-		double refZ = mFXRefMol.getTranslateZ();
+		double refX = mRefFXMol.getTranslateX()	;
+		double refY = mRefFXMol.getTranslateY();
+		double refZ = mRefFXMol.getTranslateZ();
 		
 
 		for(int i=0;i<fittedFXMols.size();i++) {
@@ -91,8 +96,8 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 			
 		}
 
-		mFXRefMol.fireCoordinatesChange();
-		V3DMoleculeUpdater refMolUpdater = new V3DMoleculeUpdater(mFXRefMol);
+		mRefFXMol.fireCoordinatesChange();
+		V3DMoleculeUpdater refMolUpdater = new V3DMoleculeUpdater(mRefFXMol);
 		refMolUpdater.update();
 		Platform.runLater(() -> {
 		for (int i=0; i<fittedFXMols.size(); i++) {

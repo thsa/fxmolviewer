@@ -49,7 +49,6 @@ import org.openmolecules.fx.surface.ClipSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.tasks.IAlignmentTask;
-import org.openmolecules.fx.tasks.V3DFlexiblePheSARefinement;
 import org.openmolecules.fx.tasks.V3DMinimizer;
 import org.openmolecules.fx.tasks.V3DShapeAlignerFromFile;
 import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
@@ -95,7 +94,7 @@ public class V3DPopupMenu extends ContextMenu {
 			loadMols.setOnAction(e -> {
 				File selectedFile = getMoleculeFileChooser().showOpenDialog(scene.getScene().getWindow());
 				if (selectedFile != null) {
-					List<V3DMolecule> mols = V3DMoleculeParser.readMoleculeFile(mScene,selectedFile.toString(), scene.getMaxGroupID());
+					List<V3DMolecule> mols = V3DMoleculeParser.readMoleculeFile(mScene,selectedFile.toString());
 					for (V3DMolecule vm : mols) {
 						scene.addMolecule(vm);
 					}
@@ -336,7 +335,7 @@ public class V3DPopupMenu extends ContextMenu {
 			MenuItem itemPP = new MenuItem("Add Pharmacophores");
 			itemPP.setOnAction(e -> fxmol.addPharmacophore());
 			getItems().add(itemPP);
-
+			/*
 			MenuItem itemHidePP = new MenuItem("Hide Pharmacophore");
 			itemHidePP.setDisable(fxmol.getPharmacophore()==null || !fxmol.getPharmacophore().isVisible());
 			itemHidePP.setOnAction(e -> fxmol.getPharmacophore().setVisible(false));
@@ -355,6 +354,7 @@ public class V3DPopupMenu extends ContextMenu {
 			itemIS.setOnAction(e -> fxmol.getPharmacophore().placeExclusionSphere(VolumeGaussian.INCLUSION));
 			getItems().add(itemIS);
 			getItems().add(new SeparatorMenuItem());
+			*/
 		}
 		if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 			MenuItem itemHideAll = new MenuItem("Hide All Molecules");
@@ -448,11 +448,6 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(menuMinimize);
 		}
 		if (settings == null || settings.contains(V3DScene.ViewerSettings.ALIGNMENT)) {
-			MenuItem flexRefine = new MenuItem("Refine Alignment");
-			flexRefine.setOnAction( e -> {
-				V3DFlexiblePheSARefinement.align(mScene, fxmol);
-			});
-			getItems().add(flexRefine);
 			
 			MenuItem alignMols = new MenuItem("Align Molecules");
 			alignMols.setOnAction( e -> {

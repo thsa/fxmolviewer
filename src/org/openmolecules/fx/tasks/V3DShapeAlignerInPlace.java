@@ -37,7 +37,8 @@ import java.util.List;
 import java.util.Map;
 
 public class V3DShapeAlignerInPlace implements IAlignmentTask {
-	private V3DMolecule mFXRefMol;
+	private MolecularVolume mRefVol;
+	private V3DMolecule mRefFXMol;
 	private List<V3DMolecule> mFitMols;
 	private V3DScene mScene;
 	public static Alert molSizeAlert  = new Alert(AlertType.ERROR);
@@ -57,10 +58,18 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 	 */
 	
 
-
-	public V3DShapeAlignerInPlace(V3DScene scene3D, V3DMolecule fxRefMol, boolean generateConfs, double ppWeight)  {
+	public  V3DShapeAlignerInPlace(V3DScene scene3D, V3DCustomizablePheSA refModel, boolean generateConfs, double ppWeight)  {
+		this(scene3D, ((V3DMolecule)(refModel.getParent())), new MolecularVolume(refModel.getMolVol()),generateConfs,ppWeight);
+	}
+	
+	public V3DShapeAlignerInPlace(V3DScene scene3D, V3DMolecule refFXMol, boolean generateConfs, double ppWeight) {
+		this(scene3D,refFXMol, new MolecularVolume(refFXMol.getMolecule()),generateConfs,ppWeight);
+	}
+	
+	public V3DShapeAlignerInPlace(V3DScene scene3D, V3DMolecule refFXMol, MolecularVolume refVol, boolean generateConfs, double ppWeight)  {
 		mScene = scene3D;
-		mFXRefMol = fxRefMol;
+		mRefFXMol = refFXMol;
+		mRefVol = refVol;
 		mPheSAMap = new HashMap<V3DMolecule,PheSAMolecule>();
 		this.ppWeight = ppWeight;
 		V3DMolecule fxmol;
@@ -70,46 +79,23 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 		else
 			dhs = new DescriptorHandlerShapeOneConf(200,ppWeight);
 		mFitMols = new ArrayList<V3DMolecule>();
-		if(mFXRefMol==null) { //no mol clicked in scene -> align all visible mols
-			int counter = 0;
-			for (Node node : scene3D.getWorld().getChildren()) {
-				if (node instanceof V3DMolecule) {
-						fxmol = (V3DMolecule)node;
-						if(fxmol.getMolecule().getAtoms()>100) {
-							molSizeAlert.showAndWait();
-							return;
-						}
-						else if(fxmol.isVisible()) {
-							if(counter==0) {
-								mFXRefMol = fxmol;
-								counter++;
-							}
-							else {
-								mFitMols.add(fxmol);
-								mPheSAMap.putIfAbsent(fxmol, dhs.createDescriptor(fxmol.getMolecule()));
-							}
-						}
 
+		for (Node node : scene3D.getWorld().getChildren()) {
+			if (node instanceof V3DMolecule) {
+				fxmol = (V3DMolecule)node;
+				System.out.println(fxmol.isIncluded());
+				if(fxmol.getMolecule().getAtoms()>100) {
+					molSizeAlert.showAndWait();
+					return;
 				}
+				else if(fxmol.isIncluded()) {
+					mFitMols.add(fxmol);
+					mPheSAMap.putIfAbsent(fxmol, dhs.createDescriptor(fxmol.getMolecule()));
+				}
+
 			}
 		}
 		
-		else {
-			for (Node node : scene3D.getWorld().getChildren()) {
-				if (node instanceof V3DMolecule) {
-					fxmol = (V3DMolecule)node;
-					if(fxmol.getMolecule().getAtoms()>100) {
-						molSizeAlert.showAndWait();
-						return;
-					}
-					else if(fxmol.isIncluded()) {
-						mFitMols.add(fxmol);
-						mPheSAMap.putIfAbsent(fxmol, dhs.createDescriptor(fxmol.getMolecule()));
-					}
-
-			}
-		}
-		}
 
 
 		for(V3DMolecule v3dMol : mFitMols) {
@@ -117,14 +103,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 				v3dMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
 				mScene.removeMeasurements(v3dMol);
 		}
-		
-		if(mFXRefMol==null) {
-			Alert alert = new Alert(AlertType.WARNING);
-			alert.setTitle("Error");
-			alert.setHeaderText("No Reference Structure Selected");
-			alert.setContentText("Please Select a Reference");
-			alert.showAndWait();
-		}
+
 		
 	}
 	
@@ -136,20 +115,15 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 
 	private void run() {
 		DescriptorHandlerShape dhs = new DescriptorHandlerShape(200,ppWeight);
-		MolecularVolume refVol;
 		PheSAMolecule refShape;
 		StereoMolecule refMol;
 		StereoMolecule fitMol;
 		StereoMolecule alignedMol;
-		if(mFXRefMol.getPharmacophore()==null) 
-			mFXRefMol.addPharmacophore();
-		mFXRefMol.getPharmacophore().setVisible(false);
-		refVol = new MolecularVolume(mFXRefMol.getPharmacophore().getMolVol());
-		Coordinates origCOM  = new Coordinates(refVol.getCOM());
-		refMol = mFXRefMol.getMolecule();
+		Coordinates origCOM  = new Coordinates(mRefVol.getCOM());
+		refMol = mRefFXMol.getMolecule();
 		Conformer refConf = new Conformer(refMol);
-		Matrix rotation = PheSAAlignment.preProcess(refConf, refVol).getTranspose();
-		refShape = new PheSAMolecule(refMol,refVol);
+		Matrix rotation = PheSAAlignment.preProcess(refConf, mRefVol).getTranspose();
+		refShape = new PheSAMolecule(refMol,mRefVol);
 		for(V3DMolecule fxFitMol : mPheSAMap.keySet()) {
 			System.out.println(dhs.getSimilarity(refShape, mPheSAMap.get(fxFitMol)));
 			try {
@@ -166,7 +140,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 		}
 		}
 		//mFXRefMol.setMolecule(refConf.toMolecule());
-		ObservableList<Transform> refTransforms = mFXRefMol.getTransforms();
+		ObservableList<Transform> refTransforms = mRefFXMol.getTransforms();
 		Transform refTransform = null;
 		int nrTransforms = refTransforms.size();
 		if(nrTransforms>0) {
@@ -176,9 +150,9 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 			}
 		}
 
-		double refX = mFXRefMol.getTranslateX()	;
-		double refY = mFXRefMol.getTranslateY();
-		double refZ = mFXRefMol.getTranslateZ();
+		double refX = mRefFXMol.getTranslateX();
+		double refY = mRefFXMol.getTranslateY();
+		double refZ = mRefFXMol.getTranslateZ();
 
 		//mFXRefMol.getMolecule().translate(-origCOM.x,-origCOM.y,-origCOM.z);
 		//PheSAAlignment.rotateMol(mFXRefMol.getMolecule(), rotation);
@@ -198,9 +172,9 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 			}
 			
 		}
-		mFXRefMol.fireCoordinatesChange();
+		mRefFXMol.fireCoordinatesChange();
 		Platform.runLater(() -> {
-		V3DMoleculeUpdater refMolUpdater = new V3DMoleculeUpdater(mFXRefMol);
+		V3DMoleculeUpdater refMolUpdater = new V3DMoleculeUpdater(mRefFXMol);
 		refMolUpdater.update();
 		for (V3DMolecule fxFitMol : mPheSAMap.keySet()) {
 			fxFitMol.fireCoordinatesChange();

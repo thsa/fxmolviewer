@@ -2,6 +2,7 @@ package org.openmolecules.fx.viewer3d.nodes;
 
 import java.util.Optional;
 
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
 import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
@@ -69,8 +70,9 @@ public abstract class AbstractPPNode extends Group implements IPPNode {
 	@Override
 	public final void cleanup() {
 		V3DMolecule fxmol = (V3DMolecule) this.getParent().getParent();
-		fxmol.getPharmacophore().getMolVol().getPPGaussians().remove(ppg);
-		fxmol.getPharmacophore().getChildren().remove(this);
+		V3DCustomizablePheSA parentPharmacophore = (V3DCustomizablePheSA) this.getParent();
+		parentPharmacophore.getMolVol().getPPGaussians().remove(ppg);
+		parentPharmacophore.getChildren().remove(this);
 	}
 	
 	@Override 

@@ -8,13 +8,13 @@
 }
 
 
-.table-view {
+.tree-table-view {
   -fx-background-color: -fx-base; 
   -fx-selection-bar-non-focused: rgba(0, 153, 153,0.2);
   -fx-padding: 1; 
 }
 
-.table-view:focused {
+.tree-table-view:focused {
   /*-fx-border-color: transparent;*/
   -fx-background-color: -fx-base ;
   -fx-selection-bar: rgba(0, 153, 153,0.2);
@@ -22,11 +22,11 @@
 
 }
 
-.table-row-cell:focused {
+.tree-table-row-cell:focused {
 	-fx-background-color: transparent;
 }
 
-.table-view .scroll-bar:horizontal * {
+.tree-table-view .scroll-bar:horizontal * {
     -fx-min-width: 0;
     -fx-pref-width: 0;
     -fx-max-width: 0;
@@ -40,7 +40,7 @@
   -fx-background-color: whitesmoke;
 }
 
-.table-cell{
+.tree-table-cell{
 	-fx-border-color: transparent;
 	-fx-text-fill:white;
 	-fx-font-size: 15;
@@ -63,7 +63,7 @@
     -fx-background-color: -fx-base;
 }
 
-.table-row-cell:selected{
+.tree-table-row-cell:selected{
 	-fx-background-color: rgba(0, 153, 153,0.2);
 }
 
@@ -94,17 +94,17 @@
 }
 
 /* 
-.table-cell{
+.tree-table-cell{
 	-fx-text-fill:white;
 	-fx-background-color: -fx-background;
 
 }
 
-.table-row-cell:selected{
+.tree-table-row-cell:selected{
 	-fx-background-color: red; 
 }
 
-.table-row-cell:focus{
+.tree-table-row-cell:focus{
 	-fx-background-color: green; 
 }
 
@@ -117,42 +117,42 @@
 -fx-background-insets: 0, 0 1 0 1;
 }
  
-.table-view {
+.tree-table-view {
 -fx-table-cell-border-color:derive(-fx-base,+10%);
 -fx-table-header-border-color:derive(-fx-base,+20%);
 }
 
 
 /* 
-.table-view:focused .table-row-cell:focused {
+.tree-table-view:focused .table-row-cell:focused {
     -fx-background-color: -fx-background;
     -fx-background-insets: 0, 0 0 1 0;
 }
 
 
-.table-view .scroll-bar:horizontal ,
-.table-view  .scroll-bar:vertical{
+.tree-table-view .scroll-bar:horizontal ,
+.tree-table-view  .scroll-bar:vertical{
     -fx-background-color:transparent;
  
 }
  
 
-.table-view .increment-button ,.table-view .decrement-button {
+.tree-table-view .increment-button ,.tree-table-view .decrement-button {
     -fx-background-color:transparent;
 	-fx-border-color:derive(-fx-base,80%);
 }
  
 
-.table-view .scroll-bar:horizontal .track ,
-.table-view .scroll-bar:vertical .track{
+.tree-table-view .scroll-bar:horizontal .track ,
+.tree-table-view .scroll-bar:vertical .track{
      -fx-background-color: transparent;
 	 -fx-border-color:derive(gray,80%);
 	 -fx-background-radius: 0em;
 }
  
 
-.table-view .scroll-bar:horizontal .thumb,
-.table-view .scroll-bar:vertical .thumb {
+.tree-table-view .scroll-bar:horizontal .thumb,
+.tree-table-view .scroll-bar:vertical .thumb {
     -fx-background-color:derive(-fx-base,90%);
 	-fx-background-insets: 0, 0, 0;
 	-fx-background-radius: 0em;

@@ -376,7 +376,6 @@ public class V3DMouseHandler {
 	}
 	
 	private void translateExclusionSphere(VolumeSphere eSphere, double dx, double dy, double dz) {
-		RotatableGroup world = mScene.getWorld();
 		Point3D point = new Point3D(eSphere.getSphere().getTranslateX(), eSphere.getSphere().getTranslateY(),
 				eSphere.getSphere().getTranslateZ());
 		V3DMolecule fxmol = (V3DMolecule) eSphere.getParent().getParent();
