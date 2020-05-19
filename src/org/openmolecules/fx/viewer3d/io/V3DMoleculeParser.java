@@ -70,14 +70,14 @@ public class V3DMoleculeParser {
 	}
 
 
-	public static List<V3DMolecule> readMoleculeFile(V3DScene scene, String filename, int group) {
+	public static List<V3DMolecule> readMoleculeFile(V3DScene scene, String filename) {
 		List<StereoMolecule> mols = parseFile(filename);
 		List<V3DMolecule> v3dMols = new ArrayList<V3DMolecule>();
 		for(StereoMolecule mol: mols) {
 			mol.ensureHelperArrays(Molecule.cHelperRings);
 			if(mol.getName()==null || mol.getName().equals(""))
 				mol.setName("Molecule");
-			v3dMols.add(new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND,scene.mayOverrideHydrogenColor()));
+			v3dMols.add(new V3DMolecule(mol, V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.LIGAND,scene.mayOverrideHydrogenColor()));
 		}
 		return v3dMols;
 	}
@@ -151,13 +151,14 @@ public class V3DMoleculeParser {
 		while(notDone) {
 			try {
 				StereoMolecule mol = dwParser.getMolecule();
+				if(mol.getName()==null)
+					mol.setName("Molecule");
 				SpecialField pheSAField = dwParser.getSpecialFieldMap().get(DescriptorConstants.DESCRIPTOR_ShapeAlignSingleConf.shortName);
 				String pheSAString = dwParser.getSpecialFieldData(pheSAField.fieldIndex);
 				PheSAMolecule shapeMol = dhs.decode(pheSAString);
 				if(shapeMol.getVolumes().size()==1) {
 					MolecularVolume molVol = shapeMol.getVolumes().get(0);
-					molVol.update(mol);
-					V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(), group,V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
+					V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
 					fxMol.addPharmacophore(molVol);
 					fxMols.add(fxMol);
 				}

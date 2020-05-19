@@ -33,7 +33,7 @@ import java.util.Random;
 
 
 
-public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeListener, PharmacophoreBuilder{
+public class V3DCustomizablePheSA extends V3DMolGroup implements MolCoordinatesChangeListener, PharmacophoreBuilder{
 	
 	public static PhongMaterial sDonorMaterial;
 	public static PhongMaterial sAcceptorMaterial;
@@ -55,6 +55,7 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 	}
 	
 	public V3DCustomizablePheSA(V3DMolecule fxMol, MolecularVolume molVol) {
+		super("PheSA model");
 		fxMol.addMoleculeCoordinatesChangeListener(this);
 		this.mFXMol = fxMol;
 		mMolVol = molVol;	
@@ -122,6 +123,7 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 		return mMolVol;
 	}
 	
+	/*
 	public void cleanup() {
 		this.mFXMol.removeMoleculeCoordinatesChangeListener(this);
 		ArrayList<Node> toBeRemoved = new ArrayList<Node>();
@@ -139,7 +141,7 @@ public class V3DCustomizablePheSA extends Group implements MolCoordinatesChangeL
 		});
 		
 	}
-	
+	*/
 
 	@Override
 	public void addPharmacophorePoint(PPGaussian ppg) {

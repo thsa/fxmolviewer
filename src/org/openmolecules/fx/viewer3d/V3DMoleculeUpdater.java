@@ -57,21 +57,31 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 			if ((role & (MoleculeBuilder.ROLE_IS_ATOM | MoleculeBuilder.ROLE_IS_BOND )) != 0)
 				mNodeMap.put(role, node);
 		}
-		if(fxmol.getPharmacophore()!=null) {
-			for (Node node:fxmol.getPharmacophore().getChildren()) {
-				if(node instanceof AbstractPPNode)
-					mPPNodeMap.put( ((AbstractPPNode) node).getPPGaussian(),(AbstractPPNode) node);
-				if(node instanceof VolumeSphere)
-					mVolNodeMap.put( ((VolumeSphere) node).getVolumeGaussian(),(VolumeSphere) node);
+		
+		
+		for(V3DMolGroup group : fxmol.getMolGroups()) {
+			if(group instanceof V3DCustomizablePheSA) { 
+				V3DCustomizablePheSA pharmacophore = (V3DCustomizablePheSA) group;
+				for (Node node:pharmacophore.getChildren()) {
+					if(node instanceof AbstractPPNode)
+						mPPNodeMap.put( ((AbstractPPNode) node).getPPGaussian(),(AbstractPPNode) node);
+					if(node instanceof VolumeSphere)
+						mVolNodeMap.put( ((VolumeSphere) node).getVolumeGaussian(),(VolumeSphere) node);
+				}
 			}
+				
 		}
+
 	}
 
 	public void update() {
 		mArchitect.buildMolecule(mV3DMolecule.getMolecule());
-		if(mV3DMolecule.getPharmacophore()!=null) {
-			mPPArchitect.buildPharmacophore(mV3DMolecule.getPharmacophore().getMolVol(), 0);
+		for(V3DMolGroup group : mV3DMolecule.getMolGroups()) {
+			if(group instanceof V3DCustomizablePheSA) { 
+				V3DCustomizablePheSA pharmacophore = (V3DCustomizablePheSA) group;
+				mPPArchitect.buildPharmacophore(pharmacophore.getMolVol(), 0);
 		}
+	}
 	}
 			
 		

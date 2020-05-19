@@ -540,6 +540,7 @@ public class V3DMoleculeModifier {
 	public static void placeFragment(V3DMolecule v3dMol,  String[] fragmentIDCode) {
 		IDCodeParserWithoutCoordinateInvention parser = new IDCodeParserWithoutCoordinateInvention();
 		StereoMolecule mol = v3dMol.getMolecule();
+		mol.setName("Molecule");
 		
 		StereoMolecule fragment = parser.getCompactMolecule(fragmentIDCode[0],fragmentIDCode[1]);
 		for(int at=0;at<fragment.getAllAtoms();at++) 

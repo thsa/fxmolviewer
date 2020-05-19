@@ -60,12 +60,13 @@ import org.openmolecules.render.MoleculeArchitect.ConstructionMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
-public class V3DMolecule extends RotatableGroup {
+public class V3DMolecule extends V3DMolGroup {
 	private static final float HIGHLIGHT_SCALE = 1.2f;
 	private static int MAX_ID = 0;
 	private static final double DEFAULT_SURFACE_TRANSPARENCY = 0.1;
@@ -105,12 +106,9 @@ public class V3DMolecule extends RotatableGroup {
 	private Set<MolCoordinatesChangeListener> mListeners;
 	private Set<MolStructureChangeListener> mStructureListeners;
 	private Point3D			mRotationCenter;
-	private V3DCustomizablePheSA mPharmacophore;
 	private ObjectProperty<MoleculeRole> mRoleProperty;
 	private IntegerProperty mIDProperty;
-	private IntegerProperty mGroupProperty;
 	private boolean mIsSelected;
-	private boolean mIsIncluded;
 	private Color mCarbonColor;
 	private BondRotationHelper mBondRotationHelper;
 	private int mnUnconnectedFragments;
@@ -143,7 +141,7 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param mol
 	 */
 	public V3DMolecule(StereoMolecule mol) {
-		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, 0, 0, MoleculeRole.LIGAND );
+		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, 0, MoleculeRole.LIGAND );
 	}
 
 	/**
@@ -153,12 +151,12 @@ public class V3DMolecule extends RotatableGroup {
 	 * - shows no surface
 	 * @param mol
 	 */
-	public V3DMolecule(StereoMolecule mol, int id, int group, MoleculeRole role) {
-		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, group, role );
+	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role) {
+		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role );
 		}
 	
-	public V3DMolecule(StereoMolecule mol, int id, int group, MoleculeRole role, boolean overrideHydrogen) {
-		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, group, role, overrideHydrogen);
+	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role, boolean overrideHydrogen) {
+		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role, overrideHydrogen);
 		}
 
 	/**
@@ -168,8 +166,8 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param mol
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 */
-	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, int id, int group, MoleculeRole role) {
-		this(mol, constructionMode, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, group, role);
+	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, int id, MoleculeRole role) {
+		this(mol, constructionMode, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role);
 	}
 
 	/**
@@ -178,14 +176,14 @@ public class V3DMolecule extends RotatableGroup {
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options
 	 */
-	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, int group, MoleculeRole role) {
+	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role) {
 		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
-				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, group, role, true);
+				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, role, true);
 		}
 	
-	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, int group, MoleculeRole role, boolean overrideHydrogen) {
+	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role, boolean overrideHydrogen) {
 		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
-				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, group, role, overrideHydrogen);
+				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id,  role, overrideHydrogen);
 		}
 	
 
@@ -204,7 +202,8 @@ public class V3DMolecule extends RotatableGroup {
 	 */
 	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode,
 						SurfaceMode surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
-						int id, int group, MoleculeRole role, boolean overrideHydrogens) {
+						int id, MoleculeRole role, boolean overrideHydrogens) {
+		super(mol.getName());
 		mMol = mol;
 		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true);
 		mPickedAtomList = new LinkedList<>();
@@ -212,9 +211,7 @@ public class V3DMolecule extends RotatableGroup {
 		mHydrogenMode = hydrogenMode;
 		mRoleProperty = new SimpleObjectProperty<MoleculeRole>(role);
 		mIDProperty = new SimpleIntegerProperty(id);
-		mGroupProperty = new SimpleIntegerProperty(group);
 		mIsSelected = false;
-		mIsIncluded = false;
 		mOverrideHydrogens = overrideHydrogens;
 		int surfaceCount = MoleculeSurfaceAlgorithm.SURFACE_TYPE.length;
 		mSurface = new MeshView[surfaceCount];
@@ -291,19 +288,12 @@ public class V3DMolecule extends RotatableGroup {
 	}
 	
 	private void constructPharmacophore(V3DCustomizablePheSA pharmacophore) {
-		this.removePharmacophore();
-		mPharmacophore = pharmacophore;
-		mPharmacophore.buildPharmacophore();
-		Platform.runLater(() -> getChildren().add(mPharmacophore));
-		mListeners.add(mPharmacophore);
+		pharmacophore.buildPharmacophore();
+		this.addMolGroup(pharmacophore);
+		//Platform.runLater(() -> getChildren().add(mPharmacophore));
+		mListeners.add(pharmacophore);
 		
 	}
-	
-	public V3DCustomizablePheSA getPharmacophore() {
-		return mPharmacophore;
-	}
-
-	
 	
 	
 	public boolean addImplicitHydrogens() {
@@ -345,9 +335,6 @@ public class V3DMolecule extends RotatableGroup {
 		mStructureListeners.remove(listener);
 	}
 	
-
-	
-
 
 
 	public StereoMolecule getMolecule() {
@@ -578,14 +565,6 @@ public class V3DMolecule extends RotatableGroup {
 	}
 	
 	
-	public int getGroup() {
-		return mGroupProperty.get();
-	}
-	
-	public IntegerProperty GroupProperty() {
-		return mGroupProperty;
-	}
-	
 	public IntegerProperty IDProperty() {
 		return mIDProperty;
 	}
@@ -602,9 +581,7 @@ public class V3DMolecule extends RotatableGroup {
 		mOverrideHydrogens = override;
 	}
 		
-	public boolean isIncluded() {
-		return mIsIncluded;
-	}
+
 	
 
 	
@@ -616,14 +593,8 @@ public class V3DMolecule extends RotatableGroup {
 		mIDProperty.set(id);
 	}
 	
-	public void setIncluded(boolean included) {
-		mIsIncluded = included;
-	}
+
 	
-	
-	public void setGroup(int group) {
-		mGroupProperty.set(group);
-	}
 
 
 	/**
@@ -822,7 +793,7 @@ public class V3DMolecule extends RotatableGroup {
 	}
 	
 	public void fireStructureChange() {
-		removePharmacophore();
+		removeAllPharmacophores();
 		mBondRotationHelper = new BondRotationHelper(mMol);
 		for(MolStructureChangeListener listener : mStructureListeners) {
 			listener.structureChanged();
@@ -1175,11 +1146,23 @@ public class V3DMolecule extends RotatableGroup {
 			}
 		}
 	
-	public void removePharmacophore() {
-		if(mPharmacophore!=null) {
-			mPharmacophore.cleanup();
-			mPharmacophore = null;
+	
+	
+	
+	public void removeAllPharmacophores() {
+		List<V3DMolGroup> allChildren = this.getAllChildren();
+		for(V3DMolGroup child : allChildren) {
+			if(child instanceof V3DCustomizablePheSA)
+				removePharmacophore((V3DCustomizablePheSA)child);
 		}
+		
+	}
+	
+	public void removePharmacophore(V3DCustomizablePheSA pharmacophore) {
+		this.deleteMolecule(pharmacophore);
+		//Platform.runLater(() -> getChildren().add(mPharmacophore));
+		mListeners.remove(pharmacophore);
+
 	}
 	
 	public MoleculeRole getRole() {
@@ -1197,6 +1180,11 @@ public class V3DMolecule extends RotatableGroup {
 
 	public int getUnconnectedFragmentNo() {
 		return mnUnconnectedFragments;
+	}
+
+	@Override
+	public String getName() {
+		return mMol.getName();
 	}
 
 

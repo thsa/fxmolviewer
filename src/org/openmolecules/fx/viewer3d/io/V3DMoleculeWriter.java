@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
@@ -60,8 +61,9 @@ public class V3DMoleculeWriter {
 
 	}
 	
-	public static void savePhesaQueries(File file, List<V3DMolecule> fxmols) {
+	public static void savePhesaQueries(File file, V3DCustomizablePheSA pheSAModel) {
 		try {
+			StereoMolecule origMol = ((V3DMolecule)(pheSAModel.getParent())).getMolecule();
 			DWARFileCreator creator = new DWARFileCreator(new BufferedWriter(new FileWriter(file)));
 			int structureColumn = creator.addStructureColumn("Structure", "IDcode");
 			int threeDColumn = creator.add3DCoordinatesColumn("Coordinates3D", structureColumn);
@@ -70,60 +72,59 @@ public class V3DMoleculeWriter {
 					structureColumn);
 			creator.writeHeader(-1);
 			DescriptorHandlerShape dhs = new DescriptorHandlerShape();
-			for(V3DMolecule fxmol : fxmols) {
-				if(fxmol.getPharmacophore()==null)
-					fxmol.addPharmacophore();
-				ArrayList<MolecularVolume> molVols = new ArrayList<MolecularVolume>();
-				StereoMolecule mol = new StereoMolecule(fxmol.getMolecule());
-				mol.ensureHelperArrays(Molecule.cHelperNeighbours);
-				int[] hydrogens1 = new int[mol.getAllAtoms()-mol.getAtoms()];
-				int k=0;
-				for(int a=0;a<mol.getAtoms();a++) { 
-					for(int j=mol.getConnAtoms(a);j<mol.getAllConnAtoms(a);j++) {
-						hydrogens1[k] = mol.getConnAtom(a, j);
-						k++;
-					}
+			MolecularVolume molVol = pheSAModel.getMolVol();
+			ArrayList<MolecularVolume> molVols = new ArrayList<MolecularVolume>();
+			StereoMolecule mol = new StereoMolecule(origMol);
+			mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+			int[] hydrogens1 = new int[mol.getAllAtoms()-mol.getAtoms()];
+			int k=0;
+			for(int a=0;a<mol.getAtoms();a++) { 
+				for(int j=mol.getConnAtoms(a);j<mol.getAllConnAtoms(a);j++) {
+					hydrogens1[k] = mol.getConnAtom(a, j);
+					k++;
 				}
-				Canonizer can = new Canonizer(mol, Canonizer.COORDS_ARE_3D);
-				StereoMolecule mol2 = can.getCanMolecule(true);
-				mol2.ensureHelperArrays(Molecule.cHelperNeighbours);
-				int[] heavyAtomMap = can.getGraphIndexes();
-				int[] hydrogens2 = new int[mol.getAllAtoms()-mol.getAtoms()];
-				k=0;
-				for(int a : heavyAtomMap) {
-					for(int j=mol2.getConnAtoms(a);j<mol2.getAllConnAtoms(a);j++) {
-						hydrogens2[k] = mol2.getConnAtom(a, j);
-						k++;
-					}
-				}
-					
-				int[] atomMap = new int[mol.getAllAtoms()];
-				for(int i=0; i<hydrogens1.length;i++)
-					atomMap[hydrogens1[i]] = hydrogens2[i];
-				for(int i=0; i<heavyAtomMap.length;i++)
-					atomMap[i] = heavyAtomMap[i];
-				MolecularVolume molVolOut = new MolecularVolume(fxmol.getPharmacophore().getMolVol());
-				molVolOut.updateAtomIndeces(atomMap);
-				Conformer conf = new Conformer(mol2);
-				PheSAAlignment.preProcess(conf, molVolOut);
-				molVols.add(molVolOut);
-				for(int a=0;a<mol2.getAllAtoms();a++) {
-					Coordinates newCoords = new Coordinates(conf.getCoordinates(a));
-					mol2.setAtomX(a, newCoords.x);
-					mol2.setAtomY(a, newCoords.y);
-					mol2.setAtomZ(a, newCoords.z);
-				}
-				PheSAMolecule shapeMol = new PheSAMolecule(mol2,molVols);
-				String PheSAString = dhs.encode(shapeMol);
-				can = new Canonizer(mol2, Canonizer.COORDS_ARE_3D);
-				String idcoords = can.getEncodedCoordinates(true);
-				String idcode = can.getIDCode();
-				creator.setRowCoordinates(idcoords, threeDColumn );
-				creator.setRowStructure(idcode, structureColumn);
-				creator.setRowValue(PheSAString, pheSAColumn);
-				creator.writeCurrentRow();
 			}
+			Canonizer can = new Canonizer(mol, Canonizer.COORDS_ARE_3D);
+			StereoMolecule mol2 = can.getCanMolecule(true);
+			mol2.ensureHelperArrays(Molecule.cHelperNeighbours);
+			int[] heavyAtomMap = can.getGraphIndexes();
+			int[] hydrogens2 = new int[mol.getAllAtoms()-mol.getAtoms()];
+			k=0;
+			for(int a : heavyAtomMap) {
+				for(int j=mol2.getConnAtoms(a);j<mol2.getAllConnAtoms(a);j++) {
+					hydrogens2[k] = mol2.getConnAtom(a, j);
+					k++;
+				}
+			}
+				
+			int[] atomMap = new int[mol.getAllAtoms()];
+			for(int i=0; i<hydrogens1.length;i++)
+				atomMap[hydrogens1[i]] = hydrogens2[i];
+			for(int i=0; i<heavyAtomMap.length;i++)
+				atomMap[i] = heavyAtomMap[i];
+			MolecularVolume molVolOut = new MolecularVolume(molVol);
+			molVolOut.updateAtomIndeces(atomMap);
+			Conformer conf = new Conformer(mol2);
+			PheSAAlignment.preProcess(conf, molVolOut);
+			
+			molVols.add(molVolOut);
+			for(int a=0;a<mol2.getAllAtoms();a++) {
+				Coordinates newCoords = new Coordinates(conf.getCoordinates(a));
+				mol2.setAtomX(a, newCoords.x);
+				mol2.setAtomY(a, newCoords.y);
+				mol2.setAtomZ(a, newCoords.z);
+			}
+			PheSAMolecule shapeMol = new PheSAMolecule(mol2,molVols);
+			String PheSAString = dhs.encode(shapeMol);
+			can = new Canonizer(mol2, Canonizer.COORDS_ARE_3D);
+			String idcoords = can.getEncodedCoordinates(true);
+			String idcode = can.getIDCode();
+			creator.setRowCoordinates(idcoords, threeDColumn );
+			creator.setRowStructure(idcode, structureColumn);
+			creator.setRowValue(PheSAString, pheSAColumn);
+			creator.writeCurrentRow();
 			creator.writeEnd();
+
 			
 		} catch (IOException e) {
 			e.printStackTrace();

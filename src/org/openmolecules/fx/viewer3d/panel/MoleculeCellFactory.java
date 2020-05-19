@@ -26,12 +26,16 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeTableCell;
 import javafx.util.Callback;
+
+import javafx.scene.control.TreeTableView;
+import javafx.scene.control.TreeTableColumn;
 
 /**
  * Created by thomas on 20.10.16.
  */
-public class MoleculeCellFactory implements Callback<TableColumn<MoleculeModel,MoleculeModel>, TableCell<MoleculeModel,MoleculeModel>> {
+public class MoleculeCellFactory implements Callback<TreeTableColumn<MolGroupModel,MolGroupModel>, TreeTableCell<MolGroupModel,MolGroupModel>> {
 	private BooleanProperty mShowStructure;
 	public MoleculeCellFactory(BooleanProperty showStructure) {
 		mShowStructure = showStructure;
@@ -40,7 +44,7 @@ public class MoleculeCellFactory implements Callback<TableColumn<MoleculeModel,M
 
 
 	@Override
-	public TableCell<MoleculeModel, MoleculeModel> call(TableColumn<MoleculeModel, MoleculeModel> param) {
+	public TreeTableCell<MolGroupModel, MolGroupModel> call(TreeTableColumn<MolGroupModel, MolGroupModel> param) {
 		// TODO Auto-generated method stub
 		return new MoleculeCell(mShowStructure);
 	}

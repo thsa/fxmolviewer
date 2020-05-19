@@ -6,10 +6,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.openmolecules.fx.tasks.V3DPheSAScreener;
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
+import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
+
+import com.actelion.research.chem.phesa.VolumeGaussian;
 
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -21,6 +25,7 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -38,28 +43,38 @@ public class MolPaneMouseHandler {
             		public void handle(final MouseEvent mouseEvent) {
             	mousePressed(mouseEvent);}
             });
+		mMolPane.addEventFilter(MouseEvent.MOUSE_RELEASED,
+		        new EventHandler<MouseEvent>() {
+            		public void handle(final MouseEvent mouseEvent) {
+            	mousePressed(mouseEvent);}
+           });
 	}
+	
+	
+	
+
 	
 	private void mousePressed(MouseEvent me) {
 		if(sContextMenu!=null && sContextMenu.isShowing()) 
 			sContextMenu.hide();
-		boolean selectionMode = me.isControlDown();
-    	TableRow<MoleculeModel> pickedRow = null;
+		//boolean selectionMode = me.isControlDown();
+    	TreeTableRow<MolGroupModel> pickedRow = null;
     	Node pickedNode = me.getPickResult().getIntersectedNode();
     	while(pickedNode.getParent()!=null) {
-    		if (pickedNode.getParent() instanceof TableRow)
-    			pickedRow = (TableRow) pickedNode.getParent();
+    		if (pickedNode.getParent() instanceof TreeTableRow)
+    			pickedRow = (TreeTableRow<MolGroupModel>) pickedNode.getParent();
     		pickedNode = pickedNode.getParent();
     	}
 		if(me.isPopupTrigger()) {
 			if(pickedRow==null) 
 				handlePopupMenu(me,null);
 			else {
-				MoleculeModel model = pickedRow.getItem();
+				MolGroupModel model = pickedRow.getItem();
 				handlePopupMenu(me,model);
 			}
 			return;
 		}
+		/*
     	if (pickedRow != null) {
     		if(pickedRow.getTableView()==mLastActiveTable) {  //click within same table already handled by default event handling
     			if(!selectionMode)
@@ -76,12 +91,13 @@ public class MolPaneMouseHandler {
     		mMolPane.clearTableSelections();
     		mLastActiveTable = null;
     	}
+    	*/
 
 	}
 	
 
 	
-	private void handlePopupMenu(MouseEvent me, MoleculeModel model) {
+	private void handlePopupMenu(MouseEvent me, MolGroupModel model) {
 		
 		
 		if(sContextMenu!=null && sContextMenu.isShowing()) 
@@ -91,6 +107,33 @@ public class MolPaneMouseHandler {
 		popup.getItems().add(new SeparatorMenuItem());
 		
 		if(model!=null) {
+			V3DMolGroup group = model.getMolecule3D();
+			if(group instanceof V3DCustomizablePheSA) {
+				V3DCustomizablePheSA phesaModel = (V3DCustomizablePheSA) group;
+				MenuItem itemES = new MenuItem("Add ExclusionSphere");
+				itemES.setOnAction(e -> phesaModel.placeExclusionSphere(VolumeGaussian.EXCLUSION));
+				popup.getItems().add(itemES);
+				
+				MenuItem itemIS = new MenuItem("Add InclusionSphere");
+				itemIS.setOnAction(e -> phesaModel.placeExclusionSphere(VolumeGaussian.INCLUSION));
+				popup.getItems().add(itemIS);
+				popup.getItems().add(new SeparatorMenuItem());
+				
+				MenuItem savePheSA = new MenuItem("Save as PheSA Query");
+				savePheSA.setOnAction(e -> {
+					File saveFile = createFileSaverDialog();
+					if(saveFile!=null) {
+						V3DMoleculeWriter.savePhesaQueries(saveFile, phesaModel);
+					}
+				});
+				
+				popup.getItems().add(savePheSA);
+			}
+				
+		}
+		
+		/*
+		if(model!=null) {
 			MenuItem menuRole = new MenuItem("Change Role");
 			menuRole.setOnAction(e -> this.createRoleChooserDialog(model));
 			popup.getItems().add(menuRole);
@@ -99,7 +142,7 @@ public class MolPaneMouseHandler {
 		MenuItem menuGroup = new MenuItem("Change Group");
 		menuGroup.setOnAction(e -> this.createGroupChangeDialog());
 		popup.getItems().add(menuGroup);
-		
+		*/
 
 
 		
@@ -146,15 +189,18 @@ public class MolPaneMouseHandler {
 		
 		popup.getItems().add(new SeparatorMenuItem());
 
-		
+		/*
 		MenuItem move = new MenuItem("Move to new Group");
 		move.setOnAction(e -> {
 			int newGroup = mMolPane.getV3DScene().getMaxGroupID()+1;
 			mMolPane.changeGroupSelected(newGroup);
 		});
 		
-		popup.getItems().add(move);
 		
+		popup.getItems().add(move);
+		*/
+		
+		/*
 		MenuItem savePheSA = new MenuItem("Save as PheSA Queries");
 		savePheSA.setOnAction(e -> {
 			File saveFile = createFileSaverDialog();
@@ -165,6 +211,7 @@ public class MolPaneMouseHandler {
 		});
 		
 		popup.getItems().add(savePheSA);
+		*/
 		
 		MenuItem loadPheSA = new MenuItem("Load PheSA Queries");
 		loadPheSA.setOnAction(e -> {
@@ -179,7 +226,7 @@ public class MolPaneMouseHandler {
 		
 		popup.getItems().add(loadPheSA);
 		
-		
+		/*
 		MenuItem screenPheSA = new MenuItem("Run PheSA Screening");
 		screenPheSA.setOnAction(e -> {
 			FileChooser fileChooser =  getMolFileLoader();
@@ -190,10 +237,11 @@ public class MolPaneMouseHandler {
 			});
 		
 		popup.getItems().add(screenPheSA);
-
+		*/
 
 		popup.show(mMolPane, me.getScreenX(), me.getScreenY());
 	}
+	/*
 	
 	private void createGroupChangeDialog() {
 		List<String> choices = new ArrayList<>();
@@ -209,7 +257,7 @@ public class MolPaneMouseHandler {
 		});
 	}
 	
-	private void createRoleChooserDialog(MoleculeModel model) {
+	private void createRoleChooserDialog(MolGroupModel model) {
 		List<String> choices = new ArrayList<>();
 		choices.add(V3DMolecule.MoleculeRole.LIGAND.toString());
 		choices.add(V3DMolecule.MoleculeRole.MACROMOLECULE.toString());
@@ -236,6 +284,9 @@ public class MolPaneMouseHandler {
 			}
 		});
 	}
+	
+	*/
+	
 	
 	private File createDWARParserDialog() {
 		FileChooser fileChooser = new FileChooser();

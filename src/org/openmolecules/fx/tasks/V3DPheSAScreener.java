@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
@@ -30,47 +31,28 @@ public class V3DPheSAScreener {
 	private List<V3DMolecule> mFXQueries;
 	private File mInputDWFile;
 	
-	private V3DPheSAScreener(V3DScene scene, File dwarFile) {
+	private V3DPheSAScreener(V3DScene scene, List<V3DCustomizablePheSA> refModels, File dwarFile) {
 		mQueryMols = new ArrayList<PheSAMolecule>();
 		mFXQueries = new ArrayList<V3DMolecule>();
 		mInputDWFile = dwarFile;
-		V3DMolecule fxmol;
-		MolecularVolume molVol;
-		for (Node node : scene.getWorld().getChildren()) {
-			if (node instanceof V3DMolecule) {
-					fxmol = (V3DMolecule)node;
-					if(fxmol.getMolecule().getAtoms()>100) {
-						V3DShapeAlignerInPlace.molSizeAlert.showAndWait();
-						return;
-					}
-					else if(fxmol.isIncluded()) {
-						if(fxmol.getPharmacophore()==null) 
-							fxmol.addPharmacophore();
-						molVol = fxmol.getPharmacophore().getMolVol();
-						StereoMolecule mol = fxmol.getMolecule();
-						Conformer conf = new Conformer(mol);
-						PheSAAlignment.preProcess(conf, molVol);
-						conf.toMolecule(mol);
-						mQueryMols.add(new PheSAMolecule(mol,molVol));
-						mFXQueries.add(fxmol);
-					}
+		for(V3DCustomizablePheSA refModel : refModels) {
+			V3DMolecule refFXMol = ((V3DMolecule)(refModel.getParent()));
+			StereoMolecule refMol = refFXMol.getMolecule();
+			mQueryMols.add(new PheSAMolecule(refMol,refModel.getMolVol()));
+			mFXQueries.add(refFXMol);
+		}
 							
 						
-			}
-		}
-		
 		
 	}
 	
-	public static void screen(V3DScene scene, File dwarFile) {
-		V3DPheSAScreener screener = new V3DPheSAScreener(scene,dwarFile);
+	public static void screen(V3DScene scene,List<V3DCustomizablePheSA> refModels, File dwarFile) {
+		V3DPheSAScreener screener = new V3DPheSAScreener(scene, refModels,dwarFile);
 		Thread thread = new Thread(() -> screener.run());
 		thread.start();
 	}
 	
 	private void run() {
-		File queryFile = new File(mInputDWFile.getParentFile(),"queries.dwar");
-		V3DMoleculeWriter.savePhesaQueries(queryFile, mFXQueries);
 		mBaseMols = V3DMoleculeParser.readPhesaScreeningLib(mInputDWFile, false);
 		int nQueries = mQueryMols.size();
 		int nBases = mBaseMols.size();

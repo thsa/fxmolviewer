@@ -33,9 +33,9 @@ import javafx.scene.text.Font;
 /**
  * Created by thomas on 20.10.16.
  */
-public class MoleculeCell extends TableCell<MoleculeModel,MoleculeModel> implements ChangeListener<Boolean> {
+public class MoleculeCell extends TreeTableCell<MolGroupModel,MolGroupModel> implements ChangeListener<Boolean> {
 	private Control mView;
-	private MoleculeModel mModel;
+	private MolGroupModel mModel;
 	BooleanProperty mShowStructure;
 
 	public MoleculeCell(BooleanProperty showStructure) {
@@ -54,7 +54,7 @@ public class MoleculeCell extends TableCell<MoleculeModel,MoleculeModel> impleme
 	}
 
 	@Override
-	public void updateItem(MoleculeModel item, boolean empty) {
+	public void updateItem(MolGroupModel item, boolean empty) {
 		super.updateItem(item, empty);
 		mModel = item;
 		if (empty || item == null) {
@@ -66,22 +66,16 @@ public class MoleculeCell extends TableCell<MoleculeModel,MoleculeModel> impleme
 	}
 
 	public void updateView(boolean empty) {
-		if (mShowStructure.get()) {
-			mView = (empty || mModel == null) ? null : new MoleculeView(mModel.getMolecule2D());
-			if (mView != null) {
-				((MoleculeView)mView).setBackgroundColor(new Color(0, 0, 0, 0));
-				configureView();
-			}
-		}
-		else {
-			mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName(), RoleShapeFactory.fromRole(mModel.getMolecule3D().getRole()));
-			if (mView != null) {
+
+			//mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName(), RoleShapeFactory.fromRole(mModel.getMolecule3D().getRole()));
+		mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName());	
+		if (mView != null) {
 				((Label)mView).setFont(Font.font(15));
 				configureView();
-			}
+			
 		}
 		setGraphic(mView);	
-		this.getTableView().refresh();
+		this.getTreeTableView().refresh();
 	}
 
 
@@ -98,7 +92,7 @@ public class MoleculeCell extends TableCell<MoleculeModel,MoleculeModel> impleme
 		else {
 			//if (mModel.getMolecule3D().isVisible()) {
 				((Label)mView).textFillProperty().setValue(Color.WHITE);
-				((Label)mView).setGraphic(RoleShapeFactory.fromRole(mModel.roleProperty().get()));
+				//((Label)mView).setGraphic(RoleShapeFactory.fromRole(mModel.roleProperty().get()));
 			//}
 			//else
 			//	((Label)mView).textFillProperty().setValue(new Color(0.3, 0.3, 0.3, 1));

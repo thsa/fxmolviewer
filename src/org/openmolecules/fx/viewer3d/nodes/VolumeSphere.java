@@ -1,5 +1,6 @@
 package org.openmolecules.fx.viewer3d.nodes;
 
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.render.MoleculeBuilder;
@@ -173,9 +174,10 @@ public class VolumeSphere extends Group  {
 	private void cleanup() {
 		getChildren().remove(icosahedron);
 		getChildren().remove(sphere);
-		V3DMolecule fxmol = (V3DMolecule) this.getParent().getParent();
-		fxmol.getPharmacophore().getMolVol().getVolumeGaussians().remove(volGauss);
-		fxmol.getPharmacophore().getChildren().remove(this);
+		V3DCustomizablePheSA parentPharmacophore = (V3DCustomizablePheSA) this.getParent();
+		parentPharmacophore.getMolVol().getVolumeGaussians().remove(volGauss);
+		parentPharmacophore.getChildren().remove(this);
+
 		
 	}
 	

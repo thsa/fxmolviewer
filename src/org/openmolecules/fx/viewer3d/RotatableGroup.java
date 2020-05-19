@@ -31,18 +31,24 @@ import javafx.scene.transform.Transform;
 
 import java.util.ArrayList;
 
-public class RotatableGroup extends Group implements ChangeListener<Number> {
+public class RotatableGroup extends Group implements ChangeListener<Number>, IV3DMoleculeGroup {
 	private Transform mRotation;
 	private ArrayList<TransformationListener> mTransformationListenerList;
+	private String mName;
 
-	public RotatableGroup() {
+	public RotatableGroup(String name) {
 		mRotation = new Rotate();
 		getTransforms().add(mRotation);
 		mTransformationListenerList = new ArrayList<TransformationListener>();
 		translateXProperty().addListener(this);
 		translateYProperty().addListener(this);
 		translateZProperty().addListener(this);
+		mName = name;
 		}
+	
+	public RotatableGroup() {
+		this("");
+	}
 
 	public Transform getRotation() {
 		return mRotation;
@@ -116,4 +122,10 @@ public class RotatableGroup extends Group implements ChangeListener<Number> {
 		material.setSpecularColor(dc);
 		return material;
 		}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return mName;
+	}
 	}
