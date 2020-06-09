@@ -1,5 +1,6 @@
 package org.openmolecules.fx.tasks;
 
+import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.forcefield.ForceField;
 import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
@@ -17,6 +18,7 @@ import org.openmolecules.fx.viewer3d.V3DSceneEditor;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class V3DMinimizer implements ForceFieldChangeListener {
 	private static V3DMinimizer sInstance;
@@ -49,7 +51,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 		}
 		else {
 			ArrayList<V3DMolecule> fxmolList = new ArrayList<V3DMolecule>();
-			for (Node node : scene3D.getWorld().getChildren()) {
+			for (Node node : scene3D.getWorld().getAllChildren()) {
 				if (node instanceof V3DMolecule && node.isVisible()) {
 					if (node.isVisible()) {
 						fxmol = (V3DMolecule)node;
@@ -102,11 +104,9 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 				atom++;
 			}
 		}
-
 		ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField = new ForceFieldMMFF94(molScenery, ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField.addListener(this);
-
 		if (fixedAtomCount != 0) {
 			ArrayUtils.resize(fixedAtom, fixedAtomCount);
 			for (int i = 0; i < rigidAtoms.size(); i++)

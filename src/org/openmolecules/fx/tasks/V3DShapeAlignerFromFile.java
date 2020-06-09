@@ -45,6 +45,7 @@ public class V3DShapeAlignerFromFile implements IAlignmentTask {
 		mScene = scene3D;
 		mRefFXMol = refFXMol;
 		mFitShapes = fitShapes;
+		mRefVol = refVol;
 		this.ppWeight = ppWeight;
 	}
 	

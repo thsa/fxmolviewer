@@ -50,13 +50,11 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
@@ -82,6 +80,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private int mMoleculeColorID;
 	private V3DInteractionHandler mInteractionHandler;
 	
+
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
 	protected static final double CAMERA_FIELD_OF_VIEW = 30.0;	// default field of view
@@ -143,7 +142,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		applySettings();
 		mSceneListeners = new ArrayList<>();
 		initializeDragAndDrop();
-
 	}
 
 	private void initializeDragAndDrop() {
@@ -247,7 +245,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void paste() {
 		StereoMolecule mol = mClipboardHandler.pasteMolecule(false);
-		if (mol == null) {   // TODO interactive message
+		if (mol == null || mCopiedMol == null) {   // TODO interactive message
 			System.out.println("No molecule on clipboard!");
 			return;
 			}
@@ -269,21 +267,17 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			conformer.toMolecule(mol);	// copy atom coordinates to molecule
 			}
 
-<<<<<<< HEAD
 		int group = 0;
 		V3DMolecule.MoleculeRole role = V3DMolecule.MoleculeRole.LIGAND;
 
 		// if the previous molecule copied within this viewer has the same size as the clipboard molecule,
 		// we assume that the clipboard molecule was previously copied from this viewer and use group & id from it
 		if (mCopiedMol != null && mCopiedMol.getMolecule().getAllAtoms() == mol.getAllAtoms()) {
-			group = mCopiedMol.getGroup();
 			role = mCopiedMol.getRole();
 		}
 
-		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), group, role);
-=======
-		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), mCopiedMol.getRole());
->>>>>>> development
+		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), role);
+		//V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), mCopiedMol.getRole());
 //		fxmol.activateEvents();
 		mCopiedMol = null;
 		addMolecule(fxmol);
@@ -365,15 +359,18 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.initialize(isSmallMoleculeMode);
 		mWorld.getChildren().clear();	// this does not remove the measurements
-		mWorld.clearTransform();
 	}
 
+	public void optimizeView() {
+		optimizeView(mWorld);
+	}
+	
 	/**
 	 * Moves all nodes such that the center of gravity of all atoms is world center (0,0,0).
 	 * Moves the camera such that x=0, y=0 and z<0, such that all atoms of visible molecules are just within the field of view.
 	 */
-	public void optimizeView() {
-		Point3D cog = getCenterOfGravity();
+	public void optimizeView(V3DMolGroup group) {
+		Point3D cog = getCenterOfGravity(group);
 		for (Node n:mWorld.getChildren()) {
 			Point3D p = mWorld.sceneToLocal(cog);
 			n.setTranslateX(n.getTranslateX() - p.getX());
@@ -460,13 +457,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		return zr;
 	}
 
-	public Point3D getCenterOfGravity() {
+	public Point3D getCenterOfGravity(V3DMolGroup group) {
 		int atomCount = 0;
 		double x = 0.0;
 		double y = 0.0;
 		double z = 0.0;
 
-			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+			for(V3DMolGroup fxmol : group.getAllChildren()) {
 				if (fxmol.isVisible()) {
 					for (Node node2:fxmol.getChildren()) {
 						NodeDetail detail = (NodeDetail)node2.getUserData();
@@ -525,7 +522,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		optimizeView();
 	}
 	
-
+	public void addMolGroup(V3DMolGroup group,V3DMolGroup parent) {
+		parent.addMolGroup(group);
+	}
+	
+	public void addMolGroup(V3DMolGroup group) {
+		addMolGroup(group,mWorld);
+	}
 
 	public void addMolecule(V3DMolecule fxmol) {
 		addMolecule(fxmol,mWorld);
@@ -684,6 +687,18 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		return mEditor;
 	}
 	
+	public List<V3DMolecule> getMolsInScene() {
+		V3DMolecule fxmol;
+		ArrayList<V3DMolecule> fxmols = new ArrayList<V3DMolecule>();
+		for (Node node : getWorld().getAllChildren()) {
+			if (node instanceof V3DMolecule) {
+				fxmol = (V3DMolecule)node;
+				fxmols.add(fxmol);
+			}
+		}
+		return fxmols;
+	}
+	
 	public void tryAddMeasurement() {
 		Set<V3DMolecule> mols = new HashSet<V3DMolecule>(mPickedMolsList);
 		int pickedAtoms = 0;
@@ -753,6 +768,27 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			measurement.cleanup();
 		}
 		mMeasurements.clear();
+	}
+	
+	public void moveToGroup(List<V3DMolGroup> toMove, V3DMolGroup target) {
+		List<V3DMolGroup> targetChildren = target.getAllChildren();
+		List<V3DMolGroup> notToMove = new ArrayList<V3DMolGroup>(); //MolGroups that are subGroups of other groups that will be moved, shouldn't be moved separately
+		for(V3DMolGroup group1 : toMove) {
+			if(targetChildren.contains(group1))
+				notToMove.add(group1);
+			List<V3DMolGroup> group1Children = group1.getAllChildren();
+			for(V3DMolGroup group2 : toMove) {
+				if(group1==group2)
+					continue;
+				if(group1Children.contains(group2))
+					notToMove.add(group2);
+			}
+		}
+		toMove.removeAll(notToMove);
+		this.delete(toMove);
+		for(V3DMolGroup group : toMove)
+			target.addMolGroup(group);
+		
 	}
 
 	@Override

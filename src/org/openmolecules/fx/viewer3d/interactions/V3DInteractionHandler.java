@@ -5,13 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.V3DSceneListener;
 
 
-public class V3DInteractionHandler implements V3DSceneListener{
+public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 	
 	private V3DScene mScene3D;
 	private List<V3DInteractingPair> mInteractingPairs;
@@ -19,19 +24,17 @@ public class V3DInteractionHandler implements V3DSceneListener{
 	
 	public V3DInteractionHandler(V3DScene scene) {
 		mScene3D = scene;
-		scene.addSceneListener(this);
 		mInteractionSites  = new HashMap<V3DMolecule,V3DInteractionSites>();
 		mInteractingPairs = new ArrayList<V3DInteractingPair>();
 	}
 	
 	public void displayInteractions() {
 		List<V3DMolecule> fxmols = mScene3D.getMolsInScene();
-		for(V3DMolecule mol3d : fxmols) {
-			mol3d.addImplicitHydrogens();
-			mol3d.RoleProperty().addListener((v,ov,nv) -> update());
-			mol3d.GroupProperty().addListener((v,ov,nv) -> update());
-			mol3d.IDProperty().addListener((v,ov,nv) -> update());
-			mInteractionSites.put(mol3d, new V3DInteractionSites(mol3d));
+		for(V3DMolecule v3dmol : fxmols) {
+				v3dmol.addImplicitHydrogens();
+				v3dmol.RoleProperty().addListener((v,ov,nv) -> update());
+				v3dmol.IDProperty().addListener((v,ov,nv) -> update());
+				mInteractionSites.put(v3dmol, new V3DInteractionSites(v3dmol));
 		}
 
 		calculateInteractionsBetweenMols(fxmols);	
@@ -69,7 +72,8 @@ public class V3DInteractionHandler implements V3DSceneListener{
 		boolean interacting = false;
 		MoleculeRole role1 = fxmol1.getRole();
 		MoleculeRole role2 = fxmol2.getRole();
-		if(fxmol1.getGroup()!=fxmol2.getGroup())
+		//only mols from same group interact;
+		if(fxmol1.getParentSubGroup(mScene3D.getWorld())!=fxmol2.getParentSubGroup(mScene3D.getWorld()))
 			return interacting;
 		if(role1==MoleculeRole.SOLVENT && role2==MoleculeRole.SOLVENT)	
 			interacting=true;
@@ -85,54 +89,67 @@ public class V3DInteractionHandler implements V3DSceneListener{
 		return interacting;
 	}
 
-	@Override
-	public void removeMolecule(V3DMolecule fxmol) {
-		mInteractionSites.remove(fxmol);
-		List<V3DInteractingPair> toDelete = new ArrayList<V3DInteractingPair>();
-		for(V3DInteractingPair pair: mInteractingPairs) {
-			if(pair.containsMolecule3D(fxmol)) {
-				pair.cleanup();
-				toDelete.add(pair);
+	public void removeMolecule(V3DMolGroup group) {
+		if(group instanceof V3DMolecule) {
+			V3DMolecule fxmol = (V3DMolecule) group;
+			mInteractionSites.remove(fxmol);
+			List<V3DInteractingPair> toDelete = new ArrayList<V3DInteractingPair>();
+			for(V3DInteractingPair pair: mInteractingPairs) {
+				if(pair.containsMolecule3D(fxmol)) {
+					pair.cleanup();
+					toDelete.add(pair);
+				}
 			}
 		}
 		
 		
 	}
-
 	@Override
-	public void addMolecule(V3DMolecule fxmol) {
-		fxmol.addImplicitHydrogens();
-		fxmol.RoleProperty().addListener((v,ov,nv) -> update());
-		fxmol.GroupProperty().addListener((v,ov,nv) -> update());
-		fxmol.IDProperty().addListener((v,ov,nv) -> update());
-		mInteractionSites.put(fxmol, new V3DInteractionSites(fxmol));
-		if(fxmol.getUnconnectedFragmentNo()>1) {
-			V3DInteractingPair interactingPair = new V3DInteractingPair(fxmol, fxmol, mInteractionSites.get(fxmol),
-					mInteractionSites.get(fxmol), mScene3D);
-			interactingPair.analyze();
-			mInteractingPairs.add(interactingPair);
+	public void onChanged(Change<? extends V3DMolGroup> c) {
+		while(c.next()) {
+			List<? extends V3DMolGroup> added = c.getAddedSubList();
+			for(V3DMolGroup group : added) {
+				addMolecule(group);
+			}
+			
+			List<? extends V3DMolGroup> removed = c.getRemoved();
+			for(V3DMolGroup group : removed) {
+				removeMolecule(group);
+			}
 		}
-		List<V3DMolecule> fxmols = mScene3D.getMolsInScene();
-		for(int i=0;i<fxmols.size();i++) {
-			V3DMolecule fxmol2 = fxmols.get(i);
-			if(fxmol==fxmol2)
-				continue;
-			boolean interacting = areTwoMolsInteracting(fxmol2,fxmol);
-			if(interacting) {
-				V3DInteractingPair interactingPair = new V3DInteractingPair(fxmol, fxmol2, mInteractionSites.get(fxmol),
-					mInteractionSites.get(fxmol2), mScene3D);
+	}
+
+	public void addMolecule(V3DMolGroup group) {
+		if(group instanceof V3DMolecule) {
+			V3DMolecule fxmol = (V3DMolecule) group;
+			fxmol.addImplicitHydrogens();
+			fxmol.RoleProperty().addListener((v,ov,nv) -> update());
+			fxmol.IDProperty().addListener((v,ov,nv) -> update());
+			mInteractionSites.put(fxmol, new V3DInteractionSites(fxmol));
+			if(fxmol.getUnconnectedFragmentNo()>1) {
+				V3DInteractingPair interactingPair = new V3DInteractingPair(fxmol, fxmol, mInteractionSites.get(fxmol),
+						mInteractionSites.get(fxmol), mScene3D);
 				interactingPair.analyze();
 				mInteractingPairs.add(interactingPair);
 			}
-	}
+			List<V3DMolecule> fxmols = mScene3D.getMolsInScene();
+			for(int i=0;i<fxmols.size();i++) {
+				V3DMolecule fxmol2 = fxmols.get(i);
+				if(fxmol==fxmol2)
+					continue;
+				boolean interacting = areTwoMolsInteracting(fxmol2,fxmol);
+				if(interacting) {
+					V3DInteractingPair interactingPair = new V3DInteractingPair(fxmol, fxmol2, mInteractionSites.get(fxmol),
+						mInteractionSites.get(fxmol2), mScene3D);
+					interactingPair.analyze();
+					mInteractingPairs.add(interactingPair);
+				}
+			}
+		}
 		
 	}
 
-	@Override
-	public void initialize(boolean isSmallMoleculeMode) {
-		// TODO Auto-generated method stub
-		
-	}
+
 	
 	private void cleanup() {
 		for(V3DInteractingPair pair: mInteractingPairs) 

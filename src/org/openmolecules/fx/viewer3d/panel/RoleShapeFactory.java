@@ -1,7 +1,16 @@
 package org.openmolecules.fx.viewer3d.panel;
 
+import java.net.URL;
+
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
+import com.actelion.research.chem.interactionstatistics.InteractionDistanceStatistics;
+
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
@@ -15,13 +24,13 @@ public class RoleShapeFactory {
 		private static final Color PROTEIN_COLOR = Color.rgb(0,134,173);
 		private static final Color LIGAND_COLOR = Color.rgb(0,194,199);
 		private static final Color COFACTOR_COLOR = Color.rgb(151,235,219);
-		private static final Color SOLVENT_COLOR = Color.rgb(218,248,227);
+		private static final Color SOLVENT_COLOR = Color.rgb(0,102,204);
 		
 
 			
 		
-		public static Shape fromRole(V3DMolecule.MoleculeRole role) {
-			Shape shape;
+		public static Node fromRole(V3DMolecule.MoleculeRole role) {
+			Node shape;
 			switch(role) {
 				case MACROMOLECULE:
 					shape = createProteinShape();
@@ -44,42 +53,51 @@ public class RoleShapeFactory {
 		
 		private RoleShapeFactory() {}
 		
-		private static Shape createProteinShape() {
-			Arc protein = new Arc();
-			protein.setRadiusX(7.5);
-			protein.setRadiusY(7.5);
-			protein.setStartAngle(90.0f); 
-			protein.setLength(270.0f);
+		private static Node createProteinShape() {
+			StackPane stackPane = new StackPane();
+			Rectangle protein = new Rectangle();
+			protein.setHeight(15);
+			protein.setWidth(15);
 			protein.setFill(PROTEIN_COLOR);
-			protein.setType(ArcType.ROUND);
-		    return protein;
+			Label label = new Label("P");
+			stackPane.getChildren().addAll(protein,label);
+			return stackPane;
 			
 		}
 		
-		private static Shape createLigandShape() {
+		private static Node createLigandShape() {
+			StackPane stackPane = new StackPane();
 			Rectangle ligand = new Rectangle();
 			ligand.setHeight(15);
 			ligand.setWidth(15);
+			Label label = new Label("L");
+			stackPane.getChildren().addAll(ligand,label);
 			ligand.setFill(LIGAND_COLOR);
-		    return ligand;
+		    return stackPane;
 			
 		}
 		
-		private static Shape createCofactorShape() {
-			Polygon cofactor = new Polygon();
-			cofactor.getPoints().addAll(new Double[]{
-	                0.0, 15.0,
-	                15.0, 0.0,
-	                15.0, 15.0 });
+		private static Node createCofactorShape() {
+			StackPane stackPane = new StackPane();
+			Rectangle cofactor = new Rectangle();
+			cofactor.setHeight(15);
+			cofactor.setWidth(15);
+			Label label = new Label("C");
+			stackPane.getChildren().addAll(cofactor,label);
 			cofactor.setFill(COFACTOR_COLOR);
-	        return cofactor;
+	        return stackPane;
 		}
 		
-		private static Shape createSolventShape() {
-			Circle solvent = new Circle();
-			solvent.setRadius(7.5);
+		private static Node createSolventShape() {
+			StackPane stackPane = new StackPane();
+			Rectangle solvent = new Rectangle();
+			solvent.setHeight(15);
+			solvent.setWidth(15);
+			Label label = new Label("S");
+			label.setTextFill(Color.WHITE);
+			stackPane.getChildren().addAll(solvent,label);
 			solvent.setFill(SOLVENT_COLOR);
-			return solvent;
+			return stackPane;
 		}
 					
 

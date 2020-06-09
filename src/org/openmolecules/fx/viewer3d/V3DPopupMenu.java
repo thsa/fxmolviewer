@@ -41,7 +41,6 @@ import javafx.util.Callback;
 import org.openmolecules.render.MoleculeArchitect;
 
 import com.actelion.research.chem.phesa.PheSAMolecule;
-import com.actelion.research.chem.phesa.VolumeGaussian;
 
 import org.openmolecules.fx.sunflow.RayTraceDialog;
 import org.openmolecules.fx.sunflow.RayTraceOptions;
@@ -94,10 +93,7 @@ public class V3DPopupMenu extends ContextMenu {
 			loadMols.setOnAction(e -> {
 				File selectedFile = getMoleculeFileChooser().showOpenDialog(scene.getScene().getWindow());
 				if (selectedFile != null) {
-					List<V3DMolecule> mols = V3DMoleculeParser.readMoleculeFile(mScene,selectedFile.toString());
-					for (V3DMolecule vm : mols) {
-						scene.addMolecule(vm);
-					}
+				    V3DMoleculeParser.readMoleculeFile(mScene,selectedFile.toString());
 				}
 			});
 			getItems().add(loadMols);

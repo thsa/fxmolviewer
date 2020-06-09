@@ -36,9 +36,6 @@
     -fx-max-height: 0;
 }
 
-.titled-pane > .title > .arrow-button .arrow {
-  -fx-background-color: whitesmoke;
-}
 
 .tree-table-cell{
 	-fx-border-color: transparent;
@@ -93,22 +90,31 @@
     -fx-background-color: transparent;
 }
 
-/* 
+
 .tree-table-cell{
 	-fx-text-fill:white;
 	-fx-background-color: -fx-background;
 
 }
 
-.tree-table-row-cell:selected{
-	-fx-background-color: red; 
+/*
+.tree-cell > .tree-disclosure-node,
+.tree-table-row-cell > .tree-disclosure-node {
+    -fx-padding: 4 6 4 8;
+    -fx-background-color: transparent;
 }
+.tree-cell > .tree-disclosure-node > .arrow,
+.tree-table-row-cell > .tree-disclosure-node > .arrow {
+    -fx-background-color: white;
+    -fx-shape: "M 0 3 h2 v2 h1 v-2 h2 v-1 h-2 v-2 h-1 v2 h-2 v1";
 
-.tree-table-row-cell:focus{
-	-fx-background-color: green; 
 }
-
-
+.tree-cell:expanded > .tree-disclosure-node > .arrow,
+.tree-table-row-cell:expanded > .tree-disclosure-node > .arrow {
+    -fx-background-color: #3c7fb1;
+    -fx-shape: "M 0 3 h2 v2 h1 v-2 h2 v-1 h-2 v-2 h-1 v2 h-2 v1";
+}
+*/
 
 
 .split-pane:horizontal > * > .split-pane-divider {
@@ -122,62 +128,4 @@
 -fx-table-header-border-color:derive(-fx-base,+20%);
 }
 
-
-/* 
-.tree-table-view:focused .table-row-cell:focused {
-    -fx-background-color: -fx-background;
-    -fx-background-insets: 0, 0 0 1 0;
-}
-
-
-.tree-table-view .scroll-bar:horizontal ,
-.tree-table-view  .scroll-bar:vertical{
-    -fx-background-color:transparent;
- 
-}
- 
-
-.tree-table-view .increment-button ,.tree-table-view .decrement-button {
-    -fx-background-color:transparent;
-	-fx-border-color:derive(-fx-base,80%);
-}
- 
-
-.tree-table-view .scroll-bar:horizontal .track ,
-.tree-table-view .scroll-bar:vertical .track{
-     -fx-background-color: transparent;
-	 -fx-border-color:derive(gray,80%);
-	 -fx-background-radius: 0em;
-}
- 
-
-.tree-table-view .scroll-bar:horizontal .thumb,
-.tree-table-view .scroll-bar:vertical .thumb {
-    -fx-background-color:derive(-fx-base,90%);
-	-fx-background-insets: 0, 0, 0;
-	-fx-background-radius: 0em;
- 
-}
-
-.check-box{
-	-fx-focus-color: transparent;
-}
-
-.check-box .mark {
--fx-background-color: 
-        #3c7fb1,
-        linear-gradient(#fafdfe, #e8f5fc),
-        linear-gradient(#eaf6fd 0%, #d9f0fc 49%, #bee6fd 50%, #a7d9f5 100%);
--fx-background-insets: 0,1,2;
--fx-background-radius: 3,2,1;
--fx-shape:none;}
-
-.check-box:selected .mark {
--fx-background-color:         deepskyblue,
-        linear-gradient(to bottom right, deepskyblue, black);
--fx-background-insets: 0,1,2;
--fx-background-radius: 3,2,1;
--fx-shape:none;}
-
-*/
 

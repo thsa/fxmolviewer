@@ -3,7 +3,6 @@ package org.openmolecules.fx.viewer3d;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -28,6 +27,7 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 			fxmol.addListener(listener);
 		children.add(fxmol);
 		getChildren().add(fxmol);
+		this.visibleProperty().addListener((v,ov,nv) -> fxmol.setVisible(nv));
 	}
 	
 	public void deleteMolecule(V3DMolGroup toDelete) {
@@ -59,8 +59,11 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 			if(children.contains(group))
 				return root;
 			else {
-				for(V3DMolGroup child : children)
-					return getParent(group,child);
+				for(V3DMolGroup child : children) {
+					V3DMolGroup temp = getParent(group,child);
+					if(temp!=null)
+						return temp;
+				}
 			}
 		}
 		return null;
@@ -100,6 +103,26 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		children.addListener(listener);
 		children.forEach(e -> e.addListener(listener));
 	}
+	
+	/**
+	 * the parent group of all V3DMolGroups (and therefore all V3DMolecules) is the "world" group which is 
+	 * attached to the scene. As subGroups we consider all groups that are child nodes of the world group.
+	 * @param world
+	 * @return
+	 */
+	public V3DMolGroup getParentSubGroup(V3DMolGroup world) {
+		if(this==world)
+			return null;
+		V3DMolGroup subGroup = this;
+		while(true) {
+			V3DMolGroup parent = world.getParent(subGroup);
+			if(parent==world)
+				return subGroup;
+			subGroup = parent;
+		}
+	}
+	
+
 	
 
 	

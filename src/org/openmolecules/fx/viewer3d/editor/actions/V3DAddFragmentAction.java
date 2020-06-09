@@ -52,8 +52,9 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 	
 	@Override
 	public V3DMolecule onMouseUp(V3DScene scene3D) {
-		V3DMolecule v3dMol = new V3DMolecule(new StereoMolecule(), V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.LIGAND,scene3D.mayOverrideHydrogenColor());
-		v3dMol.setId("Molecule");
+		StereoMolecule mol = new StereoMolecule();
+		mol.setName("Molecule");
+		V3DMolecule v3dMol = new V3DMolecule(mol, V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.LIGAND,scene3D.mayOverrideHydrogenColor());
 //		v3dMol.activateEvents();
 		V3DMoleculeModifier.placeFragment(v3dMol, mIDCodes);
 		v3dMol.setInitialCoordinates();

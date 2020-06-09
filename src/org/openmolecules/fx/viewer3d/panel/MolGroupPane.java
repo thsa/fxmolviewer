@@ -23,27 +23,15 @@ package org.openmolecules.fx.viewer3d.panel;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TitledPane;
 import javafx.scene.control.TreeTableView;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 
 import org.openmolecules.fx.viewer3d.V3DMolGroup;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.V3DScene;
-import org.openmolecules.fx.viewer3d.V3DSceneListener;
 
 
 /**
@@ -110,6 +98,13 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 
 	}
 	
+	public void changeRoleSelected(MoleculeRole role) {
+
+			mGroupTable.changeRoleSelected(role);
+		
+	}
+	
+	
 	/*
 	public void changeGroupSelected(int targetGroup) {
 
@@ -117,12 +112,7 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 		}
 	}
 	
-	public void changeRoleSelected(MoleculeRole role) {
-		ArrayList<Integer> groups = new ArrayList<Integer>(mGroupTable.keySet());
-		for(int group : groups) {
-			mGroupTable.get(group).changeRoleSelected(role);
-		}
-	}
+
 	*/
 	
 

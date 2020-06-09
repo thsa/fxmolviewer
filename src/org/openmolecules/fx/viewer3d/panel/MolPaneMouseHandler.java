@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.openmolecules.fx.tasks.V3DPheSAScreener;
 import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
+import org.openmolecules.render.MoleculeArchitect;
 
 import com.actelion.research.chem.phesa.VolumeGaussian;
 
@@ -25,6 +25,8 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
@@ -108,6 +110,22 @@ public class MolPaneMouseHandler {
 		
 		if(model!=null) {
 			V3DMolGroup group = model.getMolecule3D();
+			MenuItem itemZoom = new MenuItem("Center View");
+			itemZoom.setOnAction(e -> {
+				mMolPane.getV3DScene().optimizeView(group);
+				mMolPane.getV3DScene().getCamera().setTranslateZ(-25);
+			});
+			popup.getItems().add(itemZoom);
+			
+			MenuItem itemAddSubGroup = new MenuItem("Add New Subgroup");
+			itemAddSubGroup.setOnAction(e-> {
+				String groupName = createGroupDialog();
+				group.addMolGroup(new V3DMolGroup(groupName));
+			});
+			popup.getItems().add(itemAddSubGroup);
+			
+			
+			
 			if(group instanceof V3DCustomizablePheSA) {
 				V3DCustomizablePheSA phesaModel = (V3DCustomizablePheSA) group;
 				MenuItem itemES = new MenuItem("Add ExclusionSphere");
@@ -132,6 +150,35 @@ public class MolPaneMouseHandler {
 				
 		}
 		
+
+		RadioMenuItem viewStructure = new RadioMenuItem("Structure");
+		viewStructure.setSelected(mMolPane.isShowStructure());
+		viewStructure.setOnAction(e -> mMolPane.setShowStructure(true));
+		RadioMenuItem viewName = new RadioMenuItem("Name");
+		viewName.setOnAction(e -> mMolPane.setShowStructure(false));
+		viewName.setSelected(!mMolPane.isShowStructure());
+		Menu menuMolRepresentation = new Menu("Molecule Representation");
+		menuMolRepresentation.getItems().addAll(viewStructure,viewName);
+		
+		
+
+		//menuCreateGroup.setOnAction(e -> {
+		//	String groupName = this.createGroupDialog();
+		//	mMolPane.getV3DScene().addMolGroup(new V3DMolGroup(groupName));
+		//});
+		popup.getItems().add(menuMolRepresentation);
+			
+
+		
+		if(model==null) {
+			MenuItem menuCreateGroup = new MenuItem("Create Group");
+			menuCreateGroup.setOnAction(e -> {
+				String groupName = this.createGroupDialog();
+				mMolPane.getV3DScene().addMolGroup(new V3DMolGroup(groupName));
+			});
+			popup.getItems().add(menuCreateGroup);
+			
+		}
 		/*
 		if(model!=null) {
 			MenuItem menuRole = new MenuItem("Change Role");
@@ -144,7 +191,9 @@ public class MolPaneMouseHandler {
 		popup.getItems().add(menuGroup);
 		*/
 
-
+		MenuItem menuRole = new MenuItem("Change Role of Selected");
+		menuRole.setOnAction(e -> this.createRoleChooserDialog(model));
+		popup.getItems().add(menuRole);
 		
 		MenuItem itemDelete = new MenuItem("Selected Molecules");
 		itemDelete.setOnAction(e -> mMolPane.getV3DScene().delete(mMolPane.getAllSelectedMols()));
@@ -226,6 +275,20 @@ public class MolPaneMouseHandler {
 		
 		popup.getItems().add(loadPheSA);
 		
+		MenuItem moveGroups = new MenuItem("Move Selected to Group");
+		
+		moveGroups.setOnAction(e -> {
+			V3DMolGroup targetGroup = createGroupChooserDialog();
+			List<V3DMolGroup> toMove = mMolPane.getAllSelectedMols();
+			System.out.println(targetGroup);
+			System.out.println(toMove);
+			mMolPane.getV3DScene().moveToGroup(toMove, targetGroup);
+			
+			
+		});
+		
+		popup.getItems().add(moveGroups);
+		
 		/*
 		MenuItem screenPheSA = new MenuItem("Run PheSA Screening");
 		screenPheSA.setOnAction(e -> {
@@ -241,20 +304,27 @@ public class MolPaneMouseHandler {
 
 		popup.show(mMolPane, me.getScreenX(), me.getScreenY());
 	}
-	/*
 	
-	private void createGroupChangeDialog() {
+	
+	private V3DMolGroup createGroupChooserDialog() {
+		V3DMolGroup targetGroup = null;
 		List<String> choices = new ArrayList<>();
-		for(Integer group : mMolPane.getGroups())
-			choices.add(Integer.toString(group));
+		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllChildren())
+			choices.add(group.getName());
 
-		ChoiceDialog<String> dialog = new ChoiceDialog<>("1",choices);
+		ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0),choices);
 		dialog.setTitle("Molecule Group Dialog");
-		dialog.setContentText("Select Group: ");
+		dialog.setContentText("Select Target Group: ");
 		Optional<String> result = dialog.showAndWait();
-		result.ifPresent(group -> {
-			mMolPane.changeGroupSelected(Integer.parseInt(group));
-		});
+		String target = result.get();
+		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllChildren()) {
+			if(group.getName()==target) {
+				targetGroup = group;
+				break;
+			}
+		}
+		return targetGroup;
+		
 	}
 	
 	private void createRoleChooserDialog(MolGroupModel model) {
@@ -285,7 +355,7 @@ public class MolPaneMouseHandler {
 		});
 	}
 	
-	*/
+	
 	
 	
 	private File createDWARParserDialog() {
@@ -306,6 +376,20 @@ public class MolPaneMouseHandler {
 		//pane.setPinnedSide(Side.RIGHT);
 		
 		return fileChooser;
+	}
+	
+	
+	private String createGroupDialog() {
+		TextInputDialog dialog = new TextInputDialog("Group");
+		 
+		dialog.setTitle("New Group");
+		dialog.setHeaderText("Enter Group Name:");
+		dialog.setContentText("Name:");
+		 
+		Optional<String> result = dialog.showAndWait();
+		
+		return result.get();
+
 	}
 	
 	private File createFileSaverDialog() {

@@ -35,6 +35,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.openmolecules.fx.viewer3d.MolStructureChangeListener;
 import org.openmolecules.fx.viewer3d.V3DMolGroup;
@@ -44,20 +45,51 @@ import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 /**
  * Created by thomas on 09/10/16.
  */
-public class MolGroupModel implements  ChangeListener<Boolean> {
+public class MolGroupModel implements MolStructureChangeListener {
 	private V3DMolGroup mMol3D;
 	private BooleanProperty isMolVisible;
 	private BooleanProperty isSelected;
+	private ObjectProperty<StereoMolecule> mMol2D;
+	private ObjectProperty<MoleculeRole> mRole;
+	private HashSet<MolGroupModelChangeListener> mChangeListeners;
 
-	public MolGroupModel(V3DMolGroup mol3D) {
+	public MolGroupModel(V3DMolGroup mol3D)  {
 		mMol3D = mol3D;
-		isMolVisible =  new SimpleBooleanProperty(true);
-		isMolVisible.addListener(this);
-		//isSelected = new SimpleBooleanProperty(false);
-		//isSelected.addListener((o,ov,nv) -> mMol3D.setIncluded(nv));
+		mChangeListeners = new HashSet<>();
+		mMol2D = new SimpleObjectProperty<StereoMolecule>();
+		isMolVisible =  mMol3D.visibleProperty();
+		if(mMol3D instanceof V3DMolecule) {
+			mRole = ((V3DMolecule)mMol3D).RoleProperty();
+			mRole.addListener((v,ov,nv) -> mChangeListeners.forEach(e -> e.groupModelChanged()));
+			((V3DMolecule)mMol3D).addMoleculeStructureChangeListener(this);
+		}
+		
+
 	}
 
+	private StereoMolecule createMolecule2D(V3DMolGroup molGroup) {
+		StereoMolecule mol2D = null;
+		if(molGroup instanceof V3DMolecule) {
+			V3DMolecule mol3D = (V3DMolecule) molGroup;
+			StereoMolecule mol = mol3D.getMolecule().getCompactCopy();
+			if(mol.getAllAtoms()<=100) {
+				mol.ensureHelperArrays(Molecule.cHelperParities);	// create parities from 3D-coords
+				new CoordinateInventor(CoordinateInventor.MODE_REMOVE_HYDROGEN).invent(mol);
+				mol.setStereoBondsFromParity();
+				mol2D = mol;
+			}
+		}
+		return mol2D;
+	}
+	
+	public StereoMolecule getMolecule2D() {
+		if (mMol3D != null) {
+			if(mMol3D instanceof V3DMolecule)
+				mMol2D.set(createMolecule2D((V3DMolecule)mMol3D));
+		}
 
+		return mMol2D.get();
+	}
 
 	public String getMoleculeName() {
 		 return mMol3D.getName();
@@ -85,13 +117,30 @@ public class MolGroupModel implements  ChangeListener<Boolean> {
 		isSelected.set(selection);
 	}
 	
-
-
-	@Override
-	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-		mMol3D.setVisible(isMolVisible.get());
+	public void setRole(MoleculeRole role) {
+		if(mRole!=null)
+			mRole.set(role);
+	}
+	
+	public void addMolGroupModelChangeListener(MolGroupModelChangeListener listener) {
+		mChangeListeners.add(listener);
 		
 	}
+	
+	public ObjectProperty<MoleculeRole> roleProperty() {
+		return mRole;
+	}
+	
+	public ObjectProperty<StereoMolecule> twoDProperty() {
+		return mMol2D;
+	}
+	
+	@Override
+	public void structureChanged() {
+		mChangeListeners.forEach(e -> e.groupModelChanged());
+	}
+	
+
 
 
 }

@@ -63,7 +63,7 @@ public class V3DMouseHandler {
 
 		scene.setOnScroll(se -> {
 			// we modify the wheel delta depending on how quickly the wheel is rotated
-			double delta = WHEEL_MIN_FACTOR * se.getDeltaY();	// delta is the smallest possible clip step
+			double delta = -WHEEL_MIN_FACTOR * se.getDeltaY();	// delta is the smallest possible clip step
 			long millis = System.currentTimeMillis();
 			long delay = Math.max(1L, millis - mRecentWheelMillis);
 			if (delay < WHEEL_DELAY_LIMIT)
@@ -98,8 +98,9 @@ public class V3DMouseHandler {
 				}
 			}
 			else {
-				if (mAffectedMol == null)
-					translateCameraZ(-delta);    // this does not change the world rotation center
+				if (mAffectedMol == null) {
+					translateCameraZ(-delta);
+				}// this does not change the world rotation center
 				else
 					translateMolecule(mAffectedMol, 0, 0, delta);
 			}
@@ -363,7 +364,7 @@ public class V3DMouseHandler {
 	}
 
 	private void translateMolecule(V3DMolecule fxmol, double dx, double dy, double dz) {
-		RotatableGroup world = mScene.getWorld();
+		V3DMolGroup world = (V3DMolGroup)fxmol.getParent();
 
 		double f = getScreenToObjectFactor(fxmol.getHighlightedZ());
 
