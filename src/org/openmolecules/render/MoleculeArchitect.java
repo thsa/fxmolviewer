@@ -237,7 +237,7 @@ public class MoleculeArchitect {
 
 
 	private int getAtomColor(int atom) {
-		return ATOM_ARGB[mMol.getAtomicNo(atom)];
+		return getAtomARGB(mMol.getAtomicNo(atom));
 		}
 
 	private boolean includeAtom(int atom) {
