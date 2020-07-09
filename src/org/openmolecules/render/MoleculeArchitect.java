@@ -54,7 +54,7 @@ public class MoleculeArchitect {
 
 	public static final int BALL_AND_STICK_STICK_COLOR = 0xFFE0E0E0;
 
-	public final static int[] ATOM_ARGB = {
+	private final static int[] ATOM_ARGB = {
 			0xFFFF1493, 0xFFFFFFFF, 0xFFD9FFFF, 0xFFCC80FF, 0xFFC2FF00, 0xFFFFB5B5, //  ?, H,He,Li, Be,B
 			0xFF909090, 0xFF3050F8, 0xFFFF0D0D, 0xFF90E050, 0xFFB3E3F5, 0xFFAB5CF2, //  C, N, O, F,Ne,Na
 			0xFF8AFF00, 0xFFBFA6A6, 0xFFF0C8A0, 0xFFFF8000, 0xFFFFFF30, 0xFF1FF01F, // Mg,Al,Si, P, S,Cl
@@ -75,7 +75,11 @@ public class MoleculeArchitect {
 			0xFFBD0D87, 0xFFC70066, 0xFFCC0059, 0xFFD1004F, 0xFFD90045, 0xFFE00038, // No,Lr,Rf,Db,Sg,Bh
 			0xFFE6002E, 0xFFEB0026,													// Hs,Mt
 	};
+	public static final int ATOM_ARGB_LENGTH = ATOM_ARGB.length;
 
+	public static int getAtomARGB(int atomicNo) {
+		return ATOM_ARGB[atomicNo < ATOM_ARGB.length ? atomicNo : 6];   // higher atomicNos are assumed to be some kind of carbon
+	}
 
 	private StereoMolecule mMol;
 	private Conformer mConformer;

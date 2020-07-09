@@ -30,12 +30,11 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.TriangleMesh;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
+import org.openmolecules.render.MoleculeArchitect;
 import org.sunflow.math.Point3;
 
 import java.util.Arrays;
 import java.util.TreeMap;
-
-import static org.openmolecules.render.MoleculeArchitect.ATOM_ARGB;
 
 /**
  * Created by thomas on 28.03.16.
@@ -97,7 +96,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 			float d = distanceToPoint(p.x, p.y, p.z, influenceRadius, mConformerSunFlow.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
 				int argb = (mNeutralRGB != -1 && (atomicNo == 1 || atomicNo == 6)) ?
-						mNeutralRGB : ATOM_ARGB[atomicNo];
+						mNeutralRGB : MoleculeArchitect.getAtomARGB(atomicNo);
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				r += weight * (float)(argb & 0x00FF0000) / 16711680f;
 				g += weight * (float)(argb & 0x0000FF00) / 65280f;
@@ -347,12 +346,12 @@ public class AtomicNoTexture extends SurfaceTexture {
 	}
 
 	private void createImage(Color moleculeColor, double opacity) {
-		Color[] color = new Color[ATOM_ARGB.length];
+		Color[] color = new Color[MoleculeArchitect.ATOM_ARGB_LENGTH];
 		color[0] = new Color(0,0,0,opacity);
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++) {
 			int atomicNo = mMol.getAtomicNo(atom);
 			if (color[atomicNo] == null) {
-				int argb = ATOM_ARGB[atomicNo];
+				int argb = MoleculeArchitect.getAtomARGB(atomicNo);
 				color[atomicNo] = Color.rgb((argb & 0xFF0000) >> 16, (argb & 0x00FF00) >> 8, argb & 0x0000FF, opacity);
 			}
 		}

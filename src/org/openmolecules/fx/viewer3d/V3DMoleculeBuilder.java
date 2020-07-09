@@ -21,14 +21,12 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.conf.Conformer;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
-
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.mesh.Cone;
 import org.openmolecules.render.MoleculeArchitect;
@@ -96,10 +94,10 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 	public void addSphere(int role, Coordinates c, double radius, int argb) {
 		boolean isOverridable;
 		if(mV3DMolecule.overrideHydrogens()) 
-			isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
-							  || argb == MoleculeArchitect.ATOM_ARGB[6]);
+			isOverridable = (argb == MoleculeArchitect.getAtomARGB(1)
+						  || argb == MoleculeArchitect.getAtomARGB(6));
 		else
-			isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[6]);
+			isOverridable = (argb == MoleculeArchitect.getAtomARGB(6));
 		PhongMaterial material = getMaterial(argb);
 		Sphere sphere = new Sphere(radius, mSphereDivisions);
 		sphere.setMaterial(material);
@@ -118,11 +116,11 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 	public void addCylinder(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
 		boolean isOverridable;
 		if(mV3DMolecule.overrideHydrogens()) 
-			isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
-							  || argb == MoleculeArchitect.ATOM_ARGB[6]
+			isOverridable = (argb == MoleculeArchitect.getAtomARGB(1)
+							  || argb == MoleculeArchitect.getAtomARGB(6)
 							  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
 		else
-			isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[6]
+			isOverridable = (argb == MoleculeArchitect.getAtomARGB(6)
 							  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
 		PhongMaterial material = getMaterial(argb);
 		Cylinder cylinder = new Cylinder(radius, length, mCylinderDivisions);
@@ -143,10 +141,10 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 	public void addCone(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
 		boolean isOverridable;
 		if(mV3DMolecule.overrideHydrogens()) 
-			isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[1]
-							  || argb == MoleculeArchitect.ATOM_ARGB[6]);
+			isOverridable = (argb == MoleculeArchitect.getAtomARGB(1)
+						  || argb == MoleculeArchitect.getAtomARGB(6));
 		else
-			isOverridable = (argb == MoleculeArchitect.ATOM_ARGB[6]);
+			isOverridable = (argb == MoleculeArchitect.getAtomARGB(6));
 		PhongMaterial material = getMaterial(argb);
 		Cone cone = new Cone(radius, length);
 		cone.setMaterial(material);
