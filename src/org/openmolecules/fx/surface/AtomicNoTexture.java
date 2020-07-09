@@ -92,7 +92,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		for (int index=i1; index<i2; index++) {
 			int atom = toAtom(index, mSortedAtomsSunFlow);
 			int atomicNo = mMol.getAtomicNo(atom);
-			float vdwr = VDWRadii.VDW_RADIUS[atomicNo];
+			float vdwr = VDWRadii.getVDWRadius(atomicNo);
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
 			float d = distanceToPoint(p.x, p.y, p.z, influenceRadius, mConformerSunFlow.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
@@ -185,7 +185,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		int i2 = getHighIndex(x + REACH + mSurfaceSurplus + SURPLUS, mSortedAtomsFX);
 		for (int index=i1; index<i2; index++) {
 			int atom = toAtom(index, mSortedAtomsFX);
-			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom)];
+			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus + SURPLUS;
 			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
@@ -283,7 +283,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		int atomicNo2 = (triple & 0x00FF00) >> 8;
 		int atomicNo3 = triple & 0x0000FF;
 		for (int i=0; i<MAX_ATOMS_ON_TRIANGLE && atom[i] != -1; i++) {
-			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom[i])];
+			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom[i]));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
 			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom[i]));
 			if (d != Float.MAX_VALUE) {
@@ -320,7 +320,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		float weight1 = 0f;
 		float weight2 = 0f;
 		for (int i=0; i<MAX_ATOMS_ON_TRIANGLE && atom[i] != -1; i++) {
-			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom[i])];
+			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom[i]));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
 			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom[i]));
 			if (d != Float.MAX_VALUE) {

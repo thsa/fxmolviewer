@@ -53,7 +53,7 @@ public abstract class SurfaceTexture {
 		for (int atom=0; atom<mMol.getAtoms(); atom++) {
 			float x = (float) mol.getAtomX(atom);
 			mSortedAtomsFX.add(new AtomWithXCoord(atom, x));
-			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom)];
+			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom));
 			if (mMaxVDWR < vdwr)
 				mMaxVDWR = vdwr;
 		}

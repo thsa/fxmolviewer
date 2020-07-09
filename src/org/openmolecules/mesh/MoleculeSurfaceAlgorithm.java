@@ -77,7 +77,7 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		float zmin = Float.MAX_VALUE;
 		float zmax = Float.MIN_VALUE;
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-			float r = VDW_RADIUS[mol.getAtomicNo(atom)];
+			float r = VDWRadii.getVDWRadius(mol.getAtomicNo(atom));
 			float x = (float)mol.getAtomX(atom);
 			float y = (float)mol.getAtomY(atom);
 			float z = (float)mol.getAtomZ(atom);
@@ -117,7 +117,7 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 			float z = ((float)mol.getAtomZ(atom) - offsetZ) / voxelSize;
 
 			// radius to consider for voxel updates
-			float r = (probeSize + VDW_RADIUS[mol.getAtomicNo(atom)]) / voxelSize;
+			float r = (probeSize + VDWRadii.getVDWRadius(mol.getAtomicNo(atom))) / voxelSize;
 			int x1 = Math.max(0, (int)(x-r));
 			int x2 = Math.min(sx-1, (int)(x+r+1));
 			int y1 = Math.max(0, (int)(y-r));

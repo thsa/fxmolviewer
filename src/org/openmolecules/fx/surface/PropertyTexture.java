@@ -157,7 +157,7 @@ public class PropertyTexture extends SurfaceTexture {
 		int i2 = getHighIndex(x + REACH + mSurfaceSurplus, sortedAtomList);
 		for (int index=i1; index<i2; index++) {
 			int atom = toAtom(index, sortedAtomList);
-			float vdwr = VDWRadii.VDW_RADIUS[mMol.getAtomicNo(atom)];
+			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
 			float d = distanceToPoint(x, y, z, influenceRadius, mol.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {

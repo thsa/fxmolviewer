@@ -177,18 +177,18 @@ public class MoleculeArchitect {
 			 && (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0)) {
 				int atomicNo = mMol.getAtomicNo(atom);
 				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
-					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-							:							VDWRadii.VDW_RADIUS[atomicNo]/4;
+					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
+							:							VDWRadii.getVDWRadius(atomicNo)/4;
 					buildConnection(atom, radius);
 					}
 				else {
-					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
+							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == ConstructionMode.STICKS) ?
-									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.VDW_RADIUS[atomicNo]/6 : STICK_SBOND_RADIUS)
-							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-							: VDWRadii.VDW_RADIUS[atomicNo]/8;
+									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
+							: VDWRadii.getVDWRadius(atomicNo)/8;
 					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
 				}
@@ -213,18 +213,18 @@ public class MoleculeArchitect {
 			 && (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0)) {
 				int atomicNo = mol.getAtomicNo(atom);
 				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
-					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo]*0.95  // to avoid collision with vdw-radii based surface
-							:							VDWRadii.VDW_RADIUS[atomicNo]/4;
+					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
+							:							VDWRadii.getVDWRadius(atomicNo)/4;
 					buildConnection(atom, radius);
 					}
 				else {
-					double radius = mol.isMarkedAtom(atom) ? VDWRadii.VDW_RADIUS[atomicNo]/4
-							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.VDW_RADIUS[atomicNo]/4
+					double radius = mol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
+							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == ConstructionMode.STICKS) ?
-									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.VDW_RADIUS[atomicNo]/6 : STICK_SBOND_RADIUS)
-							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.VDW_RADIUS[atomicNo] * 0.95  // to avoid collision with vdw-radii based surface
-							: VDWRadii.VDW_RADIUS[atomicNo]/8;
+									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
+							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.getVDWRadius(atomicNo) * 0.95  // to avoid collision with vdw-radii based surface
+							: VDWRadii.getVDWRadius(atomicNo)/8;
 					mBuilder.addSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
 				}
@@ -546,8 +546,8 @@ public class MoleculeArchitect {
 	}
 
 	private double calculateBondReduction(int bond, double sideShift) {
-		double atomRadius = Math.min(VDWRadii.VDW_RADIUS[mMol.getAtomicNo(mMol.getBondAtom(0, bond))],
-									 VDWRadii.VDW_RADIUS[mMol.getAtomicNo(mMol.getBondAtom(1, bond))]) / 4;
+		double atomRadius = Math.min(VDWRadii.getVDWRadius(mMol.getAtomicNo(mMol.getBondAtom(0, bond))),
+									 VDWRadii.getVDWRadius(mMol.getAtomicNo(mMol.getBondAtom(1, bond)))) / 4;
 		return (sideShift >= atomRadius) ? 0.0 : Math.sqrt(atomRadius*atomRadius - sideShift*sideShift);
 		}
 

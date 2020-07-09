@@ -6,7 +6,6 @@ import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.VDWRadii;
-import javafx.scene.shape.TriangleMesh;
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.shader.ColorProvider;
 import org.sunflow.math.Point3;
@@ -485,9 +484,9 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 		}
 
 	private double getAtomRadius(StereoMolecule mol, int atom, double surfaceSurplus) {
-		return (surfaceSurplus >= 0) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)] + surfaceSurplus
-			 : (mRenderMode == MoleculeArchitect.ConstructionMode.BALLS.mode) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)]
-			 : (mRenderMode == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS.mode) ? VDWRadii.VDW_RADIUS[mol.getAtomicNo(atom)] / 4f
+		return (surfaceSurplus >= 0) ? VDWRadii.getVDWRadius(mol.getAtomicNo(atom)) + surfaceSurplus
+			 : (mRenderMode == MoleculeArchitect.ConstructionMode.BALLS.mode) ? VDWRadii.getVDWRadius(mol.getAtomicNo(atom))
+			 : (mRenderMode == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS.mode) ? VDWRadii.getVDWRadius(mol.getAtomicNo(atom)) / 4f
 			 : (mRenderMode == MoleculeArchitect.ConstructionMode.STICKS.mode) ? MoleculeArchitect.STICK_SBOND_RADIUS
 			 : MoleculeArchitect.WIRE_SBOND_RADIUS;
 		}
