@@ -172,7 +172,7 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 				: (mArchitect.getConstructionMode() == MoleculeArchitect.ConstructionMode.STICKS) ? 10 : 5;
 		}
 
-	private PhongMaterial getMaterial(int argb) {
+	public static PhongMaterial getMaterial(int argb) {
 		PhongMaterial material = sMaterialMap.get(argb);
 		if (material == null) {
 			Color color = Color.rgb((argb & 0x00FF0000) >> 16, (argb & 0x0000FF00) >> 8, argb & 0x000000FF);

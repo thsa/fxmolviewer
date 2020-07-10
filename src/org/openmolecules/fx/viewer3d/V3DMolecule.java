@@ -26,7 +26,6 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
 import com.actelion.research.chem.phesa.MolecularVolume;
-
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -43,25 +42,15 @@ import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
-
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.RemovedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
-import org.openmolecules.fx.viewer3d.nodes.PPArrow;
-import org.openmolecules.fx.viewer3d.nodes.PPSphere;
-import org.openmolecules.fx.viewer3d.nodes.Rod;
-import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
+import org.openmolecules.fx.viewer3d.nodes.*;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
-import org.openmolecules.render.MoleculeArchitect.ConstructionMode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
@@ -92,7 +81,7 @@ public class V3DMolecule extends V3DMolGroup {
 	private StereoMolecule	mMol;
 	private Node			mLastPickedNode;
 	private Shape3D			mHighlightedShape;
-	private PhongMaterial	mOverrideMaterial;
+	private PhongMaterial	mOverrideMaterial,mHydrogenMaterial;
 	private MeshView[]		mSurface;
 	private SurfaceMesh[]   mSurfaceMesh;
 	private Color[]			mSurfaceColor;
@@ -453,6 +442,12 @@ public class V3DMolecule extends V3DMolGroup {
 	
 	public void setColor(Color color) {
 		mCarbonColor = color;
+
+		int hydrogenARGB = MoleculeArchitect.getAtomARGB(1);
+		Color hydrogenColor = Color.rgb((hydrogenARGB & 0x00FF0000) >> 16,
+				(hydrogenARGB & 0x0000FF00) >> 8, hydrogenARGB & 0x000000FF);
+		mHydrogenMaterial = createMaterial(color.interpolate(hydrogenColor, 0.5), 1.0);
+
 		if (color == null) {
 			mOverrideMaterial = null;
 			}
@@ -1119,8 +1114,14 @@ public class V3DMolecule extends V3DMolGroup {
 		}
 
 	private PhongMaterial getOverrideMaterial(Shape3D shape) {
-		if (!(shape instanceof MeshView))
-			return mOverrideMaterial;
+		if (!(shape instanceof MeshView)) {
+			NodeDetail detail = (NodeDetail)shape.getUserData();
+			if (detail != null
+			 && detail.getMaterial() == V3DMoleculeBuilder.getMaterial(MoleculeArchitect.getAtomARGB(1)))
+				return mHydrogenMaterial;
+			else
+				return mOverrideMaterial;
+		}
 		if (mOverrideMaterial == null)
 			return null;
 
