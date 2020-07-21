@@ -29,18 +29,18 @@ import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.chem.dnd.ChemistryDataFormats;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
 import com.actelion.research.util.DoubleFormat;
-
 import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import javafx.scene.input.*;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
-
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
@@ -48,13 +48,7 @@ import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
@@ -184,6 +178,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		} );
 	}
 
+	private void showMessage(String msg) {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setTitle("Information");
+		alert.setHeaderText(null);
+		alert.setContentText(msg);
+		alert.showAndWait();
+	}
+
 	public V3DPopupMenuController getPopupMenuController() {
 		return mPopupMenuController;
 	}
@@ -245,8 +247,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void paste() {
 		StereoMolecule mol = mClipboardHandler.pasteMolecule(false);
-		if (mol == null || mCopiedMol == null) {   // TODO interactive message
-			System.out.println("No molecule on clipboard!");
+		if (mol == null) {
+			showMessage("No molecule on clipboard!");
 			return;
 			}
 
@@ -260,25 +262,21 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		if (!is3D) {
 			Conformer conformer = new ConformerGenerator().getOneConformer(mol);
-			if (conformer == null) {    // TODO interactive message
-				System.out.println("Conformer generation failed!");
+			if (conformer == null) {
+				showMessage("Conformer generation failed!");
 				return;
 				}
 			conformer.toMolecule(mol);	// copy atom coordinates to molecule
 			}
 
-		int group = 0;
 		V3DMolecule.MoleculeRole role = V3DMolecule.MoleculeRole.LIGAND;
 
 		// if the previous molecule copied within this viewer has the same size as the clipboard molecule,
 		// we assume that the clipboard molecule was previously copied from this viewer and use group & id from it
-		if (mCopiedMol != null && mCopiedMol.getMolecule().getAllAtoms() == mol.getAllAtoms()) {
+		if (is3D && mCopiedMol != null && mCopiedMol.getMolecule().getAllAtoms() == mol.getAllAtoms())
 			role = mCopiedMol.getRole();
-		}
 
 		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), role);
-		//V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), mCopiedMol.getRole());
-//		fxmol.activateEvents();
 		mCopiedMol = null;
 		addMolecule(fxmol);
 		}
@@ -352,7 +350,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				if(fxmol instanceof V3DMolecule) {
 				//((V3DMolecule) node).removeMeasurements();
 					for(V3DSceneListener listener : mSceneListeners)
-						listener.removeMolecule((V3DMolecule)fxmol);
+						listener.removeMolecule(fxmol);
 				}
 			
 		}
@@ -487,9 +485,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void crop(V3DMolecule refMolFX, double distance) {
 		Bounds refBounds = refMolFX.localToScene(refMolFX.getBoundsInLocal());
 		ArrayList<V3DMolecule> moleculesToBeDeleted = new ArrayList<>();
-			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-			if(fxmol instanceof V3DMolecule) {
-			if (fxmol != refMolFX) {
+			for (V3DMolGroup fxmol : mWorld.getAllChildren()) {
+			if (fxmol instanceof V3DMolecule
+			 && fxmol != refMolFX) {
 				Bounds bounds = fxmol.localToScene(fxmol.getBoundsInLocal());
 				if (refBounds.getMinX() - distance > bounds.getMaxX()
 				 || refBounds.getMinY() - distance > bounds.getMaxY()
@@ -513,8 +511,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 						((V3DMolecule)fxmol).cutSurface(type, cropper);
 				}
 			}
-			}
-			}
+		}
 		
 		for (V3DMolecule fxmol:moleculesToBeDeleted)
 			delete(fxmol);
@@ -533,9 +530,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void addMolecule(V3DMolecule fxmol) {
 		addMolecule(fxmol,mWorld);
 	}
-	
 
-	
 	public void addMolecule(V3DMolecule fxmol, V3DMolGroup group) {
 		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
 		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
@@ -807,7 +802,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 
 		mMeasurements.removeAll(toBeRemoved);
-		// TODO Auto-generated method stub
 	}
 	
 	public void handleInteractions() {
