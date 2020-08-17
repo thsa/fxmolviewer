@@ -1,29 +1,13 @@
 package org.openmolecules.fx.viewer3d.io;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.actelion.research.chem.MolfileParser;
-import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DScene;
-
 import com.actelion.research.chem.Molecule;
-import com.actelion.research.chem.Molecule3D;
+import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.CompoundFileParser;
 import com.actelion.research.chem.io.DWARFileParser;
 import com.actelion.research.chem.io.DWARFileParser.SpecialField;
+import com.actelion.research.chem.io.Mol2FileParser;
 import com.actelion.research.chem.io.SDFileParser;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
@@ -31,9 +15,17 @@ import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.DescriptorHandlerShapeOneConf;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.PheSAMolecule;
-
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
+import org.openmolecules.chem.conf.gen.ConformerGenerator;
+import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DScene;
+
+import java.io.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class V3DMoleculeParser {
 	
@@ -60,6 +52,21 @@ public class V3DMoleculeParser {
 			}
 			catch (FileNotFoundException fnfe) {}
 		}
+		else if(file.endsWith(".mol2") ) {
+			try {
+				StereoMolecule mol;
+				mol = new Mol2FileParser().load(file);
+				mol.ensureHelperArrays(Molecule.cHelperRings);
+				if(mol.getName()==null || mol.getName().equals(""))
+					mol.setName("Molecule");
+				if (mol != null) {
+					mols.add(mol);
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		else {
 			CompoundFileParser parser = null;
 	
@@ -83,7 +90,9 @@ public class V3DMoleculeParser {
 							mols.add(mol);
 						}
 					}
-					catch(Exception e) {}
+					catch(Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -96,7 +105,7 @@ public class V3DMoleculeParser {
 	private static void parseFile(V3DScene scene,String file) {
 		List<V3DMolGroup> molGroups = new ArrayList<V3DMolGroup>();
 
-		if(file.endsWith(".mol") || file.endsWith(".sdf") || file.endsWith(".dwar") ) {
+		if(file.endsWith(".mol") || file.endsWith(".mol2") || file.endsWith(".sdf") || file.endsWith(".dwar") ) {
 			List<StereoMolecule> mols = parseChemFile(file);
 			mols.stream().forEach(e -> scene.addMolecule(new V3DMolecule(e, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND,false)));
 		}
