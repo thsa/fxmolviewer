@@ -1,6 +1,7 @@
 package org.openmolecules.fx.tasks;
 
 import com.actelion.research.calc.Matrix;
+import com.actelion.research.chem.Canonizer;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
@@ -83,7 +84,6 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 		for (Node node : scene3D.getWorld().getChildren()) {
 			if (node instanceof V3DMolecule) {
 				fxmol = (V3DMolecule)node;
-				System.out.println(fxmol.isIncluded());
 				if(fxmol.getMolecule().getAtoms()>100) {
 					molSizeAlert.showAndWait();
 					return;
@@ -129,16 +129,31 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 			try {
 				alignedMol = dhs.getPreviousAlignment()[1];
 				fitMol = fxFitMol.getMolecule();
-				for(int a=0;a<fitMol.getAllAtoms();a++) {
-					fitMol.setAtomX(a, alignedMol.getAtomX(a));
-					fitMol.setAtomY(a, alignedMol.getAtomY(a));
-					fitMol.setAtomZ(a, alignedMol.getAtomZ(a));
+				Canonizer can = new Canonizer(fitMol);
+				int[] atomMap = can.getGraphIndexes();
+				
+				for(int a=0;a<fitMol.getAtoms();a++) {
+					fitMol.setAtomX(a, alignedMol.getAtomX(atomMap[a]));
+					fitMol.setAtomY(a, alignedMol.getAtomY(atomMap[a]));
+					fitMol.setAtomZ(a, alignedMol.getAtomZ(atomMap[a]));
+					for (int j=fitMol.getConnAtoms(a); j<fitMol.getAllConnAtoms(a); j++) {
+						int h1 = fitMol.getConnAtom(a, j);
+						int h2 = alignedMol.getConnAtom(atomMap[a], j);
+						fitMol.setAtomX(h1, alignedMol.getAtomX(h2));
+						fitMol.setAtomY(h1, alignedMol.getAtomY(h2));
+						fitMol.setAtomZ(h1, alignedMol.getAtomZ(h2));
+					}
 				}
+				
+
+				
+				
 			}
 			catch(Exception e) {
 				continue;
 		}
 		}
+		
 		//mFXRefMol.setMolecule(refConf.toMolecule());
 		ObservableList<Transform> refTransforms = mRefFXMol.getTransforms();
 		Transform refTransform = null;

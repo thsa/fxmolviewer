@@ -65,9 +65,9 @@ public class V3DMoleculeWriter {
 		try {
 			StereoMolecule origMol = ((V3DMolecule)(pheSAModel.getParent())).getMolecule();
 			DWARFileCreator creator = new DWARFileCreator(new BufferedWriter(new FileWriter(file)));
-			int structureColumn = creator.addStructureColumn("Structure", "IDcode");
-			int threeDColumn = creator.add3DCoordinatesColumn("Coordinates3D", structureColumn);
-			int pheSAColumn = creator.addDescriptorColumn(DescriptorConstants.DESCRIPTOR_ShapeAlignSingleConf.shortName,
+			int structureColumn = creator.addStructureColumn("Structure","IDcode");
+			int threeDColumn = creator.add3DCoordinatesColumn("idcoordinates3D", structureColumn);
+			int pheSAColumn = creator.addDescriptorColumn(DescriptorConstants.DESCRIPTOR_ShapeAlign.shortName,
 					DescriptorConstants.DESCRIPTOR_ShapeAlignSingleConf.version,
 					structureColumn);
 			creator.writeHeader(-1);

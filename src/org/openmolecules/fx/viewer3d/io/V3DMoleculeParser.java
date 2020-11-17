@@ -235,7 +235,7 @@ public class V3DMoleculeParser {
 				StereoMolecule mol = dwParser.getMolecule();
 				if(mol.getName()==null)
 					mol.setName("Molecule");
-				SpecialField pheSAField = dwParser.getSpecialFieldMap().get(DescriptorConstants.DESCRIPTOR_ShapeAlignSingleConf.shortName);
+				SpecialField pheSAField = dwParser.getSpecialFieldMap().get(DescriptorConstants.DESCRIPTOR_ShapeAlign.shortName);
 				String pheSAString = dwParser.getSpecialFieldData(pheSAField.fieldIndex);
 				PheSAMolecule shapeMol = dhs.decode(pheSAString);
 				if(shapeMol.getVolumes().size()==1) {
