@@ -9,11 +9,11 @@ import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteraction.Interaction;
 
-import com.actelion.research.chem.phesa.pharmacophore.AcceptorPoint;
-import com.actelion.research.chem.phesa.pharmacophore.ChargePoint;
-import com.actelion.research.chem.phesa.pharmacophore.DonorPoint;
-import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
-import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
+import com.actelion.research.chem.phesa.pharmacophore.pp.AcceptorPoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.ChargePoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.DonorPoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
 import javafx.application.Platform;
 import javafx.geometry.Point3D;
@@ -129,6 +129,11 @@ public class V3DInteractingPair {
 	public void recalc() {
 		cleanup();
 		analyze();
+	}
+	
+	public void setVisibility(boolean visible) {
+		for(V3DInteraction interaction: interactions) 
+			interaction.setVisibility(visible);
 	}
 	
 	private void molVisibilityChanged(boolean visible) {

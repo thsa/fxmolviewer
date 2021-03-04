@@ -27,39 +27,37 @@ import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.PheSAAlignment;
 import com.actelion.research.chem.phesa.PheSAMolecule;
 
+import javafx.geometry.Point3D;
 import javafx.scene.Node;
 
 public class V3DMoleculeWriter {
 	
-	public static void saveAllVisibleMols(String pathToFile, V3DScene scene) {
-		V3DMolecule fxmol;
-		ArrayList<V3DMolecule> fxmolList = new ArrayList<V3DMolecule>();
-		for (Node node : scene.getWorld().getChildren()) {
-			if (node instanceof V3DMolecule && node.isVisible()) {
-				if (node.isVisible()) {
-					fxmol = (V3DMolecule)node;
-					fxmol.addImplicitHydrogens();
-					fxmolList.add(fxmol);
+	public static void saveMolList(String pathToFile, List<V3DMolecule> mols) {
+		Writer filewriter;
+		String delim = System.getProperty("line.separator");
+		if(pathToFile.endsWith(".sdf")) {
+			try {
+				filewriter = new FileWriter(pathToFile);
+				for(int i=0;i<mols.size();i++){
+					try { 
+						StereoMolecule mol = getMolWithGlobalCoordinates(mols.get(i));
+						MolfileCreator mfc = new MolfileCreator(mol);
+						mfc.writeMolfile(filewriter);
+						filewriter.write(delim);
+						filewriter.write("$$$$");
+						filewriter.write(delim);
+						filewriter.flush();
+					}
+					catch(Exception e) {
+						continue;
+					}
 				}
+			} catch (IOException e1) {
+		
 			}
 		}
-	Writer filewriter;
-	try {
-		filewriter = new FileWriter(pathToFile);
-		for(int i=0;i<fxmolList.size();i++){
-			try { 
-			MolfileCreator mfc = new MolfileCreator(fxmolList.get(i).getMolecule());
-			mfc.writeMolfile(filewriter);
-			}
-			catch(Exception e) {
-				continue;
-			}
+	
 		}
-	} catch (IOException e1) {
-
-	}
-
-	}
 	
 	public static void savePhesaQueries(File file, V3DCustomizablePheSA pheSAModel) {
 		try {
@@ -130,6 +128,25 @@ public class V3DMoleculeWriter {
 			e.printStackTrace();
 			return;
 		}
+	}
+	
+	/**
+	 * transform molecule from local coordinates to scene coordinates
+	 * @param fxmol
+	 * @return
+	 */
+	private static StereoMolecule getMolWithGlobalCoordinates(V3DMolecule fxmol) {
+		StereoMolecule origMol = fxmol.getMolecule();
+		StereoMolecule mol = new StereoMolecule(origMol);
+		mol.ensureHelperArrays(Molecule.cHelperCIP);
+		for(int a=0;a<mol.getAllAtoms();a++) {
+			Point3D pointLocal = new Point3D(mol.getAtomX(a), mol.getAtomY(a), mol.getAtomZ(a));
+			Point3D point = fxmol.localToScene(pointLocal);
+			mol.setAtomX(a, point.getX());
+			mol.setAtomY(a, point.getY());
+			mol.setAtomZ(a, point.getZ());
+		}
+		return mol;
 	}
 
 }

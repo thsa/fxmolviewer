@@ -7,8 +7,8 @@ import org.openmolecules.fx.viewer3d.MolCoordinatesChangeListener;
 import org.openmolecules.fx.viewer3d.MolStructureChangeListener;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
-import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
 import com.actelion.research.chem.phesa.pharmacophore.PharmacophoreCalculator;
+import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -41,7 +41,7 @@ public class V3DInteractionSites implements MolCoordinatesChangeListener, MolStr
 	@Override
 	public void coordinatesChanged() {
 		for(IPharmacophorePoint pp: interactionSites)
-			pp.updateCoordinates(fxmol.getMolecule());
+			pp.updateCoordinates(fxmol.getMolecule().getAtomCoordinates());
 		invalidationListeners.forEach(i -> i.invalidated(this));
 	}
 	

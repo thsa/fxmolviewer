@@ -1,16 +1,19 @@
 package org.openmolecules.fx.viewer3d.io;
 
+import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.CompoundFileParser;
+import com.actelion.research.chem.io.CompoundTableConstants;
 import com.actelion.research.chem.io.DWARFileParser;
 import com.actelion.research.chem.io.DWARFileParser.SpecialField;
 import com.actelion.research.chem.io.Mol2FileParser;
 import com.actelion.research.chem.io.SDFileParser;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
+import com.actelion.research.chem.phesa.BindingSiteVolume;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.DescriptorHandlerShapeOneConf;
 import com.actelion.research.chem.phesa.MolecularVolume;
@@ -26,6 +29,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class V3DMoleculeParser {
 	
@@ -34,7 +38,7 @@ public class V3DMoleculeParser {
 	
 	
 	
-	private static List<StereoMolecule> parseChemFile(String file) {
+	public static List<StereoMolecule> parseChemFile(String file) {
 		List<StereoMolecule> mols = new ArrayList<>();
 		if(file.endsWith(".mol") ) {
 			try {
@@ -46,6 +50,13 @@ public class V3DMoleculeParser {
 				if (mol != null) {
 					if (!mol.is3D())
 						new ConformerGenerator().getOneConformerAsMolecule(mol);
+
+						IntStream.range(0, mol.getAllAtoms()).forEach(a -> {
+							Coordinates c = mol.getCoordinates(a);
+							c.y = -c.y;
+							c.z = -c.z;
+						});
+					
 					mols.add(mol);
 				}
 				
@@ -105,8 +116,10 @@ public class V3DMoleculeParser {
 	private static void parseFile(V3DScene scene,String file) {
 		List<V3DMolGroup> molGroups = new ArrayList<V3DMolGroup>();
 
-		if(file.endsWith(".mol") || file.endsWith(".mol2") || file.endsWith(".sdf") || file.endsWith(".dwar") ) {
+		if(file.endsWith(".mol") || file.endsWith(".mol2") || file.endsWith(".sdf") || file.endsWith(".dwar") 
+				|| file.endsWith(".mol") ) {
 			List<StereoMolecule> mols = parseChemFile(file);
+
 			mols.stream().forEach(e -> scene.addMolecule(new V3DMolecule(e, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND,false)));
 		}
 		else if(file.endsWith(".pdb")) {
@@ -126,7 +139,7 @@ public class V3DMoleculeParser {
 						role =  V3DMolecule.MoleculeRole.MACROMOLECULE;
 						isProtein = true;
 					}
-					V3DMolGroup molGroup = new V3DMolGroup(k);
+					V3DMolGroup molGroup = new V3DMolGroup(k.toUpperCase());
 					v.forEach(e -> {
 						if(role==V3DMolecule.MoleculeRole.SOLVENT) 
 							e.setName("HOH" + " " + e.getAtomChainId(0));
@@ -252,5 +265,31 @@ public class V3DMoleculeParser {
 		}
 		return fxMols;
 	
+	}
+	
+	public static List<V3DMolecule> readNegReceptorImage(V3DScene scene, File imgFile, int group){
+		DWARFileParser dwParser = new DWARFileParser(imgFile, DWARFileParser.MODE_COORDINATES_REQUIRE_3D);
+		List<V3DMolecule> fxMols = new ArrayList<V3DMolecule>();
+		boolean notDone = dwParser.next();
+		while(notDone) {
+			try {
+				StereoMolecule mol = dwParser.getMolecule();
+				if(mol.getName()==null)
+					mol.setName("Molecule");
+				SpecialField negRecImgField = dwParser.getSpecialFieldMap().get(CompoundTableConstants.cColumnTypeNegRecImage);
+				String negRecImgString = dwParser.getSpecialFieldData(negRecImgField.fieldIndex);
+				BindingSiteVolume bsVol = BindingSiteVolume.decode(negRecImgString);
+				V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.MACROMOLECULE, scene.mayOverrideHydrogenColor());
+				fxMol.addNegativeReceptorImage(bsVol);
+				fxMols.add(fxMol);
+				
+				notDone = dwParser.next();
+			}
+			catch(Exception e) {
+				notDone = false;
+			}
+		}
+		return fxMols;
+		
 	}
 }

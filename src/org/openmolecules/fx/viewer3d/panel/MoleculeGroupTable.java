@@ -1,24 +1,34 @@
 package org.openmolecules.fx.viewer3d.panel;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 
-import com.sun.javafx.scene.control.skin.TableHeaderRow;
-import com.sun.javafx.scene.control.skin.TreeTableViewSkin;
 
+
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.NodeOrientation;
+import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.CheckBoxTreeTableCell;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.shape.Circle;
 
 
 public class MoleculeGroupTable {
@@ -31,18 +41,61 @@ public class MoleculeGroupTable {
 		mPane = pane;
 		initTable();
 		construct();
+		
 		mMolTable.getSelectionModel().selectedItemProperty().addListener((v,ov,nv) -> {
 			List<MolGroupModel> selectedModels = mMolTable.getSelectionModel().getSelectedItems().stream()
 					.map(e -> e.getValue()).collect(Collectors.toList());
+			for(TreeItem<MolGroupModel> selectedItem : mMolTable.getSelectionModel().getSelectedItems()) {
+				List<TreeItem<MolGroupModel>> treeItems = new ArrayList<>();
+				getAllChildren(selectedItem,treeItems);
+				//treeItems.forEach(m -> mMolTable.getSelectionModel().select(m));
+			}
 			List<MolGroupModel> tableItems = getTableItems().stream().map(e -> e.getValue()).collect(Collectors.toList());
 			for(MolGroupModel model : tableItems) {
-				if (selectedModels.contains(model))
-					model.getMolecule3D().setIncluded(true);
-				else 
-					model.getMolecule3D().setIncluded(false);
+				if(model.getMolecule3D() instanceof V3DMolecule) {
+					V3DMolecule v3dMol = (V3DMolecule) model.getMolecule3D();
+					if (selectedModels.contains(model)) {
+						v3dMol.SelectionProperty().set(true);
+					
+					}
+					else 
+						v3dMol.SelectionProperty().set(false);
+			
+			}	
 			}
-			});
+			
+		});
+		
+		
 
+	}
+	
+	public void updateTableSelection() {
+
+		List<MolGroupModel> selectedModels = mMolTable.getSelectionModel().getSelectedItems().stream()
+				.map(e -> e.getValue()).collect(Collectors.toList());
+		for(TreeItem<MolGroupModel> selectedItem : mMolTable.getSelectionModel().getSelectedItems()) {
+			List<TreeItem<MolGroupModel>> treeItems = new ArrayList<>();
+			getAllChildren(selectedItem,treeItems);
+			treeItems.forEach(m -> mMolTable.getSelectionModel().select(m));
+		}
+		selectedModels = mMolTable.getSelectionModel().getSelectedItems().stream()
+				.map(e -> e.getValue()).collect(Collectors.toList());
+		List<MolGroupModel> tableItems = getTableItems().stream().map(e -> e.getValue()).collect(Collectors.toList());
+		for(MolGroupModel model : tableItems) {
+			if(model.getMolecule3D() instanceof V3DMolecule) {
+				V3DMolecule v3dMol = (V3DMolecule) model.getMolecule3D();
+				if (selectedModels.contains(model)) {
+					v3dMol.SelectionProperty().set(true);
+				
+				}
+				else 
+					v3dMol.SelectionProperty().set(false);
+		
+		}	
+		}
+			
+	
 	}
 	
 	private void construct() {
@@ -84,42 +137,35 @@ public class MoleculeGroupTable {
 
 		mShowStructure = mPane.getShowStructureProperty();
 		mMolTable = new TreeTableViewNoHeader<MolGroupModel>();
-		mMolTable.skinProperty().addListener((a, b, newSkin) -> {
-		    TableHeaderRow headerRow = ((TreeTableViewSkin) 
-		    		newSkin).getTableHeaderRow();
-		});
+
 		mMolTable.setEditable(true);
+		mMolTable.setNodeOrientation(NodeOrientation.LEFT_TO_RIGHT);
+		
 		mMolTable.setFocusTraversable(false);
 		mMolTable.setPlaceholder(new Label(""));
 		mMolTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		
 		TreeTableColumn<MolGroupModel,MolGroupModel> strucCol = new TreeTableColumn<MolGroupModel,MolGroupModel>("Molecule");
 		mMolTable.getColumns().add(strucCol);
 		strucCol.setCellValueFactory(cellData -> new SimpleObjectProperty<MolGroupModel>(cellData.getValue().getValue()));
-		strucCol.setCellFactory(new MoleculeCellFactory(mShowStructure));	
-
+		strucCol.setCellFactory(new MoleculeCellFactory());	
+		
+		TreeTableColumn<MolGroupModel,MolGroupModel> roleCol = new TreeTableColumn<MolGroupModel,MolGroupModel>("Role");
+		mMolTable.getColumns().add(roleCol);
+		roleCol.setCellValueFactory(cellData -> new SimpleObjectProperty<MolGroupModel>(cellData.getValue().getValue()));
+		roleCol.setCellFactory((e) -> {
+			return new RoleCell();
+		});
+		
 		//groupCol.setStyle("-fx-font-size: 15");
 		
 		mMolTable.setColumnResizePolicy(TreeTableView.CONSTRAINED_RESIZE_POLICY);
-		TreeTableColumn<MolGroupModel,Boolean> visibleCol = new TreeTableColumn<MolGroupModel,Boolean>("V");
-		visibleCol.setEditable(true);
-		
-		visibleCol.setCellValueFactory(new TreeItemPropertyValueFactory<MolGroupModel, Boolean>("visible"));
 
-
-		visibleCol.setCellFactory( CheckBoxTreeTableCell.forTreeTableColumn(visibleCol) );
-
-		mMolTable.getColumns().add(visibleCol);
-
-
-
-		
 		strucCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.7));
+		roleCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.3));
 		strucCol.maxWidthProperty().bind(strucCol.prefWidthProperty());
 		strucCol.setResizable(false);
-		
-		visibleCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.15));
-		visibleCol.maxWidthProperty().bind(visibleCol.prefWidthProperty());
-		visibleCol.setResizable(false);
+
 		//visibleCol.setEditable(true);
 			
 	}
@@ -132,7 +178,12 @@ public class MoleculeGroupTable {
 	
 	
 	public void changeVisibilitySelected(boolean visible) {
-		mMolTable.getSelectionModel().getSelectedItems().stream().forEach(e -> e.getValue().setVisibleProperty(visible));
+
+		for(TreeItem<MolGroupModel> item : mMolTable.getSelectionModel().getSelectedItems()) {
+			item.getValue().setVisibleProperty(visible);
+		}
+
+
 	}
 
 
@@ -170,10 +221,22 @@ public class MoleculeGroupTable {
 	private void addChild(V3DMolGroup child, V3DMolGroup parent) {
 		MolGroupModel newModel = new MolGroupModel(child);
 		TreeItem<MolGroupModel> newItem = new TreeItem<>(newModel);
+		if(newItem.getValue().getMolecule3D() instanceof V3DMolecule) {
+			V3DMolecule v3dMol = (V3DMolecule) newItem.getValue().getMolecule3D();
+			v3dMol.SelectionProperty().addListener((v,ov,nv) -> {
+				if(v3dMol.SelectionProperty().get())
+					mMolTable.getSelectionModel().select(newItem);
+				else {
+					mMolTable.getSelectionModel().clearSelection(mMolTable.getRow(newItem), mMolTable.getTreeColumn());
+				}
+			});
+		}
+			
 		List<TreeItem<MolGroupModel>> treeItems = getTableItems();
 		for(TreeItem<MolGroupModel> item : treeItems) {
 			if(parent==item.getValue().getMolecule3D()) {
 				item.getChildren().add(newItem);
+
 				break;
 			}
 		}
@@ -184,12 +247,17 @@ public class MoleculeGroupTable {
 	
 	private void getAllChildren(TreeItem<MolGroupModel> parent, List<TreeItem<MolGroupModel>> allItems) {
 		allItems.add(parent);
+		if(parent.getChildren()==null)
+			return;
 		if(parent.getChildren().size()==0)
 			return;
 		for(TreeItem<MolGroupModel> child : parent.getChildren()) {
 			getAllChildren(child,allItems);
 		}
 	}
+	
+	
+	
 	
 	public void changeRoleSelected(MoleculeRole role) {
 		List<MolGroupModel> selectedModels = new ArrayList<MolGroupModel>();

@@ -3,7 +3,8 @@ package org.openmolecules.fx.viewer3d.interactions;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
-import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
+
+import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
 import com.actelion.research.util.DoubleFormat;
 import javafx.geometry.Point3D;
 import javafx.scene.Parent;

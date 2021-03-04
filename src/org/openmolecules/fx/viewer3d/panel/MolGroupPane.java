@@ -30,6 +30,7 @@ import java.util.List;
 
 
 import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
@@ -104,6 +105,10 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 		
 	}
 	
+	public void updateTableSelection() {
+		mGroupTable.updateTableSelection();
+	}
+	
 	
 	/*
 	public void changeGroupSelected(int targetGroup) {
@@ -117,12 +122,29 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 	
 
 	
-	public List<V3DMolGroup> getAllSelectedMols(){
+	public List<V3DMolGroup> getAllSelectedMolGroups(){
 		List<V3DMolGroup> allSelectedMols = new ArrayList<V3DMolGroup>();
 		allSelectedMols.addAll(mGroupTable.getSelectedMols());
 		return allSelectedMols;
 	}
 	
+	public List<V3DMolecule> getAllSelectedMolecules(){
+		List<V3DMolecule> allSelectedMols = new ArrayList<V3DMolecule>();
+		mGroupTable.getSelectedMols().forEach(m -> {
+			if(m instanceof V3DMolecule)
+				allSelectedMols.add((V3DMolecule)m);
+		});
+		return allSelectedMols;
+	}
+	
+	public List<V3DMolecule> getAllMolecules() {
+		List<V3DMolecule> allMols = new ArrayList<V3DMolecule>();
+		mGroupTable.getTableItems().stream().forEach(m -> {
+			if(m.getValue().getMolecule3D() instanceof V3DMolecule)
+				allMols.add((V3DMolecule)m.getValue().getMolecule3D());
+		});
+		return allMols;
+	}
 
 
 	

@@ -72,6 +72,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private EnumSet<ViewerSettings> mSettings;
 	private boolean mMayOverrideHydrogens;
 	private int mMoleculeColorID;
+	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
 	
 
@@ -94,14 +95,17 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public enum ViewerSettings {
-		MINIMIZATION, ALIGNMENT, EDITING, SMALL_MOLS, SIDEPANEL, STRUCTUREVIEW, LOAD_MOLS, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND
+		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND
 	}
 
-	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS);
-
-	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(ViewerSettings.MINIMIZATION, ViewerSettings.ALIGNMENT,
-			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.LOAD_MOLS, ViewerSettings.WHITE_HYDROGENS,
-			ViewerSettings.BLACK_BACKGROUND);
+	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL);
+	public static final EnumSet<ViewerSettings> VISUALIZATION_MINIMALIST_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS);
+	public static final EnumSet<ViewerSettings> VISUALIZATION_EXTENDED_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.EDITING);
+	
+	
+	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(
+			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.WHITE_HYDROGENS,
+			ViewerSettings.BLACK_BACKGROUND, ViewerSettings.UPPERPANEL);
 	
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
@@ -111,6 +115,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public V3DScene(Group root, double width, double height, EnumSet<V3DScene.ViewerSettings> settings) {
 		super(root, width, height, true, SceneAntialiasing.BALANCED);
 		mRoot = root;
+		mBindingSiteHelper = null;
 		mSettings = settings;
 		mWorld = new V3DMolGroup("world");
 		mEditor = new V3DMoleculeEditor();
@@ -293,7 +298,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			listener.removeMolecule(fxmol);
 		}
 	
-	public void delete(List<V3DMolGroup> fxmols) {
+	public void delete(List<? extends V3DMolGroup> fxmols) {
 		for(V3DMolGroup fxmol:fxmols)
 			delete(fxmol);
 	}
@@ -410,6 +415,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				}
 			
 		}
+		for(V3DMolGroup fxmol : mWorld.getAllChildren()) {	
+			if(fxmol instanceof V3DMolecule)
+				((V3DMolecule)fxmol).fireCoordinatesChange();
+		}
+
 
 		getCamera().setTranslateX(0);
 		getCamera().setTranslateY(0);
@@ -715,7 +725,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				atIds.add(atid);
 				fxmols.add(fxmol);
 				Coordinates c = fxmol.getMolecule().getCoordinates(atid);
-				Point3D globalCoords = fxmol.localToParent(c.x,c.y,c.z);
+				//Point3D globalCoords = fxmol.localToParent(c.x,c.y,c.z);
+				Coordinates worldPoint =  fxmol.getWorldCoordinates(mWorld, c);
+				Point3D globalCoords = new Point3D(worldPoint.x, worldPoint.y, worldPoint.z);
 				coords[counter] = new Coordinates(globalCoords.getX(),globalCoords.getY(),globalCoords.getZ());
 				counter++;
 			}		
@@ -808,5 +820,21 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		if(mInteractionHandler==null)
 			mInteractionHandler = new V3DInteractionHandler(this);
 		mInteractionHandler.displayInteractions();
+	}
+	
+	public V3DInteractionHandler getInteractionHandler() {
+		return mInteractionHandler;
+	}
+	
+	public void setInteractionHandler(V3DInteractionHandler handler) {
+		mInteractionHandler = handler;
+	}
+
+	public V3DBindingSite getBindingSiteHelper() {
+		return mBindingSiteHelper;
+	}
+
+	public void setBindingSiteHelper(V3DBindingSite mBindingSiteHelper) {
+		this.mBindingSiteHelper = mBindingSiteHelper;
 	}
 }

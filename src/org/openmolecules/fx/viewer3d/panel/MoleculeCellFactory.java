@@ -36,9 +36,7 @@ import javafx.scene.control.TreeTableColumn;
  * Created by thomas on 20.10.16.
  */
 public class MoleculeCellFactory implements Callback<TreeTableColumn<MolGroupModel,MolGroupModel>, TreeTableCell<MolGroupModel,MolGroupModel>> {
-	private BooleanProperty mShowStructure;
-	public MoleculeCellFactory(BooleanProperty showStructure) {
-		mShowStructure = showStructure;
+	public MoleculeCellFactory() {
 	}
 
 
@@ -46,6 +44,6 @@ public class MoleculeCellFactory implements Callback<TreeTableColumn<MolGroupMod
 	@Override
 	public TreeTableCell<MolGroupModel, MolGroupModel> call(TreeTableColumn<MolGroupModel, MolGroupModel> param) {
 		// TODO Auto-generated method stub
-		return new MoleculeCell(mShowStructure);
+		return new MoleculeCell();
 	}
 }

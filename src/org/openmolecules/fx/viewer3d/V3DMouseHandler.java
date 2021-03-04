@@ -40,7 +40,7 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.transform.Rotate;
 
 public class V3DMouseHandler {
-	private static final long POPUP_DELAY = 750;	// milli seconds delay right mouse click may be used for rotation
+	public static final long POPUP_DELAY = 750;	// milli seconds delay right mouse click may be used for rotation
 	private static final int SINGLE_MOL_KEY = 1;	// 0: Shift; 1: Ctrl; 2: none (single mol if highlighted)
 
 	private static final long WHEEL_DELAY_LIMIT = 250;	// milli seconds; above this delay we have the smallest clip change
@@ -119,10 +119,13 @@ public class V3DMouseHandler {
 			mMousePressedMillis = millis;
 
 			//System.out.println("mouse pressed isPrimaryButtonDown:"+me.isPrimaryButtonDown()+" isMiddleButtonDown:"+me.isMiddleButtonDown());
+			
 			if (me.getButton() == MouseButton.PRIMARY) {
+				
 				if (isDoubleClick) {
 					mScene.selectMolecule(mHighlightedMol, me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0);
 				}
+				
 				else {
 					if(mScene.getMeasurementMode()!=V3DScene.MEASUREMENT.NONE) {
 						Node parent = mSelectedNode;

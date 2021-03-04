@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import javafx.geometry.Point3D;
 import javafx.scene.Node;
 
+import org.openmolecules.fx.viewer3d.V3DBindingSite;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
 import org.openmolecules.fx.viewer3d.V3DScene;
@@ -19,6 +20,9 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class V3DMinimizer implements ForceFieldChangeListener {
 	private static V3DMinimizer sInstance;
@@ -28,6 +32,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	private V3DSceneEditor mEditor;
 	private volatile Thread mMinimizationThread;
 	private boolean mHydrogensOnly;
+	private List<Integer> mRigidAtoms;
 
 	/**
 	 *
@@ -35,6 +40,12 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	 * @param editor
 	 * @param fxmol if null, then all visible molecules are minimized
 	 */
+	public static void minimize(V3DSceneEditor editor, V3DBindingSite bdsHelper, boolean hydrogensOnly) {
+		stopMinimization();
+		sInstance = new V3DMinimizer(editor, bdsHelper, hydrogensOnly);
+		sInstance.minimize();
+	}
+	
 	public static void minimize(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol, boolean hydrogensOnly) {
 		stopMinimization();
 		sInstance = new V3DMinimizer(scene3D, editor, fxmol,hydrogensOnly);
@@ -42,6 +53,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 	}
 
 	private V3DMinimizer(V3DScene scene3D, V3DSceneEditor editor, V3DMolecule fxmol, boolean hydrogensOnly)  {
+		mRigidAtoms = new ArrayList<>();
 		mEditor = editor;
 		mHydrogensOnly = hydrogensOnly;
 		if (fxmol != null) {
@@ -64,6 +76,24 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 			mFXMol = fxmolList.toArray(new V3DMolecule[0]);
 		}
 	}
+	
+	private V3DMinimizer(V3DSceneEditor editor, V3DBindingSite bdsHelper, boolean hydrogensOnly) {
+		mEditor = editor;
+		mHydrogensOnly = hydrogensOnly;
+		ArrayList<V3DMolecule> fxmolList = new ArrayList<V3DMolecule>();
+		fxmolList.add(bdsHelper.getReceptor());
+		fxmolList.add(bdsHelper.getNativeLigand());
+		mFXMol = fxmolList.toArray(new V3DMolecule[0]);
+		mRigidAtoms = new ArrayList<>();
+		Set<Integer> bindingSiteAtoms = bdsHelper.getBindingSiteAtoms();
+		StereoMolecule receptor = bdsHelper.getReceptor().getMolecule();
+		for(int a=0;a<receptor.getAllAtoms();a++) {
+			if(!bindingSiteAtoms.contains(a))
+				mRigidAtoms.add(a);
+		}
+		
+		
+	}
 
 	private void minimize() {
 		if (mFXMol.length == 0)
@@ -80,8 +110,12 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 
 		int atom = 0;
 		int fixedAtomCount = 0;
-		int[] fixedAtom = new int[totalAtomCount];
-		ArrayList<Integer> rigidAtoms = new ArrayList<>();
+		Set<Integer> fixedAtoms = new HashSet<>();
+		/*we have to correct the indeces of the fixed atoms, since they are rearranged when the helper arrays are called
+		 * first the molecules are concatenated into one molecule, so the indeces have to be corrected by the offset, then in the
+		 * second step we can map to the correct indeces using the hydrogen map
+		*/
+		int atomIndexOffset = 0;
 		for(V3DMolecule fxmol : mFXMol) {
 			// remove any surfaces
 			for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
@@ -91,27 +125,34 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 			molScenery.addMolecule(mol);
 
 			for(int a=0;a<mol.getAllAtoms();a++) {
-				Point3D globalCoords = fxmol.localToParent(mol.getAtomX(a), mol.getAtomY(a), mol.getAtomZ(a));
+				Point3D globalCoords = fxmol.localToScene(mol.getAtomX(a), mol.getAtomY(a), mol.getAtomZ(a));
 				molScenery.setAtomX(atom, globalCoords.getX());
 				molScenery.setAtomY(atom, globalCoords.getY());
 				molScenery.setAtomZ(atom, globalCoords.getZ());
 				if(mHydrogensOnly && mol.getAtomicNo(a)!=1)
-					fixedAtom[fixedAtomCount++] = atom;
+					fixedAtoms.add(a+atomIndexOffset);
 				else if (mol.isMarkedAtom(a))
-					fixedAtom[fixedAtomCount++] = atom;
+					fixedAtoms.add(a+atomIndexOffset);
 				if (mol.getAtomicNo(a) == 0)
 					molScenery.setAtomicNo(atom, 6);
 				atom++;
 			}
+			atomIndexOffset+=mol.getAllAtoms();
 		}
 		ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField = new ForceFieldMMFF94(molScenery, ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField.addListener(this);
 		if (fixedAtomCount != 0) {
-			ArrayUtils.resize(fixedAtom, fixedAtomCount);
-			for (int i = 0; i < rigidAtoms.size(); i++)
-				fixedAtom[i] = rigidAtoms.get(i);
-			mForceField.setFixedAtoms(fixedAtom);
+			for (int i = 0; i < mRigidAtoms.size(); i++)
+				fixedAtoms.add(mRigidAtoms.get(i));
+			int[] fixedAtomsMapped = new int[fixedAtoms.size()];
+			int[] map = molScenery.getHandleHydrogenMap();
+			int i=0;
+			for(int fixedAtom : fixedAtoms) {
+				fixedAtomsMapped[i] = map[fixedAtom];
+				i++;
+			}
+			mForceField.setFixedAtoms(fixedAtomsMapped);
 		}
 
 		mMinimizationThread = new Thread(() -> mForceField.minimise());

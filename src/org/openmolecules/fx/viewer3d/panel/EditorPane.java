@@ -26,6 +26,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
 import javafx.scene.shape.Rectangle;
+
+import org.openmolecules.fx.viewer3d.GUIColorPalette;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DAddAtomAction;
 import org.openmolecules.fx.viewer3d.editor.actions.V3DAddFragmentAction;
@@ -62,6 +64,7 @@ public class EditorPane extends Pane  {
 		mScene3D = scene3D;
 		try {
 			Node canvas = FXMLLoader.load(EditorPane.class.getResource("/resources/DrawButtonsV2.fxml"));
+			canvas.setStyle("-fx-background-color:transparent; -fx-background-radius:0;");
 			Scale scale = new Scale();
 			scale.setX(SCALE);
             scale.setY(SCALE);
@@ -71,7 +74,7 @@ public class EditorPane extends Pane  {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		setStyle("-fx-background-color: transparent;");
+		setStyle("-fx-background-color:" + GUIColorPalette.BLUE3 + "; " +  "-fx-opacity: 0.5;");
 		setPrefSize(SCALE*IMAGE_WIDTH, SCALE*IMAGE_HEIGHT);
 		setupHandlers();
 		setOnMousePressed(me -> {

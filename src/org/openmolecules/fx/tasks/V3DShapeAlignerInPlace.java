@@ -88,7 +88,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 					molSizeAlert.showAndWait();
 					return;
 				}
-				else if(fxmol.isIncluded()) {
+				else if(fxmol.isSelected()) {
 					mFitMols.add(fxmol);
 					mPheSAMap.putIfAbsent(fxmol, dhs.createDescriptor(fxmol.getMolecule()));
 				}

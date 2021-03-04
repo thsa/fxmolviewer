@@ -1,5 +1,7 @@
 package org.openmolecules.fx.viewer3d.panel;
 
+import org.openmolecules.fx.viewer3d.GUIColorPalette;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -17,10 +19,10 @@ import javafx.util.Duration;
 public class SlidingHBox {
 	
 	private Node mContent;
-	private Button mButton = new Button(":");
+	private Button mButton = new Button("");
 	private BorderPane mBox;
-	private static final int sButtonWidth = 10;
-	private static final int sContentWidth = 300;
+	private static final double sButtonWidth = 3.0;
+	private static final int sContentWidth = 200;
 	private static final Rectangle mClip = new Rectangle();
 	private Timeline mIn;
 	private Timeline mOut;
@@ -32,6 +34,12 @@ public class SlidingHBox {
 		mBox.setCenter(mContent);
 		mBox.setPrefWidth(sButtonWidth + sContentWidth);
 		mButton.setPrefWidth(sButtonWidth);
+		mButton.setMaxWidth(sButtonWidth);
+		mButton.setStyle("-fx-background-color:" + GUIColorPalette.BLUE3 + ";" +  
+				" -fx-text-fill:white;" + 
+				" -fx-opacity: 0.5;" + 
+				" -fx-background-radius:0;" + 
+				" -fx-border-width:0;");
 		mBox.setRight(mButton);
 		mButton.prefHeightProperty().bind(mBox.heightProperty());
 		mButton.setOnAction(e -> togglePaneVisibility());

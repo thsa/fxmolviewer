@@ -44,7 +44,7 @@ public class ViewerApp extends Application {
 		boolean isEditor = modeString.startsWith("editor");
 		int mode = -1;
 		try { mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
-		mViewer = isEditor ? new V3DSceneEditor(V3DScene.GENERAL_MODE) : new V3DSceneWithSidePane(V3DScene.GENERAL_MODE);
+		mViewer =  new V3DSceneWithSidePane(V3DScene.CONFORMER_VIEW_MODE);
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		Scene scene = new Scene(mViewer, 1024, 768, true, SceneAntialiasing.BALANCED);
 		scene.getStylesheets().add(css);
@@ -53,12 +53,12 @@ public class ViewerApp extends Application {
 		primaryStage.setTitle("Molecule Viewer");
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		if (path.length() != 0)
-			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path.substring(0, path.lastIndexOf(File.separatorChar)+1), true).initializeScene(mViewer.getScene3D()) );
-		else if (mode != -1)
+		//if (path.length() != 0)
+		//	Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path.substring(0, path.lastIndexOf(File.separatorChar)+1), true).initializeScene(mViewer.getScene3D()) );
+		//else if (mode != -1)
 			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(mViewer.getScene3D()) );
-		else if (System.getProperty("test") != null)
-			Platform.runLater(() -> showStartOptionDialog(mViewer.getScene3D()) );
+		//else if (System.getProperty("test") != null)
+		//	Platform.runLater(() -> showStartOptionDialog(mViewer.getScene3D()) );
 	}
 
 	private static void showStartOptionDialog(V3DScene scene) {

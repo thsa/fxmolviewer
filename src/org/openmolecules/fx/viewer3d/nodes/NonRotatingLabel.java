@@ -104,9 +104,9 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 
 	public static NonRotatingLabel create(Parent parent, String text, Point3D p1, Point3D p2, Color color) {
 		NonRotatingLabel label = new NonRotatingLabel(parent, text, p1, p2, color);
+		if (parent instanceof RotatableGroup)
+			((RotatableGroup) parent).addRotationListener(label);
 		while (parent.getParent() != null) {
-			if (parent instanceof RotatableGroup)
-				((RotatableGroup) parent).addRotationListener(label);
 			parent = parent.getParent();
 			}
 

@@ -4,7 +4,8 @@ package org.openmolecules.fx.viewer3d.nodes;
 import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreBuilder;
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
+import com.actelion.research.chem.phesa.Gaussian3D;
+import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
 import javafx.scene.effect.Reflection;
 import javafx.scene.paint.PhongMaterial;
@@ -21,7 +22,7 @@ public class PPSphere extends AbstractPPNode{
 	protected PhongMaterial icoMaterial;
 
 	
-	public PPSphere(PPGaussian ppg,PhongMaterial material, PhongMaterial icoMaterial) {
+	public PPSphere(Gaussian3D ppg,PhongMaterial material, PhongMaterial icoMaterial) {
 		super(ppg,material,MoleculeBuilder.ROLE_IS_PHARMACOPHORE);		
 		this.icoMaterial = icoMaterial;
 		construct();
@@ -35,7 +36,7 @@ public class PPSphere extends AbstractPPNode{
 		icosahedron = new IcosahedronMesh((float)sphereRadius,3);
 		icosahedron.setDrawMode(DrawMode.LINE);
 		icosahedron.setMaterial(icoMaterial);
-		Coordinates sphereCenter = ppg.getPharmacophorePoint().getCenter();
+		Coordinates sphereCenter = ppg.getCenter();
 		sphere = new Sphere(sphereRadius,20);
 		sphere.setMaterial(material);
 		icosahedron.setCullFace(CullFace.NONE);
@@ -63,7 +64,7 @@ public class PPSphere extends AbstractPPNode{
 
 	@Override
 	public void update() {
-		Coordinates sphereCenter = ppg.getPharmacophorePoint().getCenter();
+		Coordinates sphereCenter = ppg.getCenter();
 		updateSphere(sphereCenter);
 		
 	}

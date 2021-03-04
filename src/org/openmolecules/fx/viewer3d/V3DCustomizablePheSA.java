@@ -16,12 +16,12 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.chem.phesa.Gaussian3D;
 import com.actelion.research.chem.phesa.MolecularVolume;
-import com.actelion.research.chem.phesa.pharmacophore.AcceptorPoint;
-import com.actelion.research.chem.phesa.pharmacophore.AromRingPoint;
-import com.actelion.research.chem.phesa.pharmacophore.ChargePoint;
-import com.actelion.research.chem.phesa.pharmacophore.DonorPoint;
-import com.actelion.research.chem.phesa.pharmacophore.IPharmacophorePoint;
-import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
+import com.actelion.research.chem.phesa.pharmacophore.pp.AcceptorPoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.AromRingPoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.ChargePoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.DonorPoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
+import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -43,8 +43,42 @@ public class V3DCustomizablePheSA extends V3DMolGroup implements MolCoordinatesC
 	public static PhongMaterial sNegChargeMaterialFrame;
 	public static PhongMaterial sAromRingMaterial;
 	public static PhongMaterial sAromRingMaterialFrame;
-	public static Color crimson;
+
 	
+	static {
+		sAcceptorMaterial = new PhongMaterial();
+		sAcceptorMaterial.setSpecularColor(new Color(1.0,0.2,0.2,0.01));
+		sAcceptorMaterial.setDiffuseColor(new Color(1.0,0.2,0.2,0.01).darker());
+		
+		sDonorMaterial = new PhongMaterial();
+		sDonorMaterial.setSpecularColor(new Color(0.2,0.2,1.0,0.01));
+		sDonorMaterial.setDiffuseColor(new Color(0.2,0.2,1.0,0.01).darker());
+		
+		sNegChargeMaterial = new PhongMaterial();
+		sNegChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.BLUEVIOLET, 0.001));
+		sNegChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.BLUEVIOLET, 0.001).darker());
+		
+		sPosChargeMaterial = new PhongMaterial();
+		sPosChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.DARKTURQUOISE,0.001));
+		sPosChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.DARKTURQUOISE,0.001));
+		
+		sNegChargeMaterialFrame = new PhongMaterial();
+		sNegChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.BLUEVIOLET, 0.5));
+		sNegChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.BLUEVIOLET, 0.5));
+		
+		sAromRingMaterial = new PhongMaterial();
+		sAromRingMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.YELLOW,0.001));
+		sAromRingMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.YELLOW,0.001));
+
+		sPosChargeMaterialFrame = new PhongMaterial();
+		sPosChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.DARKTURQUOISE, 0.5));
+		sPosChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.DARKTURQUOISE, 0.5));
+		
+
+		sAromRingMaterialFrame = new PhongMaterial();
+		sAromRingMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
+		sAromRingMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
+	}
 
 	
 	private MolecularVolume mMolVol;
@@ -60,43 +94,7 @@ public class V3DCustomizablePheSA extends V3DMolGroup implements MolCoordinatesC
 		this.mFXMol = fxMol;
 		mMolVol = molVol;	
 		
-		sAcceptorMaterial = new PhongMaterial();
-		sAcceptorMaterial.setSpecularColor(new Color(1.0,0.2,0.2,0.01));
-		sAcceptorMaterial.setDiffuseColor(new Color(1.0,0.2,0.2,0.01).darker());
-		
-		sDonorMaterial = new PhongMaterial();
-		sDonorMaterial.setSpecularColor(new Color(0.2,0.2,1.0,0.01));
-		sDonorMaterial.setDiffuseColor(new Color(0.2,0.2,1.0,0.01).darker());
-		
-		sNegChargeMaterial = new PhongMaterial();
-		sNegChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.001));
-		sNegChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.001).darker());
-		
-		sPosChargeMaterial = new PhongMaterial();
-		sPosChargeMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
-		sPosChargeMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
-		
-		sNegChargeMaterialFrame = new PhongMaterial();
-		sNegChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.5));
-		sNegChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.CRIMSON, 0.5));
-		
-		sAromRingMaterial = new PhongMaterial();
-		sAromRingMaterial .setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
-		sAromRingMaterial .setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE,0.001));
-		
-		sPosChargeMaterialFrame = new PhongMaterial();
-		sPosChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
-		sPosChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
-		sPosChargeMaterialFrame = new PhongMaterial();
-		sPosChargeMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
-		sPosChargeMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.ROYALBLUE, 0.5));
-		
-		sAromRingMaterialFrame = new PhongMaterial();
-		sAromRingMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
-		sAromRingMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
-		sAromRingMaterialFrame = new PhongMaterial();
-		sAromRingMaterialFrame.setSpecularColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
-		sAromRingMaterialFrame.setDiffuseColor(FXColorHelper.changeOpacity(Color.YELLOW, 0.5));
+
 	
 	}
 

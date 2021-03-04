@@ -40,12 +40,8 @@ import javafx.scene.text.Font;
 public class MoleculeCell extends TreeTableCell<MolGroupModel,MolGroupModel> implements MolGroupModelChangeListener {
 	private Control mView;
 	private MolGroupModel mModel;
-	BooleanProperty mShowStructure;
 
-	public MoleculeCell(BooleanProperty showStructure) {
-		mShowStructure = showStructure;
-		showStructure.addListener((v,ov,nv) -> updateView(false));
-
+	public MoleculeCell() {
 	}
 
 
@@ -67,22 +63,21 @@ public class MoleculeCell extends TreeTableCell<MolGroupModel,MolGroupModel> imp
 	}
 
 	public void updateView(boolean empty) {
-		if (mShowStructure.get()) {
-			mView = (empty || mModel == null) ? null : new MoleculeView(mModel.getMolecule2D());
-			if (mView != null) {
-				((MoleculeView)mView).setBackgroundColor(new Color(0, 0, 0, 0));
-				configureView();
-			}
-		}
-		else {
+
 			//mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName(), RoleShapeFactory.fromRole(mModel.getMolecule3D().getRole()));
-		mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName());	
+		mView = (empty || mModel == null) ? null : new Label("\t" + mModel.getMoleculeName());	
 		if (mView != null) {
 				((Label)mView).setFont(Font.font(15));
 				configureView();
+				if(mModel.visibleProperty().get())
+					((Label)mView).setTextFill(Color.WHITE);
+				else 
+					((Label)mView).setTextFill(Color.GREY);
 			
 		}
-		}
+
+		
+		
 		setGraphic(mView);	
 		this.getTreeTableView().refresh();
 	}
@@ -99,11 +94,13 @@ public class MoleculeCell extends TreeTableCell<MolGroupModel,MolGroupModel> imp
 		else {
 
 				((Label)mView).textFillProperty().setValue(Color.WHITE);
+				/*
 				V3DMolGroup content = mModel.getMolecule3D();
 				if(content instanceof V3DMolecule) {
 					V3DMolecule fxmol = (V3DMolecule) content;
 					((Label)mView).setGraphic(RoleShapeFactory.fromRole(fxmol.getRole()));
 				}
+				*/
 		
 		}
 	}

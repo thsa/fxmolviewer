@@ -1,6 +1,6 @@
 .root {
--fx-base: rgba(50, 50, 50,0.3);
--fx-background: rgba(50, 50, 50,0.2);
+-fx-base: rgba(0, 0, 0,0.3);
+-fx-background: rgba(0, 0, 0,0.2);
 -fx-control-inner-background:  -fx-base;
 -fx-focus-color: -fx-base;
 -fx-select-color: -fx-base;
@@ -30,7 +30,7 @@
     -fx-min-width: 0;
     -fx-pref-width: 0;
     -fx-max-width: 0;
-
+    -fx-opacity: 0.3;
     -fx-min-height: 0;
     -fx-pref-height: 0;
     -fx-max-height: 0;
@@ -58,10 +58,11 @@
 
 .scroll-pane {
     -fx-background-color: -fx-base;
+    -fx-opacity:1.0;
 }
 
 .tree-table-row-cell:selected{
-	-fx-background-color: rgba(0, 153, 153,0.2);
+	-fx-background-color: rgba(70, 130, 180,0.2);
 }
 
 
@@ -97,25 +98,6 @@
 
 }
 
-/*
-.tree-cell > .tree-disclosure-node,
-.tree-table-row-cell > .tree-disclosure-node {
-    -fx-padding: 4 6 4 8;
-    -fx-background-color: transparent;
-}
-.tree-cell > .tree-disclosure-node > .arrow,
-.tree-table-row-cell > .tree-disclosure-node > .arrow {
-    -fx-background-color: white;
-    -fx-shape: "M 0 3 h2 v2 h1 v-2 h2 v-1 h-2 v-2 h-1 v2 h-2 v1";
-
-}
-.tree-cell:expanded > .tree-disclosure-node > .arrow,
-.tree-table-row-cell:expanded > .tree-disclosure-node > .arrow {
-    -fx-background-color: #3c7fb1;
-    -fx-shape: "M 0 3 h2 v2 h1 v-2 h2 v-1 h-2 v-2 h-1 v2 h-2 v1";
-}
-*/
-
 
 .split-pane:horizontal > * > .split-pane-divider {
 -fx-border-color: transparent -fx-base transparent -fx-base;
@@ -127,5 +109,121 @@
 -fx-table-cell-border-color:derive(-fx-base,+10%);
 -fx-table-header-border-color:derive(-fx-base,+20%);
 }
+
+.toolBarButton {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:transparent;
+-fx-font-weight: bold;
+-fx-font-size: 18px;
+}
+
+.toolBarButton:pressed {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:black;
+}
+
+.dropdownButton {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:transparent;
+}
+
+.dropdownButton:pressed {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:black;
+}
+
+.toggle-button {
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.toggle-button:selected {
+    -fx-background-color: black;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.explorer-icon {
+    -fx-graphic: url("telescope.png");
+}
+
+.eye-icon {
+    -fx-graphic: url("eye.png");
+}
+
+.eye-crossed-icon {
+    -fx-graphic: url("eye_delete.png");
+}
+
+.tool-icon {
+    -fx-graphic: url("hammer.png");
+}
+
+.garbage-icon {
+    -fx-graphic: url("garbage.png");
+}
+
+.save-icon {
+    -fx-graphic: url("file_save.png");
+}
+
+.load-icon {
+    -fx-graphic: url("file_load.png");
+}
+
+.optim-icon {
+    -fx-graphic: url("optim.png");
+}
+
+
+.docking-icon {
+    -fx-graphic: url("docking.png");
+}
+
+.settings-icon {
+    -fx-graphic: url("settings.png");
+}
+
+.torsion-icon {
+    -fx-graphic: url("torsion.png");
+}
+
+.neg-rec-img-icon {
+    -fx-graphic: url("neg_rec_img.png");
+}
+
+.menu-button > .arrow-button {
+    -fx-padding: 0;
+}
+
+.menu-button > .arrow-button > .arrow {
+    -fx-padding: 0;
+}
+
+
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.menu-button:selected {
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+
+
+
 
 

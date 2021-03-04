@@ -52,7 +52,9 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 	public void coordinatesChanged() {
 		for(int i=0;i<mPoints.length;i++) {
 			Coordinates c = mFXmols.get(i).getMolecule().getCoordinates(mAtoms.get(i));
-			mPoints[i]=mFXmols.get(i).localToParent(c.x,c.y,c.z);	
+			//mPoints[i]=mFXmols.get(i).localToParent(c.x,c.y,c.z);	
+			Coordinates worldPoint =  mFXmols.get(i).getWorldCoordinates((V3DMolGroup)mParent, c);
+			mPoints[i] = new Point3D(worldPoint.x, worldPoint.y, worldPoint.z);
 		}
 		if(mPoints.length==2) {//distance
 			double distance = mPoints[0].distance(mPoints[1]);

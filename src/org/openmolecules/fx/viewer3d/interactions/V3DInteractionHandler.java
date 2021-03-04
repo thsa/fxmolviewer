@@ -9,6 +9,8 @@ import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 
@@ -21,11 +23,20 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 	private V3DScene mScene3D;
 	private List<V3DInteractingPair> mInteractingPairs;
 	private Map<V3DMolecule,V3DInteractionSites> mInteractionSites;
+	private BooleanProperty mVisibleProperty;
 	
 	public V3DInteractionHandler(V3DScene scene) {
 		mScene3D = scene;
+		mScene3D.getWorld().addListener(this);
 		mInteractionSites  = new HashMap<V3DMolecule,V3DInteractionSites>();
 		mInteractingPairs = new ArrayList<V3DInteractingPair>();
+		mVisibleProperty = new SimpleBooleanProperty(true);
+		mVisibleProperty.addListener((v,ov,nv) -> {
+			for(V3DInteractingPair interactingPair : mInteractingPairs) {
+				interactingPair.setVisibility(mVisibleProperty.get());
+			}
+		});
+		
 	}
 	
 	public void displayInteractions() {
@@ -42,14 +53,16 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 	
 	private void update() {
 		cleanup();
-		calculateInteractionsBetweenMols(mScene3D.getMolsInScene());
+		mScene3D.setInteractionHandler(null);
+		//displayInteractions();
+		//calculateInteractionsBetweenMols(mScene3D.getMolsInScene());
 	}
 	
 	
 	private void calculateInteractionsBetweenMols(List<V3DMolecule> fxmols) {
 		for(int i=0;i<fxmols.size();i++) { 
 			V3DMolecule fxmol1 = fxmols.get(i);
-			if(fxmol1.getUnconnectedFragmentNo()>1) {
+			if(fxmol1.getRole()!=MoleculeRole.MACROMOLECULE && fxmol1.getUnconnectedFragmentNo()>1) {
 				V3DInteractingPair interactingPair = new V3DInteractingPair(fxmol1, fxmol1, mInteractionSites.get(fxmol1),
 						mInteractionSites.get(fxmol1), mScene3D);
 				interactingPair.analyze();
@@ -106,19 +119,9 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 	}
 	@Override
 	public void onChanged(Change<? extends V3DMolGroup> c) {
-		while(c.next()) {
-			List<? extends V3DMolGroup> added = c.getAddedSubList();
-			for(V3DMolGroup group : added) {
-				addMolecule(group);
-			}
-			
-			List<? extends V3DMolGroup> removed = c.getRemoved();
-			for(V3DMolGroup group : removed) {
-				removeMolecule(group);
-			}
-		}
+		update();
 	}
-
+	/*
 	public void addMolecule(V3DMolGroup group) {
 		if(group instanceof V3DMolecule) {
 			V3DMolecule fxmol = (V3DMolecule) group;
@@ -148,6 +151,13 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 		}
 		
 	}
+	*/
+	public void toggleVisibility() {
+		if(mVisibleProperty.get())
+			mVisibleProperty.set(false);
+		else 
+			mVisibleProperty.set(true);
+	}
 
 
 	
@@ -156,7 +166,11 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 			pair.cleanup();
 		mInteractingPairs.clear();
 		}
+
+
 	}
+
+
 	
 
 

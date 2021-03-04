@@ -162,8 +162,8 @@ public class MoleculeArchitect {
 		mol.ensureHelperArrays(Molecule.cHelperRings);
 		mBuilder.init();
 		// adding non-hydrogen atoms and bonds first allows us to later to add hydrogens without disrupting order of already created primitives
-		buildMolecule(fromAtom, mol.getAtoms(), fromBond, mol.getBonds());
-		buildMolecule(Math.max(fromAtom, mol.getAtoms()), mol.getAllAtoms(), Math.max(fromBond, mol.getBonds()), mol.getAllBonds());
+		buildMolecule(fromAtom, mol.getAllAtoms(), fromBond, mol.getAllBonds());
+		//buildMolecule(Math.max(fromAtom, mol.getAtoms()), mol.getAllAtoms(), Math.max(fromBond, mol.getBonds()), mol.getAllBonds());
 		mBuilder.done();
 		}
 
@@ -290,7 +290,7 @@ public class MoleculeArchitect {
 
 		switch (mConstructionMode) {
 		case BALL_AND_STICKS:
-			buildBallAndStickBond(bond, d, b, c);
+			buildStickBond(bond, d, b, c);
 			break;
 		case STICKS:
 			buildStickBond(bond, d, b, c);

@@ -3,15 +3,17 @@ package org.openmolecules.fx.viewer3d;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.actelion.research.chem.Coordinates;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.Point3D;
 import javafx.scene.Node;
 
 public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	
 	protected ObservableList<V3DMolGroup> children;
-	protected boolean isIncluded;
 	protected List<ListChangeListener<V3DMolGroup>> listeners;
 
 	
@@ -44,7 +46,6 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		}
 		for(V3DMolGroup child : children)
 			deleteMolecule(toDelete,child);
-		
 	}
 	
 	public V3DMolGroup getParent(V3DMolGroup group) {
@@ -89,14 +90,7 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	public List<V3DMolGroup> getMolGroups() {
 		return this.children;
 	}
-	
-	public void setIncluded(boolean included) {
-		isIncluded = included;
-	}
-	
-	public boolean isIncluded() {
-		return isIncluded;
-	}
+
 	
 	public void addListener(ListChangeListener<V3DMolGroup> listener) {
 		listeners.add(listener);
@@ -122,11 +116,38 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		}
 	}
 	
-
+	public Coordinates getWorldCoordinates(V3DMolGroup world, Coordinates coordinates) {
+		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
+		if(this==world)
+			return new Coordinates(coordinates.x, coordinates.y, coordinates.z);
+		V3DMolGroup subGroup = this;
+		while(true) {
+			V3DMolGroup parent = world.getParent(subGroup);
+			point = subGroup.localToParent(point);
+			if(parent==world)
+				return new Coordinates(point.getX(), point.getY(), point.getZ());
+			subGroup = parent;
+		}
+		
+		
+	}
 	
-
+	public Coordinates getWorldToLocalCoordinates(V3DMolGroup world, Coordinates coordinates) {
+		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
+		if(this==world)
+			return new Coordinates(coordinates.x, coordinates.y, coordinates.z);
+		V3DMolGroup subGroup = this;
+		while(true) {
+			V3DMolGroup parent = world.getParent(subGroup);
+			point = subGroup.parentToLocal(point);
+			if(parent==world)
+				return new Coordinates(point.getX(), point.getY(), point.getZ());
+			subGroup = parent;
+		}
+		
+		
+	}
 	
-
 
 	
 	

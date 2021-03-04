@@ -46,6 +46,7 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 
 	public V3DMoleculeBuilder(V3DMolecule v3DMolecule) {
 		mArchitect = new MoleculeArchitect(this);
+		mArchitect.setHydrogenMode(v3DMolecule.getHydrogenMode());
 		mArchitect.setConstructionMode(v3DMolecule.getConstructionMode());
 		calculateDivisions();
 		mV3DMolecule = v3DMolecule;

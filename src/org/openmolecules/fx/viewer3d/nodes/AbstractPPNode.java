@@ -5,7 +5,8 @@ import java.util.Optional;
 import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
-import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
+import com.actelion.research.chem.phesa.Gaussian3D;
+import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
@@ -15,12 +16,12 @@ import javafx.scene.paint.PhongMaterial;
 
 public abstract class AbstractPPNode extends Group implements IPPNode {
 
-	protected PPGaussian ppg;
+	protected Gaussian3D ppg;
 	protected PhongMaterial material;
 	private ContextMenu menu;
 	
 	
-	AbstractPPNode(PPGaussian ppg,PhongMaterial material, int role){
+	AbstractPPNode(Gaussian3D ppg,PhongMaterial material, int role){
 		setUserData(new NodeDetail(material, role , false));
 		this.ppg = ppg;
 		this.material = material;
@@ -88,7 +89,7 @@ public abstract class AbstractPPNode extends Group implements IPPNode {
 	}
 	
 	public PPGaussian getPPGaussian() {
-		return ppg;
+		return (PPGaussian)ppg;
 	}
 
 

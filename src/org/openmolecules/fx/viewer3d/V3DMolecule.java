@@ -20,15 +20,19 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import com.actelion.research.chem.AtomFunctionAnalyzer;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
+import com.actelion.research.chem.phesa.BindingSiteVolume;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableFloatArray;
@@ -47,8 +51,10 @@ import org.openmolecules.fx.surface.RemovedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.nodes.*;
+import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
+import org.openmolecules.render.TorsionStrainVisualization;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -97,23 +103,24 @@ public class V3DMolecule extends V3DMolGroup {
 	private Point3D			mRotationCenter;
 	private ObjectProperty<MoleculeRole> mRoleProperty;
 	private IntegerProperty mIDProperty;
-	private boolean mIsSelected;
+	private BooleanProperty mSelectedProperty;
 	private Color mCarbonColor;
 	private BondRotationHelper mBondRotationHelper;
+	private TorsionStrainVisualization torsionStrainVis;
 	private int mnUnconnectedFragments;
 	
 	public enum MoleculeRole{
 		LIGAND { public String toString(){
-            return "Ligand";
+            return "L";
         } },
 		COFACTOR { public String toString(){
-			return "Cofactor";
+			return "C";
     } },
 		MACROMOLECULE { public String toString(){
-			return "Protein";
+			return "P";
 		} },
 		SOLVENT {public String toString(){
-        return "Solvent";
+        return "S";
     } },
 	}
 	private Coordinates[] mInitialCoordinates;
@@ -200,7 +207,8 @@ public class V3DMolecule extends V3DMolGroup {
 		mHydrogenMode = hydrogenMode;
 		mRoleProperty = new SimpleObjectProperty<MoleculeRole>(role);
 		mIDProperty = new SimpleIntegerProperty(id);
-		mIsSelected = false;
+		mSelectedProperty = new SimpleBooleanProperty(false);
+		mSelectedProperty.addListener((v,ov,nv) -> updateSelectionAppearance());
 		mOverrideHydrogens = overrideHydrogens;
 		int surfaceCount = MoleculeSurfaceAlgorithm.SURFACE_TYPE.length;
 		mSurface = new MeshView[surfaceCount];
@@ -238,7 +246,9 @@ public class V3DMolecule extends V3DMolGroup {
 		if (surfaceMode != SurfaceMode.NONE) {
 			mSurfaceMesh[0] = new SurfaceMesh(mMol, 0, surfaceColorMode, getNeutralColor(0), 1.0 - transparency, createSurfaceCutter());
 			updateSurfaceFromMesh(0);
-			}
+		}
+		
+		
 		}
 
 	
@@ -265,6 +275,13 @@ public class V3DMolecule extends V3DMolGroup {
 			mFXMolUpdater.update();
 		});
 	}
+	
+	public void addTorsionStrainVisualization() {
+		V3DTorsionStrainAnalyzer torsionAnalyzer = new V3DTorsionStrainAnalyzer(this);
+		torsionAnalyzer.init();
+		torsionStrainVis = new TorsionStrainVisualization(torsionAnalyzer);
+		torsionStrainVis.build();
+	}
 
 	public void addPharmacophore() {
 		V3DCustomizablePheSA pharmacophore = new V3DCustomizablePheSA(this);
@@ -276,12 +293,40 @@ public class V3DMolecule extends V3DMolGroup {
 		constructPharmacophore(pharmacophore);
 	}
 	
+	public void addNegativeReceptorImage(BindingSiteVolume bsVol) {
+		V3DBindingSiteVolume bsVolume = new V3DBindingSiteVolume(bsVol);
+		constructNegativeReceptorImage(bsVolume);
+	}
+	
+	
+	
+	private void constructNegativeReceptorImage(V3DBindingSiteVolume bsVolume) {
+		bsVolume.buildVolume();
+		this.addMolGroup(bsVolume);
+	}
+	
 	private void constructPharmacophore(V3DCustomizablePheSA pharmacophore) {
 		pharmacophore.buildPharmacophore();
 		this.addMolGroup(pharmacophore);
 		//Platform.runLater(() -> getChildren().add(mPharmacophore));
 		mListeners.add(pharmacophore);
 		
+	}
+	
+	public void assignLikelyProtonationStates() {
+		for(int a=0;a<mMol.getAtoms();a++) {
+			if(mMol.getAtomicNo(a)==7) {
+				if (AtomFunctionAnalyzer.isBasicNitrogen(mMol, a))
+					mMol.setAtomCharge(a, +1);
+					
+			}
+			if(mMol.getAtomicNo(a)==8) {
+				if (AtomFunctionAnalyzer.isAcidicOxygen(mMol, a))
+					mMol.setAtomCharge(a, -1);
+					
+			}
+		}
+		addImplicitHydrogens();
 	}
 	
 	
@@ -429,6 +474,16 @@ public class V3DMolecule extends V3DMolGroup {
 			}
 			updateColor();
 		}
+	
+	public void reconstruct() {
+		for (int i=getChildren().size()-1; i>=0; i--)
+			if (!(getChildren().get(i) instanceof MeshView))
+				getChildren().remove(i);
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
+		builder.setConstructionMode(mConstructionMode);
+		builder.setHydrogenMode(mHydrogenMode);
+		builder.buildMolecule();
+	}
 
 	public Color getColor() {
 		return (mOverrideMaterial == null) ? null : mOverrideMaterial.getDiffuseColor();
@@ -565,7 +620,7 @@ public class V3DMolecule extends V3DMolGroup {
 	}
 	
 	public boolean isSelected() {
-		return mIsSelected;
+		return mSelectedProperty.get();
 	}
 	
 	public boolean overrideHydrogens() {
@@ -789,6 +844,10 @@ public class V3DMolecule extends V3DMolGroup {
 	
 	public void fireStructureChange() {
 		removeAllPharmacophores();
+		if(torsionStrainVis!=null) {
+			torsionStrainVis.cleanup();
+			torsionStrainVis=null;
+		}
 		mBondRotationHelper = new BondRotationHelper(mMol);
 		for(MolStructureChangeListener listener : mStructureListeners) {
 			listener.structureChanged();
@@ -814,20 +873,26 @@ public class V3DMolecule extends V3DMolGroup {
 	 * @param isSelect if false this is a deselection
 	 */
 	public void toggleSelection() {
-		if(mIsSelected==false)
-			mIsSelected=true;
+		if(mSelectedProperty.get()==false)
+			mSelectedProperty.set(true);
 		else 
-			mIsSelected=false;
+			mSelectedProperty.set(false);
+	}
+	
+	private void updateSelectionAppearance() {
 		for (Node node:getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && !detail.isTransparent()) {
-				detail.setSelected(mIsSelected);
+				detail.setSelected(mSelectedProperty.get());
 				updateAppearance(node);
 				}
 			}
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++)
-			mMol.setAtomSelection(atom, mIsSelected);
+			mMol.setAtomSelection(atom, mSelectedProperty.get());
 		}
+	
+	
+	
 
 	/**
 	 * @param polygon screen coordinate polygon defining the selection
@@ -835,10 +900,10 @@ public class V3DMolecule extends V3DMolGroup {
 	 * @param paneOnScreen top let point of parent pane on screen
 	 */
 	public void select(Polygon polygon, int mode, Point2D paneOnScreen) {
-		if(mIsSelected==false)
-			mIsSelected=true;
+		if(mSelectedProperty.get()==false)
+			mSelectedProperty.set(true);
 		else 
-			toggleSelection();
+			mSelectedProperty.set(false);
 		for (Node node:getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && !detail.isTransparent()) {
@@ -1147,7 +1212,10 @@ public class V3DMolecule extends V3DMolGroup {
 			}
 		}
 	
-	
+	public void removeAllSurfaces() {
+		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
+			setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
+	}
 	
 	
 	public void removeAllPharmacophores() {
@@ -1174,6 +1242,9 @@ public class V3DMolecule extends V3DMolGroup {
 		return mRoleProperty;
 	}
 
+	public BooleanProperty SelectionProperty() {
+		return mSelectedProperty;
+	}
 	
 	public void setRole(MoleculeRole role) {
 		mRoleProperty.set(role);
@@ -1187,6 +1258,12 @@ public class V3DMolecule extends V3DMolGroup {
 	public String getName() {
 		return mMol.getName();
 	}
+
+	public TorsionStrainVisualization getTorsionStrainVis() {
+		return torsionStrainVis;
+	}
+	
+
 
 
 

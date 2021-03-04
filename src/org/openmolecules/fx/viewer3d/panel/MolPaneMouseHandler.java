@@ -9,9 +9,9 @@ import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.V3DScene.ViewerSettings;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
-import org.openmolecules.render.MoleculeArchitect;
 
 import com.actelion.research.chem.phesa.VolumeGaussian;
 
@@ -21,12 +21,8 @@ import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
@@ -35,7 +31,6 @@ import javafx.stage.FileChooser.ExtensionFilter;
 public class MolPaneMouseHandler {
 	
 	private MolGroupPane mMolPane;
-	private TableView mLastActiveTable;
 	private static ContextMenu sContextMenu;
 	
 	public MolPaneMouseHandler(MolGroupPane molPane) {
@@ -43,12 +38,14 @@ public class MolPaneMouseHandler {
 		mMolPane.addEventFilter(MouseEvent.MOUSE_PRESSED,
 		        new EventHandler<MouseEvent>() {
             		public void handle(final MouseEvent mouseEvent) {
-            	mousePressed(mouseEvent);}
+            			if(mouseEvent.isPopupTrigger() && !mouseEvent.isConsumed())
+            				mousePressed(mouseEvent);}
             });
 		mMolPane.addEventFilter(MouseEvent.MOUSE_RELEASED,
 		        new EventHandler<MouseEvent>() {
             		public void handle(final MouseEvent mouseEvent) {
-            	mousePressed(mouseEvent);}
+            			if(mouseEvent.isPopupTrigger() && !mouseEvent.isConsumed())
+            				mousePressed(mouseEvent);}
            });
 	}
 	
@@ -76,27 +73,11 @@ public class MolPaneMouseHandler {
 			}
 			return;
 		}
-		/*
-    	if (pickedRow != null) {
-    		if(pickedRow.getTableView()==mLastActiveTable) {  //click within same table already handled by default event handling
-    			if(!selectionMode)
-    				mMolPane.clearOtherTableSelections(pickedRow.getTableView());
-    			return;
-    		}
-    		else if (!selectionMode) { //click at different TableView with selection deactivated
-    			mMolPane.clearTableSelections();
-    		}
 
-    		mLastActiveTable = pickedRow.getTableView();
-    	}
-    	else {
-    		mMolPane.clearTableSelections();
-    		mLastActiveTable = null;
-    	}
-    	*/
 
 	}
 	
+
 
 	
 	private void handlePopupMenu(MouseEvent me, MolGroupModel model) {
@@ -107,7 +88,6 @@ public class MolPaneMouseHandler {
 		ContextMenu popup = new ContextMenu();
 		sContextMenu = popup;
 		popup.getItems().add(new SeparatorMenuItem());
-		
 		if(model!=null) {
 			V3DMolGroup group = model.getMolecule3D();
 			MenuItem itemZoom = new MenuItem("Center View");
@@ -115,192 +95,146 @@ public class MolPaneMouseHandler {
 				mMolPane.getV3DScene().optimizeView(group);
 				mMolPane.getV3DScene().getCamera().setTranslateZ(-25);
 			});
+		
 			popup.getItems().add(itemZoom);
-			
-			MenuItem itemAddSubGroup = new MenuItem("Add New Subgroup");
-			itemAddSubGroup.setOnAction(e-> {
-				String groupName = createGroupDialog();
-				group.addMolGroup(new V3DMolGroup(groupName));
-			});
-			popup.getItems().add(itemAddSubGroup);
-			
-			
-			
-			if(group instanceof V3DCustomizablePheSA) {
-				V3DCustomizablePheSA phesaModel = (V3DCustomizablePheSA) group;
-				MenuItem itemES = new MenuItem("Add ExclusionSphere");
-				itemES.setOnAction(e -> phesaModel.placeExclusionSphere(VolumeGaussian.EXCLUSION));
-				popup.getItems().add(itemES);
+			if(mMolPane.getV3DScene().getSettings().contains(ViewerSettings.EDITING)) {	
+				MenuItem itemAddSubGroup = new MenuItem("Add New Subgroup");
+				itemAddSubGroup.setOnAction(e-> {
+					String groupName = createGroupDialog();
+					group.addMolGroup(new V3DMolGroup(groupName));
+				});
+				popup.getItems().add(itemAddSubGroup);
 				
-				MenuItem itemIS = new MenuItem("Add InclusionSphere");
-				itemIS.setOnAction(e -> phesaModel.placeExclusionSphere(VolumeGaussian.INCLUSION));
-				popup.getItems().add(itemIS);
-				popup.getItems().add(new SeparatorMenuItem());
 				
-				MenuItem savePheSA = new MenuItem("Save as PheSA Query");
-				savePheSA.setOnAction(e -> {
-					File saveFile = createFileSaverDialog();
-					if(saveFile!=null) {
-						V3DMoleculeWriter.savePhesaQueries(saveFile, phesaModel);
+				
+				if(group instanceof V3DCustomizablePheSA) {
+					V3DCustomizablePheSA phesaModel = (V3DCustomizablePheSA) group;
+					MenuItem itemES = new MenuItem("Add ExclusionSphere");
+					itemES.setOnAction(e -> phesaModel.placeExclusionSphere(VolumeGaussian.EXCLUSION));
+					popup.getItems().add(itemES);
+					
+					MenuItem itemIS = new MenuItem("Add InclusionSphere");
+					itemIS.setOnAction(e -> phesaModel.placeExclusionSphere(VolumeGaussian.INCLUSION));
+					popup.getItems().add(itemIS);
+					popup.getItems().add(new SeparatorMenuItem());
+					
+					MenuItem savePheSA = new MenuItem("Save as PheSA Query");
+					savePheSA.setOnAction(e -> {
+						File saveFile = createFileSaverDialog();
+						if(saveFile!=null) {
+							V3DMoleculeWriter.savePhesaQueries(saveFile, phesaModel);
+						}
+					});
+					
+					popup.getItems().add(savePheSA);
+				}
+					
+
+
+			
+				MenuItem loadPheSA = new MenuItem("Load PheSA Queries");
+				loadPheSA.setOnAction(e -> {
+					File loadFile = createDWARParserDialog();
+					if(loadFile!=null) {
+						List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(mMolPane.getV3DScene(), loadFile, 0);
+					    for(V3DMolecule fxMol: fxMols) {
+					    	mMolPane.getV3DScene().addMolecule(fxMol);
+					    }
 					}
 				});
 				
-				popup.getItems().add(savePheSA);
-			}
+				popup.getItems().add(loadPheSA);
 				
-		}
-		
-
-		RadioMenuItem viewStructure = new RadioMenuItem("Structure");
-		viewStructure.setSelected(mMolPane.isShowStructure());
-		viewStructure.setOnAction(e -> mMolPane.setShowStructure(true));
-		RadioMenuItem viewName = new RadioMenuItem("Name");
-		viewName.setOnAction(e -> mMolPane.setShowStructure(false));
-		viewName.setSelected(!mMolPane.isShowStructure());
-		Menu menuMolRepresentation = new Menu("Molecule Representation");
-		menuMolRepresentation.getItems().addAll(viewStructure,viewName);
-		
-		
-
-		//menuCreateGroup.setOnAction(e -> {
-		//	String groupName = this.createGroupDialog();
-		//	mMolPane.getV3DScene().addMolGroup(new V3DMolGroup(groupName));
-		//});
-		popup.getItems().add(menuMolRepresentation);
+				MenuItem loadNegRecImg = new MenuItem("Load Negative Receptor Image");
+				loadNegRecImg.setOnAction(e -> {
+					File loadFile = createDWARParserDialog();
+					if(loadFile!=null) {
+						List<V3DMolecule> fxMols = V3DMoleculeParser.readNegReceptorImage(mMolPane.getV3DScene(), loadFile, 0);
+					    for(V3DMolecule fxMol: fxMols) {
+					    	mMolPane.getV3DScene().addMolecule(fxMol);
+					    }
+					}
+				});
+				
+				popup.getItems().add(loadNegRecImg);
+				
+				MenuItem moveGroups = new MenuItem("Move Selected to Group");
+				
+				moveGroups.setOnAction(e -> {
+					V3DMolGroup targetGroup = createGroupChooserDialog();
+					List<V3DMolGroup> toMove = mMolPane.getAllSelectedMolGroups();
+					mMolPane.getV3DScene().moveToGroup(toMove, targetGroup);
+					
+					
+				});
+				
+				popup.getItems().add(moveGroups);
+			/*
+			if(model!=null) {
+				MenuItem menuRole = new MenuItem("Change Role");
+				menuRole.setOnAction(e -> this.createRoleChooserDialog(model));
+				popup.getItems().add(menuRole);
+			}
 			
-
-		
-		if(model==null) {
-			MenuItem menuCreateGroup = new MenuItem("Create Group");
-			menuCreateGroup.setOnAction(e -> {
-				String groupName = this.createGroupDialog();
-				mMolPane.getV3DScene().addMolGroup(new V3DMolGroup(groupName));
-			});
-			popup.getItems().add(menuCreateGroup);
-			
-		}
-		/*
-		if(model!=null) {
-			MenuItem menuRole = new MenuItem("Change Role");
+			MenuItem menuGroup = new MenuItem("Change Group");
+			menuGroup.setOnAction(e -> this.createGroupChangeDialog());
+			popup.getItems().add(menuGroup);
+			*/
+	
+			MenuItem menuRole = new MenuItem("Change Role of Selected");
 			menuRole.setOnAction(e -> this.createRoleChooserDialog(model));
 			popup.getItems().add(menuRole);
 		}
 		
-		MenuItem menuGroup = new MenuItem("Change Group");
-		menuGroup.setOnAction(e -> this.createGroupChangeDialog());
-		popup.getItems().add(menuGroup);
-		*/
-
-		MenuItem menuRole = new MenuItem("Change Role of Selected");
-		menuRole.setOnAction(e -> this.createRoleChooserDialog(model));
-		popup.getItems().add(menuRole);
-		
-		MenuItem itemDelete = new MenuItem("Selected Molecules");
-		itemDelete.setOnAction(e -> mMolPane.getV3DScene().delete(mMolPane.getAllSelectedMols()));
-
-		MenuItem itemDeleteHidden = new MenuItem("All Hidden Molecules");
-		itemDeleteHidden.setOnAction(e -> mMolPane.getV3DScene().deleteInvisibleMolecules());
-
-		MenuItem itemDeleteAll = new MenuItem("All Molecules");
-		itemDeleteAll.setOnAction(e -> mMolPane.getV3DScene().deleteAllMolecules());
-
-		Menu menuDelete = new Menu("Delete");
-		menuDelete.getItems().addAll(itemDelete, itemDeleteHidden, itemDeleteAll);
-		popup.getItems().add(menuDelete);
-		
-		MenuItem itemHideAll = new MenuItem("All Molecules");
-		itemHideAll.setOnAction(e -> {
-			mMolPane.changeVisibilityAll(false);
-		});
-		
-		MenuItem itemHide = new MenuItem("Selected Molecules");
-		itemHide.setOnAction(e -> {
-			mMolPane.changeVisibilitySelected(false);
-		});
-		
-		Menu menuHide = new Menu("Hide");
-		menuHide.getItems().addAll(itemHide, itemHideAll);
-		popup.getItems().add(menuHide);
-		
-		MenuItem itemShowAll = new MenuItem("All Molecules");
-		itemShowAll.setOnAction(e -> {
-			mMolPane.changeVisibilityAll(true);
-		});
-		
-		MenuItem itemShow = new MenuItem("Selected Molecules");
-		itemShow.setOnAction(e -> {
-			mMolPane.changeVisibilitySelected(true);
-		});
-		
-		Menu menuShow = new Menu("Show");
-		menuShow.getItems().addAll(itemShow, itemShowAll);
-		popup.getItems().add(menuShow);
-		
-		popup.getItems().add(new SeparatorMenuItem());
-
-		/*
-		MenuItem move = new MenuItem("Move to new Group");
-		move.setOnAction(e -> {
-			int newGroup = mMolPane.getV3DScene().getMaxGroupID()+1;
-			mMolPane.changeGroupSelected(newGroup);
-		});
-		
-		
-		popup.getItems().add(move);
-		*/
-		
-		/*
-		MenuItem savePheSA = new MenuItem("Save as PheSA Queries");
-		savePheSA.setOnAction(e -> {
-			File saveFile = createFileSaverDialog();
-			if(saveFile!=null) {
-				List<V3DMolecule> fxmols = mMolPane.getAllSelectedMols();
-				V3DMoleculeWriter.savePhesaQueries(saveFile, fxmols);
-			}
-		});
-		
-		popup.getItems().add(savePheSA);
-		*/
-		
-		MenuItem loadPheSA = new MenuItem("Load PheSA Queries");
-		loadPheSA.setOnAction(e -> {
-			File loadFile = createDWARParserDialog();
-			if(loadFile!=null) {
-				List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(mMolPane.getV3DScene(), loadFile, 0);
-			    for(V3DMolecule fxMol: fxMols) {
-			    	mMolPane.getV3DScene().addMolecule(fxMol);
-			    }
-			}
-		});
-		
-		popup.getItems().add(loadPheSA);
-		
-		MenuItem moveGroups = new MenuItem("Move Selected to Group");
-		
-		moveGroups.setOnAction(e -> {
-			V3DMolGroup targetGroup = createGroupChooserDialog();
-			List<V3DMolGroup> toMove = mMolPane.getAllSelectedMols();
-			System.out.println(targetGroup);
-			System.out.println(toMove);
-			mMolPane.getV3DScene().moveToGroup(toMove, targetGroup);
+		if(!mMolPane.getV3DScene().getSettings().contains(ViewerSettings.UPPERPANEL)) {
+			MenuItem itemDelete = new MenuItem("Selected Molecules");
+			itemDelete.setOnAction(e -> mMolPane.getV3DScene().delete(mMolPane.getAllSelectedMolGroups()));
+	
+			MenuItem itemDeleteHidden = new MenuItem("All Hidden Molecules");
+			itemDeleteHidden.setOnAction(e -> mMolPane.getV3DScene().deleteInvisibleMolecules());
+	
+			MenuItem itemDeleteAll = new MenuItem("All Molecules");
+			itemDeleteAll.setOnAction(e -> mMolPane.getV3DScene().deleteAllMolecules());
+	
+			Menu menuDelete = new Menu("Delete");
+			menuDelete.getItems().addAll(itemDelete, itemDeleteHidden, itemDeleteAll);
+			popup.getItems().add(menuDelete);
 			
-			
-		});
-		
-		popup.getItems().add(moveGroups);
-		
-		/*
-		MenuItem screenPheSA = new MenuItem("Run PheSA Screening");
-		screenPheSA.setOnAction(e -> {
-			FileChooser fileChooser =  getMolFileLoader();
-			File loadFile = fileChooser.showOpenDialog(null);
-			if(loadFile!=null) {
-				V3DPheSAScreener.screen(mMolPane.getV3DScene(),loadFile);
-			    }
+			MenuItem itemHideAll = new MenuItem("All Molecules");
+			itemHideAll.setOnAction(e -> {
+				mMolPane.changeVisibilityAll(false);
 			});
+			
+			MenuItem itemHide = new MenuItem("Selected Molecules");
+			itemHide.setOnAction(e -> {
+				mMolPane.changeVisibilitySelected(false);
+			});
+			
+			Menu menuHide = new Menu("Hide");
+			menuHide.getItems().addAll(itemHide, itemHideAll);
+			popup.getItems().add(menuHide);
+			
+			MenuItem itemShowAll = new MenuItem("All Molecules");
+			itemShowAll.setOnAction(e -> {
+				mMolPane.changeVisibilityAll(true);
+			});
+			
+			MenuItem itemShow = new MenuItem("Selected Molecules");
+			itemShow.setOnAction(e -> {
+				mMolPane.changeVisibilitySelected(true);
+			});
+			
+			Menu menuShow = new Menu("Show");
+			menuShow.getItems().addAll(itemShow, itemShowAll);
+			popup.getItems().add(menuShow);
+			
+			
+			popup.getItems().add(new SeparatorMenuItem());
+		}
+
+		}
 		
-		popup.getItems().add(screenPheSA);
-		*/
+		
 
 		popup.show(mMolPane, me.getScreenX(), me.getScreenY());
 	}
@@ -397,6 +331,5 @@ public class MolPaneMouseHandler {
         //Show save file dialog
         File file = fileChooser.showSaveDialog(null);
         return file;
-
     }
 }

@@ -6,7 +6,8 @@ import org.openmolecules.mesh.Cone;
 import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreBuilder;
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
+import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
+
 import javafx.geometry.Point3D;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
@@ -34,9 +35,9 @@ public class PPArrow extends AbstractPPNode {
 		double scalingFactor = getScalingFactor();
 		arrowLength = PharmacophoreBuilder.VECTOR_LENGTH*scalingFactor;
 		double cylinderRadius = PharmacophoreBuilder.CYLINDER_RADIUS*scalingFactor;
-		Coordinates center = ppg.getPharmacophorePoint().getCenter();
-		Coordinates arrowCenter = center.addC(ppg.getPharmacophorePoint().getDirectionality().scaleC(0.5));
-		Coordinates endPoint = arrowCenter.addC(ppg.getPharmacophorePoint().getDirectionality().scaleC(arrowLength));
+		Coordinates center = ((PPGaussian)ppg).getPharmacophorePoint().getCenter();
+		Coordinates arrowCenter = center.addC(((PPGaussian)ppg).getPharmacophorePoint().getDirectionality().scaleC(0.5));
+		Coordinates endPoint = arrowCenter.addC(((PPGaussian)ppg).getPharmacophorePoint().getDirectionality().scaleC(arrowLength));
 		constructArrow(arrowCenter,endPoint, cylinderRadius);
 		cylinder.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
 		cone.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
@@ -82,9 +83,9 @@ public class PPArrow extends AbstractPPNode {
 	
 	@Override
 	public void update() {
-		Coordinates center = ppg.getPharmacophorePoint().getCenter();
-		Coordinates arrowCenter = center.addC(ppg.getPharmacophorePoint().getDirectionality().scaleC(0.5));
-		Coordinates endPoint = arrowCenter.addC(ppg.getPharmacophorePoint().getDirectionality().scaleC(arrowLength));
+		Coordinates center = ((PPGaussian)ppg).getPharmacophorePoint().getCenter();
+		Coordinates arrowCenter = center.addC(((PPGaussian)ppg).getPharmacophorePoint().getDirectionality().scaleC(0.5));
+		Coordinates endPoint = arrowCenter.addC(((PPGaussian)ppg).getPharmacophorePoint().getDirectionality().scaleC(arrowLength));
 		Coordinates delta = new Coordinates();
 		delta.set(endPoint).sub(arrowCenter);
 		double d = delta.getLength();

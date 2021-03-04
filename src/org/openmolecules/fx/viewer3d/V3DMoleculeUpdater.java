@@ -2,8 +2,9 @@ package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.conf.TorsionDB;
 import com.actelion.research.chem.phesa.VolumeGaussian;
-import com.actelion.research.chem.phesa.pharmacophore.PPGaussian;
+import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -23,6 +24,9 @@ import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreArchitect;
 import org.openmolecules.render.PharmacophoreBuilder;
+import org.openmolecules.render.TorsionStrainVisArchitect;
+import org.openmolecules.render.TorsionStrainVisBuilder;
+import org.openmolecules.render.TorsionStrainVisualization;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,9 +39,10 @@ import java.util.TreeMap;
  * This class assumes that the order of instructions matches the constructions during build and, thus, can be used
  * to update the coordinates of all V3DMolecule's nodes, which were put into the children's list in build order.
  */
-public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder {
+public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder, TorsionStrainVisBuilder {
 	private MoleculeArchitect mArchitect;
 	private PharmacophoreArchitect mPPArchitect;
+	private TorsionStrainVisArchitect mTSVArchitect;
 	private V3DMolecule mV3DMolecule;
 	private TreeMap<Integer,Node> mNodeMap;
 	private Map<PPGaussian,AbstractPPNode> mPPNodeMap;
@@ -48,7 +53,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 		mPPArchitect = new PharmacophoreArchitect(this);
 		mArchitect.setConstructionMode(fxmol.getConstructionMode());
 		mV3DMolecule = fxmol;
-
+		mTSVArchitect = new TorsionStrainVisArchitect(this);
 		mNodeMap = new TreeMap<Integer,Node>();
 		mPPNodeMap = new HashMap<PPGaussian,AbstractPPNode>();
 		mVolNodeMap = new HashMap<VolumeGaussian,VolumeSphere>();
@@ -56,6 +61,9 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
 			if ((role & (MoleculeBuilder.ROLE_IS_ATOM | MoleculeBuilder.ROLE_IS_BOND )) != 0)
 				mNodeMap.put(role, node);
+			else if( (role & MoleculeBuilder.ROLE_IS_TORSION_PREF)!=0)
+				mNodeMap.put(role, node);
+				
 		}
 		
 		
@@ -80,8 +88,10 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 			if(group instanceof V3DCustomizablePheSA) { 
 				V3DCustomizablePheSA pharmacophore = (V3DCustomizablePheSA) group;
 				mPPArchitect.buildPharmacophore(pharmacophore.getMolVol(), 0);
+		}			
 		}
-	}
+		if(mV3DMolecule.getTorsionStrainVis()!=null && mV3DMolecule.getTorsionStrainVis().getTorsionAnalyzer()!=null)
+			mTSVArchitect.buildTorsionStrainColors(mV3DMolecule.getTorsionStrainVis().getTorsionAnalyzer());
 	}
 			
 		
@@ -171,6 +181,30 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 		if(node!=null) {
 			((VolumeSphere) node).update();
 		}
+		
+	}
+
+	@Override
+	public void addTorsionCylinder(int role, double radius, double length, Coordinates c, double rotationY,
+			double rotationZ, int strain) {
+		Node node = mNodeMap.get(role);
+		length*=TorsionStrainVisualization.LENGTH_SCALE;
+		if (node != null) {
+			((Cylinder)node).setHeight(length);
+			node.setTranslateX(c.x);
+			node.setTranslateY(c.y);
+			node.setTranslateZ(c.z);
+
+			Transform r1 = new Rotate(90+180/Math.PI*rotationY, Rotate.X_AXIS);
+			Transform r2 = new Rotate(90+180/Math.PI*rotationZ, Rotate.Z_AXIS);
+			node.getTransforms().clear();
+			node.getTransforms().add(r2);
+			node.getTransforms().add(r1);
+		}
+		PhongMaterial mat = TorsionStrainVisualization.getStrainMaterial(strain);
+		NodeDetail detail = (NodeDetail)node.getUserData();
+		node.setUserData(new NodeDetail(mat, role, detail.mayOverrideMaterial()));
+		((Cylinder)node).setMaterial(mat);
 		
 	}
 
