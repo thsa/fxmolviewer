@@ -9,7 +9,7 @@
 
 
 .tree-table-view {
-  -fx-background-color: -fx-base; 
+  -fx-background-color: transparent; 
   -fx-selection-bar-non-focused: rgba(0, 153, 153,0.2);
   -fx-padding: 1; 
 }
@@ -57,7 +57,7 @@
 
 
 .scroll-pane {
-    -fx-background-color: -fx-base;
+    -fx-background-color: transparent;
     -fx-opacity:1.0;
 }
 
@@ -103,6 +103,16 @@
 -fx-border-color: transparent -fx-base transparent -fx-base;
 -fx-background-color: transparent, derive(-fx-base,20%);
 -fx-background-insets: 0, 0 1 0 1;
+}
+
+.split-pane {
+-fx-background-color: transparent;
+}
+
+
+.border-pane {
+-fx-background-color: transparent;
+-fx-opacity: 0.3;
 }
  
 .tree-table-view {
@@ -198,6 +208,20 @@
 .neg-rec-img-icon {
     -fx-graphic: url("neg_rec_img.png");
 }
+
+.add-icon {
+    -fx-graphic: url("add.png");
+}
+
+.inclusion-icon {
+    -fx-graphic: url("inclusion.png");
+}
+
+.exclusion-icon {
+    -fx-graphic: url("exclusion.png");
+}
+
+
 
 .menu-button > .arrow-button {
     -fx-padding: 0;

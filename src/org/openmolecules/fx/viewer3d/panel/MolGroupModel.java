@@ -62,6 +62,7 @@ public class MolGroupModel implements MolStructureChangeListener {
 			mRole.addListener((v,ov,nv) -> mChangeListeners.forEach(e -> e.groupModelChanged()));
 			((V3DMolecule)mMol3D).addMoleculeStructureChangeListener(this);
 		}
+		isMolVisible.addListener((v,ov,nv) -> mChangeListeners.forEach(e -> e.groupModelChanged()));
 	}
 
 	private StereoMolecule createMolecule2D(V3DMolGroup molGroup) {

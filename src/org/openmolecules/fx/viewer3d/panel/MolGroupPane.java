@@ -41,10 +41,7 @@ import org.openmolecules.fx.viewer3d.V3DScene;
 public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMolGroup> {
 	//private static final boolean AUTO_HIDE_AT_START = false;
 	private V3DScene mScene3D;
-	//private CheckBox mCheckBoxPin;
-	private BooleanProperty mShowStructure;
 	private MoleculeGroupTable mGroupTable;
-	//private Map<Integer,ArrayList<V3DMolecule>> mGroups;
 
 	public MolGroupPane(final V3DScene scene3D) {
 		super();
@@ -57,7 +54,6 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 		setFitToWidth(true);
 		setHbarPolicy(ScrollBarPolicy.NEVER);
 		//setContent(mContainer);
-		mShowStructure = new SimpleBooleanProperty(false);
 		MolPaneMouseHandler mouseHandler = new MolPaneMouseHandler(this);
 		mGroupTable = new MoleculeGroupTable(this);
 		setContent(mGroupTable.getTable());
@@ -73,17 +69,7 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 		return mScene3D;
 	}
 	
-	public BooleanProperty getShowStructureProperty() { 
-		return mShowStructure;
-	}
-	
-	public boolean isShowStructure() {
-		return mShowStructure.get();
-	}
-	
-	public void setShowStructure(boolean showStructure) {
-		mShowStructure.set(showStructure);
-	}
+
 	
 	public TreeTableView<MolGroupModel> getMolTable() {
 		return mGroupTable.getTable();
@@ -166,11 +152,7 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 	}
 
 	
-	
-	//@Override
-	public void initialize(boolean isSmallMoleculeMode) {
-		mShowStructure.set(isSmallMoleculeMode);
-	}
+
 
 	//@Override
 	public void removeMolecule(V3DMolGroup fxmol) {

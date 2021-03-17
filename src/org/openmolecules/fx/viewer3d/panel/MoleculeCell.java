@@ -20,15 +20,8 @@
 
 package org.openmolecules.fx.viewer3d.panel;
 
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
-
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -63,7 +56,6 @@ public class MoleculeCell extends TreeTableCell<MolGroupModel,MolGroupModel> imp
 	}
 
 	public void updateView(boolean empty) {
-
 			//mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName(), RoleShapeFactory.fromRole(mModel.getMolecule3D().getRole()));
 		mView = (empty || mModel == null) ? null : new Label("\t" + mModel.getMoleculeName());	
 		if (mView != null) {
@@ -76,8 +68,6 @@ public class MoleculeCell extends TreeTableCell<MolGroupModel,MolGroupModel> imp
 			
 		}
 
-		
-		
 		setGraphic(mView);	
 		this.getTreeTableView().refresh();
 	}

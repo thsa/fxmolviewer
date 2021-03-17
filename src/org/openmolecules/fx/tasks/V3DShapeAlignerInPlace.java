@@ -42,11 +42,11 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 	private V3DMolecule mRefFXMol;
 	private List<V3DMolecule> mFitMols;
 	private V3DScene mScene;
-	public static Alert molSizeAlert  = new Alert(AlertType.ERROR);
+	public static Alert MOL_SIZE_ALERT  = new Alert(AlertType.ERROR);
 	static {
-	molSizeAlert.setTitle("Error");
-	molSizeAlert.setHeaderText("Too many atoms");
-	molSizeAlert.setContentText("PheSA alignment not possible for molecules with more than 100 heavy atoms");
+	MOL_SIZE_ALERT.setTitle("Error");
+	MOL_SIZE_ALERT.setHeaderText("Too many atoms");
+	MOL_SIZE_ALERT.setContentText("PheSA alignment not possible for molecules with more than 100 heavy atoms");
 	}
 	private Map<V3DMolecule, PheSAMolecule> mPheSAMap;
 	private double ppWeight;
@@ -85,7 +85,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 			if (node instanceof V3DMolecule) {
 				fxmol = (V3DMolecule)node;
 				if(fxmol.getMolecule().getAtoms()>100) {
-					molSizeAlert.showAndWait();
+					MOL_SIZE_ALERT.showAndWait();
 					return;
 				}
 				else if(fxmol.isSelected()) {

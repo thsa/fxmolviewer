@@ -106,7 +106,7 @@ public class MolPaneMouseHandler {
 				popup.getItems().add(itemAddSubGroup);
 				
 				
-				
+				/*
 				if(group instanceof V3DCustomizablePheSA) {
 					V3DCustomizablePheSA phesaModel = (V3DCustomizablePheSA) group;
 					MenuItem itemES = new MenuItem("Add ExclusionSphere");

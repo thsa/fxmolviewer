@@ -11,29 +11,17 @@ import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 
 
 
-import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.NodeOrientation;
-import javafx.scene.Node;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
-import javafx.scene.control.cell.CheckBoxTreeTableCell;
-import javafx.scene.control.cell.TreeItemPropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Circle;
 
 
 public class MoleculeGroupTable {
 	private TreeTableView<MolGroupModel> mMolTable;
-	private BooleanProperty mShowStructure;
 	private MolGroupPane mPane;
 	
 	
@@ -135,7 +123,6 @@ public class MoleculeGroupTable {
 
 	    	    			  
 
-		mShowStructure = mPane.getShowStructureProperty();
 		mMolTable = new TreeTableViewNoHeader<MolGroupModel>();
 
 		mMolTable.setEditable(true);
@@ -172,6 +159,7 @@ public class MoleculeGroupTable {
 	
 	public void changeVisibility(boolean visible) {
 		for(TreeItem<MolGroupModel> item : getTableItems()) {
+			System.out.println("change vis");
 			item.getValue().setVisibleProperty(visible);
 		}
 	}

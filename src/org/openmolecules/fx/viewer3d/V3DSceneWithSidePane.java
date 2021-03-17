@@ -30,6 +30,7 @@ import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.Separator;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
@@ -41,6 +42,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
 import org.openmolecules.fx.tasks.V3DDockingEngine;
+import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
@@ -50,6 +52,8 @@ import org.openmolecules.fx.viewer3d.panel.SlidingHBox;
 import org.openmolecules.render.TorsionStrainVisualization;
 
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.phesa.DescriptorHandlerShape;
+import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
 
@@ -65,8 +69,15 @@ import java.util.concurrent.Executors;
  */
 public class V3DSceneWithSidePane extends BorderPane {
 	
-	public enum GlobalMode { EXPLORER,BINDING_SITE_ANALYSIS;}
+	public enum GlobalMode { EXPLORER,BINDING_SITE_ANALYSIS, PHESA;}
 	private static final double TOOL_BUTTON_SIZE = 30.0;
+	private static final double SIDEPANEL_WIDTH = 300.0;
+	public static Alert ONLY_ONE_PHESA_ALERT  = new Alert(AlertType.ERROR);
+	static {
+		ONLY_ONE_PHESA_ALERT.setTitle("Error");
+		ONLY_ONE_PHESA_ALERT.setHeaderText("Inpropert Selection");
+		ONLY_ONE_PHESA_ALERT.setContentText("Please only select a single PheSA model");
+	}
 	private V3DScene mScene3D;
 	private MolGroupPane mMoleculePanel;
 	private GridPane upperPanel;
@@ -94,20 +105,26 @@ public class V3DSceneWithSidePane extends BorderPane {
 	    stackPane.getChildren().add(sceneWithSelection);
 	    stackPane.getChildren().add(center);
 	    center.setPickOnBounds(false);
-		setCenter(stackPane);
-		if(settings.contains(V3DScene.ViewerSettings.SIDEPANEL))
-			createSidePane(center);
+		if(settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
+			SplitPane splitPane = new SplitPane();
+			createSidePane(splitPane,settings);
+			splitPane.getItems().addAll(stackPane);
+			setCenter(splitPane);
+		}
+		else {
+			setCenter(stackPane);
+		}
 		if(settings.contains(V3DScene.ViewerSettings.UPPERPANEL))
 			createUpperPanel();
+
 		
 	}
 	
-	private void createSidePane(BorderPane center) {
+	private void createSidePane(SplitPane splitPane,EnumSet<V3DScene.ViewerSettings> settings) {
 	
 		this.setStyle("-fx-background-color:black");
 		mMoleculePanel = new MolGroupPane(mScene3D);
 		mMoleculePanel.getStyleClass().add("side-panel");
-
 		molView = new MoleculeView();
 		molView.setBackgroundColor(Color.web(GUIColorPalette.BLUE1));
 		molView.setStyle("-fx-opacity: 0.5;");
@@ -123,16 +140,25 @@ public class V3DSceneWithSidePane extends BorderPane {
 			}
 			catch(Exception exc) {};
 		});
+		
 
+		
 		BorderPane borderPane = new BorderPane();
 		borderPane.setCenter(mMoleculePanel);
 		borderPane.setBottom(molView);
+		borderPane.setPrefWidth(SIDEPANEL_WIDTH);
+		borderPane.setMaxWidth(SIDEPANEL_WIDTH);
+		splitPane.getItems().add(borderPane);
+		if(settings.contains(V3DScene.ViewerSettings.BLUE_BACKGROUND))
+			borderPane.setStyle("-fx-background: midnightblue");
+		/*
 		SlidingHBox slidingBox = new SlidingHBox(borderPane);
 		center.setLeft(slidingBox.getBox());
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
 		center.setCenter(dummyPane);
+		*/
 	}
 	
 	private void createUpperPanel() {
@@ -155,9 +181,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 	
 	private void createModePanel() {
 		ToggleButton explorerModeButton = new ToggleButton();
-		//Image explorer = new Image(EditorPane.class.getResource("/resources/explorer.png").toString(), TOOL_BUTTON_SIZE,
-		//		TOOL_BUTTON_SIZE, true, true);
-		//ImageView imgView = new ImageView(explorer);
 		explorerModeButton.getStyleClass().add("explorer-icon");
 		explorerModeButton.prefHeightProperty().bind(upperPanel.heightProperty());
 		upperPanel.add(explorerModeButton, 0, 0);
@@ -166,21 +189,28 @@ public class V3DSceneWithSidePane extends BorderPane {
 		bindingSiteAnalysisButton.prefHeightProperty().bind(upperPanel.heightProperty());
 		upperPanel.add(bindingSiteAnalysisButton, 1, 0 );
 		
+		ToggleButton pheSAButton = new ToggleButton("PheSA");
+		pheSAButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		upperPanel.add(pheSAButton, 2, 0 );
+		
 		ToggleGroup group = new ToggleGroup();
 		explorerModeButton.setToggleGroup(group);
 		bindingSiteAnalysisButton.setToggleGroup(group);
+		pheSAButton.setToggleGroup(group);
 		
 		explorerModeButton.setSelected(globalModeProperty.get()==GlobalMode.EXPLORER);
 		bindingSiteAnalysisButton.setSelected(globalModeProperty.get()==GlobalMode.BINDING_SITE_ANALYSIS);
+		pheSAButton.setSelected(globalModeProperty.get()==GlobalMode.PHESA);
 		
 		explorerModeButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.EXPLORER));
 		bindingSiteAnalysisButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.BINDING_SITE_ANALYSIS));
+		pheSAButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.PHESA));
 		
 		
 	}
 	
 	private void constructUpperPanel() {
-		int i=2;
+		int i=3;
 		int j=0;
 		constructSeparator(i,j);
 		i++;
@@ -197,17 +227,20 @@ public class V3DSceneWithSidePane extends BorderPane {
 			i++;
 			constructEditorButton(i,j);
 			i++;
+			constructHydrogenButton(i,j);
+			i++;
+			constructMinimizationButton(i,j);
+			i++;
+			constructTorsionButton(i,j);
+			i++;
 		}
-		constructHydrogenButton(i,j);
-		i++;
-		constructMinimizationButton(i,j);
-		i++;
-		constructTorsionButton(i,j);
-		i++;
+
 		if(globalModeProperty.get()==GlobalMode.BINDING_SITE_ANALYSIS) {
 			boolean success = handleBindingSiteMode();
-			if(!success)
+			if(!success) {
 				globalModeProperty.set(GlobalMode.EXPLORER);
+				return;
+			}
 			constructInteractionButton(i,j);
 			i++;
 			constructSettingsButton(i,j);
@@ -216,8 +249,9 @@ public class V3DSceneWithSidePane extends BorderPane {
 			i++;
 			constructNegRecButton(i,j);
 			i++;
-
-	
+		}
+		if(globalModeProperty.get()==GlobalMode.PHESA) {
+			constructPheSAButtons(i,j);
 		}
 		
 	}
@@ -229,6 +263,95 @@ public class V3DSceneWithSidePane extends BorderPane {
 		sep.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(sep, i, j);
 
+	}
+	
+	private void constructPheSAButtons(int i, int j) {
+		Button addButton = new Button("");
+		addButton.getStyleClass().add("add-icon");
+		addButton.setMaxHeight(TOOL_BUTTON_SIZE);
+		upperPanel.add(addButton, i, j);
+		addButton.getStyleClass().add("toolBarButton");
+		addButton.setOnMouseReleased((e) -> {
+			List<V3DMolecule> fxmols = mMoleculePanel.getAllSelectedMolecules();
+			boolean sizeViolation = false;
+			for(V3DMolecule fxmol : fxmols) {
+				if(fxmol.getMolecule().getAtoms()>DescriptorHandlerShape.SIZE_CUTOFF) {
+					sizeViolation = true;
+					break;
+				}
+			}
+			if(sizeViolation)
+				V3DShapeAlignerInPlace.MOL_SIZE_ALERT.showAndWait();
+			else {
+				fxmols.stream().forEach(fxm -> fxm.addPharmacophore());
+			}
+		});
+		addButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		i++;
+		
+		Button saveButton = new Button("");
+		saveButton.getStyleClass().add("save-icon");
+		saveButton.setMaxHeight(TOOL_BUTTON_SIZE);
+		upperPanel.add(saveButton, i, j);
+		saveButton.getStyleClass().add("toolBarButton");
+		saveButton.setOnMouseReleased((e) -> {
+			List<V3DCustomizablePheSA> phesaModels = new ArrayList<>();
+			List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
+			for(V3DMolGroup molGroup : selectedGroups) {
+				if(molGroup instanceof V3DCustomizablePheSA)
+					phesaModels.add((V3DCustomizablePheSA) molGroup);
+			}
+			
+			
+			FileChooser fileChooser = new FileChooser();
+			fileChooser.setTitle("Save PheSA Queries");
+			fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
+			File file = fileChooser.showSaveDialog(null);
+	        V3DMoleculeWriter.savePhesaQueries(file, phesaModels);
+		});
+		saveButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		
+		i++;
+		Button fileOpenButton = new Button("");
+		fileOpenButton.getStyleClass().add("load-icon");
+		fileOpenButton.setMaxHeight(TOOL_BUTTON_SIZE);
+		upperPanel.add(fileOpenButton, i, j);
+		fileOpenButton.getStyleClass().add("toolBarButton");
+		fileOpenButton.setOnMouseReleased((e) -> {
+				FileChooser fileChooser = new FileChooser();
+				fileChooser.setTitle("Load PheSA Query");
+				fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
+				File selectedFile = fileChooser.showSaveDialog(null);
+				if (selectedFile != null) {
+					List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(mMoleculePanel.getV3DScene(), selectedFile, 0);
+				    for(V3DMolecule fxMol: fxMols) {
+				    	mMoleculePanel.getV3DScene().addMolecule(fxMol);
+				}
+				}
+		});
+		fileOpenButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		
+		i++;
+		Button addInclButton = new Button("");
+		addInclButton.getStyleClass().add("inclusion-icon");
+		addInclButton.setMaxHeight(TOOL_BUTTON_SIZE);
+		upperPanel.add(addInclButton, i, j);
+		addInclButton.getStyleClass().add("toolBarButton");
+		addInclButton.setOnMouseReleased((e) -> {
+			handlePheSACustomVolume(VolumeGaussian.INCLUSION);
+		});
+		fileOpenButton.prefHeightProperty().bind(upperPanel.heightProperty());
+
+	}
+	
+	private void handlePheSACustomVolume(int function) {
+		List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
+		if(selectedGroups.size()!=1)
+			ONLY_ONE_PHESA_ALERT.showAndWait();
+		else if(!(selectedGroups.get(0) instanceof V3DCustomizablePheSA))
+				ONLY_ONE_PHESA_ALERT.showAndWait();
+		else 
+			 ((V3DCustomizablePheSA) selectedGroups.get(0)).placeExclusionSphere(function);
 	}
 	
 	private void constructVisibleButton(int i, int j) {
@@ -501,8 +624,10 @@ public class V3DSceneWithSidePane extends BorderPane {
 		settingsMenu.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
+
+	
 	private boolean handleBindingSiteMode() {
-		boolean success=false;;
+		boolean success=false;
 		List<V3DMolecule> selectedMols = mMoleculePanel.getAllSelectedMolecules();
 		V3DMolecule theProtein = null;
 		V3DMolecule theLigand = null;
