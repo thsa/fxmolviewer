@@ -20,14 +20,20 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SplitPane;
@@ -35,11 +41,13 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.util.Callback;
 
 import org.openmolecules.fx.tasks.V3DDockingEngine;
 import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
@@ -75,7 +83,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 	public static Alert ONLY_ONE_PHESA_ALERT  = new Alert(AlertType.ERROR);
 	static {
 		ONLY_ONE_PHESA_ALERT.setTitle("Error");
-		ONLY_ONE_PHESA_ALERT.setHeaderText("Inpropert Selection");
+		ONLY_ONE_PHESA_ALERT.setHeaderText("Improper Selection");
 		ONLY_ONE_PHESA_ALERT.setContentText("Please only select a single PheSA model");
 	}
 	private V3DScene mScene3D;
@@ -108,8 +116,8 @@ public class V3DSceneWithSidePane extends BorderPane {
 		if(settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 			SplitPane splitPane = new SplitPane();
 			createSidePane(splitPane,settings);
-			splitPane.getItems().addAll(stackPane);
-			setCenter(splitPane);
+			center.setCenter(splitPane);
+			setCenter(stackPane);
 		}
 		else {
 			setCenter(stackPane);
@@ -151,6 +159,12 @@ public class V3DSceneWithSidePane extends BorderPane {
 		splitPane.getItems().add(borderPane);
 		if(settings.contains(V3DScene.ViewerSettings.BLUE_BACKGROUND))
 			borderPane.setStyle("-fx-background: midnightblue");
+		Pane dummyPane = new Pane();
+		dummyPane.setVisible(false);
+		dummyPane.setPickOnBounds(false);
+		dummyPane.setOnMousePressed(e -> System.out.println("oops"));
+		splitPane.getItems().add(dummyPane);
+		splitPane.setMouseTransparent(true);
 		/*
 		SlidingHBox slidingBox = new SlidingHBox(borderPane);
 		center.setLeft(slidingBox.getBox());
@@ -295,19 +309,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		upperPanel.add(saveButton, i, j);
 		saveButton.getStyleClass().add("toolBarButton");
 		saveButton.setOnMouseReleased((e) -> {
-			List<V3DCustomizablePheSA> phesaModels = new ArrayList<>();
-			List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
-			for(V3DMolGroup molGroup : selectedGroups) {
-				if(molGroup instanceof V3DCustomizablePheSA)
-					phesaModels.add((V3DCustomizablePheSA) molGroup);
-			}
-			
-			
-			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Save PheSA Queries");
-			fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
-			File file = fileChooser.showSaveDialog(null);
-	        V3DMoleculeWriter.savePhesaQueries(file, phesaModels);
+			getPheSASaveDialog();
 		});
 		saveButton.prefHeightProperty().bind(upperPanel.heightProperty());
 		
@@ -321,12 +323,14 @@ public class V3DSceneWithSidePane extends BorderPane {
 				FileChooser fileChooser = new FileChooser();
 				fileChooser.setTitle("Load PheSA Query");
 				fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
-				File selectedFile = fileChooser.showSaveDialog(null);
+				File selectedFile = fileChooser.showOpenDialog(null);
 				if (selectedFile != null) {
 					List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(mMoleculePanel.getV3DScene(), selectedFile, 0);
-				    for(V3DMolecule fxMol: fxMols) {
-				    	mMoleculePanel.getV3DScene().addMolecule(fxMol);
-				}
+					V3DMolGroup phesaInput = new V3DMolGroup("PheSA Queries");
+				    for(V3DMolecule fxMol: fxMols) 
+				    	phesaInput.addMolGroup(fxMol);
+				    mMoleculePanel.getV3DScene().addMolGroup(phesaInput);
+				
 				}
 		});
 		fileOpenButton.prefHeightProperty().bind(upperPanel.heightProperty());
@@ -340,7 +344,18 @@ public class V3DSceneWithSidePane extends BorderPane {
 		addInclButton.setOnMouseReleased((e) -> {
 			handlePheSACustomVolume(VolumeGaussian.INCLUSION);
 		});
-		fileOpenButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		addInclButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		
+		i++;
+		Button addExclButton = new Button("");
+		addExclButton.getStyleClass().add("exclusion-icon");
+		addExclButton.setMaxHeight(TOOL_BUTTON_SIZE);
+		upperPanel.add(addExclButton, i, j);
+		addExclButton.getStyleClass().add("toolBarButton");
+		addExclButton.setOnMouseReleased((e) -> {
+			handlePheSACustomVolume(VolumeGaussian.EXCLUSION);
+		});
+		addExclButton.prefHeightProperty().bind(upperPanel.heightProperty());
 
 	}
 	
@@ -623,6 +638,55 @@ public class V3DSceneWithSidePane extends BorderPane {
 
 		settingsMenu.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
+	
+	private void getPheSASaveDialog() {
+		Dialog<Boolean> dialog = new Dialog<>();
+		dialog.setTitle("PheSA Query Specifications");
+		dialog.setResizable(false);
+		
+		HBox hbox1 = new HBox();
+		
+		Label label = new Label("Save as: ");
+		
+		ToggleGroup toggleGroupInput = new ToggleGroup();
+		RadioButton singleConf = new RadioButton("Single Conformer");
+		singleConf.setSelected(true);
+		RadioButton ensembleConf = new RadioButton("Conformer Ensemble");
+		ensembleConf.setToggleGroup(toggleGroupInput);
+		singleConf.setToggleGroup(toggleGroupInput);
+		hbox1.getChildren().addAll(label, singleConf, ensembleConf);
+		List<V3DCustomizablePheSA> phesaModels = new ArrayList<>();
+		List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
+		for(V3DMolGroup molGroup : selectedGroups) {
+			if(molGroup instanceof V3DCustomizablePheSA)
+				phesaModels.add((V3DCustomizablePheSA) molGroup);
+		}
+		
+	
+		dialog.getDialogPane().setContent(hbox1);
+		
+		ButtonType buttonTypeSave = new ButtonType("Save", ButtonData.OK_DONE);
+
+
+
+		dialog.getDialogPane().getButtonTypes().add(buttonTypeSave);
+		dialog.setResultConverter(new Callback<ButtonType, Boolean>() {
+		    @Override
+		    public Boolean call(ButtonType b) {
+		    	FileChooser fileChooser = new FileChooser();
+				fileChooser.setTitle("Save PheSA Queries");
+				fileChooser.getExtensionFilters().add(new ExtensionFilter("DWAR Files", "*.dwar"));
+				File file = fileChooser.showSaveDialog(null);
+				boolean generateConfs = ensembleConf.isSelected() ? true : false;
+		        V3DMoleculeWriter.savePhesaQueries(file, phesaModels,generateConfs);
+		        return true;
+		        
+		    }
+		});
+		
+		dialog.showAndWait();
+	}
+	
 	
 
 	

@@ -20,6 +20,8 @@ import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileCreator;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.conf.ConformerSet;
+import com.actelion.research.chem.conf.ConformerSetGenerator;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.DWARFileCreator;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
@@ -59,7 +61,7 @@ public class V3DMoleculeWriter {
 	
 		}
 	
-	public static void savePhesaQueries(File file, List<V3DCustomizablePheSA> pheSAModels) {
+	public static void savePhesaQueries(File file, List<V3DCustomizablePheSA> pheSAModels, boolean generateConfs) {
 		try {
 			
 			DWARFileCreator creator = new DWARFileCreator(new BufferedWriter(new FileWriter(file)));
@@ -113,6 +115,16 @@ public class V3DMoleculeWriter {
 					mol2.setAtomX(a, newCoords.x);
 					mol2.setAtomY(a, newCoords.y);
 					mol2.setAtomZ(a, newCoords.z);
+				}
+				if(generateConfs) {
+					ConformerSetGenerator confSetGenerator = new ConformerSetGenerator(200);
+					ConformerSet confs = confSetGenerator.generateConformerSet(mol2);
+					for(Conformer conformer : confs) {
+						MolecularVolume mv = new MolecularVolume(molVolOut);
+						mv.update(conformer);
+						molVols.add(mv);
+					}
+					
 				}
 				PheSAMolecule shapeMol = new PheSAMolecule(mol2,molVols);
 				String PheSAString = dhs.encode(shapeMol);

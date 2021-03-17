@@ -603,7 +603,7 @@ public class V3DPopupMenu extends ContextMenu {
 		
 	}
 	
-
+	/*
 	private Dialog<IAlignmentTask> getAlignmentDialog(V3DScene scene) {
 
 		
@@ -686,7 +686,7 @@ public class V3DPopupMenu extends ContextMenu {
 		
 		return dialog;
 	}
-
+	*/
 	
 
 }

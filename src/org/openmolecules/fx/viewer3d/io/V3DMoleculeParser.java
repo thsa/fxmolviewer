@@ -251,9 +251,10 @@ public class V3DMoleculeParser {
 				SpecialField pheSAField = dwParser.getSpecialFieldMap().get(DescriptorConstants.DESCRIPTOR_ShapeAlign.shortName);
 				String pheSAString = dwParser.getSpecialFieldData(pheSAField.fieldIndex);
 				PheSAMolecule shapeMol = dhs.decode(pheSAString);
-				if(shapeMol.getVolumes().size()==1) {
-					MolecularVolume molVol = shapeMol.getVolumes().get(0);
-					V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
+				for(MolecularVolume molVol : shapeMol.getVolumes()) {
+					StereoMolecule m = shapeMol.getConformer(molVol);
+					m.setName(mol.getName());
+					V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
 					fxMol.addPharmacophore(molVol);
 					fxMols.add(fxMol);
 				}

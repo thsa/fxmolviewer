@@ -148,8 +148,8 @@ public class MoleculeGroupTable {
 		
 		mMolTable.setColumnResizePolicy(TreeTableView.CONSTRAINED_RESIZE_POLICY);
 
-		strucCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.7));
-		roleCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.3));
+		strucCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.9));
+		roleCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.1));
 		strucCol.maxWidthProperty().bind(strucCol.prefWidthProperty());
 		strucCol.setResizable(false);
 

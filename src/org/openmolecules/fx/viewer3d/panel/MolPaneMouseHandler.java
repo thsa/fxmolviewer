@@ -90,6 +90,8 @@ public class MolPaneMouseHandler {
 		popup.getItems().add(new SeparatorMenuItem());
 		if(model!=null) {
 			V3DMolGroup group = model.getMolecule3D();
+			if(!(group instanceof V3DMolecule))
+					return;
 			MenuItem itemZoom = new MenuItem("Center View");
 			itemZoom.setOnAction(e -> {
 				mMolPane.getV3DScene().optimizeView(group);

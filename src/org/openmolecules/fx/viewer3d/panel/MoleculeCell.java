@@ -57,7 +57,7 @@ public class MoleculeCell extends TreeTableCell<MolGroupModel,MolGroupModel> imp
 
 	public void updateView(boolean empty) {
 			//mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName(), RoleShapeFactory.fromRole(mModel.getMolecule3D().getRole()));
-		mView = (empty || mModel == null) ? null : new Label("\t" + mModel.getMoleculeName());	
+		mView = (empty || mModel == null) ? null : new Label(mModel.getMoleculeName());	
 		if (mView != null) {
 				((Label)mView).setFont(Font.font(15));
 				configureView();
