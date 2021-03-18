@@ -20,51 +20,31 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.geometry.Orientation;
-import javafx.scene.Group;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.Separator;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.util.Callback;
-
-import org.openmolecules.fx.tasks.V3DDockingEngine;
-import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
-import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
-import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
-import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
-import org.openmolecules.fx.viewer3d.panel.SlidingHBox;
-import org.openmolecules.fx.viewer3d.panel.EditorPane;
-import org.openmolecules.fx.viewer3d.panel.MolGroupPane;
-import org.openmolecules.fx.viewer3d.panel.DraggableHBox;
-import org.openmolecules.render.TorsionStrainVisualization;
-
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Orientation;
+import javafx.scene.Group;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.util.Callback;
+import org.openmolecules.fx.tasks.V3DDockingEngine;
+import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
+import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
+import org.openmolecules.fx.viewer3d.panel.DraggableHBox;
+import org.openmolecules.fx.viewer3d.panel.EditorPane;
+import org.openmolecules.fx.viewer3d.panel.MolGroupPane;
+import org.openmolecules.render.TorsionStrainVisualization;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -136,7 +116,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		mMoleculePanel.getStyleClass().add("side-panel");
 		molView = new MoleculeView();
 		molView.setBackgroundColor(Color.web(GUIColorPalette.BLUE1));
-		molView.setStyle("-fx-opacity: 0.5;");
+		molView.setStyle("-fx-opacity: 0.9;");
 		((MoleculeViewSkin) molView.getSkin()).setBorderColor(null);
 		molView.setPrefHeight(200);
 		mMoleculePanel.getMolTable().setOnMousePressed((e) -> {
@@ -150,16 +130,16 @@ public class V3DSceneWithSidePane extends BorderPane {
 			catch(Exception exc) {};
 		});
 		
-
-		
 		BorderPane borderPane = new BorderPane();
 		borderPane.setCenter(mMoleculePanel);
 		borderPane.setBottom(molView);
 		borderPane.setPrefWidth(SIDEPANEL_WIDTH);
 		borderPane.setMaxWidth(SIDEPANEL_WIDTH);
 		//splitPane.getItems().add(borderPane);
-		if(settings.contains(V3DScene.ViewerSettings.BLUE_BACKGROUND))
+		if(settings.contains(V3DScene.ViewerSettings.BLUE_BACKGROUND)) {
 			borderPane.setStyle("-fx-background: midnightblue");
+			borderPane.setStyle("-fx-opacity: 0.9;");
+			}
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);

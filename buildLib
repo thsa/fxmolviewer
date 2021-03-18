@@ -4,9 +4,9 @@
 rm -rf ./bin
 mkdir ./bin
 cp -r ./src/resources ./bin/
-javac -d ./bin -sourcepath ./src -classpath ./lib/controlsfx-8.40.15.jar:./lib/commons-compiler-2.7.0.jar:./lib/janino-2.7.0.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewer3d/V3DSceneWithSidePane.java src/org/openmolecules/render/MoleculeRaytraceDialog.java
+javac -d ./bin -sourcepath ./src -classpath ./lib/commons-compiler-2.7.0.jar:./lib/janino-2.7.0.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewer3d/V3DSceneWithSidePane.java src/org/openmolecules/render/*
 cd ./bin
-jar xf ../lib/controlsfx-8.40.15.jar
+# jar xf ../lib/controlsfx-8.40.15.jar
 jar xf ../lib/commons-compiler-2.7.0.jar
 jar xf ../lib/janino-2.7.0.jar
 cd ..
