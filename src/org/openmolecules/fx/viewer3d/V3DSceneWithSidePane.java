@@ -158,12 +158,10 @@ public class V3DSceneWithSidePane extends BorderPane {
 		borderPane.setPrefWidth(SIDEPANEL_WIDTH);
 		borderPane.setMaxWidth(SIDEPANEL_WIDTH);
 		//splitPane.getItems().add(borderPane);
-		if(settings.contains(V3DScene.ViewerSettings.BLUE_BACKGROUND))
-			borderPane.setStyle("-fx-background: midnightblue");
+
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
-		dummyPane.setOnMousePressed(e -> System.out.println("oops"));
 		//splitPane.getItems().add(dummyPane);
 		//splitPane.setPickOnBounds(false);
 		//splitPane.setMouseTransparent(true);
