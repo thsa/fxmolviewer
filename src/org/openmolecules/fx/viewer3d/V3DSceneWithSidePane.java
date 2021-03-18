@@ -54,9 +54,10 @@ import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
+import org.openmolecules.fx.viewer3d.panel.SlidingHBox;
 import org.openmolecules.fx.viewer3d.panel.EditorPane;
 import org.openmolecules.fx.viewer3d.panel.MolGroupPane;
-import org.openmolecules.fx.viewer3d.panel.SlidingHBox;
+import org.openmolecules.fx.viewer3d.panel.DraggableHBox;
 import org.openmolecules.render.TorsionStrainVisualization;
 
 import com.actelion.research.chem.StereoMolecule;
@@ -78,8 +79,8 @@ import java.util.concurrent.Executors;
 public class V3DSceneWithSidePane extends BorderPane {
 	
 	public enum GlobalMode { EXPLORER,BINDING_SITE_ANALYSIS, PHESA;}
-	private static final double TOOL_BUTTON_SIZE = 30.0;
-	private static final double SIDEPANEL_WIDTH = 300.0;
+	public static final double TOOL_BUTTON_SIZE = 30.0;
+	public static final double SIDEPANEL_WIDTH = 400.0;
 	public static Alert ONLY_ONE_PHESA_ALERT  = new Alert(AlertType.ERROR);
 	static {
 		ONLY_ONE_PHESA_ALERT.setTitle("Error");
@@ -114,9 +115,9 @@ public class V3DSceneWithSidePane extends BorderPane {
 	    stackPane.getChildren().add(center);
 	    center.setPickOnBounds(false);
 		if(settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
-			SplitPane splitPane = new SplitPane();
-			createSidePane(splitPane,settings);
-			center.setCenter(splitPane);
+			//SplitPane splitPane = new SplitPane();
+			createSidePane(center,settings);
+			//center.setCenter(splitPane);
 			setCenter(stackPane);
 		}
 		else {
@@ -128,7 +129,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void createSidePane(SplitPane splitPane,EnumSet<V3DScene.ViewerSettings> settings) {
+	private void createSidePane(BorderPane center,EnumSet<V3DScene.ViewerSettings> settings) {
 	
 		this.setStyle("-fx-background-color:black");
 		mMoleculePanel = new MolGroupPane(mScene3D);
@@ -156,23 +157,25 @@ public class V3DSceneWithSidePane extends BorderPane {
 		borderPane.setBottom(molView);
 		borderPane.setPrefWidth(SIDEPANEL_WIDTH);
 		borderPane.setMaxWidth(SIDEPANEL_WIDTH);
-		splitPane.getItems().add(borderPane);
+		//splitPane.getItems().add(borderPane);
 		if(settings.contains(V3DScene.ViewerSettings.BLUE_BACKGROUND))
 			borderPane.setStyle("-fx-background: midnightblue");
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
 		dummyPane.setOnMousePressed(e -> System.out.println("oops"));
-		splitPane.getItems().add(dummyPane);
-		splitPane.setMouseTransparent(true);
-		/*
-		SlidingHBox slidingBox = new SlidingHBox(borderPane);
+		//splitPane.getItems().add(dummyPane);
+		//splitPane.setPickOnBounds(false);
+		//splitPane.setMouseTransparent(true);
+		//borderPane.setMouseTransparent(false);
+		
+		DraggableHBox slidingBox = new DraggableHBox(borderPane);
 		center.setLeft(slidingBox.getBox());
-		Pane dummyPane = new Pane();
-		dummyPane.setVisible(false);
-		dummyPane.setPickOnBounds(false);
+		//Pane dummyPane = new Pane();
+		//dummyPane.setVisible(false);
+		//dummyPane.setPickOnBounds(false);
 		center.setCenter(dummyPane);
-		*/
+		
 	}
 	
 	private void createUpperPanel() {
