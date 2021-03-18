@@ -116,7 +116,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		mMoleculePanel.getStyleClass().add("side-panel");
 		molView = new MoleculeView();
 		molView.setBackgroundColor(Color.web(GUIColorPalette.BLUE1));
-		molView.setStyle("-fx-opacity: 0.5;");
+		molView.setStyle("-fx-opacity: 0.9;");
 		((MoleculeViewSkin) molView.getSkin()).setBorderColor(null);
 		molView.setPrefHeight(200);
 		mMoleculePanel.getMolTable().setOnMousePressed((e) -> {
