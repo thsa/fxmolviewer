@@ -5,6 +5,7 @@ import org.openmolecules.fx.viewer3d.V3DSceneWithSelection;
 import org.openmolecules.fx.viewer3d.V3DSceneWithSidePane;
 
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
@@ -66,6 +67,7 @@ public class DraggableHBox {
 	        button.onMouseDraggedProperty().set(new EventHandler<MouseEvent>() {
 	            @Override
 	            public void handle(MouseEvent event) {
+	            	button.setCursor(Cursor.H_RESIZE);
 	                // Get the exact moved X and Y
 	                double offsetX = event.getSceneX() - mousex;
 	                x += offsetX;
