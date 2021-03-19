@@ -135,22 +135,13 @@ public class V3DSceneWithSidePane extends BorderPane {
 		borderPane.setBottom(molView);
 		borderPane.setPrefWidth(SIDEPANEL_WIDTH);
 		borderPane.setMaxWidth(SIDEPANEL_WIDTH);
-		//splitPane.getItems().add(borderPane);
-
 
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
-		//splitPane.getItems().add(dummyPane);
-		//splitPane.setPickOnBounds(false);
-		//splitPane.setMouseTransparent(true);
-		//borderPane.setMouseTransparent(false);
 		
 		DraggableHBox slidingBox = new DraggableHBox(borderPane);
 		center.setLeft(slidingBox.getBox());
-		//Pane dummyPane = new Pane();
-		//dummyPane.setVisible(false);
-		//dummyPane.setPickOnBounds(false);
 		center.setCenter(dummyPane);
 		
 	}
@@ -218,6 +209,8 @@ public class V3DSceneWithSidePane extends BorderPane {
 			constructFileSaveButton(i,j);
 			i++;
 			constructDeleteButton(i,j);
+			i++;
+			constructClearButton(i,j);
 			i++;
 			constructEditorButton(i,j);
 			i++;
@@ -426,6 +419,19 @@ public class V3DSceneWithSidePane extends BorderPane {
 		upperPanel.add( deleteButton, i, j);
 		deleteButton.getStyleClass().add("toolBarButton");
 		deleteButton.setOnMouseReleased((e) -> mScene3D.delete(mMoleculePanel.getAllSelectedMolGroups()));
+		deleteButton.prefHeightProperty().bind(upperPanel.heightProperty());
+	}
+	
+	private void constructClearButton(int i, int j) {
+		//Image trash= new Image(EditorPane.class.getResource("/resources/trash.png").toString(), TOOL_BUTTON_SIZE,
+		//		TOOL_BUTTON_SIZE, true, true);
+		//ImageView imgView = new ImageView(trash);
+		Button deleteButton = new Button("");
+		deleteButton.getStyleClass().add("clear-icon");
+		deleteButton.setMaxHeight(TOOL_BUTTON_SIZE);
+		upperPanel.add( deleteButton, i, j);
+		deleteButton.getStyleClass().add("toolBarButton");
+		deleteButton.setOnMouseReleased((e) -> mScene3D.clearAll(false));
 		deleteButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	

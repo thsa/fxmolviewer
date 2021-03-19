@@ -8,8 +8,7 @@ import java.util.stream.Collectors;
 import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
-
-
+import org.openmolecules.fx.viewer3d.V3DScene.ViewerSettings;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.NodeOrientation;
@@ -139,17 +138,19 @@ public class MoleculeGroupTable {
 		
 		TreeTableColumn<MolGroupModel,MolGroupModel> roleCol = new TreeTableColumn<MolGroupModel,MolGroupModel>("Role");
 		mMolTable.getColumns().add(roleCol);
-		roleCol.setCellValueFactory(cellData -> new SimpleObjectProperty<MolGroupModel>(cellData.getValue().getValue()));
-		roleCol.setCellFactory((e) -> {
-			return new RoleCell();
-		});
-		
+		if(mPane.getV3DScene().getSettings().contains(ViewerSettings.ROLE)) {
+			roleCol.setCellValueFactory(cellData -> new SimpleObjectProperty<MolGroupModel>(cellData.getValue().getValue()));
+			roleCol.setCellFactory((e) -> {
+				return new RoleCell();
+			});
+			roleCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.1));
+		}
 		//groupCol.setStyle("-fx-font-size: 15");
 		
 		mMolTable.setColumnResizePolicy(TreeTableView.CONSTRAINED_RESIZE_POLICY);
 
 		strucCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.9));
-		roleCol.prefWidthProperty().bind(mPane.widthProperty().multiply(0.1));
+		
 		strucCol.maxWidthProperty().bind(strucCol.prefWidthProperty());
 		strucCol.setResizable(false);
 

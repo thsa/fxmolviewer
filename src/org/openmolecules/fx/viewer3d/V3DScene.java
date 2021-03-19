@@ -95,7 +95,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public enum ViewerSettings {
-		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND
+		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND, ROLE
 	}
 
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL);
@@ -105,7 +105,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(
 			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.WHITE_HYDROGENS,
-			ViewerSettings.BLACK_BACKGROUND, ViewerSettings.UPPERPANEL);
+			ViewerSettings.BLACK_BACKGROUND, ViewerSettings.UPPERPANEL,ViewerSettings.ROLE);
 	
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
@@ -350,13 +350,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void clearAll(boolean isSmallMoleculeMode) {
 		mMoleculeColorID = 0;
-
 			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-				if(fxmol instanceof V3DMolecule) {
-				//((V3DMolecule) node).removeMeasurements();
+				delete(fxmol);
 					for(V3DSceneListener listener : mSceneListeners)
 						listener.removeMolecule(fxmol);
-				}
+				//}
 			
 		}
 		for(V3DSceneListener listener : mSceneListeners)
@@ -380,7 +378,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			n.setTranslateY(n.getTranslateY() - p.getY());
 			n.setTranslateZ(n.getTranslateZ() - p.getZ());
 		}
-
 		double cameraZ = 50;
 
 		double hFOV = ((PerspectiveCamera)getCamera()).getFieldOfView();
