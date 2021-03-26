@@ -456,7 +456,7 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 			temp[j] += c.y * mEigenVectorsLeft[1][j];
 			temp[j] += c.z * mEigenVectorsLeft[2][j];
 			}
-		c.set(temp[0], temp[1], -temp[2]);
+		c.set(temp[0], temp[2], -temp[1]);
 		}
 
 	private void flipFeaturesToFront(Conformer conformer) {
