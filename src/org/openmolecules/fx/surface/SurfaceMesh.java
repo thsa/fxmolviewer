@@ -261,7 +261,7 @@ System.out.println(i1+"("+p.get(i1*3)+","+p.get(i1*3+1)+","+p.get(i1*3+2)+") "+i
 			}
 		}
 
-		private void writeTriangleStats(int i, int i1, int i2, int i3) {
+	private void writeTriangleStats(int i, int i1, int i2, int i3) {
 			i1 *= getPointElementSize();
 			i2 *= getPointElementSize();
 			i3 *= getPointElementSize();

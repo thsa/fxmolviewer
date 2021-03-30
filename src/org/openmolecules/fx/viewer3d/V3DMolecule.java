@@ -501,7 +501,7 @@ public class V3DMolecule extends V3DMolGroup {
 		int hydrogenARGB = MoleculeArchitect.getAtomARGB(1);
 		Color hydrogenColor = Color.rgb((hydrogenARGB & 0x00FF0000) >> 16,
 				(hydrogenARGB & 0x0000FF00) >> 8, hydrogenARGB & 0x000000FF);
-		mHydrogenMaterial = createMaterial(color.interpolate(hydrogenColor, 0.5), 1.0);
+		mHydrogenMaterial = createMaterial(color == null ? hydrogenColor : color.interpolate(hydrogenColor, 0.5), 1.0);
 
 		if (color == null) {
 			mOverrideMaterial = null;
@@ -855,8 +855,6 @@ public class V3DMolecule extends V3DMolGroup {
 		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true); 
 	}
 	
-
-	
 	private boolean pickedAtomsAreStrand() {
 		int atom1 = ((NodeDetail)mPickedAtomList.get(0).getUserData()).getAtom();
 		for (int i=1; i<mPickedAtomList.size(); i++) {
@@ -868,10 +866,6 @@ public class V3DMolecule extends V3DMolGroup {
 		return true;
 		}
 
-	/**
-	 *
-	 * @param isSelect if false this is a deselection
-	 */
 	public void toggleSelection() {
 		if(mSelectedProperty.get()==false)
 			mSelectedProperty.set(true);

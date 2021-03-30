@@ -289,8 +289,8 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 				temp[j] += c[index+2] * mEigenVectorsLeft[2][j];
 			}
 			c[index]   = temp[0];
-			c[index+1] = temp[1];
-			c[index+2] = -temp[2];
+			c[index+1] = temp[2];
+			c[index+2] = -temp[1];
 		}
 
 		if (mFlipFeaturesToFront) {
