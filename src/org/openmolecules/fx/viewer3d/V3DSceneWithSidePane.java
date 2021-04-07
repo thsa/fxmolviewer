@@ -21,10 +21,13 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.io.DWARFileParser;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
+import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
@@ -38,6 +41,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
 import org.openmolecules.fx.tasks.V3DDockingEngine;
 import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
+import org.openmolecules.fx.tasks.V3DShapeAlignment;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
 import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
@@ -47,6 +51,7 @@ import org.openmolecules.fx.viewer3d.panel.MolGroupPane;
 import org.openmolecules.render.TorsionStrainVisualization;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -58,28 +63,47 @@ import java.util.concurrent.Executors;
  */
 public class V3DSceneWithSidePane extends BorderPane {
 	
-	public enum GlobalMode { EXPLORER,BINDING_SITE_ANALYSIS, PHESA;}
+	public static int counter1=0;
+	public static int counter2=0;
+	
+	public enum GlobalMode { EXPLORER,BINDING_SITE_ANALYSIS, PHESA, ALIGNMENT;}
 	public static final double TOOL_BUTTON_SIZE = 30.0;
 	public static final double SIDEPANEL_WIDTH = 400.0;
+	public static final double LOG_WIDTH = 400.0;
 	public static Alert ONLY_ONE_PHESA_ALERT  = new Alert(AlertType.ERROR);
 	static {
 		ONLY_ONE_PHESA_ALERT.setTitle("Error");
 		ONLY_ONE_PHESA_ALERT.setHeaderText("Improper Selection");
-		ONLY_ONE_PHESA_ALERT.setContentText("Please only select a single PheSA model");
+		ONLY_ONE_PHESA_ALERT.setContentText("Please select a single PheSA model");
 	}
-	private V3DScene mScene3D;
-	private MolGroupPane mMoleculePanel;
-	private GridPane upperPanel;
-	private MoleculeView molView;
-	private boolean editorActivated;
-	private EditorPane editorPane;
-	private SimpleObjectProperty<GlobalMode> globalModeProperty;
+	public static Alert ONLY_ONE_MOLECULE_ALERT  = new Alert(AlertType.ERROR);
+	static {
+		ONLY_ONE_MOLECULE_ALERT.setTitle("Error");
+		ONLY_ONE_MOLECULE_ALERT.setHeaderText("Improper Selection");
+		ONLY_ONE_MOLECULE_ALERT.setContentText("Please select a single reference molecule");
+	}
+	public static Alert NO_PHESAMODEL_SELECTED  = new Alert(AlertType.ERROR);
+	static {
+		NO_PHESAMODEL_SELECTED.setTitle("Error");
+		NO_PHESAMODEL_SELECTED.setHeaderText("Improper Selection");
+		NO_PHESAMODEL_SELECTED.setContentText("Please select at least one PheSA model");
+	}
+	protected V3DScene mScene3D;
+	protected MolGroupPane mMoleculePanel;
+	protected GridPane upperPanel;
+	protected MoleculeView molView;
+	protected EditorPane editorPane;
+	protected SimpleObjectProperty<GlobalMode> globalModeProperty;
+	protected TextArea outputLog;
+	protected DraggableHBox slidingBox;
+	protected ToggleGroup rightPaneToggleGroup;
 	
 	public V3DSceneWithSidePane(EnumSet<V3DScene.ViewerSettings> settings) {
 		this(1024, 768, settings);
 	}
 
 	public V3DSceneWithSidePane(int width, int height, EnumSet<V3DScene.ViewerSettings> settings) {
+		rightPaneToggleGroup = new ToggleGroup();
 		globalModeProperty = new SimpleObjectProperty<GlobalMode>(GlobalMode.EXPLORER);
 		globalModeProperty.addListener((v,nv,ov) -> {
 			this.setTop(null);
@@ -87,8 +111,16 @@ public class V3DSceneWithSidePane extends BorderPane {
 		});
 		mScene3D = new V3DScene(new Group(), width, height, settings);
 		editorPane = new EditorPane(mScene3D);
-		editorActivated = false;
 		BorderPane center = new BorderPane();
+		outputLog = new TextArea();
+		outputLog.setEditable(false);
+		outputLog.appendText("OUTPUT LOG");
+		outputLog.appendText("\n");
+		outputLog.appendText("------------");
+		outputLog.appendText("\n");
+		outputLog.setPrefWidth(LOG_WIDTH);
+		outputLog.setMaxWidth(LOG_WIDTH);
+		
 	    StackPane stackPane = new StackPane();
 	    V3DSceneWithSelection sceneWithSelection = new V3DSceneWithSelection(mScene3D);
 	    stackPane.getChildren().add(sceneWithSelection);
@@ -109,7 +141,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void createSidePane(BorderPane center,EnumSet<V3DScene.ViewerSettings> settings) {
+	protected void createSidePane(BorderPane center,EnumSet<V3DScene.ViewerSettings> settings) {
 	
 		this.setStyle("-fx-background-color:black");
 		mMoleculePanel = new MolGroupPane(mScene3D);
@@ -140,20 +172,30 @@ public class V3DSceneWithSidePane extends BorderPane {
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
 		
-		DraggableHBox slidingBox = new DraggableHBox(borderPane);
+		slidingBox = new DraggableHBox(borderPane);
 		center.setLeft(slidingBox.getBox());
 		center.setCenter(dummyPane);
+
 		
 	}
 	
-	private void createUpperPanel() {
+	protected void toggleShowOutputLog() {
+		if(getRight()==outputLog)
+			setRight(null);
+		else 
+			setRight(outputLog);
+
+			
+	}
+	
+	protected void createUpperPanel() {
 		upperPanel = new GridPane();
 		upperPanel.setStyle("-fx-background-color:" + GUIColorPalette.BLUE3);
 		this.setTop(upperPanel);
 		upperPanel.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.setPrefHeight(TOOL_BUTTON_SIZE);
-		constructUpperPanel();
 		createModePanel();
+		constructUpperPanel();
 	}
 
 	public V3DScene getScene3D() {
@@ -164,19 +206,27 @@ public class V3DSceneWithSidePane extends BorderPane {
 		return mMoleculePanel;
 	}
 	
-	private void createModePanel() {
+	protected void createModePanel() {
 		ToggleButton explorerModeButton = new ToggleButton();
+		explorerModeButton.setTooltip(new Tooltip("Explorer Mode"));
 		explorerModeButton.getStyleClass().add("explorer-icon");
 		explorerModeButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		upperPanel.add(explorerModeButton, 0, 0);
+		upperPanel.add(explorerModeButton, counter1++, counter2);
 		
 		ToggleButton bindingSiteAnalysisButton = new ToggleButton("  P-L  ");
+		bindingSiteAnalysisButton.setTooltip(new Tooltip("Binding Site Mode"));
 		bindingSiteAnalysisButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		upperPanel.add(bindingSiteAnalysisButton, 1, 0 );
+		upperPanel.add(bindingSiteAnalysisButton,counter1++, counter2);
 		
 		ToggleButton pheSAButton = new ToggleButton("PheSA");
+		pheSAButton.setTooltip(new Tooltip("PheSA Wizard"));
 		pheSAButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		upperPanel.add(pheSAButton, 2, 0 );
+		upperPanel.add(pheSAButton, counter1++, counter2);
+		
+		ToggleButton alignmentButton = new ToggleButton("Alignment");
+		alignmentButton.setTooltip(new Tooltip("Alignment Mode"));
+		alignmentButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		upperPanel.add(alignmentButton, counter1++, counter2);
 		
 		ToggleGroup group = new ToggleGroup();
 		explorerModeButton.setToggleGroup(group);
@@ -186,22 +236,26 @@ public class V3DSceneWithSidePane extends BorderPane {
 		explorerModeButton.setSelected(globalModeProperty.get()==GlobalMode.EXPLORER);
 		bindingSiteAnalysisButton.setSelected(globalModeProperty.get()==GlobalMode.BINDING_SITE_ANALYSIS);
 		pheSAButton.setSelected(globalModeProperty.get()==GlobalMode.PHESA);
+		alignmentButton.setSelected(globalModeProperty.get()==GlobalMode.ALIGNMENT);
 		
 		explorerModeButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.EXPLORER));
 		bindingSiteAnalysisButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.BINDING_SITE_ANALYSIS));
 		pheSAButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.PHESA));
+		alignmentButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.ALIGNMENT));
 		
 		
 	}
 	
-	private void constructUpperPanel() {
-		int i=3;
-		int j=0;
+	protected void constructUpperPanel() {
+		int i=counter1;
+		int j=counter2;
 		constructSeparator(i,j);
 		i++;
 		constructVisibleButton(i,j);
 		i++;
 		constructInvisibleButton(i,j);
+		i++;
+		constructLogButton(i,j);
 		i++;
 		if(globalModeProperty.get()==GlobalMode.EXPLORER) {
 			constructFileOpenButton(i,j);
@@ -240,10 +294,14 @@ public class V3DSceneWithSidePane extends BorderPane {
 		if(globalModeProperty.get()==GlobalMode.PHESA) {
 			constructPheSAButtons(i,j);
 		}
+		if(globalModeProperty.get()==GlobalMode.ALIGNMENT) {
+			constructAlignmentButton(i,j);
+		}
+			
 		
 	}
 	
-	private void constructSeparator(int i, int j) {
+	protected void constructSeparator(int i, int j) {
 
 		Separator sep = new Separator();
 		sep.setOrientation(Orientation.VERTICAL);
@@ -252,9 +310,10 @@ public class V3DSceneWithSidePane extends BorderPane {
 
 	}
 	
-	private void constructPheSAButtons(int i, int j) {
+	protected void constructPheSAButtons(int i, int j) {
 		Button addButton = new Button("");
 		addButton.getStyleClass().add("add-icon");
+		addButton.setTooltip(new Tooltip("Add Pharmacophore Model"));
 		addButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addButton, i, j);
 		addButton.getStyleClass().add("toolBarButton");
@@ -276,8 +335,10 @@ public class V3DSceneWithSidePane extends BorderPane {
 		addButton.prefHeightProperty().bind(upperPanel.heightProperty());
 		i++;
 		
+		
 		Button saveButton = new Button("");
 		saveButton.getStyleClass().add("save-icon");
+		saveButton.setTooltip(new Tooltip("Save PheSA Query"));
 		saveButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(saveButton, i, j);
 		saveButton.getStyleClass().add("toolBarButton");
@@ -289,6 +350,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		i++;
 		Button fileOpenButton = new Button("");
 		fileOpenButton.getStyleClass().add("load-icon");
+		fileOpenButton.setTooltip(new Tooltip("Load PheSA Query"));
 		fileOpenButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(fileOpenButton, i, j);
 		fileOpenButton.getStyleClass().add("toolBarButton");
@@ -306,10 +368,12 @@ public class V3DSceneWithSidePane extends BorderPane {
 				
 				}
 		});
+		
 		fileOpenButton.prefHeightProperty().bind(upperPanel.heightProperty());
 		
 		i++;
 		Button addInclButton = new Button("");
+		addInclButton.setTooltip(new Tooltip("Add Inclusion Sphere"));
 		addInclButton.getStyleClass().add("inclusion-icon");
 		addInclButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addInclButton, i, j);
@@ -321,6 +385,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 		i++;
 		Button addExclButton = new Button("");
+		addExclButton.setTooltip(new Tooltip("Add Exclusion Sphere"));
 		addExclButton.getStyleClass().add("exclusion-icon");
 		addExclButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addExclButton, i, j);
@@ -332,7 +397,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 
 	}
 	
-	private void handlePheSACustomVolume(int function) {
+	protected void handlePheSACustomVolume(int function) {
 		List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
 		if(selectedGroups.size()!=1)
 			ONLY_ONE_PHESA_ALERT.showAndWait();
@@ -342,24 +407,27 @@ public class V3DSceneWithSidePane extends BorderPane {
 			 ((V3DCustomizablePheSA) selectedGroups.get(0)).placeExclusionSphere(function);
 	}
 	
-	private void constructVisibleButton(int i, int j) {
+	protected void constructVisibleButton(int i, int j) {
 		//Image eye = new Image(EditorPane.class.getResource("/resources/eye.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(eye);
 		Button setVisibleButton = new Button("");
 		setVisibleButton.getStyleClass().add("eye-icon");
+		setVisibleButton.setTooltip(new Tooltip("Make Selected Visible"));
 		setVisibleButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(setVisibleButton, i, j);
 		setVisibleButton.getStyleClass().add("toolBarButton");
 		setVisibleButton.setOnMouseReleased((e) -> mMoleculePanel.changeVisibilitySelected(true));
 		setVisibleButton.prefHeightProperty().bind(upperPanel.heightProperty());
+
 	}
 	
-	private void constructInvisibleButton(int i, int j) {
+	protected void constructInvisibleButton(int i, int j) {
 		//Image eyeCrossed = new Image(EditorPane.class.getResource("/resources/eye_crossed.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(eyeCrossed);
 		Button setInvisibleButton = new Button("");
+		setInvisibleButton.setTooltip(new Tooltip("Make Selected Invisible"));
 		setInvisibleButton.getStyleClass().add("eye-crossed-icon");
 		setInvisibleButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(setInvisibleButton, i, j);
@@ -369,11 +437,12 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void constructFileOpenButton(int i, int j) {
+	protected void constructFileOpenButton(int i, int j) {
 		//Image fileOpen = new Image(EditorPane.class.getResource("/resources/file_open.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(fileOpen);
 		Button fileOpenButton = new Button("");
+		fileOpenButton.setTooltip(new Tooltip("Load Molecule(s) from File"));
 		fileOpenButton.getStyleClass().add("load-icon");
 		fileOpenButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(fileOpenButton, i, j);
@@ -387,12 +456,42 @@ public class V3DSceneWithSidePane extends BorderPane {
 		fileOpenButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
+	protected void constructAlignmentButton(int i, int j) {
+		//Image fileOpen = new Image(EditorPane.class.getResource("/resources/file_open.png").toString(), TOOL_BUTTON_SIZE,
+		//		TOOL_BUTTON_SIZE, true, true);
+		//ImageView imgView = new ImageView(fileOpen);
+		Button alignmentButton = new Button("");
+		alignmentButton.setTooltip(new Tooltip("Perform Alignment"));
+		alignmentButton.getStyleClass().add("align-icon");
+		alignmentButton.setMaxHeight(TOOL_BUTTON_SIZE);
+		upperPanel.add(alignmentButton, i, j);
+		alignmentButton.getStyleClass().add("toolBarButton");
+		alignmentButton.setOnMouseReleased((e) -> {			List<V3DMolecule> selectedMols = mMoleculePanel.getAllSelectedMolecules();
+		    if(selectedMols.size()!=1) {
+		    	ONLY_ONE_MOLECULE_ALERT.showAndWait();
+		    	return;
+		    }
+			File selectedFile = V3DPopupMenu.getMoleculeFileChooser().showOpenDialog(mScene3D.getScene().getWindow());
+			if (selectedFile != null) {
+			    List<StereoMolecule> fitMols = V3DMoleculeParser.parseChemFile(selectedFile.getAbsolutePath());
+		    	V3DMolecule refmol = selectedMols.get(0);
+		    	MolecularVolume refMolVol = new MolecularVolume(refmol.getMolecule());
+		    	V3DShapeAlignment alignment = new V3DShapeAlignment(mScene3D,refmol, refMolVol, fitMols)	;
+		    	alignment.align(false);
+			    	
+			    
+			}
+		});
+		alignmentButton.prefHeightProperty().bind(upperPanel.heightProperty());
+	}
 	
-	private void constructFileSaveButton(int i, int j) {
+	
+	protected void constructFileSaveButton(int i, int j) {
 		//Image save= new Image(EditorPane.class.getResource("/resources/save.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(save);
 		Button saveButton = new Button("");
+		saveButton.setTooltip(new Tooltip("Save Molecules to File"));
 		saveButton.getStyleClass().add("save-icon");
 		saveButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(saveButton, i, j);
@@ -409,11 +508,12 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void constructDeleteButton(int i, int j) {
+	protected void constructDeleteButton(int i, int j) {
 		//Image trash= new Image(EditorPane.class.getResource("/resources/trash.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(trash);
 		Button deleteButton = new Button("");
+		deleteButton.setTooltip(new Tooltip("Delete Selected Models"));
 		deleteButton.getStyleClass().add("garbage-icon");
 		deleteButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add( deleteButton, i, j);
@@ -422,11 +522,12 @@ public class V3DSceneWithSidePane extends BorderPane {
 		deleteButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
-	private void constructClearButton(int i, int j) {
+	protected void constructClearButton(int i, int j) {
 		//Image trash= new Image(EditorPane.class.getResource("/resources/trash.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(trash);
 		Button deleteButton = new Button("");
+		deleteButton.setTooltip(new Tooltip("Clear"));
 		deleteButton.getStyleClass().add("clear-icon");
 		deleteButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add( deleteButton, i, j);
@@ -435,30 +536,28 @@ public class V3DSceneWithSidePane extends BorderPane {
 		deleteButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
-	private void constructEditorButton(int i, int j) {
-		//Image tool= new Image(EditorPane.class.getResource("/resources/tool.png").toString(), TOOL_BUTTON_SIZE,
-		//		TOOL_BUTTON_SIZE, true, true);
-		//ImageView imgView = new ImageView(tool);
-		Button toolButton = new Button("");
+	protected void constructEditorButton(int i, int j) {
+		ToggleButton toolButton = new ToggleButton("");
+		toolButton.setTooltip(new Tooltip("Show Molecular Editor Panel"));
+		toolButton.setToggleGroup(rightPaneToggleGroup);
 		toolButton.getStyleClass().add("tool-icon");
 		toolButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(toolButton, i, j);
 		toolButton.getStyleClass().add("toolBarButton");
 		toolButton.setOnMouseReleased((e) -> {
-			if(editorActivated) {
+			if(getRight()==editorPane) {
 				setRight(null);
-				editorActivated = false;
 			}
 			else {
 				setRight(editorPane);
-				editorActivated = true;
 			}
 		});
 		toolButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
-	private void constructHydrogenButton(int i, int j) {
+	protected void constructHydrogenButton(int i, int j) {
 		Button addHydrogenButton = new Button("H");
+		addHydrogenButton.setTooltip(new Tooltip("Add Hydrogens"));
 		addHydrogenButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addHydrogenButton, i, j);
 		addHydrogenButton.getStyleClass().add("toolBarButton");
@@ -470,8 +569,9 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void constructInteractionButton(int i, int j) {
+	protected void constructInteractionButton(int i, int j) {
 		ToggleButton addInteractionsButton = new ToggleButton("D--A");
+		addInteractionsButton.setTooltip(new Tooltip("Show Interactions"));
 		addInteractionsButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addInteractionsButton, i, j);
 		//addInteractionsButton.getStyleClass().add("toolBarButton");
@@ -486,8 +586,9 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void constructNegRecButton(int i, int j) {
+	protected void constructNegRecButton(int i, int j) {
 		Button negRecButton = new Button("");
+		negRecButton.setTooltip(new Tooltip("Construct Negative Receptor Image"));
 		negRecButton.getStyleClass().add("neg-rec-img-icon");
 		negRecButton.getStyleClass().add("toolBarButton");
 		upperPanel.add(negRecButton, i, j);
@@ -500,8 +601,25 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void constructTorsionButton(int i, int j) {
+	protected void constructLogButton(int i, int j) {
+		ToggleButton logButton = new ToggleButton("");
+		logButton.setTooltip(new Tooltip("Show Output Log"));
+		logButton.setToggleGroup(rightPaneToggleGroup);
+		logButton.getStyleClass().add("log-icon");
+		logButton.getStyleClass().add("toolBarButton");
+		upperPanel.add(logButton, i, j);
+		
+		logButton.setOnMouseReleased((e) -> {
+			toggleShowOutputLog();
+		});
+	
+		logButton.prefHeightProperty().bind(upperPanel.heightProperty());
+		
+	}
+	
+	protected void constructTorsionButton(int i, int j) {
 		Button addTorsionVisButton = new Button("");
+		addTorsionVisButton.setTooltip(new Tooltip("Show Torsion Strain"));
 		addTorsionVisButton.getStyleClass().add("torsion-icon");
 		addTorsionVisButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addTorsionVisButton, i, j);
@@ -522,11 +640,12 @@ public class V3DSceneWithSidePane extends BorderPane {
 		
 	}
 	
-	private void constructDockingButton(int i, int j) {
+	protected void constructDockingButton(int i, int j) {
 		//Image optim = new Image(EditorPane.class.getResource("/resources/optimization.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(optim);
 		MenuButton dockingButton = new MenuButton("");
+		dockingButton.setTooltip(new Tooltip("Docking"));
 		dockingButton.getStyleClass().add("docking-icon");
 		dockingButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(dockingButton, i, j);
@@ -555,12 +674,13 @@ public class V3DSceneWithSidePane extends BorderPane {
 	}
 	
 	
-	private void constructMinimizationButton(int i, int j) {
+	protected void constructMinimizationButton(int i, int j) {
 		//Image optim = new Image(EditorPane.class.getResource("/resources/optimization.png").toString(), TOOL_BUTTON_SIZE,
 		//		TOOL_BUTTON_SIZE, true, true);
 		//ImageView imgView = new ImageView(optim);
 		Button optiButton = new Button("");
 		optiButton.getStyleClass().add("optim-icon");
+		optiButton.setTooltip(new Tooltip("Minimize"));
 		optiButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(optiButton, i, j);
 		optiButton.getStyleClass().add("toolBarButton");
@@ -577,8 +697,9 @@ public class V3DSceneWithSidePane extends BorderPane {
 		optiButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
-	private void constructSettingsButton(int i, int j) {
+	protected void constructSettingsButton(int i, int j) {
 		MenuButton settingsMenu = new MenuButton("");
+		settingsMenu.setTooltip(new Tooltip("Settings"));
 		final String setting1 = "Protein Wires - Ligand Ball and Sticks";
 		final String setting2 = "Protein Wires - Ligand Sticks";
 		final String setting3 = "Protein Sticks - Ligand Ball and Sticks";
@@ -625,7 +746,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		settingsMenu.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
-	private void getPheSASaveDialog() {
+	protected void getPheSASaveDialog() {
 		Dialog<Boolean> dialog = new Dialog<>();
 		dialog.setTitle("PheSA Query Specifications");
 		dialog.setResizable(false);
@@ -674,9 +795,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 	}
 	
 	
-
-	
-	private boolean handleBindingSiteMode() {
+	protected boolean handleBindingSiteMode() {
 		boolean success=false;
 		List<V3DMolecule> selectedMols = mMoleculePanel.getAllSelectedMolecules();
 		V3DMolecule theProtein = null;

@@ -177,66 +177,6 @@ public class V3DMoleculeParser {
 		parseFile(scene,filename);
 	}
 	
-	public static List<PheSAMolecule> readPhesaScreeningLib(File pheSAFile, boolean takeExisting3D) {
-		if (pheSAFile.getName().endsWith(".sdf")) 
-			return V3DMoleculeParser.readPhesaScreeningLibSDF(pheSAFile, takeExisting3D);
-		else if (pheSAFile.getName().endsWith(".dwar")) 
-			return V3DMoleculeParser.readPhesaScreeningLibDWAR(pheSAFile, takeExisting3D);
-		else 
-			return new ArrayList<PheSAMolecule>();
-	}
-	
-	
-	private static List<PheSAMolecule> readPhesaScreeningLibSDF(File pheSAFile, boolean takeExisting3D) {
-		List<PheSAMolecule> screeningLibrary = new ArrayList<PheSAMolecule>();
-		DescriptorHandlerShape dhs = new DescriptorHandlerShape();
-		DescriptorHandlerShapeOneConf dhsOneConf = new DescriptorHandlerShapeOneConf();
-		List<StereoMolecule> mols = parseChemFile(pheSAFile.toString());
-		PheSAMolecule shapeMol;
-		for(StereoMolecule mol : mols ) {
-			if(takeExisting3D)
-				shapeMol = dhsOneConf.createDescriptor(mol);
-			else
-				shapeMol = dhs.createDescriptor(mol);
-			screeningLibrary.add(shapeMol);
-		}
-		return screeningLibrary;
-	}
-
-	
-	private static List<PheSAMolecule> readPhesaScreeningLibDWAR(File pheSAFile, boolean takeExisting3D) {
-		List<PheSAMolecule> screeningLibrary = new ArrayList<PheSAMolecule>();
-		DescriptorHandlerShape dhs = new DescriptorHandlerShape();
-		DescriptorHandlerShapeOneConf dhsOneConf = new DescriptorHandlerShapeOneConf();
-		DWARFileParser dwParser = new DWARFileParser(pheSAFile);
-		PheSAMolecule shapeMol;
-		boolean notDone = dwParser.next();
-		while(notDone) {
-			try {
-				StereoMolecule mol = dwParser.getMolecule();
-				if(takeExisting3D) {
-					shapeMol = dhsOneConf.createDescriptor(mol);
-				}
-				else {
-					SpecialField pheSAField = dwParser.getSpecialFieldMap().get(DescriptorConstants.DESCRIPTOR_ShapeAlign.shortName);
-					if (pheSAField == null) {
-						shapeMol = dhs.createDescriptor(mol);
-					}
-					else {
-						String pheSAString = dwParser.getSpecialFieldData(pheSAField.fieldIndex);
-						shapeMol = dhs.decode(pheSAString);
-					}
-				}
-				screeningLibrary.add(shapeMol);
-				notDone = dwParser.next();
-			}
-			catch(Exception e) {
-				notDone = dwParser.next();
-			}
-		}
-		return screeningLibrary;
-	
-	}
 	
 	public static List<V3DMolecule> readPheSAQuery(V3DScene scene, File pheSAFile, int group) {
 		DescriptorHandlerShape dhs = new DescriptorHandlerShape();
@@ -291,6 +231,7 @@ public class V3DMoleculeParser {
 			}
 		}
 		return fxMols;
+
 		
 	}
 }

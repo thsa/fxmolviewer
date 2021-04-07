@@ -313,6 +313,16 @@ public class V3DMolecule extends V3DMolGroup {
 		
 	}
 	
+	public List<V3DCustomizablePheSA> getPharmacophoreModels() {
+		List<V3DCustomizablePheSA> phesaModels = new ArrayList<>();
+		for(V3DMolGroup customizablePheSA : this.getMolGroups()) {
+			if(customizablePheSA instanceof V3DCustomizablePheSA) {
+				phesaModels.add((V3DCustomizablePheSA)customizablePheSA);
+			}
+		}
+		return phesaModels;
+	}
+	
 	public void assignLikelyProtonationStates() {
 		for(int a=0;a<mMol.getAtoms();a++) {
 			if(mMol.getAtomicNo(a)==7) {

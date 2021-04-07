@@ -70,6 +70,10 @@
 .check-box{
 	-fx-focus-color: transparent;
 }
+.tooltip {
+    -fx-font-weight: normal;
+    -fx-font-size: 15;
+}
 
 .check-box .mark {
 -fx-background-color: 
@@ -223,6 +227,18 @@
 
 .clear-icon {
     -fx-graphic: url("clear.png");
+}
+
+.align-icon {
+    -fx-graphic: url("align.png");
+}
+
+.run-icon {
+    -fx-graphic: url("run.png");
+}
+
+.log-icon {
+    -fx-graphic: url("log.png");
 }
 
 .menu-button > .arrow-button {

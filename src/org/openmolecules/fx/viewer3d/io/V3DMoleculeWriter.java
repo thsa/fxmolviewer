@@ -71,64 +71,11 @@ public class V3DMoleculeWriter {
 					DescriptorConstants.DESCRIPTOR_ShapeAlignSingleConf.version,
 					structureColumn);
 			creator.writeHeader(-1);
+			DescriptorHandlerShape dhs = new DescriptorHandlerShape();
 			for(V3DCustomizablePheSA pheSAModel : pheSAModels) {
-				StereoMolecule origMol = ((V3DMolecule)(pheSAModel.getParent())).getMolecule();
-				DescriptorHandlerShape dhs = new DescriptorHandlerShape();
-				MolecularVolume molVol = pheSAModel.getMolVol();
-				ArrayList<MolecularVolume> molVols = new ArrayList<MolecularVolume>();
-				StereoMolecule mol = new StereoMolecule(origMol);
-				mol.ensureHelperArrays(Molecule.cHelperNeighbours);
-				int[] hydrogens1 = new int[mol.getAllAtoms()-mol.getAtoms()];
-				int k=0;
-				for(int a=0;a<mol.getAtoms();a++) { 
-					for(int j=mol.getConnAtoms(a);j<mol.getAllConnAtoms(a);j++) {
-						hydrogens1[k] = mol.getConnAtom(a, j);
-						k++;
-					}
-				}
-				Canonizer can = new Canonizer(mol, Canonizer.COORDS_ARE_3D);
-				StereoMolecule mol2 = can.getCanMolecule(true);
-				mol2.ensureHelperArrays(Molecule.cHelperNeighbours);
-				int[] heavyAtomMap = can.getGraphIndexes();
-				int[] hydrogens2 = new int[mol.getAllAtoms()-mol.getAtoms()];
-				k=0;
-				for(int a : heavyAtomMap) {
-					for(int j=mol2.getConnAtoms(a);j<mol2.getAllConnAtoms(a);j++) {
-						hydrogens2[k] = mol2.getConnAtom(a, j);
-						k++;
-					}
-				}
-					
-				int[] atomMap = new int[mol.getAllAtoms()];
-				for(int i=0; i<hydrogens1.length;i++)
-					atomMap[hydrogens1[i]] = hydrogens2[i];
-				for(int i=0; i<heavyAtomMap.length;i++)
-					atomMap[i] = heavyAtomMap[i];
-				MolecularVolume molVolOut = new MolecularVolume(molVol);
-				molVolOut.updateAtomIndeces(atomMap);
-				Conformer conf = new Conformer(mol2);
-				PheSAAlignment.preProcess(conf, molVolOut);
-				
-				molVols.add(molVolOut);
-				for(int a=0;a<mol2.getAllAtoms();a++) {
-					Coordinates newCoords = new Coordinates(conf.getCoordinates(a));
-					mol2.setAtomX(a, newCoords.x);
-					mol2.setAtomY(a, newCoords.y);
-					mol2.setAtomZ(a, newCoords.z);
-				}
-				if(generateConfs) {
-					ConformerSetGenerator confSetGenerator = new ConformerSetGenerator(200);
-					ConformerSet confs = confSetGenerator.generateConformerSet(mol2);
-					for(Conformer conformer : confs) {
-						MolecularVolume mv = new MolecularVolume(molVolOut);
-						mv.update(conformer);
-						molVols.add(mv);
-					}
-					
-				}
-				PheSAMolecule shapeMol = new PheSAMolecule(mol2,molVols);
+				PheSAMolecule shapeMol = pheSAModel.getPheSAMolecule(generateConfs);
 				String PheSAString = dhs.encode(shapeMol);
-				can = new Canonizer(mol2, Canonizer.COORDS_ARE_3D);
+				Canonizer can = new Canonizer(shapeMol.getMolecule(), Canonizer.COORDS_ARE_3D);
 				String idcoords = can.getEncodedCoordinates(true);
 				String idcode = can.getIDCode();
 				creator.setRowCoordinates(idcoords, threeDColumn );
