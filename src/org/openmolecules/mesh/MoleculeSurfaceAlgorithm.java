@@ -39,8 +39,22 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 	public static final float DEFAULT_VOXEL_SIZE = 0.4f;	// angstrom
 	public static final float DEFAULT_PROBE_SIZE = 1.4f;	// angstrom
 	private static final float ISOLEVEL_VALUE = 5.0f; 		// >0 to avoid the array initialization with negative value
-	// and not an integer to reduce exact matches if we read an integer array.
 	private static final float RADIUS_SURPLUS = 1.0f;		// voxel edge lengths to consider beyond sphere radii
+
+	private int mGridSizeX,mGridSizeY,mGridSizeZ;
+	private float mVoxelSize;
+
+	/**
+	 * Instantiates this class without building molecule grid nor any surface.
+	 * When using this constructor, you must call calculateGrid() and potentially polygonise()
+	 * yourself to calculate a molecule's voxelgrid and possibly a surface mesh afterwards.
+	 * @param voxelSize size of internal voxels to track space occupation
+	 * @param meshBuilder
+	 */
+	public MoleculeSurfaceAlgorithm(float voxelSize, MeshBuilder meshBuilder) {
+		super(meshBuilder, voxelSize);
+		mVoxelSize = voxelSize;
+		}
 
 	/**
 	 * Generate the molecule's Connolly or Lee-Richards surface mesh using an improved
@@ -70,6 +84,12 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 	public MoleculeSurfaceAlgorithm(StereoMolecule mol, int type, float probeSize, float voxelSize, MeshBuilder meshBuilder) {
 		super(meshBuilder, voxelSize);
 
+		mVoxelSize = voxelSize;
+		float[] grid = calculateGrid(mol, type, probeSize);
+		polygonise(grid, mGridSizeX, mGridSizeY, mGridSizeZ, ISOLEVEL_VALUE);
+		}
+
+	public float[] calculateGrid(StereoMolecule mol, int type, float probeSize) {
 		float xmin = Float.MAX_VALUE;
 		float xmax = Float.MIN_VALUE;
 		float ymin = Float.MAX_VALUE;
@@ -98,36 +118,36 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		float xsize = xmax - xmin + 2*probeSize;
 		float ysize = ymax - ymin + 2*probeSize;
 		float zsize = zmax - zmin + 2*probeSize;
-		int sx = (int)(xsize/voxelSize+3f);	// 3f instead of 2f to avoid edge effects
-		int sy = (int)(ysize/voxelSize+3f);
-		int sz = (int)(zsize/voxelSize+3f);
+		mGridSizeX = (int)(xsize/mVoxelSize+3f);	// 3f instead of 2f to avoid edge effects
+		mGridSizeY = (int)(ysize/mVoxelSize+3f);
+		mGridSizeZ = (int)(zsize/mVoxelSize+3f);
 
-		float offsetX = xmin - probeSize - ((sx-1)*voxelSize - xsize) / 2f;
-		float offsetY = ymin - probeSize - ((sy-1)*voxelSize - ysize) / 2f;
-		float offsetZ = zmin - probeSize - ((sz-1)*voxelSize - zsize) / 2f;
+		float offsetX = xmin - probeSize - ((mGridSizeX-1)*mVoxelSize - xsize) / 2f;
+		float offsetY = ymin - probeSize - ((mGridSizeY-1)*mVoxelSize - ysize) / 2f;
+		float offsetZ = zmin - probeSize - ((mGridSizeZ-1)*mVoxelSize - zsize) / 2f;
 
 		// 3-dimensional voxel grid with values on voxel corners, where the voxels touch.
 		// The coordinates within the voxel box range from 0 ... sx-1, (sy-1, sz-1)
-		float[] grid = new float[sx*sy*sz];
+		float[] grid = new float[mGridSizeX*mGridSizeY*mGridSizeZ];
 
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
 			// translate atom coordinates to voxel space
-			float x = ((float)mol.getAtomX(atom) - offsetX) / voxelSize;
-			float y = ((float)mol.getAtomY(atom) - offsetY) / voxelSize;
-			float z = ((float)mol.getAtomZ(atom) - offsetZ) / voxelSize;
+			float x = ((float)mol.getAtomX(atom) - offsetX) / mVoxelSize;
+			float y = ((float)mol.getAtomY(atom) - offsetY) / mVoxelSize;
+			float z = ((float)mol.getAtomZ(atom) - offsetZ) / mVoxelSize;
 
 			// radius to consider for voxel updates
-			float r = (probeSize + VDWRadii.getVDWRadius(mol.getAtomicNo(atom))) / voxelSize;
+			float r = (probeSize + VDWRadii.getVDWRadius(mol.getAtomicNo(atom))) / mVoxelSize;
 			int x1 = Math.max(0, (int)(x-r));
-			int x2 = Math.min(sx-1, (int)(x+r+1));
+			int x2 = Math.min(mGridSizeX-1, (int)(x+r+1));
 			int y1 = Math.max(0, (int)(y-r));
-			int y2 = Math.min(sy-1, (int)(y+r+1));
+			int y2 = Math.min(mGridSizeY-1, (int)(y+r+1));
 			int z1 = Math.max(0, (int)(z-r));
-			int z2 = Math.min(sz-1, (int)(z+r+1));
+			int z2 = Math.min(mGridSizeZ-1, (int)(z+r+1));
 			for (int xi=x1; xi<=x2; xi++) {
 				for (int yi=y1; yi<=y2; yi++) {
 					for (int zi=z1; zi<=z2; zi++) {
-						int i = xi*sy*sz + yi*sz + zi;
+						int i = xi*mGridSizeY*mGridSizeZ + yi*mGridSizeZ + zi;
 						if (grid[i] < ISOLEVEL_VALUE + RADIUS_SURPLUS) {
 							float dx = x - xi;
 							float dy = y - yi;
@@ -142,11 +162,35 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		}
 
 		if (type == CONNOLLY && probeSize != 0)
-			grid = removeProbeAccessibleVolume(grid, sx, sy, sz, probeSize/voxelSize);
+			grid = removeProbeAccessibleVolume(grid, mGridSizeX, mGridSizeY, mGridSizeZ, probeSize/mVoxelSize);
 
 		setOffset(offsetX, offsetY, offsetZ);
-		polygonise(grid, sx, sy, sz, ISOLEVEL_VALUE);
-	}
+
+		return grid;
+		}
+
+	/**
+	 * Calculates a molecular volume from the atom density grid generated in calculateGrid().
+	 * This voxel based algorithm calculates volume that are slightly too large.
+	 * The error depends on the voxel size: 0.2 -> 0.5%; 0.4 -> 2%; 0.6 -> 4%.
+	 * You may multiply with 0.995, 0.98, or 0.96 to correct.
+	 * @param grid
+	 * @return
+	 */
+	public float calculateVolume(float[] grid) {
+		float volume = 0f;
+		float d = ISOLEVEL_VALUE - 0.5f;
+		for (float v:grid) {
+			v -= d;
+			if (v > 0f)
+				volume += (v > 1f ? 1f : v);
+			}
+		return volume * mVoxelSize * mVoxelSize * mVoxelSize;
+		}
+
+	public void polygonise(float[] grid) {
+		polygonise(grid, mGridSizeX, mGridSizeY, mGridSizeZ, ISOLEVEL_VALUE);
+		}
 
 	private float[] removeProbeAccessibleVolume(float[] inGrid, int sx, int sy, int sz, float r) {
 		float[] outGrid = inGrid.clone();
