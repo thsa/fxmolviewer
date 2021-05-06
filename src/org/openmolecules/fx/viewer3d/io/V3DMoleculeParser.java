@@ -14,7 +14,7 @@ import com.actelion.research.chem.io.Mol2FileParser;
 import com.actelion.research.chem.io.SDFileParser;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
-import com.actelion.research.chem.phesa.ShapeVolume;
+//import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.PheSAMolecule;
@@ -225,7 +225,7 @@ public class V3DMoleculeParser {
 		return fxMols;
 	
 	}
-	
+	/*
 	public static List<V3DMolecule> readNegReceptorImage(V3DScene scene, File imgFile, int group){
 		DWARFileParser dwParser = new DWARFileParser(imgFile, DWARFileParser.MODE_COORDINATES_REQUIRE_3D);
 		List<V3DMolecule> fxMols = new ArrayList<V3DMolecule>();
@@ -249,7 +249,8 @@ public class V3DMoleculeParser {
 			}
 		}
 		return fxMols;
-
+		
 		
 	}
+	*/
 }
