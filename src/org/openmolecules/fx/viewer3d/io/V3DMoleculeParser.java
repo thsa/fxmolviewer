@@ -4,6 +4,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.conf.ConformerSet;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.CompoundFileParser;
 import com.actelion.research.chem.io.CompoundTableConstants;
@@ -13,9 +14,8 @@ import com.actelion.research.chem.io.Mol2FileParser;
 import com.actelion.research.chem.io.SDFileParser;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
-import com.actelion.research.chem.phesa.BindingSiteVolume;
+import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
-import com.actelion.research.chem.phesa.DescriptorHandlerShapeOneConf;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.PheSAMolecule;
 import javafx.application.Platform;
@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
 public class V3DMoleculeParser {
 	
 	public static enum Input {REQUIRE_3D, PREFER_3D, GENERATE_CONFS};
-	
+	public static final String CONFORMER_SET = "conformerSet";
 	
 	
 	
@@ -84,7 +84,7 @@ public class V3DMoleculeParser {
 			if(file.endsWith(".sdf"))
 				parser = new SDFileParser(file);
 			else if(file.endsWith(".dwar"))
-				parser = new DWARFileParser(file);
+				parser = new DWARFileParser(file,DWARFileParser.MODE_COORDINATES_PREFER_3D);
 	
 			if(parser!=null) {
 				StereoMolecule mol;
@@ -189,14 +189,32 @@ public class V3DMoleculeParser {
 				if(mol.getName()==null)
 					mol.setName("Molecule");
 				SpecialField pheSAField = dwParser.getSpecialFieldMap().get(DescriptorConstants.DESCRIPTOR_ShapeAlign.shortName);
-				String pheSAString = dwParser.getSpecialFieldData(pheSAField.fieldIndex);
-				PheSAMolecule shapeMol = dhs.decode(pheSAString);
-				for(MolecularVolume molVol : shapeMol.getVolumes()) {
-					StereoMolecule m = shapeMol.getConformer(molVol);
-					m.setName(mol.getName());
-					V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
-					fxMol.addPharmacophore(molVol);
-					fxMols.add(fxMol);
+				if(pheSAField!=null) {
+					String pheSAString = dwParser.getSpecialFieldData(pheSAField.fieldIndex);
+					PheSAMolecule shapeMol = dhs.decode(pheSAString);
+					for(MolecularVolume molVol : shapeMol.getVolumes()) {
+						StereoMolecule m = shapeMol.getConformer(molVol);
+						m.setName(mol.getName());
+						V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
+						fxMol.addPharmacophore(molVol);
+						fxMols.add(fxMol);
+					}
+				}
+				else {
+					SpecialField confField = dwParser.getSpecialFieldMap().get(CONFORMER_SET);
+					if(confField!=null) {
+						String confSetString = dwParser.getSpecialFieldData(confField .fieldIndex);
+						ConformerSet confSet = new ConformerSet(confSetString);
+						PheSAMolecule pheSAMol = dhs.createDescriptor(confSet);
+						for(MolecularVolume molVol : pheSAMol.getVolumes()) {
+							StereoMolecule m = pheSAMol.getConformer(molVol);
+							m.setName(mol.getName());
+							V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
+							fxMol.addPharmacophore(molVol);
+							fxMols.add(fxMol);
+						}
+					}
+					
 				}
 				notDone = dwParser.next();
 			}
@@ -219,7 +237,7 @@ public class V3DMoleculeParser {
 					mol.setName("Molecule");
 				SpecialField negRecImgField = dwParser.getSpecialFieldMap().get(CompoundTableConstants.cColumnTypeNegRecImage);
 				String negRecImgString = dwParser.getSpecialFieldData(negRecImgField.fieldIndex);
-				BindingSiteVolume bsVol = BindingSiteVolume.decode(negRecImgString);
+				ShapeVolume bsVol = ShapeVolume.decode(negRecImgString);
 				V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.MACROMOLECULE, scene.mayOverrideHydrogenColor());
 				fxMol.addNegativeReceptorImage(bsVol);
 				fxMols.add(fxMol);
