@@ -22,6 +22,12 @@
 
 }
 
+.tree-cell .tree-disclosure-node {
+/** put a bit of padding around the disclosure node to make the clicking region larger */
+-fx-padding: 10 10 10 10;
+-fx-background-color: transparent;
+}
+
 .tree-table-row-cell:focused {
 	-fx-background-color: transparent;
 }
@@ -239,6 +245,10 @@
 
 .log-icon {
     -fx-graphic: url("log.png");
+}
+
+.cloud-icon {
+    -fx-graphic: url("cloud.png");
 }
 
 .menu-button > .arrow-button {
