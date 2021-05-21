@@ -19,10 +19,12 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileCreator;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.ConformerSet;
 import com.actelion.research.chem.conf.ConformerSetGenerator;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
+import com.actelion.research.chem.io.CompoundTableConstants;
 import com.actelion.research.chem.io.DWARFileCreator;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
@@ -66,14 +68,16 @@ public class V3DMoleculeWriter {
 			
 			DWARFileCreator creator = new DWARFileCreator(new BufferedWriter(new FileWriter(file)));
 			int structureColumn = creator.addStructureColumn("Structure","IDcode");
-			int threeDColumn = creator.add3DCoordinatesColumn("idcoordinates3D", structureColumn);
+			int transformationColumn = creator.addAlphanumericalColumn(CompoundTableConstants.cColumnTypeTransformation);
+			int threeDColumn = creator.add3DCoordinatesColumn(CompoundTableConstants.cColumnType3DCoordinates, structureColumn);
 			int pheSAColumn = creator.addDescriptorColumn(DescriptorConstants.DESCRIPTOR_ShapeAlign.shortName,
 					DescriptorConstants.DESCRIPTOR_ShapeAlignSingleConf.version,
 					structureColumn);
 			creator.writeHeader(-1);
 			DescriptorHandlerShape dhs = new DescriptorHandlerShape();
 			for(V3DCustomizablePheSA pheSAModel : pheSAModels) {
-				PheSAMolecule shapeMol = pheSAModel.getPheSAMolecule(generateConfs);
+				TransformationSequence transformation = new TransformationSequence();
+				PheSAMolecule shapeMol = pheSAModel.getPheSAMolecule(generateConfs,transformation);
 				String PheSAString = dhs.encode(shapeMol);
 				Canonizer can = new Canonizer(shapeMol.getMolecule(), Canonizer.COORDS_ARE_3D);
 				String idcoords = can.getEncodedCoordinates(true);
@@ -81,6 +85,8 @@ public class V3DMoleculeWriter {
 				creator.setRowCoordinates(idcoords, threeDColumn );
 				creator.setRowStructure(idcode, structureColumn);
 				creator.setRowValue(PheSAString, pheSAColumn);
+				if(!generateConfs)
+					creator.setRowValue(transformation.encode(), transformationColumn);
 				creator.writeCurrentRow();
 			}
 			creator.writeEnd();

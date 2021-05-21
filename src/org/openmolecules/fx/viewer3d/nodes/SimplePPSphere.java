@@ -53,7 +53,7 @@ public class SimplePPSphere extends Group implements IPPNode{
 	@Override
 	public void cleanup() {
 		V3DBindingSiteVolume parentPharmacophore = (V3DBindingSiteVolume) this.getParent();
-		parentPharmacophore.getBindingSiteVolume().getPPGaussians().remove(ppg);
+		parentPharmacophore.getShapeVolume().getPPGaussians().remove(ppg);
 		parentPharmacophore.getChildren().remove(this);
 		
 	}

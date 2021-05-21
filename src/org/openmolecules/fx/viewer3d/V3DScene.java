@@ -74,6 +74,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
+	private double[] cachedTransform; // apply to newly loaded groups and molecules, when other objects were previously translated in the scenes (e.g. because of optimizeView)
 	
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
@@ -141,6 +142,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		applySettings();
 		mSceneListeners = new ArrayList<>();
 		initializeDragAndDrop();
+		cachedTransform = new double[3];
 	}
 
 	private void initializeDragAndDrop() {
@@ -372,11 +374,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	 */
 	public void optimizeView(V3DMolGroup group) {
 		Point3D cog = getCenterOfGravity(group);
+		Point3D p1 = mWorld.sceneToLocal(cog);
+		cachedTransform[0] += p1.getX();
+		cachedTransform[1] += p1.getY();
+		cachedTransform[2] += p1.getZ();
 		for (Node n:mWorld.getChildren()) {
-			Point3D p = mWorld.sceneToLocal(cog);
-			n.setTranslateX(n.getTranslateX() - p.getX());
-			n.setTranslateY(n.getTranslateY() - p.getY());
-			n.setTranslateZ(n.getTranslateZ() - p.getZ());
+			n.setTranslateX(n.getTranslateX() - p1.getX());
+			n.setTranslateY(n.getTranslateY() - p1.getY());
+			n.setTranslateZ(n.getTranslateZ() - p1.getZ());
 		}
 		double cameraZ = 50;
 
@@ -528,6 +533,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 	public void addMolGroup(V3DMolGroup group,V3DMolGroup parent) {
 		parent.addMolGroup(group);
+		if(parent==mWorld) {
+			group.setTranslateX(group.getTranslateX() - cachedTransform[0]);
+			group.setTranslateX(group.getTranslateY() - cachedTransform[1]);
+			group.setTranslateX(group.getTranslateZ() - cachedTransform[2]);
+		}
 	}
 	
 	public void addMolGroup(V3DMolGroup group) {
@@ -536,9 +546,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void addMolecule(V3DMolecule fxmol) {
 		addMolecule(fxmol,mWorld);
+		
 	}
 
 	public void addMolecule(V3DMolecule fxmol, V3DMolGroup group) {
+		if(group==mWorld) {
+			fxmol.setTranslateX(fxmol.getTranslateX() - cachedTransform[0]);
+			fxmol.setTranslateY(fxmol.getTranslateY() - cachedTransform[1]);
+			fxmol.setTranslateZ(fxmol.getTranslateZ() - cachedTransform[2]);
+		}
 		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
 		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
 		Platform.runLater(() -> fxmol.setColor(color));

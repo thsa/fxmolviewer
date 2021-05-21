@@ -6,7 +6,7 @@ import org.openmolecules.render.BindingSiteVolumeArchitect;
 import org.openmolecules.render.BindingSiteVolumeBuilder;
 
 import com.actelion.research.chem.phesa.AtomicGaussian;
-import com.actelion.research.chem.phesa.BindingSiteVolume;
+import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint.Functionality;
 import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
@@ -15,7 +15,7 @@ import javafx.scene.paint.PhongMaterial;
 
 public class V3DBindingSiteVolume extends V3DMolGroup implements BindingSiteVolumeBuilder {
 	
-	private BindingSiteVolume bsVol;
+	private ShapeVolume bsVol;
 	
 	public static PhongMaterial sShapeMaterial;
 	public static PhongMaterial sShapeMaterialFrame;
@@ -76,7 +76,7 @@ public class V3DBindingSiteVolume extends V3DMolGroup implements BindingSiteVolu
 
 	}
 
-	public V3DBindingSiteVolume(BindingSiteVolume bsVol) {
+	public V3DBindingSiteVolume(ShapeVolume bsVol) {
 		super("Binding Site Volume");
 		this.bsVol = bsVol;
 		
@@ -118,7 +118,7 @@ public class V3DBindingSiteVolume extends V3DMolGroup implements BindingSiteVolu
 		}
 	
 	
-	public BindingSiteVolume getBindingSiteVolume() {
+	public ShapeVolume getShapeVolume() {
 		return bsVol;
 	}
 

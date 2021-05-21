@@ -2,7 +2,7 @@ package org.openmolecules.render;
 
 
 import com.actelion.research.chem.phesa.AtomicGaussian;
-import com.actelion.research.chem.phesa.BindingSiteVolume;
+import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
 import javafx.application.Platform;
@@ -16,7 +16,7 @@ public class BindingSiteVolumeArchitect {
 	}
 	
 	
-	public void buildPharmacophore(BindingSiteVolume bsVol) {
+	public void buildPharmacophore(ShapeVolume bsVol) {
 		for(PPGaussian pp : bsVol.getPPGaussians()) {
 			Platform.runLater(() -> {
 				builder.addSimplePharmacophorePoint(pp);});

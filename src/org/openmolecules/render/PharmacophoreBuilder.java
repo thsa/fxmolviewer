@@ -15,7 +15,7 @@ import javafx.scene.paint.PhongMaterial;
 public interface PharmacophoreBuilder {
 	
 	public static final double PP_RADIUS = 0.5;
-	public static final double PP_RADIUS_CHARGE = 0.8;
+	public static final double PP_RADIUS_CHARGE = 0.6;
 	public static final double CYLINDER_RADIUS = 0.1;
 	public static final double VECTOR_LENGTH = 1.5;
 

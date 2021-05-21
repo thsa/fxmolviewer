@@ -4,6 +4,7 @@ import com.actelion.research.calc.Matrix;
 import com.actelion.research.chem.Canonizer;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.alignment3d.transformation.Rotation;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.forcefield.ForceField;
 import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
@@ -122,7 +123,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 		Coordinates origCOM  = new Coordinates(mRefVol.getCOM());
 		refMol = mRefFXMol.getMolecule();
 		Conformer refConf = new Conformer(refMol);
-		Matrix rotation = PheSAAlignment.preProcess(refConf, mRefVol).getTranspose();
+		Rotation rot = mRefVol.preProcess(refConf).getInvert();
 		refShape = new PheSAMolecule(refMol,mRefVol);
 		for(V3DMolecule fxFitMol : mPheSAMap.keySet()) {
 			System.out.println(dhs.getSimilarity(refShape, mPheSAMap.get(fxFitMol)));
@@ -175,7 +176,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 			//TODO here: first translate into origin (COM), then rotate, then translate back! 
 			// also do for alignment from file!
 			// also check for alignment of two mols in place! (refmol and fitmol)
-			PheSAAlignment.rotateMol(fxFitMol.getMolecule(), rotation);
+			rot.apply(fxFitMol.getMolecule());
 			fxFitMol.getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
 
 			if(refTransform!=null) {

@@ -12,10 +12,11 @@ import org.openmolecules.render.MoleculeArchitect.ConstructionMode;
 import org.openmolecules.render.MoleculeArchitect.HydrogenMode;
 
 import com.actelion.research.chem.Coordinates;
+import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
 import com.actelion.research.chem.docking.DockingEngine;
 import com.actelion.research.chem.docking.receptorpharmacophore.NegativeReceptorImageCreator;
 import com.actelion.research.chem.io.pdb.converter.MoleculeGrid;
-import com.actelion.research.chem.phesa.BindingSiteVolume;
+import com.actelion.research.chem.phesa.ShapeVolume;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -120,7 +121,9 @@ public class V3DBindingSite {
 	}
 	
 	public void addNegRecImg() {
-		BindingSiteVolume bsVolume = NegativeReceptorImageCreator.create(nativeLigand.getMolecule(),receptor.getMolecule());
+		TransformationSequence sequence = new TransformationSequence();
+		ShapeVolume bsVolume = NegativeReceptorImageCreator.create(nativeLigand.getMolecule(),receptor.getMolecule(),sequence);
+		bsVolume.transform(sequence);
 		receptor.addNegativeReceptorImage(bsVolume);
 	}
 

@@ -15,6 +15,10 @@ import com.actelion.research.chem.Canonizer;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.alignment3d.transformation.Rotation;
+import com.actelion.research.chem.alignment3d.transformation.Transformation;
+import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
+import com.actelion.research.chem.alignment3d.transformation.Translation;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.ConformerSet;
 import com.actelion.research.chem.conf.ConformerSetGenerator;
@@ -200,8 +204,13 @@ public class V3DCustomizablePheSA extends V3DMolGroup implements MolCoordinatesC
 		mMolVol.getVolumeGaussians().add(eg);
 		addExclusionSphere(eg);
 	}
-	
-	public PheSAMolecule getPheSAMolecule(boolean generateConfs) {
+	/**
+	 * 
+	 * @param generateConfs
+	 * @param transformation: reverse of the transformation applied in the preprocessing, necessary to recalculate the original coordinates
+	 * @return
+	 */
+	public PheSAMolecule getPheSAMolecule(boolean generateConfs,TransformationSequence transformation) {
 
 		StereoMolecule origMol = ((V3DMolecule)(getParent())).getMolecule();
 		MolecularVolume molVol = mMolVol;
@@ -236,8 +245,12 @@ public class V3DCustomizablePheSA extends V3DMolGroup implements MolCoordinatesC
 			atomMap[i] = heavyAtomMap[i];
 		MolecularVolume molVolOut = new MolecularVolume(molVol);
 		molVolOut.updateAtomIndeces(atomMap);
+		Coordinates com = molVolOut.getCOM();
 		Conformer conf = new Conformer(mol2);
-		PheSAAlignment.preProcess(conf, molVolOut);
+		Rotation rot = molVolOut.preProcess(conf);
+		transformation.addTransformation(rot.getInvert());
+		transformation.addTransformation(new Translation(new double[] {com.x,com.y,com.z}));
+
 		
 		molVols.add(molVolOut);
 		for(int a=0;a<mol2.getAllAtoms();a++) {

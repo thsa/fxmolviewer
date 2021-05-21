@@ -8,6 +8,7 @@ import org.openmolecules.fx.viewer3d.V3DScene;
 import com.actelion.research.calc.Matrix;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.alignment3d.transformation.Rotation;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
@@ -47,8 +48,8 @@ public class V3DShapeAlignment {
 		Coordinates origCOM  = mRefVol.getCOM();
 		refMol = mRefFXMol.getMolecule();
 		Conformer refConf = new Conformer(refMol);
-		Matrix rotation = PheSAAlignment.preProcess(refConf, mRefVol);
-		rotation = rotation.getTranspose();
+		Rotation rotation = mRefVol.preProcess(refConf);
+		rotation = rotation.getInvert();
 		refShape = new PheSAMolecule(refMol,mRefVol);
 		for(StereoMolecule mol : mFitMols) {
 			PheSAMolecule fitShape = dhs.createDescriptor(mol);
@@ -78,7 +79,7 @@ public class V3DShapeAlignment {
 		
 
 		for(int i=0;i<fittedFXMols.size();i++) {
-			PheSAAlignment.rotateMol(fittedFXMols.get(i).getMolecule(), rotation);
+			rotation.apply(fittedFXMols.get(i).getMolecule());
 			fittedFXMols.get(i).getMolecule().translate(origCOM.x,origCOM.y,origCOM.z);
 			if(refTransform!=null) {
 					fittedFXMols.get(i).setTransform(refTransform);

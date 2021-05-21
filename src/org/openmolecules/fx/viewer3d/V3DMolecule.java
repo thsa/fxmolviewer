@@ -26,7 +26,7 @@ import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
-import com.actelion.research.chem.phesa.BindingSiteVolume;
+import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -293,7 +293,7 @@ public class V3DMolecule extends V3DMolGroup {
 		constructPharmacophore(pharmacophore);
 	}
 	
-	public void addNegativeReceptorImage(BindingSiteVolume bsVol) {
+	public void addNegativeReceptorImage(ShapeVolume bsVol) {
 		V3DBindingSiteVolume bsVolume = new V3DBindingSiteVolume(bsVol);
 		constructNegativeReceptorImage(bsVolume);
 	}

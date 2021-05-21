@@ -20,10 +20,16 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.alignment3d.transformation.Rotation;
+import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
+import com.actelion.research.chem.alignment3d.transformation.Translation;
+import com.actelion.research.chem.docking.shape.ShapeDocking;
 import com.actelion.research.chem.io.DWARFileParser;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
+import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
@@ -670,6 +676,49 @@ public class V3DSceneWithSidePane extends BorderPane {
 			}
 		});
 		dockingButton.getItems().add(libDockItem);
+		
+		MenuItem shapeDockItem = new MenuItem("Shape Docking");
+		shapeDockItem.setOnAction(e -> {
+			V3DBindingSiteVolume siteVol = null;
+			List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
+			if(selectedGroups.size()!=1)
+				return;
+			if(selectedGroups.get(0) instanceof V3DBindingSiteVolume)
+				siteVol = (V3DBindingSiteVolume)selectedGroups.get(0);
+			if(siteVol!=null) {
+				ShapeVolume shapeVol = new ShapeVolume(siteVol.getShapeVolume());
+				Coordinates origCOM = shapeVol.getCOM();
+				Rotation rot = shapeVol.preProcess(null);
+				TransformationSequence transformation = new TransformationSequence();
+				transformation.addTransformation(rot.getInvert());
+				transformation.addTransformation(new Translation(new double[] {origCOM.x,origCOM.y,origCOM.z}));
+				ShapeDocking shapeDock = new ShapeDocking(shapeVol,transformation);
+				ExecutorService executor = Executors.newSingleThreadExecutor();
+				File selectedFile = V3DPopupMenu.getMoleculeFileChooser().showOpenDialog(mScene3D.getScene().getWindow());
+				if (selectedFile != null) {
+					List<StereoMolecule> lib = V3DMoleculeParser.parseChemFile(selectedFile.getAbsolutePath());
+					executor.execute(() -> {
+						for(StereoMolecule toDock : lib) {
+							//StereoMolecule aligned = shapeDock.dock(toDock);
+					}
+				});
+				
+			}
+			}});
+				/*
+				if(molGroup instanceof V3DCustomizablePheSA)
+					phesaModels.add((V3DCustomizablePheSA) molGroup);
+			}
+			V3DDockingEngine dEngine = new V3DDockingEngine(mScene3D,mScene3D.getBindingSiteHelper());
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			File selectedFile = V3DPopupMenu.getMoleculeFileChooser().showOpenDialog(mScene3D.getScene().getWindow());
+			if (selectedFile != null) {
+				List<StereoMolecule> lib = V3DMoleculeParser.parseChemFile(selectedFile.getAbsolutePath());
+				executor.execute(() -> dEngine.dockLibrary(lib));	
+			}
+			*/
+
+		dockingButton.getItems().add(shapeDockItem);
 		dockingButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	
@@ -773,8 +822,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		dialog.getDialogPane().setContent(hbox1);
 		
 		ButtonType buttonTypeSave = new ButtonType("Save", ButtonData.OK_DONE);
-
-
 
 		dialog.getDialogPane().getButtonTypes().add(buttonTypeSave);
 		dialog.setResultConverter(new Callback<ButtonType, Boolean>() {
