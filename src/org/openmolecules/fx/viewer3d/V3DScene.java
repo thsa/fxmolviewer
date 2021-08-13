@@ -20,10 +20,7 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.IDCodeParser;
-import com.actelion.research.chem.MolfileParser;
-import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.chem.dnd.ChemistryDataFormats;
@@ -253,7 +250,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 
 	public void paste() {
-		StereoMolecule mol = mClipboardHandler.pasteMolecule(false);
+		StereoMolecule mol = mClipboardHandler.pasteMolecule(false, SmilesParser.SMARTS_MODE_IS_SMILES);
 		if (mol == null) {
 			showMessage("No molecule on clipboard!");
 			return;
