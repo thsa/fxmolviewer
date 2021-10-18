@@ -79,10 +79,7 @@ public class V3DMolecule extends V3DMolGroup {
 	private static final Color DEFAULT_INHERITED_SURFACE_COLOR = Color.LIGHTGRAY;
 	private static final Color DEFAULT_SURFACE_COLOR = Color.ROYALBLUE;
 
-	private static PhongMaterial sSolidHighlightedMaterial,sTransparentHighlightedMaterial,
-			sPickedMaterial,sSelectedMaterial;
-	
-	
+	private static PhongMaterial sSolidHighlightedMaterial,sTransparentHighlightedMaterial,sPickedMaterial,sSelectedMaterial;
 
 	private StereoMolecule	mMol;
 	private Node			mLastPickedNode;
@@ -181,10 +178,6 @@ public class V3DMolecule extends V3DMolGroup {
 		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id,  role, overrideHydrogen);
 		}
-	
-
-	
-
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the given specification.
@@ -652,10 +645,6 @@ public class V3DMolecule extends V3DMolGroup {
 	public void setID(int id) {
 		mIDProperty.set(id);
 	}
-	
-
-	
-
 
 	/**
 	 * Use this method to create or remove a molecules surface
@@ -1117,13 +1106,9 @@ public class V3DMolecule extends V3DMolGroup {
 
 		if (node instanceof MeshView)
 			return;
-		
-
 
 		Shape3D shape = (Shape3D)node;
-		
 
-		
 		boolean isInvisibleShape = (shape.getUserData() != null
 				&& ((NodeDetail)shape.getUserData()).getMaterial().getDiffuseColor().getOpacity() == 0.0);
 
