@@ -64,6 +64,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
+
 /**
  * Created by thomas on 25.09.16.
  */
@@ -94,6 +96,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		NO_PHESAMODEL_SELECTED.setHeaderText("Improper Selection");
 		NO_PHESAMODEL_SELECTED.setContentText("Please select at least one PheSA model");
 	}
+
 	protected V3DScene mScene3D;
 	protected MolGroupPane mMoleculePanel;
 	protected GridPane upperPanel;
@@ -660,7 +663,15 @@ public class V3DSceneWithSidePane extends BorderPane {
 		reDockItem.setOnAction(e -> {
 			V3DDockingEngine dEngine = new V3DDockingEngine(mScene3D,mScene3D.getBindingSiteHelper());
 			ExecutorService executor = Executors.newSingleThreadExecutor();
-			executor.execute(() -> dEngine.reDock());
+			executor.execute(() -> {
+				try {
+					dEngine.reDock();
+				}
+				catch(Exception exc) {
+					displayException(exc);
+				}
+				
+			});
 		});
 		dockingButton.getItems().add(reDockItem);
 		dockingButton.prefHeightProperty().bind(upperPanel.heightProperty());
@@ -672,7 +683,16 @@ public class V3DSceneWithSidePane extends BorderPane {
 			File selectedFile = V3DPopupMenu.getMoleculeFileChooser().showOpenDialog(mScene3D.getScene().getWindow());
 			if (selectedFile != null) {
 				List<StereoMolecule> lib = V3DMoleculeParser.parseChemFile(selectedFile.getAbsolutePath());
-				executor.execute(() -> dEngine.dockLibrary(lib));	
+				executor.execute(() -> {
+					try {
+						dEngine.dockLibrary(lib);
+					}
+					catch(Exception exc) {
+						displayException(exc);
+					}
+					
+				}	);
+				//executor.execute(() -> dEngine.dockLibrary(lib));	
 			}
 		});
 		dockingButton.getItems().add(libDockItem);
@@ -737,7 +757,16 @@ public class V3DSceneWithSidePane extends BorderPane {
 			if(globalModeProperty.get()==GlobalMode.BINDING_SITE_ANALYSIS) {
 				V3DDockingEngine dEngine = new V3DDockingEngine(mScene3D,mScene3D.getBindingSiteHelper());
 				ExecutorService executor = Executors.newSingleThreadExecutor();
-				executor.execute(() -> dEngine.refineNativePose());
+				executor.execute(() -> {
+					try {
+						dEngine.refineNativePose();
+					}
+					catch(Exception exc) {
+						displayException(exc);
+					}
+					
+				}	);
+				//executor.execute(() -> dEngine.refineNativePose());
 			}
 			else
 				V3DPopupMenu.showMinimizerDialog(mScene3D,null,null);
@@ -892,6 +921,14 @@ public class V3DSceneWithSidePane extends BorderPane {
 		}
 		
 		return success;
+	}
+	
+	private void displayException(Exception e) {
+		Alert alert  = new Alert(AlertType.ERROR);
+		alert.setTitle("exception");
+		alert.setHeaderText("Docking Failed");
+		alert.setContentText(e.toString());
+		
 	}
 	
 	

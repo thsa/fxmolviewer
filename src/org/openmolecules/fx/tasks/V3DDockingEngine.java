@@ -32,10 +32,10 @@ public class V3DDockingEngine {
 		
 	}
 	
-	public double refineNativePose() {
+	public double refineNativePose() throws DockingFailedException {
 		V3DMoleculeUpdater fxMolUpdater = new V3DMoleculeUpdater(bindingSite.getNativeLigand());
-		StereoMolecule newReceptor =  getMolWithSceneCoords(bindingSite.getReceptor());
-		StereoMolecule newLig =  getMolWithSceneCoords(bindingSite.getNativeLigand());
+		StereoMolecule newReceptor = getMolWithSceneCoords(bindingSite.getReceptor());
+		StereoMolecule newLig = getMolWithSceneCoords(bindingSite.getNativeLigand());
 		
 		DockingEngine engine = new DockingEngine(newReceptor, newLig); 
 		double[] newPos = new double[3*newLig.getAllAtoms()];
@@ -51,7 +51,7 @@ public class V3DDockingEngine {
 		return energy;
 	}
 	
-	public void reDock() {
+	public void reDock() throws DockingFailedException {
 		StereoMolecule newReceptor =  getMolWithSceneCoords(bindingSite.getReceptor());
 		StereoMolecule newLig =  getMolWithSceneCoords(bindingSite.getNativeLigand());
 		
@@ -75,9 +75,9 @@ public class V3DDockingEngine {
 		}
 	}
 	
-	public void dockLibrary(List<StereoMolecule> library) {
-		StereoMolecule newReceptor =  getMolWithSceneCoords(bindingSite.getReceptor());
-		StereoMolecule newLig =  getMolWithSceneCoords(bindingSite.getNativeLigand());
+	public void dockLibrary(List<StereoMolecule> library) throws DockingFailedException {
+		StereoMolecule newReceptor = getMolWithSceneCoords(bindingSite.getReceptor());
+		StereoMolecule newLig = getMolWithSceneCoords(bindingSite.getNativeLigand());
 		
 		DockingEngine engine = new DockingEngine(newReceptor, newLig); 
 		StereoMolecule mol = new StereoMolecule(newLig);
