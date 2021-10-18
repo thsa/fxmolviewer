@@ -254,7 +254,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 
 	public void paste() {
-		StereoMolecule mol = mClipboardHandler.pasteMolecule(false,SmilesParser.SMARTS_MODE_GUESS);
+		StereoMolecule mol = mClipboardHandler.pasteMolecule(false, SmilesParser.SMARTS_MODE_IS_SMILES);
 		if (mol == null) {
 			showMessage("No molecule on clipboard!");
 			return;

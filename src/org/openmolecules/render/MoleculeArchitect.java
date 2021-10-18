@@ -54,8 +54,10 @@ public class MoleculeArchitect {
 
 	public static final int BALL_AND_STICK_STICK_COLOR = 0xFFE0E0E0;
 
-	private final static int[] ATOM_ARGB = {
-			0xFFFF1493, 0xFFFFFFFF, 0xFFD9FFFF, 0xFFCC80FF, 0xFFC2FF00, 0xFFFFB5B5, //  ?, H,He,Li, Be,B
+	private static final int CONNECTION_POINT_COLOR = 0xFFCCCA90;   // changed from 0xFFFF1493 to make it less look like oxygen
+
+	private final static int[] ATOM_ARGB = { CONNECTION_POINT_COLOR,
+						0xFFFFFFFF, 0xFFD9FFFF, 0xFFCC80FF, 0xFFC2FF00, 0xFFFFB5B5, //  ?, H,He,Li, Be,B
 			0xFF909090, 0xFF3050F8, 0xFFFF0D0D, 0xFF90E050, 0xFFB3E3F5, 0xFFAB5CF2, //  C, N, O, F,Ne,Na
 			0xFF8AFF00, 0xFFBFA6A6, 0xFFF0C8A0, 0xFFFF8000, 0xFFFFFF30, 0xFF1FF01F, // Mg,Al,Si, P, S,Cl
 			0xFF80D1E3, 0xFF8F40D4, 0xFF3DFF00, 0xFFE6E6E6, 0xFFBFC2C7, 0xFFA6A6AB, // Ar, K,Ca,Sc,Ti, V
