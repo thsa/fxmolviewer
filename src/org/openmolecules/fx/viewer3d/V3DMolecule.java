@@ -47,7 +47,7 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
-import org.openmolecules.fx.surface.RemovedAtomSurfaceCutter;
+import org.openmolecules.fx.surface.MarkedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.nodes.*;
@@ -580,7 +580,7 @@ public class V3DMolecule extends V3DMolGroup {
 	/**
 	 * Updates the surface color mode and (if a surface exists) updates the surface.
 	 * @param surfaceType
-	 * @param colorMode
+	 * @param colorMode one of SurfaceMesh.SURFACE_COLOR_xxx
 	 */
 	public void setSurfaceColorMode(int surfaceType, int colorMode) {
 		if (mSurfaceColorMode[surfaceType] != colorMode) {
@@ -691,7 +691,7 @@ public class V3DMolecule extends V3DMolGroup {
 	private SurfaceCutter createSurfaceCutter() {
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++)
 			if (mMol.getAtomicNo(atom) == 0)
-				return new RemovedAtomSurfaceCutter(this);
+				return new MarkedAtomSurfaceCutter(this);
 
 		return null;
 	}

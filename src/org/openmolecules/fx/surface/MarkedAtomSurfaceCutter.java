@@ -1,13 +1,12 @@
 package org.openmolecules.fx.surface;
 
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.conf.Conformer;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
-public class RemovedAtomSurfaceCutter extends SurfaceCutter {
+public class MarkedAtomSurfaceCutter extends SurfaceCutter {
 	private StereoMolecule mMol;
 
-	public RemovedAtomSurfaceCutter(V3DMolecule fxmol) {
+	public MarkedAtomSurfaceCutter(V3DMolecule fxmol) {
 		mMol = fxmol.getMolecule();
 	}
 
