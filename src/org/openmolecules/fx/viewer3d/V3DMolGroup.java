@@ -1,16 +1,13 @@
 package org.openmolecules.fx.viewer3d;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.actelion.research.chem.Coordinates;
-
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point3D;
-import javafx.scene.Node;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	
@@ -29,8 +26,7 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		for(ListChangeListener<V3DMolGroup> listener : listeners)
 			fxmol.addListener(listener);
 		children.add(fxmol);
-		Platform.runLater(() ->
-		getChildren().add(fxmol));
+		getChildren().add(fxmol);
 		this.visibleProperty().addListener((v,ov,nv) -> fxmol.setVisible(nv));
 	}
 	

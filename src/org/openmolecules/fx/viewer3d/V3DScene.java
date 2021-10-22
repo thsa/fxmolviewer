@@ -530,7 +530,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
 		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
 		if (fxmol.getColor() == null)
-			Platform.runLater(() -> fxmol.setColor(color));
+			fxmol.setColor(color);
 		group.addMolGroup(fxmol);
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.addMolecule(fxmol);
