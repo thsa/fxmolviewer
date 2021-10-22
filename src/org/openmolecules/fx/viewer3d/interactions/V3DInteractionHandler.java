@@ -1,21 +1,17 @@
 package org.openmolecules.fx.viewer3d.interactions;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ListChangeListener;
+import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.V3DScene;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
-
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ListChangeListener.Change;
-
-import org.openmolecules.fx.viewer3d.V3DScene;
-import org.openmolecules.fx.viewer3d.V3DSceneListener;
 
 
 public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {

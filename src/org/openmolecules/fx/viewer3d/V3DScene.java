@@ -75,8 +75,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
-	private double[] cachedTransform; // apply to newly loaded groups and molecules, when other objects were previously translated in the scenes (e.g. because of optimizeView)
-	
+
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
 	protected static final double CAMERA_INITIAL_DISTANCE = 45;
@@ -143,7 +142,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		applySettings();
 		mSceneListeners = new ArrayList<>();
 		initializeDragAndDrop();
-		cachedTransform = new double[3];
 	}
 
 	private void initializeDragAndDrop() {
@@ -322,10 +320,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 	public void deleteInvisibleMolecules() {
 		ArrayList<V3DMolecule> list = new ArrayList<>();
-			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-				if(fxmol instanceof V3DMolecule &&!fxmol.isVisible())
-					list.add((V3DMolecule)fxmol);
-			}
+		for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+			if(fxmol instanceof V3DMolecule &&!fxmol.isVisible())
+				list.add((V3DMolecule)fxmol);
+		}
 		
 
 		for (V3DMolecule fxmol:list)
@@ -335,33 +333,30 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void deleteAllMolecules() {
 		mMoleculeColorID = 0;
 		ArrayList<V3DMolecule> list = new ArrayList<>();
-			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-				if(fxmol instanceof V3DMolecule)
-					list.add((V3DMolecule) fxmol);
-			}
+		for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+			if(fxmol instanceof V3DMolecule)
+				list.add((V3DMolecule) fxmol);
+		}
 		
 		for (V3DMolecule fxmol:list)
 			delete(fxmol);
 	}
 
 	public void setAllVisible(boolean visible) {
-			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-				fxmol.setVisible(visible);
-			}
-		
+		for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+			fxmol.setVisible(visible);
 		}
+	}
 
-	public void clearAll(boolean isSmallMoleculeMode) {
+	public void clearAll() {
 		mMoleculeColorID = 0;
-			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-				delete(fxmol);
-					for(V3DSceneListener listener : mSceneListeners)
-						listener.removeMolecule(fxmol);
-				//}
-			
+		for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+			delete(fxmol);
+			for(V3DSceneListener listener : mSceneListeners)
+				listener.removeMolecule(fxmol);
 		}
 		for(V3DSceneListener listener : mSceneListeners)
-			listener.initialize(isSmallMoleculeMode);
+			listener.initialize();
 		mWorld.getChildren().clear();	// this does not remove the measurements
 	}
 
@@ -370,20 +365,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	/**
-	 * Moves all nodes such that the center of gravity of all atoms is world center (0,0,0).
-	 * Moves the camera such that x=0, y=0 and z<0, such that all atoms of visible molecules are just within the field of view.
+	 * Moves the camera such that x and y are at all atom's COG and that all atoms of visible molecules are just within the field of view.
 	 */
 	public void optimizeView(V3DMolGroup group) {
 		Point3D cog = getCenterOfGravity(group);
 		Point3D p1 = mWorld.sceneToLocal(cog);
-		cachedTransform[0] += p1.getX();
-		cachedTransform[1] += p1.getY();
-		cachedTransform[2] += p1.getZ();
-		for (Node n:mWorld.getChildren()) {
-			n.setTranslateX(n.getTranslateX() - p1.getX());
-			n.setTranslateY(n.getTranslateY() - p1.getY());
-			n.setTranslateZ(n.getTranslateZ() - p1.getZ());
-		}
 		double cameraZ = 50;
 
 		double hFOV = ((PerspectiveCamera)getCamera()).getFieldOfView();
@@ -402,31 +388,29 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 			cameraZ = 0;
 
-				for(V3DMolGroup fxmol : mWorld.getAllChildren()) {					
-					if (fxmol.isVisible()) {
-						for (Node node2:fxmol.getChildren()) {
-							NodeDetail detail = (NodeDetail)node2.getUserData();
-							if (detail != null) {
-								if (detail.isAtom()) {
-									Point3D p = node2.localToScene(0.0, 0.0, 0.0);
-									cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getX()) / tanH);
-									cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getY()) / tanV);
-								}
+			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+				if (fxmol.isVisible()) {
+					for (Node node2:fxmol.getChildren()) {
+						NodeDetail detail = (NodeDetail)node2.getUserData();
+						if (detail != null) {
+							if (detail.isAtom()) {
+								Point3D p = node2.localToScene(-p1.getX(), -p1.getY(), -p1.getZ());
+								cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getX()) / tanH);
+								cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getY()) / tanV);
 							}
 						}
 					}
 				}
-			
+			}
 		}
-		for(V3DMolGroup fxmol : mWorld.getAllChildren()) {	
+
+		for(V3DMolGroup fxmol : mWorld.getAllChildren())
 			if(fxmol instanceof V3DMolecule)
 				((V3DMolecule)fxmol).fireCoordinatesChange();
-		}
 
-
-		getCamera().setTranslateX(0);
-		getCamera().setTranslateY(0);
-		getCamera().setTranslateZ(cameraZ);
+		getCamera().setTranslateX(-p1.getX());
+		getCamera().setTranslateY(-p1.getY());
+		getCamera().setTranslateZ(cameraZ-p1.getZ());
 	}
 
 	/**
@@ -438,23 +422,22 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		zr[0] = Double.MAX_VALUE;
 		zr[1] = Double.MIN_VALUE;
 
-			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-				if (fxmol.isVisible()) {
-					for (Node node2:fxmol.getChildren()) {
-						NodeDetail detail = (NodeDetail)node2.getUserData();
-						if (detail != null) {
-							if (detail.isAtom()) {
-								Point3D p = node2.localToScene(0.0, 0.0, 0.0);
-								if (zr[0] > p.getZ())
-									zr[0] = p.getZ();
-								if (zr[1] < p.getZ())
-									zr[1] = p.getZ();
-							}
+		for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+			if (fxmol.isVisible()) {
+				for (Node node2:fxmol.getChildren()) {
+					NodeDetail detail = (NodeDetail)node2.getUserData();
+					if (detail != null) {
+						if (detail.isAtom()) {
+							Point3D p = node2.localToScene(0.0, 0.0, 0.0);
+							if (zr[0] > p.getZ())
+								zr[0] = p.getZ();
+							if (zr[1] < p.getZ())
+								zr[1] = p.getZ();
 						}
 					}
 				}
 			}
-		
+		}
 
 		if (zr[0] == Double.MAX_VALUE) {
 			zr[0] = CAMERA_NEAR_CLIP;
@@ -474,21 +457,20 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		double y = 0.0;
 		double z = 0.0;
 
-			for(V3DMolGroup fxmol : group.getAllChildren()) {
-				if (fxmol.isVisible()) {
-					for (Node node2:fxmol.getChildren()) {
-						NodeDetail detail = (NodeDetail)node2.getUserData();
-						if (detail != null) {
-							if (detail.isAtom()) {
-								Point3D p = node2.localToScene(0.0, 0.0, 0.0);
-								x += p.getX();
-								y += p.getY();
-								z += p.getZ();
-								atomCount++;
-							}
+		for(V3DMolGroup fxmol : group.getAllChildren()) {
+			if (fxmol.isVisible()) {
+				for (Node node2:fxmol.getChildren()) {
+					NodeDetail detail = (NodeDetail)node2.getUserData();
+					if (detail != null) {
+						if (detail.isAtom()) {
+							Point3D p = node2.localToScene(0.0, 0.0, 0.0);
+							x += p.getX();
+							y += p.getY();
+							z += p.getZ();
+							atomCount++;
 						}
 					}
-				
+				}
 			}
 		}
 
@@ -498,7 +480,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void crop(V3DMolecule refMolFX, double distance) {
 		Bounds refBounds = refMolFX.localToScene(refMolFX.getBoundsInLocal());
 		ArrayList<V3DMolecule> moleculesToBeDeleted = new ArrayList<>();
-			for (V3DMolGroup fxmol : mWorld.getAllChildren()) {
+		for (V3DMolGroup fxmol : mWorld.getAllChildren()) {
 			if (fxmol instanceof V3DMolecule
 			 && fxmol != refMolFX) {
 				Bounds bounds = fxmol.localToScene(fxmol.getBoundsInLocal());
@@ -532,33 +514,23 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		optimizeView();
 	}
 	
-	public void addMolGroup(V3DMolGroup group,V3DMolGroup parent) {
+	public void addMolGroup(V3DMolGroup group, V3DMolGroup parent) {
 		parent.addMolGroup(group);
-		if(parent==mWorld) {
-			group.setTranslateX(group.getTranslateX() - cachedTransform[0]);
-			group.setTranslateX(group.getTranslateY() - cachedTransform[1]);
-			group.setTranslateX(group.getTranslateZ() - cachedTransform[2]);
-		}
 	}
-	
+
 	public void addMolGroup(V3DMolGroup group) {
-		addMolGroup(group,mWorld);
+		addMolGroup(group, mWorld);
 	}
 
 	public void addMolecule(V3DMolecule fxmol) {
-		addMolecule(fxmol,mWorld);
-		
+		addMolecule(fxmol, mWorld);
 	}
 
 	public void addMolecule(V3DMolecule fxmol, V3DMolGroup group) {
-		if(group==mWorld) {
-			fxmol.setTranslateX(fxmol.getTranslateX() - cachedTransform[0]);
-			fxmol.setTranslateY(fxmol.getTranslateY() - cachedTransform[1]);
-			fxmol.setTranslateZ(fxmol.getTranslateZ() - cachedTransform[2]);
-		}
-		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
 		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
-		Platform.runLater(() -> fxmol.setColor(color));
+		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
+		if (fxmol.getColor() == null)
+			Platform.runLater(() -> fxmol.setColor(color));
 		group.addMolGroup(fxmol);
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.addMolecule(fxmol);
@@ -618,9 +590,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				mSurfaceCutMolecule.cutSurface(polygon, mSurfaceCutMode, paneOnScreen);
 				}
 			else {
-					for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-						if(fxmol instanceof V3DMolecule)
-							((V3DMolecule)fxmol).cutSurface(polygon, mSurfaceCutMode, paneOnScreen);
+				for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+					if(fxmol instanceof V3DMolecule)
+						((V3DMolecule)fxmol).cutSurface(polygon, mSurfaceCutMode, paneOnScreen);
 				}
 				
 			mSurfaceCutMolecule = null;
@@ -628,13 +600,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			return;
 			}
 
-
-				for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-					if(fxmol instanceof V3DMolecule)
-						((V3DMolecule)fxmol).select(polygon, mode, paneOnScreen);
-				}
+			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
+				if(fxmol instanceof V3DMolecule)
+					((V3DMolecule)fxmol).select(polygon, mode, paneOnScreen);
 			}
-		
+		}
 	}
 		
 	public void activateSurfaceCutter(int mode, V3DMolecule mol3D) {
@@ -652,13 +622,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	 */
 	public void selectMolecule(V3DMolecule mol3D, int mode) {
 		if (mode == 0) {
-				for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-					if(fxmol instanceof V3DMolecule) {
-						if(((V3DMolecule)fxmol).isSelected() || fxmol==mol3D)
-							((V3DMolecule)fxmol).toggleSelection();
-			}
-			}
-			
+			for(V3DMolGroup fxmol : mWorld.getAllChildren())
+				if(fxmol instanceof V3DMolecule)
+					if(((V3DMolecule)fxmol).isSelected() || fxmol==mol3D)
+						((V3DMolecule)fxmol).toggleSelection();
 		}
 		else {
 			if (mol3D != null)
@@ -759,7 +726,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			}
 			
 			else if(mMeasurementMode == MEASUREMENT.TORSION) {
-
 				double dihedral = Coordinates.getDihedral(coords[0],coords[1],coords[2],coords[3]);
 				dihedral = 180*dihedral/Math.PI;
 				addMeasurementNodes(coords[0], coords[3], TORSION_COLOR, DoubleFormat.toString(dihedral,3),atIds,fxmols);
@@ -777,7 +743,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		label.setLabelDeletionListener(this);
 		V3DMeasurement measurement = new V3DMeasurement(atoms,fxmols,line,label,mWorld);
 		mMeasurements.add(measurement);
-
 		}
 	
 	public ArrayList<V3DMeasurement> getMeasurements() {
@@ -785,9 +750,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public void removeMeasurements() {
-		for(V3DMeasurement measurement: mMeasurements) {
+		for(V3DMeasurement measurement: mMeasurements)
 			measurement.cleanup();
-		}
+
 		mMeasurements.clear();
 	}
 	
@@ -819,12 +784,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			if(measurement.getLabel().equals(l)) {
 				measurement.cleanup();
 				toBeRemoved.add(measurement);
-					for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
-						if(fxmol instanceof V3DMolecule)
-							((V3DMolecule)fxmol).removeMoleculeCoordinatesChangeListener(measurement);
-					}
-				}
-			
+				for(V3DMolGroup fxmol : mWorld.getAllChildren())
+					if(fxmol instanceof V3DMolecule)
+						((V3DMolecule)fxmol).removeMoleculeCoordinatesChangeListener(measurement);
+			}
 		}
 
 		mMeasurements.removeAll(toBeRemoved);

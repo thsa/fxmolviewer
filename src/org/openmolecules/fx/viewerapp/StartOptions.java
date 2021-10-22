@@ -323,7 +323,7 @@ public class StartOptions {
 		}
 
 	public void initializeScene(V3DScene scene) {
-		scene.clearAll(mode == 1 || mode == 2);
+		scene.clearAll();
 
 		if (mode == MODE_PDB_ENTRY)
 			loadPDBEntry(scene);

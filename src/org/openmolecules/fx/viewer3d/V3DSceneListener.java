@@ -27,5 +27,5 @@ public interface V3DSceneListener {
 //	public void updateMolecule(V3DMolecule fxmol);
 	public void addMolecule(V3DMolGroup fxmol);
 	public void removeMolecule(V3DMolGroup fxmol);
-	public void initialize(boolean isSmallMoleculeMode);
+	public void initialize();
 }

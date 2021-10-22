@@ -26,14 +26,12 @@ import com.actelion.research.chem.alignment3d.transformation.Rotation;
 import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
 import com.actelion.research.chem.alignment3d.transformation.Translation;
 import com.actelion.research.chem.docking.shape.ShapeDocking;
-import com.actelion.research.chem.io.DWARFileParser;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.jfx.gui.chem.MoleculeView;
 import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
-
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
@@ -57,7 +55,6 @@ import org.openmolecules.fx.viewer3d.panel.MolGroupPane;
 import org.openmolecules.render.TorsionStrainVisualization;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -541,7 +538,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		deleteButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add( deleteButton, i, j);
 		deleteButton.getStyleClass().add("toolBarButton");
-		deleteButton.setOnMouseReleased((e) -> mScene3D.clearAll(false));
+		deleteButton.setOnMouseReleased((e) -> mScene3D.clearAll());
 		deleteButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	

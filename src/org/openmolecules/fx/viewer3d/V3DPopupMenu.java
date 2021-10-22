@@ -22,44 +22,28 @@ package org.openmolecules.fx.viewer3d;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
-import javafx.scene.control.*;
 import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.layout.HBox;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.util.Callback;
-
-import org.openmolecules.render.MoleculeArchitect;
-import org.openmolecules.render.TorsionStrainVisualization;
-
-import com.actelion.research.chem.phesa.PheSAMolecule;
-
 import org.openmolecules.fx.sunflow.RayTraceDialog;
 import org.openmolecules.fx.sunflow.RayTraceOptions;
 import org.openmolecules.fx.surface.ClipSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.fx.tasks.IAlignmentTask;
 import org.openmolecules.fx.tasks.V3DMinimizer;
-import org.openmolecules.fx.tasks.V3DShapeAlignerFromFile;
-import org.openmolecules.fx.tasks.V3DShapeAlignerInPlace;
-import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
-import org.openmolecules.fx.viewerapp.StartOptionDialog;
-import org.openmolecules.fx.viewerapp.StartOptions;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
+import org.openmolecules.render.MoleculeArchitect;
+import org.openmolecules.render.TorsionStrainVisualization;
 
-import java.io.File;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
 
 public class V3DPopupMenu extends ContextMenu {
@@ -89,8 +73,6 @@ public class V3DPopupMenu extends ContextMenu {
 		if (controller != null)	// Add external File items
 			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_FILE);
 
-
-		
 		if (controller != null)	// Add external View items
 			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_EDIT);
 
@@ -117,7 +99,7 @@ public class V3DPopupMenu extends ContextMenu {
 			itemDelete.setOnAction(e -> scene.delete(fxmol));
 
 			MenuItem itemClear = new MenuItem("Clear All");
-			itemClear.setOnAction(e -> scene.clearAll(true));
+			itemClear.setOnAction(e -> scene.clearAll());
 
 			menuEdit.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete, new SeparatorMenuItem(), itemClear);
 
