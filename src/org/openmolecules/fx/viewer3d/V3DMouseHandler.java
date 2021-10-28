@@ -21,23 +21,32 @@
 package org.openmolecules.fx.viewer3d;
 
 import javafx.scene.input.*;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Shape3D;
 
 import java.util.stream.IntStream;
 
 import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.fx.viewer3d.nodes.IPPNode;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
-
+import org.openmolecules.render.MoleculeBuilder;
+import org.openmolecules.render.TorsionHistogram;
 
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Camera;
+import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
+import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.transform.Rotate;
+import javafx.stage.Stage;
 
 public class V3DMouseHandler {
 	public static final long POPUP_DELAY = 750;	// milli seconds delay right mouse click may be used for rotation
@@ -56,6 +65,7 @@ public class V3DMouseHandler {
 	private long mMousePressedMillis;
 	private Node mSelectedNode;
 	private VolumeSphere mHighlightedExclusionSphere, mAffectedExclusionSphere;
+	private Shape3D affectedBond;
 
 
 	public V3DMouseHandler(final V3DScene scene) {
@@ -313,7 +323,24 @@ public class V3DMouseHandler {
 
 		mHighlightedMol = (V3DMolecule) molecule;
 		if (mHighlightedMol != null && node instanceof Shape3D) {
-			mHighlightedMol.setHighlightedShape((Shape3D)node); }
+			mHighlightedMol.setHighlightedShape((Shape3D)node); 
+			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
+			if( (role & MoleculeBuilder.ROLE_IS_TORSION_PREF)!=0) {
+				int b = ((NodeDetail)node.getUserData()).getBondTorsion();
+				byte[] histogram = mHighlightedMol.getTorsionStrainVis().getTorsionAnalyzer().getHistogram(b);
+				if(histogram!=null) {
+					double angle = mHighlightedMol.getTorsionStrainVis().getTorsionAnalyzer().getAngle(b);
+					XYChart<Number,Number> bc = TorsionHistogram.create(histogram,angle);
+					mScene.chartProperty().set(bc);
+				}
+				else {
+					mScene.chartProperty().set(null);
+				}
+				
+			}
+			}
+		if(mHighlightedMol==null)
+			mScene.chartProperty().set(null);
 	}
 
 	/**

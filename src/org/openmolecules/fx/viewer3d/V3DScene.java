@@ -31,10 +31,13 @@ import com.actelion.research.chem.dnd.ChemistryDataFormats;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
 import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.input.DragEvent;
@@ -75,6 +78,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
+	private ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle) 
 
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
@@ -141,6 +145,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMoleculeColorID = 0;
 		applySettings();
 		mSceneListeners = new ArrayList<>();
+		mChartProperty = new SimpleObjectProperty<XYChart<Number,Number>>();
 		initializeDragAndDrop();
 	}
 
@@ -792,6 +797,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		mMeasurements.removeAll(toBeRemoved);
 	}
+	
+	public ObjectProperty<XYChart<Number,Number>> chartProperty() {
+		return mChartProperty;
+	}
+	
 	
 	public void handleInteractions() {
 		if(mInteractionHandler==null)

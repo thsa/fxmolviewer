@@ -87,6 +87,10 @@ public class NodeDetail {
 	    return (mRole & MoleculeBuilder.ROLE_IS_BOND) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
     }
     
+    public int getBondTorsion() {
+	    return (mRole & MoleculeBuilder.ROLE_IS_TORSION_PREF) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
+    }
+    
     public int getPharmacophoreAtom() {
 	    return (mRole & MoleculeBuilder.ROLE_IS_PHARMACOPHORE) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
     }
