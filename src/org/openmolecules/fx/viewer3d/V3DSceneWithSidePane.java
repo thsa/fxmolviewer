@@ -143,6 +143,12 @@ public class V3DSceneWithSidePane extends BorderPane {
 		}
 		if(settings.contains(V3DScene.ViewerSettings.UPPERPANEL))
 			createUpperPanel();
+		mScene3D.chartProperty().addListener((o,ov,nv) -> {
+			if(nv!=null) 
+				nv.prefHeightProperty().bind(this.prefHeightProperty().multiply(0.3));
+			setBottom(nv);
+			
+		});
 
 		
 	}

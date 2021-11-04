@@ -69,6 +69,14 @@ public class V3DTorsionStrainAnalyzer implements MolStructureChangeListener{
 		return torsionAngles.get(b).getStrain(fxmol.getMolecule());
 	}
 	
+	public byte[] getHistogram(int b) {
+		return torsionAngles.get(b).getHistogram();
+	}
+	
+	public double getAngle(int b) {
+		return torsionAngles.get(b).getAngle(fxmol.getMolecule());
+	}
+	
 	public Set<Integer> getRotBonds() {
 		return torsionAngles.keySet();
 	}
@@ -89,6 +97,14 @@ public class V3DTorsionStrainAnalyzer implements MolStructureChangeListener{
 		public int getStrain(StereoMolecule mol) {
 			double angle = TorsionDB.calculateTorsionExtended(mol,atoms);
 			return TorsionDB.getTorsionStrainClass(torsionID, angle);
+		}
+		
+		public byte[] getHistogram() {
+			return TorsionDB.getTorsionBinCounts(torsionID);
+		}
+		
+		public double getAngle(StereoMolecule mol) {
+			return TorsionDB.calculateTorsionExtended(mol,atoms);
 		}
 		
 		
