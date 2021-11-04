@@ -69,12 +69,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private ArrayList<NonRotatingLabel> mLabelList;
 	private ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
-	private V3DPopupMenuController mPopupMenuController;
 	private EnumSet<ViewerSettings> mSettings;
 	private boolean mMayOverrideHydrogens;
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
+	private volatile V3DPopupMenuController mPopupMenuController;
 
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
