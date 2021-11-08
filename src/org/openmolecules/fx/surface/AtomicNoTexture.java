@@ -139,21 +139,21 @@ public class AtomicNoTexture extends SurfaceTexture {
 			float z3 = points.get(p3+2);
 
 			int triple = determineAtomicNoTriple((x1+x2+x3)/3.0f, (y1+y2+y3)/3.0f, (z1+z2+z3)/3.0f, atom);
-			if ((triple & 0x00FFFF00) == 0) {
+			if ((triple & 0xFF000000) == 0x01000000) {
 				if (!mTripleMap.containsKey(triple))
 					mTripleMap.put(triple, mSingleCount++);
-				mInAreaIndex[3*i]   = mTripleMap.get(triple); // triple is atomicNo
-				mInAreaIndex[3*i+1] = mTripleMap.get(triple); // triple is atomicNo
-				mInAreaIndex[3*i+2] = mTripleMap.get(triple); // triple is atomicNo
+				mInAreaIndex[3*i]   = mTripleMap.get(triple) & 0xFF; // triple is atomicNo
+				mInAreaIndex[3*i+1] = mTripleMap.get(triple) & 0xFF; // triple is atomicNo
+				mInAreaIndex[3*i+2] = mTripleMap.get(triple) & 0xFF; // triple is atomicNo
 			}
-			else if ((triple & 0x00FF0000) == 0) {
+			else if ((triple & 0xFF000000) == 0x02000000) {
 				if (!mTripleMap.containsKey(triple))
 					mTripleMap.put(triple, mDoubleCount++);
 				mInAreaIndex[3*i]   = calculateColorIndex1D(x1, y1, z1, atom, triple);
 				mInAreaIndex[3*i+1] = calculateColorIndex1D(x2, y2, z2, atom, triple);
 				mInAreaIndex[3*i+2] = calculateColorIndex1D(x3, y3, z3, atom, triple);
 			}
-			else {
+			else if ((triple & 0xFF000000) == 0x03000000) {
 				if (!mTripleMap.containsKey(triple))
 					mTripleMap.put(triple, mTripleCount++);
 				mInAreaIndex[3*i]   = calculateColorIndex2D(x1, y1, z1, atom, triple);
@@ -216,9 +216,11 @@ public class AtomicNoTexture extends SurfaceTexture {
 		if (atomicNoCount == 0)
 			return 0;
 		if (atomicNoCount == 1)
-			return mAtomicNoBuffer[0];
+			return 0x01000000 | mAtomicNoBuffer[0];
 		if (atomicNoCount == 2)
-			return mAtomicNoBuffer[0] < mAtomicNoBuffer[1] ? (mAtomicNoBuffer[0] << 8) | mAtomicNoBuffer[1] : (mAtomicNoBuffer[1] << 8) | mAtomicNoBuffer[0];
+			return mAtomicNoBuffer[0] < mAtomicNoBuffer[1] ?
+					0x02000000 | (mAtomicNoBuffer[0] << 8) | mAtomicNoBuffer[1]
+				  : 0x02000000 | (mAtomicNoBuffer[1] << 8) | mAtomicNoBuffer[0];
 
 		if (atomicNoCount > 3) {
 			// bubble sort atomicNos with decreasing weights
@@ -251,7 +253,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 			mSortedAtomicNoBuffer[i] = mAtomicNoBuffer[i];
 
 		Arrays.sort(mSortedAtomicNoBuffer);
-		return (mSortedAtomicNoBuffer[0] << 16) + (mSortedAtomicNoBuffer[1] << 8) + mSortedAtomicNoBuffer[2];
+		return 0x03000000 | (mSortedAtomicNoBuffer[0] << 16) | (mSortedAtomicNoBuffer[1] << 8) | mSortedAtomicNoBuffer[2];
 	}
 
 	private int getTextureIndex(int x, int y, int imageWidth) {
@@ -371,13 +373,12 @@ public class AtomicNoTexture extends SurfaceTexture {
 //bi.setRGB(0, IMAGE_HEIGHT -1, 0xFFC000C0);
 		for (int triple:mTripleMap.keySet()) {
 			int index = mTripleMap.get(triple);
-			if ((triple & 0x00FFFF00) == 0) {
+			if ((triple & 0xFF000000) == 0x01000000) {
 				pw.setColor(0, index, color[triple & 0x000000FF]);  // one pixel per single atomic-no color
-
 //Color c=color[triple & 0x000000FF]; int cv = 0xFF000000+((int)(c.getRed()*255)<<16)+((int)(c.getGreen()*255)<<8)+(int)(c.getBlue()*255);
 //bi.setRGB(0, index, 0xFF000000+((int)(c.getRed()*255)<<16)+((int)(c.getGreen()*255)<<8)+(int)(c.getBlue()*255));
 			}
-			else if ((triple & 0x00FF0000) == 0) {
+			else if ((triple & 0xFF000000) == 0x02000000) {
 				int atomicNo1 = (triple & 0x0000FF00) >> 8;
 				int atomicNo2 =  triple & 0x000000FF;
 				for (int y = 0; y< IMAGE_HEIGHT; y++) {
@@ -396,7 +397,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 					}
 				}
 			}
-			else {
+			else if ((triple & 0xFF000000) == 0x03000000) {
 				int x0 = 1+mDoubleCount* IMAGE_STRIPE_WIDTH +index*IMAGE_HEIGHT;
 				int atomicNo1 = (triple & 0x00FF0000) >> 16;
 				int atomicNo2 = (triple & 0x0000FF00) >> 8;
@@ -424,6 +425,9 @@ public class AtomicNoTexture extends SurfaceTexture {
 //bi.setRGB(x0+x, y, 0xFF000000+((int)(r*255)<<16)+((int)(g*255)<<8)+(int)(b*255));
 					}
 				}
+			}
+		else {
+			System.out.println("Unexpected triple with no atomicNos!!!");
 			}
 		}
 //try { ImageIO.write(bi, "png", new File("/home/thomas/test.png")); } catch (IOException e) {}
@@ -454,27 +458,27 @@ public class AtomicNoTexture extends SurfaceTexture {
 		int faceCount = faces.size() / faceInc;
 		for (int i=0; i<faceCount; i++) {
 			int triple = mTripleOfFace[i];
-			if (triple == 0) {
-				for (int j=0; j<3; j++)
-					faces.set(faceInc*i+inc*j+offset, getTextureIndex(0, IMAGE_HEIGHT -1, imageWidth));
-			}
-			else if ((triple & 0x00FFFF00) == 0) {
+			if ((triple & 0xFF000000) == 0x01000000) {
 				for (int j=0; j<3; j++)
 					faces.set(faceInc*i+inc*j+offset, getTextureIndex(0, mInAreaIndex[3*i+j], imageWidth));
 			}
-			else if ((triple & 0x00FF0000) == 0) {
+			else if ((triple & 0xFF000000) == 0x02000000) {
 				int x = 1 + mTripleMap.get(triple)* IMAGE_STRIPE_WIDTH + IMAGE_STRIPE_WIDTH /2;
 				for (int j=0; j<3; j++) {
 					faces.set(faceInc*i+inc*j+offset, getTextureIndex(x, mInAreaIndex[3*i+j], imageWidth));
 				}
 			}
-			else {
+			else if ((triple & 0xFF000000) == 0x03000000) {
 				int x = 1 + mDoubleCount* IMAGE_STRIPE_WIDTH + mTripleMap.get(triple) * IMAGE_HEIGHT;
 				for (int j=0; j<3; j++) {
 					int x0 = IMAGE_AREA_BORDER+mInAreaIndex[3*i+j] % IMAGE_AREA_SIZE;
 					int y0 = IMAGE_AREA_BORDER+mInAreaIndex[3*i+j] / IMAGE_AREA_SIZE;
 					faces.set(faceInc*i+inc*j+offset, getTextureIndex(x + x0, y0, imageWidth));
+					}
 				}
+			else {  // triple == 0
+				for (int j=0; j<3; j++)
+					faces.set(faceInc*i+inc*j+offset, getTextureIndex(0, IMAGE_HEIGHT-1, imageWidth));
 			}
 		}
 	}
