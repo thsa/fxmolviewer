@@ -578,7 +578,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		});
 
 		addHydrogenButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		
 	}
 	
 	protected void constructInteractionButton(int i, int j) {
@@ -587,15 +586,8 @@ public class V3DSceneWithSidePane extends BorderPane {
 		addInteractionsButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addInteractionsButton, i, j);
 		//addInteractionsButton.getStyleClass().add("toolBarButton");
-		addInteractionsButton.setOnMouseReleased((e) -> {
-			if(mScene3D.getInteractionHandler()==null)
-				mScene3D.handleInteractions();
-			else 
-				mScene3D.getInteractionHandler().toggleVisibility();
-		});
-
+		addInteractionsButton.setOnMouseReleased((e) -> mScene3D.setShowInteractions(!mScene3D.isShowInteractions()));
 		addInteractionsButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		
 	}
 	
 	protected void constructNegRecButton(int i, int j) {
@@ -610,7 +602,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		});
 	
 		negRecButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		
 	}
 	
 	protected void constructLogButton(int i, int j) {
@@ -626,7 +617,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		});
 	
 		logButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		
 	}
 	
 	protected void constructTorsionButton(int i, int j) {
@@ -649,7 +639,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		});
 
 		addTorsionVisButton.prefHeightProperty().bind(upperPanel.heightProperty());
-		
 	}
 	
 	protected void constructDockingButton(int i, int j) {

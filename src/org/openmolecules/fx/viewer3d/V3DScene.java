@@ -20,11 +20,7 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.IDCodeParser;
-import com.actelion.research.chem.MolfileParser;
-import com.actelion.research.chem.SmilesParser;
-import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.chem.dnd.ChemistryDataFormats;
@@ -373,8 +369,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	 * Moves the camera such that x and y are at all atom's COG and that all atoms of visible molecules are just within the field of view.
 	 */
 	public void optimizeView(V3DMolGroup group) {
-		Point3D cog = getCenterOfGravity(group);
-		Point3D p1 = mWorld.sceneToLocal(cog);
+		Point3D cog = getCOGInScene(group);
 		double cameraZ = 50;
 
 		double hFOV = ((PerspectiveCamera)getCamera()).getFieldOfView();
@@ -388,20 +383,20 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 
 		if (hFOV != 0 && vFOV != 0) {
-			double tanH = Math.tan(0.9 * Math.PI * hFOV / 360);	// we need half FOV in radians and want the molecule to fill not more than 90%
-			double tanV = Math.tan(0.9 * Math.PI * vFOV / 360);
+			double tanH = 1.0 / Math.tan(0.9 * Math.PI * hFOV / 360);	// we need half FOV in radians and want the molecule to fill not more than 90%
+			double tanV = 1.0 / Math.tan(0.9 * Math.PI * vFOV / 360);
 
-			cameraZ = 0;
+			cameraZ = 10000;
 
 			for(V3DMolGroup fxmol : mWorld.getAllChildren()) {
 				if (fxmol.isVisible()) {
 					for (Node node2:fxmol.getChildren()) {
 						NodeDetail detail = (NodeDetail)node2.getUserData();
 						if (detail != null) {
-							if (detail.isAtom()) {
-								Point3D p = node2.localToScene(-p1.getX(), -p1.getY(), -p1.getZ());
-								cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getX()) / tanH);
-								cameraZ = Math.min(cameraZ, p.getZ() - Math.abs(p.getY()) / tanV);
+							if (detail.isAtom() || detail.isBond()) {
+								Point3D p = node2.localToScene(0.0, 0.0, 0.0);
+								cameraZ = Math.min(cameraZ, p.getZ() - tanH * Math.abs(p.getX()-cog.getX()));
+								cameraZ = Math.min(cameraZ, p.getZ() - tanV * Math.abs(p.getY()-cog.getY()));
 							}
 						}
 					}
@@ -409,19 +404,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			}
 		}
 
-		for(V3DMolGroup fxmol : mWorld.getAllChildren())
-			if(fxmol instanceof V3DMolecule)
-				((V3DMolecule)fxmol).fireCoordinatesChange();
-
-		getCamera().setTranslateX(-p1.getX());
-		getCamera().setTranslateY(-p1.getY());
-		getCamera().setTranslateZ(cameraZ-p1.getZ());
+		getCamera().setTranslateX(cog.getX());
+		getCamera().setTranslateY(cog.getY());
+		getCamera().setTranslateZ(cameraZ);
 	}
 
-	/**
-	 *
-	 * @return
-	 */
 	public double[] getVisibleZRange() {
 		double[] zr = new double[2];
 		zr[0] = Double.MAX_VALUE;
@@ -456,8 +443,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		return zr;
 	}
 
-	public Point3D getCenterOfGravity(V3DMolGroup group) {
-		int atomCount = 0;
+	public Point3D getCOGInGroup(V3DMolGroup group) {
+		int count = 0;
 		double x = 0.0;
 		double y = 0.0;
 		double z = 0.0;
@@ -467,20 +454,30 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				for (Node node2:fxmol.getChildren()) {
 					NodeDetail detail = (NodeDetail)node2.getUserData();
 					if (detail != null) {
-						if (detail.isAtom()) {
-							Point3D p = node2.localToScene(0.0, 0.0, 0.0);
+						if (detail.isAtom() || detail.isBond()) {
+							Point3D p = node2.localToParent(0.0, 0.0, 0.0);
 							x += p.getX();
 							y += p.getY();
 							z += p.getZ();
-							atomCount++;
+							count++;
+							}
 						}
 					}
 				}
 			}
+
+		return count == 0 ? new Point3D(0, 0, 0) : new Point3D(x/count, y/count, z/count);
 		}
 
-		return new Point3D(x / atomCount, y / atomCount, z / atomCount);
-	}
+	/**
+	 * Calculates and returns the center of gravity in scene coordinates
+	 * of all atoms and bonds withing the given group not considering any node weights.
+	 * @param group
+	 * @return
+	 */
+	public Point3D getCOGInScene(V3DMolGroup group) {
+		return group.localToScene(getCOGInGroup(group));
+		}
 
 	public void crop(V3DMolecule refMolFX, double distance) {
 		Bounds refBounds = refMolFX.localToScene(refMolFX.getBoundsInLocal());
@@ -801,12 +798,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public ObjectProperty<XYChart<Number,Number>> chartProperty() {
 		return mChartProperty;
 	}
-	
-	
-	public void handleInteractions() {
+
+	public boolean isShowInteractions() {
+		return mInteractionHandler != null && mInteractionHandler.isVisible();
+	}
+
+	public void setShowInteractions(boolean b) {
 		if(mInteractionHandler==null)
 			mInteractionHandler = new V3DInteractionHandler(this);
-		mInteractionHandler.displayInteractions();
+		mInteractionHandler.setVisibible(b);
 	}
 	
 	public V3DInteractionHandler getInteractionHandler() {

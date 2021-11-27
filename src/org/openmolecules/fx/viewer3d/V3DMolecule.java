@@ -654,6 +654,9 @@ public class V3DMolecule extends V3DMolGroup {
 	 * @param transparency
 	 */
 	public void setSurface(int surfaceType, SurfaceMode surfaceMode, int colorMode, double transparency) {
+		if (mMol.getAllAtoms() == 0)
+			return;
+
 		if (surfaceMode == mSurfaceMode[surfaceType]
 		 && colorMode == mSurfaceColorMode[surfaceType]
 		 && transparency == mSurfaceTransparency[surfaceType])

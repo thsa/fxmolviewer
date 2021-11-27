@@ -20,33 +20,28 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import javafx.scene.input.*;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Shape3D;
-
-import java.util.stream.IntStream;
-
-import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
-import org.openmolecules.fx.viewer3d.nodes.IPPNode;
-import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
-import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
-import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
-import org.openmolecules.render.MoleculeBuilder;
-import org.openmolecules.render.TorsionHistogram;
-
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Camera;
-import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.PerspectiveCamera;
-import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.PickResult;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.shape.Shape3D;
 import javafx.scene.transform.Rotate;
-import javafx.stage.Stage;
+import org.openmolecules.fx.viewer3d.nodes.IPPNode;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
+import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
+import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
+import org.openmolecules.render.MoleculeBuilder;
+import org.openmolecules.render.TorsionHistogram;
+
+import java.util.stream.IntStream;
 
 public class V3DMouseHandler {
 	public static final long POPUP_DELAY = 750;	// milli seconds delay right mouse click may be used for rotation
@@ -484,10 +479,23 @@ public class V3DMouseHandler {
 			}
 			else {
 				// world center of gravity:
-				mScene.getWorld().rotate(new Rotate(d, p1));
+				rotateWorld(new Rotate(d, p1), mScene.getCOGInGroup(mScene.getWorld()));
 			}
 		}
 	}
+
+	public void rotateWorld(Rotate r, Point3D cor) {
+		RotatableGroup world = mScene.getWorld();
+
+		Point3D p1 = world.getRotation().transform(cor);
+		Point3D p2 = r.transform(p1.getX(), p1.getY(), p1.getZ());
+
+		world.rotate(r);
+
+		world.setTranslateX(world.getTranslateX()+p1.getX()-p2.getX());
+		world.setTranslateY(world.getTranslateY()+p1.getY()-p2.getY());
+		world.setTranslateZ(world.getTranslateZ()+p1.getZ()-p2.getZ());
+		}
 
 	private double angle(double dx, double dy) {
 		if (dy == 0.0)

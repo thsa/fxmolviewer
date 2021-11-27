@@ -254,8 +254,14 @@ public class MoleculeArchitect {
 	 * @param atom wild card atom drawn as cone, which defines a connection to some other not included part of the molecule
 	 */
 	private void buildConnection(int atom, double radius) {
-		int coreAtom = mMol.getConnAtom(atom, 0);
 		Coordinates c1 = getCoordinates(atom);
+
+		if (mMol.getConnAtoms(atom) == 0) {
+			mBuilder.addSphere(atomRole(atom), c1, radius, getAtomColor(atom));
+			return;
+			}
+
+		int coreAtom = mMol.getConnAtom(atom, 0);
 		Coordinates c2 = getCoordinates(coreAtom);
 		delta.set(c1).sub(c2);
 

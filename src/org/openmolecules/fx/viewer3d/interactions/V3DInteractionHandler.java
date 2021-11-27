@@ -153,11 +153,8 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 		return mVisibleProperty.get();
 	}
 
-	public void toggleVisibility() {
-		if(mVisibleProperty.get())
-			mVisibleProperty.set(false);
-		else 
-			mVisibleProperty.set(true);
+	public void setVisibible(boolean b) {
+		mVisibleProperty.set(b);
 	}
 
 	private void cleanup() {
