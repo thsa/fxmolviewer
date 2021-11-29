@@ -807,7 +807,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		if(mInteractionHandler==null)
 			mInteractionHandler = new V3DInteractionHandler(this);
 		mInteractionHandler.setVisibible(b);
-		mInteractionHandler.displayInteractions();
 	}
 	
 	public V3DInteractionHandler getInteractionHandler() {
