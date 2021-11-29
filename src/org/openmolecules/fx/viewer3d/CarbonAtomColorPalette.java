@@ -1,8 +1,9 @@
 package org.openmolecules.fx.viewer3d;
 
+import javafx.scene.paint.Color;
+
 import java.util.Arrays;
 import java.util.List;
-import javafx.scene.paint.Color;
 
 public class CarbonAtomColorPalette {
 	
@@ -12,8 +13,17 @@ public class CarbonAtomColorPalette {
 	private CarbonAtomColorPalette() {
 		init();
 	}
-	
+
+	/**
+	 * Assigns and returns reproducibly a color from the palette for a given id.
+	 * If id < 0, null is returned.
+	 * @param id
+	 * @return
+	 */
 	public static Color getColor(int id) {
+		if (id < 0)
+			return null;
+
 		if(sInstance==null) {
 			synchronized(CarbonAtomColorPalette.class) {
 				if(sInstance==null) {

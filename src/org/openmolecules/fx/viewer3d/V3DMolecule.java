@@ -121,7 +121,11 @@ public class V3DMolecule extends V3DMolGroup {
     } },
 	}
 	private Coordinates[] mInitialCoordinates;
-	
+
+	public static Color getDefaultAtomColor(int atomicNo) {
+		int argb = MoleculeArchitect.getAtomARGB(atomicNo);
+		return Color.rgb((argb & 0x00FF0000) >> 16, (argb & 0x0000FF00) >> 8, argb & 0x000000FF);
+	}
 
 	/**
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
@@ -222,7 +226,6 @@ public class V3DMolecule extends V3DMolGroup {
 		IntStream.range(0,mol.getAllAtoms()).forEach(i -> {
 			mInitialCoordinates[i] = new Coordinates(mol.getCoordinates(i));
 		});
-		
 
 		for (int i=1; i<surfaceCount; i++) {
 			mSurfaceMode[i] = SurfaceMode.NONE;
@@ -240,12 +243,7 @@ public class V3DMolecule extends V3DMolGroup {
 			mSurfaceMesh[0] = new SurfaceMesh(mMol, 0, surfaceColorMode, getNeutralColor(0), 1.0 - transparency, createSurfaceCutter());
 			updateSurfaceFromMesh(0);
 		}
-		
-		
-		}
-
-	
-
+	}
 
 	public void setInitialCoordinates() {
 		mInitialCoordinates = new Coordinates[mMol.getAllAtoms()];
@@ -290,9 +288,7 @@ public class V3DMolecule extends V3DMolGroup {
 		V3DBindingSiteVolume bsVolume = new V3DBindingSiteVolume(bsVol);
 		constructNegativeReceptorImage(bsVolume);
 	}
-	
-	
-	
+
 	private void constructNegativeReceptorImage(V3DBindingSiteVolume bsVolume) {
 		bsVolume.buildVolume();
 		this.addMolGroup(bsVolume);
@@ -303,7 +299,6 @@ public class V3DMolecule extends V3DMolGroup {
 		this.addMolGroup(pharmacophore);
 		//Platform.runLater(() -> getChildren().add(mPharmacophore));
 		mListeners.add(pharmacophore);
-		
 	}
 	
 	public List<V3DCustomizablePheSA> getPharmacophoreModels() {
@@ -371,8 +366,6 @@ public class V3DMolecule extends V3DMolGroup {
 	public void removeMoleculeStructureChangeListener(MolStructureChangeListener listener) {
 		mStructureListeners.remove(listener);
 	}
-	
-
 
 	public StereoMolecule getMolecule() {
 		return mMol;
@@ -501,9 +494,7 @@ public class V3DMolecule extends V3DMolGroup {
 	public void setColor(Color color) {
 		mCarbonColor = color;
 
-		int hydrogenARGB = MoleculeArchitect.getAtomARGB(1);
-		Color hydrogenColor = Color.rgb((hydrogenARGB & 0x00FF0000) >> 16,
-				(hydrogenARGB & 0x0000FF00) >> 8, hydrogenARGB & 0x000000FF);
+		Color hydrogenColor = getDefaultAtomColor(1);
 		mHydrogenMaterial = createMaterial(color == null ? hydrogenColor : color.interpolate(hydrogenColor, 0.5), 1.0);
 
 		if (color == null) {
