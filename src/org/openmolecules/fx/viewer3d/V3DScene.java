@@ -96,7 +96,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public enum ViewerSettings {
-		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND, ROLE, SPLIT_FRAGMENTS
+		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND, ROLE
 	}
 
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL);
@@ -529,30 +529,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 	public void addMolecule(V3DMolecule fxmol, V3DMolGroup group) {
-		List<V3DMolecule> fxmols = new ArrayList<>();
-		if(mSettings.contains(ViewerSettings.SPLIT_FRAGMENTS)) {
-			StereoMolecule[] frags = fxmol.getMolecule().getFragments();
-			for(StereoMolecule frag : frags) {
-				V3DMolecule mol3D = new V3DMolecule(frag, fxmol.getConstructionMode(), fxmol.getHydrogenMode(), 
-						fxmol.getSurfaceMode(0), fxmol.getSurfaceColorMode(0), 
-						fxmol.getSurfaceColor(0), fxmol.getSurfaceTransparency(0), V3DMolecule.getNextID(), 
-						fxmol.getRole(), fxmol.overrideHydrogens());
-				fxmols.add(mol3D);
-		
-			}
-		}
-		else {
-			fxmols.add(fxmol);
-		}
-		for(V3DMolecule fxm : fxmols) {
-			fxm.setOverrideHydrogens(mMayOverrideHydrogens);
-			Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
-			if (fxm.getColor() == null)
-				fxm.setColor(color);
-			group.addMolGroup(fxm);
-			for(V3DSceneListener listener : mSceneListeners)
-				listener.addMolecule(fxm);
-		}
+		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
+		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
+		if (fxmol.getColor() == null)
+			fxmol.setColor(color);
+		group.addMolGroup(fxmol);
+		for(V3DSceneListener listener : mSceneListeners)
+			listener.addMolecule(fxmol);
 	}
 	
 	public void applySettings() {
