@@ -60,7 +60,6 @@ public class V3DMouseHandler {
 	private long mMousePressedMillis;
 	private Node mSelectedNode;
 	private VolumeSphere mHighlightedExclusionSphere, mAffectedExclusionSphere;
-	private Shape3D affectedBond;
 
 
 	public V3DMouseHandler(final V3DScene scene) {
@@ -219,8 +218,6 @@ public class V3DMouseHandler {
 			}
 			if (mShowPopup) {
 				mShowPopup = false;
-				//Node node = me.getPickResult().getIntersectedNode();
-				//createPopupMenu(node, me.getScreenX(), me.getScreenY());
 				createPopupMenu(mSelectedNode, me.getScreenX(), me.getScreenY());
 			}
 			mScene.setMouseDragged(false);
