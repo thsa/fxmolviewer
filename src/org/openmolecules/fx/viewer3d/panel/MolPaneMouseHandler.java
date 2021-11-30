@@ -245,7 +245,7 @@ public class MolPaneMouseHandler {
 	private V3DMolGroup createGroupChooserDialog() {
 		V3DMolGroup targetGroup = null;
 		List<String> choices = new ArrayList<>();
-		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllChildren())
+		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllAttachedMolGroups())
 			choices.add(group.getName());
 
 		ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0),choices);
@@ -253,7 +253,7 @@ public class MolPaneMouseHandler {
 		dialog.setContentText("Select Target Group: ");
 		Optional<String> result = dialog.showAndWait();
 		String target = result.get();
-		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllChildren()) {
+		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllAttachedMolGroups()) {
 			if(group.getName()==target) {
 				targetGroup = group;
 				break;

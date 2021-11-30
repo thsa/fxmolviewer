@@ -135,7 +135,7 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 
 	
 	public void addMolecule(V3DMolGroup fxmol) {
-		V3DMolGroup parent = mScene3D.getWorld().getParent(fxmol);	
+		V3DMolGroup parent = mScene3D.getParent(fxmol);	
 		addMolecule(fxmol,parent);
 	}
 	

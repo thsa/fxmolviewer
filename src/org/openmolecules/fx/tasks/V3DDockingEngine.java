@@ -107,7 +107,7 @@ public class V3DDockingEngine {
 		StereoMolecule mol = fxmol.getMolecule();
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
 			//Point3D local = fxmol.sceneToLocal(new Point3D(globalPos[3*atom], globalPos[3*atom+1], globalPos[3*atom+2] ));
-			Coordinates local = fxmol.getWorldToLocalCoordinates(scene3D.getWorld(), new Coordinates(globalPos[3*atom], globalPos[3*atom+1], globalPos[3*atom+2]));
+			Coordinates local = fxmol.getWorldToLocalCoordinates(scene3D, new Coordinates(globalPos[3*atom], globalPos[3*atom+1], globalPos[3*atom+2]));
 			mol.setAtomX(atom, local.x);
 			mol.setAtomY(atom, local.y);
 			mol.setAtomZ(atom, local.z);
@@ -123,7 +123,7 @@ public class V3DDockingEngine {
 		 */
 		for(int a=0;a<origMol.getAllAtoms();a++) {
 			//Point3D globalCoords = fxmol.localToScene(new Point3D(origMol.getCoordinates(a).x, origMol.getCoordinates(a).y, origMol.getCoordinates(a).z));
-			Coordinates globalCoords = fxmol.getWorldCoordinates(scene3D.getWorld(), origMol.getCoordinates(a));
+			Coordinates globalCoords = fxmol.getWorldCoordinates(scene3D, origMol.getCoordinates(a));
 			newMol.setAtomX(a, globalCoords.x);
 			newMol.setAtomY(a, globalCoords.y);
 			newMol.setAtomZ(a, globalCoords.z);

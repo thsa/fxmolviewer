@@ -46,6 +46,7 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 			deleteMolecule(toDelete,child);
 	}
 	
+	/*
 	public V3DMolGroup getParent(V3DMolGroup group) {
 		return getParent(group,this);
 	}
@@ -68,20 +69,20 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		return null;
 		
 	}
-	
+	*/
 	//all nodes of the subtree attached to this group
-	public List<V3DMolGroup> getAllChildren() {
+	public List<V3DMolGroup> getAllAttachedMolGroups() {
 		List<V3DMolGroup> allChildren = new ArrayList<V3DMolGroup>();
-		getAllChildren(this,allChildren);
+		getAllAttachedMolGroups(this,allChildren);
 		return allChildren;
 	}
 	
-	private void getAllChildren(V3DMolGroup root, List<V3DMolGroup> allChildren) {
+	private void getAllAttachedMolGroups(V3DMolGroup root, List<V3DMolGroup> allChildren) {
 		allChildren.add(root);
 		if(root.getMolGroups().size()==0)
 			return;
 		for(V3DMolGroup group :root.getMolGroups())
-			getAllChildren(group,allChildren);
+			getAllAttachedMolGroups(group,allChildren);
 		
 	}
 	
@@ -102,6 +103,7 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	 * @param world
 	 * @return
 	 */
+	/*
 	public V3DMolGroup getParentSubGroup(V3DMolGroup world) {
 		if(this==world)
 			return null;
@@ -113,16 +115,16 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 			subGroup = parent;
 		}
 	}
-	
-	public Coordinates getWorldCoordinates(V3DMolGroup world, Coordinates coordinates) {
+	*/
+	public Coordinates getWorldCoordinates(V3DScene scene, Coordinates coordinates) {
 		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
-		if(this==world)
+		if(this==scene.getWorld())
 			return new Coordinates(coordinates.x, coordinates.y, coordinates.z);
 		V3DMolGroup subGroup = this;
 		while(true) {
-			V3DMolGroup parent = world.getParent(subGroup);
+			V3DMolGroup parent = scene.getParent(subGroup);
 			point = subGroup.localToParent(point);
-			if(parent==world)
+			if(parent==scene.getWorld())
 				return new Coordinates(point.getX(), point.getY(), point.getZ());
 			subGroup = parent;
 		}
@@ -130,15 +132,15 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		
 	}
 	
-	public Coordinates getWorldToLocalCoordinates(V3DMolGroup world, Coordinates coordinates) {
+	public Coordinates getWorldToLocalCoordinates(V3DScene scene, Coordinates coordinates) {
 		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
-		if(this==world)
+		if(this==scene.getWorld())
 			return new Coordinates(coordinates.x, coordinates.y, coordinates.z);
 		V3DMolGroup subGroup = this;
 		while(true) {
-			V3DMolGroup parent = world.getParent(subGroup);
+			V3DMolGroup parent = scene.getParent(subGroup);
 			point = subGroup.parentToLocal(point);
-			if(parent==world)
+			if(parent==scene.getWorld())
 				return new Coordinates(point.getX(), point.getY(), point.getZ());
 			subGroup = parent;
 		}

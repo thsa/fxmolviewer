@@ -81,23 +81,43 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 	}
 	
 	private boolean areTwoMolsInteracting(V3DMolecule fxmol1, V3DMolecule fxmol2) {
-		boolean interacting = false;
+		boolean compatibleByGroup = false;
 		MoleculeRole role1 = fxmol1.getRole();
 		MoleculeRole role2 = fxmol2.getRole();
-		//only mols from same group interact;
-		if(fxmol1.getParentSubGroup(mScene3D.getWorld())!=fxmol2.getParentSubGroup(mScene3D.getWorld()))
-			return interacting;
-		if(role1==MoleculeRole.SOLVENT && role2==MoleculeRole.SOLVENT)	
-			interacting=true;
-		else if(role1==role2)
-			return interacting;
-		if(role1==MoleculeRole.MACROMOLECULE || role2==MoleculeRole.MACROMOLECULE)
-			interacting=true; //protein interacts with all other mols in the group
-		else if(role1==MoleculeRole.COFACTOR || role2==MoleculeRole.COFACTOR)
-			interacting=true; //same for cofactor
-		else if((role1==MoleculeRole.LIGAND) && (role2==MoleculeRole.SOLVENT) ||
-				(role2==MoleculeRole.LIGAND) && (role1==MoleculeRole.SOLVENT))
-			interacting = fxmol1.getID()==fxmol2.getID() ? true : false;
+		
+		if(mScene3D.getParent(fxmol1)==mScene3D.getWorld()) {
+			if(mScene3D.getParent(fxmol2)==mScene3D.getWorld()) { // both mols are directly attached to world group --> interacting
+				compatibleByGroup = true;
+			}
+			else 
+				compatibleByGroup = false; // one is in the world, the other belongs to a subgroup
+		}
+		V3DMolGroup subgroup1 = null; 
+		V3DMolGroup subgroup2 = null;
+		//neither fxmol1 nor fxmol2 are attached directly to the world group, but belong to subgroups
+		for(V3DMolGroup subgroup : mScene3D.getWorld().getMolGroups()) {
+			if(subgroup.getAllAttachedMolGroups().contains(fxmol1))
+				subgroup1 = subgroup;
+			if(subgroup.getAllAttachedMolGroups().contains(fxmol2))
+				subgroup2 = subgroup;
+			
+		}
+		if(subgroup2==subgroup1)
+			compatibleByGroup = true;
+		boolean interacting = false;
+		if(compatibleByGroup) {
+			if(role1==MoleculeRole.SOLVENT && role2==MoleculeRole.SOLVENT)	
+				interacting=true;
+			else if(role1==role2)
+				return interacting;
+			if(role1==MoleculeRole.MACROMOLECULE || role2==MoleculeRole.MACROMOLECULE)
+				interacting=true; //protein interacts with all other mols in the group
+			else if(role1==MoleculeRole.COFACTOR || role2==MoleculeRole.COFACTOR)
+				interacting=true; //same for cofactor
+			else if((role1==MoleculeRole.LIGAND) && (role2==MoleculeRole.SOLVENT) ||
+					(role2==MoleculeRole.LIGAND) && (role1==MoleculeRole.SOLVENT))
+				interacting = fxmol1.getID()==fxmol2.getID() ? true : false;
+		}
 		return interacting;
 	}
 

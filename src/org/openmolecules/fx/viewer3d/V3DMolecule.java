@@ -1211,7 +1211,7 @@ public class V3DMolecule extends V3DMolGroup {
 	
 	
 	public void removeAllPharmacophores() {
-		List<V3DMolGroup> allChildren = this.getAllChildren();
+		List<V3DMolGroup> allChildren = this.getAllAttachedMolGroups();
 		for(V3DMolGroup child : allChildren) {
 			if(child instanceof V3DCustomizablePheSA)
 				removePharmacophore((V3DCustomizablePheSA)child);

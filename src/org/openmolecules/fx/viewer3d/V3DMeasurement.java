@@ -21,11 +21,13 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 	private NonRotatingLabel mLabel;
 	private Point3D[] mPoints;
 	private Parent mParent;
+	private V3DScene mScene;
 	
-	public V3DMeasurement(ArrayList<Integer> atoms, ArrayList<V3DMolecule> fxMols, DashedRod rod, NonRotatingLabel label, Parent parent) {
+	public V3DMeasurement(V3DScene scene, ArrayList<Integer> atoms, ArrayList<V3DMolecule> fxMols, DashedRod rod, NonRotatingLabel label, Parent parent) {
 		for(V3DMolecule fxmol:fxMols) {
 			fxmol.addMoleculeCoordinatesChangeListener(this);
 		}
+		mScene = scene;
 		mAtoms = atoms;
 		mFXmols = fxMols;
 		mRod = rod;
@@ -53,7 +55,7 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 		for(int i=0;i<mPoints.length;i++) {
 			Coordinates c = mFXmols.get(i).getMolecule().getCoordinates(mAtoms.get(i));
 			//mPoints[i]=mFXmols.get(i).localToParent(c.x,c.y,c.z);	
-			Coordinates worldPoint =  mFXmols.get(i).getWorldCoordinates((V3DMolGroup)mParent, c);
+			Coordinates worldPoint =  mFXmols.get(i).getWorldCoordinates(mScene, c);
 			mPoints[i] = new Point3D(worldPoint.x, worldPoint.y, worldPoint.z);
 		}
 		if(mPoints.length==2) {//distance

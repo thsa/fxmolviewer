@@ -63,7 +63,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 		}
 		else {
 			ArrayList<V3DMolecule> fxmolList = new ArrayList<V3DMolecule>();
-			for (Node node : scene3D.getWorld().getAllChildren()) {
+			for (Node node : scene3D.getWorld().getAllAttachedMolGroups()) {
 				if (node instanceof V3DMolecule && node.isVisible()) {
 					if (node.isVisible()) {
 						fxmol = (V3DMolecule)node;
