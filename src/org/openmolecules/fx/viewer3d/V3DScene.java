@@ -55,8 +55,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private ClipboardHandler mClipboardHandler;
 	private Group mRoot;                  	// not rotatable, contains light and camera
 	private V3DMolGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
-	private V3DMouseHandler mMouseHandler;
-	private V3DKeyHandler mKeyHandler;
 	private List<V3DSceneListener> mSceneListeners;
 	private boolean mIsIndividualRotationModus;
 	private int mSurfaceCutMode;
@@ -130,8 +128,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		buildLight();
 		buildCamera();
 		mMeasurements = new ArrayList<V3DMeasurement>();
-		mMouseHandler = new V3DMouseHandler(this);
-		mKeyHandler = new V3DKeyHandler(this);
+		new V3DMouseHandler(this);
+		new V3DKeyHandler(this);
 		mClipboardHandler = new ClipboardHandler();
 		mMouseDragged = false;
 		mMeasurementMode = MEASUREMENT.NONE;
