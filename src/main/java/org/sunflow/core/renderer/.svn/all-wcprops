@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/sunflow/!svn/ver/348/trunk/src/org/sunflow/core/renderer
+END
+ProgressiveRenderer.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svnroot/sunflow/!svn/ver/334/trunk/src/org/sunflow/core/renderer/ProgressiveRenderer.java
+END
+SimpleRenderer.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/core/renderer/SimpleRenderer.java
+END
+BucketRenderer.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/sunflow/!svn/ver/334/trunk/src/org/sunflow/core/renderer/BucketRenderer.java
+END
+MultipassRenderer.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/sunflow/!svn/ver/348/trunk/src/org/sunflow/core/renderer/MultipassRenderer.java
+END

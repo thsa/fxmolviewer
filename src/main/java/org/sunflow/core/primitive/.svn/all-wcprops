@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/sunflow/!svn/ver/346/trunk/src/org/sunflow/core/primitive
+END
+Plane.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/Plane.java
+END
+JuliaFractal.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/JuliaFractal.java
+END
+QuadMesh.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/QuadMesh.java
+END
+CornellBox.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/sunflow/!svn/ver/346/trunk/src/org/sunflow/core/primitive/CornellBox.java
+END
+Cylinder.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/Cylinder.java
+END
+Torus.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/Torus.java
+END
+ParticleSurface.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/ParticleSurface.java
+END
+BanchoffSurface.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/BanchoffSurface.java
+END
+Background.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/sunflow/!svn/ver/319/trunk/src/org/sunflow/core/primitive/Background.java
+END
+TriangleMesh.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/TriangleMesh.java
+END
+Hair.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/Hair.java
+END
+CubeGrid.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/CubeGrid.java
+END
+Sphere.java
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/Sphere.java
+END
+Box.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/sunflow/!svn/ver/319/trunk/src/org/sunflow/core/primitive/Box.java
+END
+SphereFlake.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/sunflow/!svn/ver/326/trunk/src/org/sunflow/core/primitive/SphereFlake.java
+END

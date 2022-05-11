@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/sunflow/!svn/ver/343/trunk/src/org/sunflow/image/readers
+END
+JPGBitmapReader.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/sunflow/!svn/ver/246/trunk/src/org/sunflow/image/readers/JPGBitmapReader.java
+END
+PNGBitmapReader.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/sunflow/!svn/ver/246/trunk/src/org/sunflow/image/readers/PNGBitmapReader.java
+END
+IGIBitmapReader.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/sunflow/!svn/ver/343/trunk/src/org/sunflow/image/readers/IGIBitmapReader.java
+END
+TGABitmapReader.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/sunflow/!svn/ver/343/trunk/src/org/sunflow/image/readers/TGABitmapReader.java
+END
+HDRBitmapReader.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/sunflow/!svn/ver/343/trunk/src/org/sunflow/image/readers/HDRBitmapReader.java
+END
+BMPBitmapReader.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/sunflow/!svn/ver/246/trunk/src/org/sunflow/image/readers/BMPBitmapReader.java
+END

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats
+END
+BitmapRGB8.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/BitmapRGB8.java
+END
+BitmapRGBA8.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/BitmapRGBA8.java
+END
+BitmapXYZ.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/BitmapXYZ.java
+END
+BitmapBlack.java
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/BitmapBlack.java
+END
+GenericBitmap.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/GenericBitmap.java
+END
+BitmapG8.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/BitmapG8.java
+END
+BitmapGA8.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/BitmapGA8.java
+END
+BitmapRGBE.java
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/sunflow/!svn/ver/317/trunk/src/org/sunflow/image/formats/BitmapRGBE.java
+END

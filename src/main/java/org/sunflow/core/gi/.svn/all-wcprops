@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/gi
+END
+InstantGI.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/gi/InstantGI.java
+END
+AmbientOcclusionGIEngine.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/gi/AmbientOcclusionGIEngine.java
+END
+PathTracingGIEngine.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/gi/PathTracingGIEngine.java
+END
+IrradianceCacheGIEngine.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/gi/IrradianceCacheGIEngine.java
+END
+FakeGIEngine.java
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/sunflow/!svn/ver/205/trunk/src/org/sunflow/core/gi/FakeGIEngine.java
+END
