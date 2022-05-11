@@ -25,7 +25,6 @@ git clone https://github.com/thsa/fxmolviewer.git
 
 ### How to build the project
 
-On Linux or Macintosh just run the 'buildAll' shell script.
 ```bash
 mvn clean package
 ```
