@@ -6,6 +6,13 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>fxmolviewer</name>
 
+	<licenses>
+		<license>
+			<name>GPL-v3.0</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+		</license>
+	</licenses>
+
 	<properties>
 		<maven.min-version>3.2.5</maven.min-version>
 		<maven.compiler.target>11</maven.compiler.target>
