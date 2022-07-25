@@ -18,4 +18,6 @@ module fxmolviewer {
 	exports org.openmolecules.render;
 	exports org.openmolecules.pdb;
 
+	opens org.openmolecules.fx.viewerapp to javafx.graphics;
+
 }
