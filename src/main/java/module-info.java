@@ -1,4 +1,4 @@
-module fxmolviewer {
+module org.openmolecules.fx.fxmolviewer {
 	requires java.desktop;
 	requires javafx.controls;
 	requires javafx.base;
