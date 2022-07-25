@@ -11,4 +11,11 @@ module fxmolviewer {
 	requires mmtf.serialization;
 	requires mmtf.api;
 
+	exports org.openmolecules.fx.surface;
+	exports org.openmolecules.fx.viewer3d;
+	exports org.openmolecules.fx.viewer3d.io;
+	exports org.openmolecules.mesh;
+	exports org.openmolecules.render;
+	exports org.openmolecules.pdb;
+
 }
