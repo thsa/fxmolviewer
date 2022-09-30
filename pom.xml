@@ -1,0 +1,264 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.openmolecules.fx</groupId>
+	<artifactId>fxmolviewer</artifactId>
+	<packaging>jar</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>fxmolviewer</name>
+
+	<licenses>
+		<license>
+			<name>GPL-v3.0</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+		</license>
+	</licenses>
+
+	<properties>
+		<maven.min-version>3.2.5</maven.min-version>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- Use:
+
+		     mvn versions:display-dependency-updates
+
+		     to check for updates for these below -->
+		<javafx.version>11.0.2</javafx.version>
+		<mmtf.version>1.0.10</mmtf.version>
+		<openchemlib.version>2021.10.1</openchemlib.version>
+		<janino.version>2.7.4</janino.version>
+
+
+		<!-- Use:
+
+		     mvn versions:display-plugin-updates
+
+		to check for updates for these below -->
+		<maven-resources-plugin.version>3.3.0</maven-resources-plugin.version>
+		<maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+		<maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
+		<maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
+		<maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
+		<maven-surefire-plugin.version>3.0.0-M6</maven-surefire-plugin.version>
+		<maven-deploy-plugin.version>3.0.0</maven-deploy-plugin.version>
+		<maven-install-plugin.version>3.0.1</maven-install-plugin.version>
+		<maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
+
+	</properties>
+
+	<scm>
+		<connection>scm:git:https://github.com/thsa/fxmolviewer</connection>
+		<url>https://github.com/thsa/fxmolviewer</url>
+	</scm>
+
+
+	<build>
+		<plugins>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>${maven-shade-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>org.openmolecules.fx.viewerapp.Launcher</Main-Class>
+									</manifestEntries>
+								</transformer>
+							</transformers>
+							<!-- Workaround for java.lang.SecurityException: Invalid signature file digest for Manifest main attributes -->
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+
+					<execution>
+						<id>enforce-bytecode-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<enforceBytecodeVersion>
+									<maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
+								</enforceBytecodeVersion>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>${maven.min-version}</version>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>extra-enforcer-rules</artifactId>
+						<version>1.6.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>${maven-resources-plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>${maven-clean-plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>${maven-deploy-plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>${maven-install-plugin.version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${maven-javadoc-plugin.version}</version>
+				<configuration>
+					<source>11</source>
+					<detectJavaApiLink>false</detectJavaApiLink>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-controls</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-base</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-fxml</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-swing</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<!--cross-platform fat jar-->
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>win</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>linux</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<version>${javafx.version}</version>
+			<classifier>mac</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>com.actelion.research</groupId>
+			<artifactId>openchemlib</artifactId>
+			<version>${openchemlib.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.rcsb</groupId>
+			<artifactId>mmtf-api</artifactId>
+			<version>${mmtf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.rcsb</groupId>
+			<artifactId>mmtf-codec</artifactId>
+			<version>${mmtf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+			<version>${janino.version}</version>
+		</dependency>
+
+	</dependencies>
+</project>
