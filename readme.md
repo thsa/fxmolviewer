@@ -36,6 +36,13 @@ git clone https://github.com/thsa/fxmolviewer.git
 
 On Linux or Macintosh just run the 'buildAll' shell script.
 
+### How to build and run the project with Maven
+
+```
+cd fxmolviewer
+mvn clean package
+java -jar ./target/fxmolviewer-0.0.1-SNAPSHOT-shaded.jar
+```
 
 ### How to run the project
 
