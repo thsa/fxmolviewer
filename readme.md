@@ -33,20 +33,19 @@ git clone https://github.com/thsa/fxmolviewer.git
 
 ### How to build the project
 
-Make sure your Java8 JDK includes JavaFX (e.g. Liberica 8 Full-JDK).
-Then run (Linux, Macintosh, or Windows with bash shell support)
+JDK8: Make sure your JDK includes JavaFX (e.g. Liberica 8 Full-JDK).
+Then run the following in a terminal on Linux, Macintosh, or Windows with bash shell support:
 ```
 ./buildAll
 ```
-When using Java11 and higher adapt JDKBIN and FXPATH in buildAndRunJDK18
-and run
+JDK11+: Adapt JDKBIN and FXPATH in buildAndRunJDK18 and run
 ```
 ./buildAndRunJDK18
 ```
 
 ### How to run the project
 
-After building it double click fxmolviewer.jar or type in a shell:
+After building the project double click fxmolviewer.jar or type in a shell:
 ```
 java -jar fxmolviewer.jar
 ```
@@ -55,7 +54,6 @@ as a protein-ligand complex, small molecules, colored surfaces, metal-organics, 
 ```
 java -Dtest=true -jar fxmolviewer.jar
 ```
-
 
 ### How to build and run the project with Maven
 
@@ -68,7 +66,6 @@ java -jar ./target/fxmolviewer-0.0.1-SNAPSHOT-shaded.jar
 ### How to contribute
 
 Contact the author under the e-mail shown on www.openmolecules.org
-
 
 ### License
 
