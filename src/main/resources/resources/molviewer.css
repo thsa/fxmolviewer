@@ -1,0 +1,281 @@
+.root {
+-fx-base: rgba(0, 0, 0,0.3);
+-fx-background: rgba(0, 0, 0,0.2);
+-fx-control-inner-background:  -fx-base;
+-fx-focus-color: -fx-base;
+-fx-select-color: -fx-base;
+-fx-faint-focus-color: -fx-base;
+}
+
+
+.tree-table-view {
+  -fx-background-color: transparent; 
+  -fx-selection-bar-non-focused: rgba(0, 153, 153,0.2);
+  -fx-padding: 1; 
+}
+
+.tree-table-view:focused {
+  /*-fx-border-color: transparent;*/
+  -fx-background-color: -fx-base ;
+  -fx-selection-bar: rgba(0, 153, 153,0.2);
+  -fx-padding: 1; 
+
+}
+
+.tree-cell .tree-disclosure-node {
+/** put a bit of padding around the disclosure node to make the clicking region larger */
+-fx-padding: 10 10 10 10;
+-fx-background-color: transparent;
+}
+
+.tree-table-row-cell:focused {
+	-fx-background-color: transparent;
+}
+
+.tree-table-view .scroll-bar:horizontal * {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-opacity: 0.3;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+}
+
+
+.tree-table-cell{
+	-fx-border-color: transparent;
+	-fx-text-fill:white;
+	-fx-font-size: 15;
+
+}
+
+.titled-pane {
+	-fx-animated: false;
+	-fx-text-fill: lightgrey;
+	}
+
+.titled-pane .title {
+	-fx-font-weight: bold;
+	-fx-font-size: 15;
+    -fx-background-color: transparent;
+}
+
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-opacity:1.0;
+}
+
+.tree-table-row-cell:selected{
+	-fx-background-color: rgba(70, 130, 180,0.2);
+}
+
+
+
+.check-box{
+	-fx-focus-color: transparent;
+}
+.tooltip {
+    -fx-font-weight: normal;
+    -fx-font-size: 15;
+}
+
+.check-box .mark {
+-fx-background-color: 
+        #3c7fb1,
+        linear-gradient(#fafdfe, #e8f5fc),
+        linear-gradient(#eaf6fd 0%, #d9f0fc 49%, #bee6fd 50%, #a7d9f5 100%);
+-fx-background-insets: 0,1,2;
+-fx-background-radius: 3,2,1;
+-fx-shape:none;}
+
+.check-box:selected .mark {
+-fx-background-color:         deepskyblue,
+        linear-gradient(to bottom right, deepskyblue, black);
+-fx-background-insets: 0,1,2;
+-fx-background-radius: 3,2,1;
+-fx-shape:none;}
+
+.check-box .box {
+    -fx-background-color: transparent;
+}
+
+
+.tree-table-cell{
+	-fx-text-fill:white;
+	-fx-background-color: -fx-background;
+
+}
+
+
+.split-pane:horizontal > * > .split-pane-divider {
+-fx-border-color: transparent -fx-base transparent -fx-base;
+-fx-background-color: transparent, derive(-fx-base,20%);
+-fx-background-insets: 0, 0 1 0 1;
+}
+
+.split-pane {
+-fx-background-color: transparent;
+}
+
+
+.border-pane {
+-fx-background-color: transparent;
+-fx-opacity: 0.3;
+}
+ 
+.tree-table-view {
+-fx-table-cell-border-color:derive(-fx-base,+10%);
+-fx-table-header-border-color:derive(-fx-base,+20%);
+}
+
+.toolBarButton {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:transparent;
+-fx-font-weight: bold;
+-fx-font-size: 18px;
+}
+
+.toolBarButton:pressed {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:black;
+}
+
+.dropdownButton {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:transparent;
+}
+
+.dropdownButton:pressed {
+-fx-border-width:0;
+-fx-background-radius:0;
+-fx-background-color:black;
+}
+
+.toggle-button {
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.toggle-button:selected {
+    -fx-background-color: black;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.explorer-icon {
+    -fx-graphic: url("telescope.png");
+}
+
+.eye-icon {
+    -fx-graphic: url("eye.png");
+}
+
+.eye-crossed-icon {
+    -fx-graphic: url("eye_delete.png");
+}
+
+.tool-icon {
+    -fx-graphic: url("hammer.png");
+}
+
+.garbage-icon {
+    -fx-graphic: url("garbage.png");
+}
+
+.save-icon {
+    -fx-graphic: url("file_save.png");
+}
+
+.load-icon {
+    -fx-graphic: url("file_load.png");
+}
+
+.optim-icon {
+    -fx-graphic: url("optim.png");
+}
+
+
+.docking-icon {
+    -fx-graphic: url("docking.png");
+}
+
+.settings-icon {
+    -fx-graphic: url("settings.png");
+}
+
+.torsion-icon {
+    -fx-graphic: url("torsion.png");
+}
+
+.neg-rec-img-icon {
+    -fx-graphic: url("neg_rec_img.png");
+}
+
+.add-icon {
+    -fx-graphic: url("add.png");
+}
+
+.inclusion-icon {
+    -fx-graphic: url("inclusion.png");
+}
+
+.exclusion-icon {
+    -fx-graphic: url("exclusion.png");
+}
+
+.clear-icon {
+    -fx-graphic: url("clear.png");
+}
+
+.align-icon {
+    -fx-graphic: url("align.png");
+}
+
+.run-icon {
+    -fx-graphic: url("run.png");
+}
+
+.log-icon {
+    -fx-graphic: url("log.png");
+}
+
+.cloud-icon {
+    -fx-graphic: url("cloud.png");
+}
+
+.menu-button > .arrow-button {
+    -fx-padding: 0;
+}
+
+.menu-button > .arrow-button > .arrow {
+    -fx-padding: 0;
+}
+
+
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+.menu-button:selected {
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-border-color: transparent;
+    -fx-effect: null;
+}
+
+
+
+
+
+

@@ -45,7 +45,7 @@ public class ViewerApp extends Application {
 		int mode = -1;
 		try { mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
 		mViewer =  new V3DSceneWithSidePane(V3DScene.GENERAL_MODE);
-		String css = getClass().getResource("/molviewer.css").toExternalForm();
+		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		Scene scene = new Scene(mViewer, 1024, 768, true, SceneAntialiasing.BALANCED);
 		scene.getStylesheets().add(css);
 		mViewer.getScene3D().widthProperty().bind(scene.widthProperty());

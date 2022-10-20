@@ -24,7 +24,6 @@ All dependencies are part of this project and can be found in the ./lib folder:
 * OpenChemLib: Cheminformatics base functionality to handle molecules and generate conformers
 * SunFlow source code and janino.jar: Ray-Tracer to build photo-realistic images of 3-dimensional scenes
 * mmtf-all: Java library to download and parse binary structure files from the PDB-database
-* controlsfx-8.40.15.jar: Controls extending JavaFX functionality, used for the molecule side panel
 
 
 ### How to download the project
@@ -34,7 +33,29 @@ git clone https://github.com/thsa/fxmolviewer.git
 
 ### How to build the project
 
-On Linux or Macintosh just run the 'buildAll' shell script.
+Make sure your Java8 JDK includes JavaFX (e.g. Liberica 8 Full-JDK).
+Then run (Linux, Macintosh, or Windows with bash shell support)
+```
+./buildAll
+```
+When using Java11 and higher adapt JDKBIN and FXPATH in buildAndRunJDK18
+and run
+```
+./buildAndRunJDK18
+```
+
+### How to run the project
+
+After building it double click fxmolviewer.jar or type in a shell:
+```
+java -jar fxmolviewer.jar
+```
+For starting in test-mode, which gives immediate access to test cases
+as a protein-ligand complex, small molecules, colored surfaces, metal-organics, etc. run
+```
+java -Dtest=true -jar fxmolviewer.jar
+```
+
 
 ### How to build and run the project with Maven
 
@@ -43,13 +64,6 @@ cd fxmolviewer
 mvn clean package
 java -jar ./target/fxmolviewer-0.0.1-SNAPSHOT-shaded.jar
 ```
-
-### How to run the project
-
-After building it double click fxmolviewer.jar or type in a shell: 'java -jar fxmolviewer.jar'.
-**Note that this project requires Java 8.** For Java 9 and above you need to replace controlsfx-8.40.15.jar
-by controlsfx-11.0.0.jar or a newer version.
-
 
 ### How to contribute
 

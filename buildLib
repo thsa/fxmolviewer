@@ -3,10 +3,9 @@
 #
 rm -rf ./bin
 mkdir ./bin
-cp -r ./src/resources ./bin/
-javac -d ./bin -sourcepath ./src -classpath ./lib/commons-compiler-2.7.0.jar:./lib/janino-2.7.0.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/org/openmolecules/fx/viewer3d/V3DSceneWithSidePane.java src/org/openmolecules/render/* src/org/openmolecules/mesh/* src/org/openmolecules/pdb/*
+cp -r ./src/main/resources/* ./bin/
+javac -d ./bin -sourcepath ./src/main/java -classpath ./lib/commons-compiler-2.7.0.jar:./lib/janino-2.7.0.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/main/java/org/openmolecules/fx/viewer3d/V3DSceneWithSidePane.java src/main/java/org/openmolecules/render/* src/main/java/org/openmolecules/mesh/* src/main/java/org/openmolecules/pdb/*
 cd ./bin
-# jar xf ../lib/controlsfx-8.40.15.jar
 jar xf ../lib/commons-compiler-2.7.0.jar
 jar xf ../lib/janino-2.7.0.jar
 cd ..
