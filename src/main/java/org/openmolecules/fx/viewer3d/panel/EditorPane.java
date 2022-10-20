@@ -63,7 +63,7 @@ public class EditorPane extends Pane  {
 		super();
 		mScene3D = scene3D;
 		try {
-			Node canvas = FXMLLoader.load(EditorPane.class.getResource("/DrawButtonsV2.fxml"));
+			Node canvas = FXMLLoader.load(EditorPane.class.getResource("/resources/DrawButtonsV2.fxml"));
 			canvas.setStyle("-fx-background-color:transparent; -fx-background-radius:0;");
 			Scale scale = new Scale();
 			scale.setX(SCALE);

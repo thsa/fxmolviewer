@@ -1,0 +1,18 @@
+#!/bin/bash
+JDKBIN="/opt/openjava/jdk-18.0.1.1/bin"
+FXPATH="/opt/openjava/javafx-sdk-18.0.1/lib"
+echo This batch file assumes JDK.18 installed at $JDKBIN
+echo and JavaFX.18 installed at $FXPATH
+rm -rf ./bin
+mkdir ./bin
+cp -r ./src/main/resources/* ./bin/
+$JDKBIN/javac -d ./bin --module-path $FXPATH --add-modules ALL-MODULE-PATH -sourcepath ./src/main/java -classpath ./lib/commons-compiler-2.7.0.jar:./lib/janino-2.7.0.jar:./lib/mmtf-all.jar:./lib/openchemlib.jar src/main/java/org/openmolecules/fx/viewerapp/ViewerApp.java
+cd ./bin
+$JDKBIN/jar xf ../lib/commons-compiler-2.7.0.jar
+$JDKBIN/jar xf ../lib/janino-2.7.0.jar
+$JDKBIN/jar xf ../lib/mmtf-all.jar
+$JDKBIN/jar xf ../lib/openchemlib.jar
+cd ..
+$JDKBIN/jar -cfm fxmolviewerJ18.jar manifest_additions.txt -C ./bin .
+chmod 755 fxmolviewerJ18.jar
+$JDKBIN/java --module-path $FXPATH --add-modules ALL-MODULE-PATH -jar fxmolviewerJ18.jar

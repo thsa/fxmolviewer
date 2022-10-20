@@ -173,5 +173,13 @@ public abstract class SurfaceTexture {
 		public int compareTo(AtomWithXCoord o) {
 			return x < o.x ? -1 : x > o.x ? 1 : atom < o.atom ? -1 : atom > o.atom ? 1 : 0;
 		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof AtomWithXCoord))
+				return false;
+
+			return x == ((AtomWithXCoord)o).x && atom == ((AtomWithXCoord)o).atom;
+		}
 	}
 }
