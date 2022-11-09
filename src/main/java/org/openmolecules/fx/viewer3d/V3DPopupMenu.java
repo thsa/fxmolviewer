@@ -313,7 +313,8 @@ public class V3DPopupMenu extends ContextMenu {
 				getItems().add(itemHide);
 			}
 			
-			if (!settings.contains(V3DScene.ViewerSettings.UPPERPANEL) && settings.contains(V3DScene.ViewerSettings.EDITING)) {
+			if (!settings.contains(V3DScene.ViewerSettings.UPPERPANEL)
+			 && (settings.contains(V3DScene.ViewerSettings.EDITING) || settings.contains(V3DScene.ViewerSettings.ALLOW_PHARMACOPHORES))) {
 				MenuItem itemPP = new MenuItem("Add Pharmacophores");
 				itemPP.setOnAction(e -> fxmol.addPharmacophore());
 				getItems().add(itemPP);
@@ -329,7 +330,6 @@ public class V3DPopupMenu extends ContextMenu {
 						torsionStrainVis.toggleVisibility();
 				});
 				getItems().add(itemTS);
-
 			}
 
 			/*
