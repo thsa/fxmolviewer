@@ -399,6 +399,27 @@ public class MoleculeArchitect {
 			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, piShift, d, b, c);
 			return;
 			}
+
+		if (order == 4) {
+			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(0.4*piShift);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, 0.5*piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, 0.5*piShift, d, b, c);
+			ds.scale(3.0);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, 1.5*piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, 1.5*piShift, d, b, c);
+			return;
+			}
+
+		if (order == 5) {
+			buildPiStickBond(bond, color1, color2, p1, p2, r2, 0, d, b, c);
+			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(0.75*piShift);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, piShift, d, b, c);
+			ds.scale(2.0);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, 2*piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, 2*piShift, d, b, c);
+			return;
+			}
 		}
 
 	private void buildStickBond(int bond, int color1, int color2, Coordinates p1, Coordinates p2,
