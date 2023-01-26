@@ -509,9 +509,11 @@ public class V3DPopupMenu extends ContextMenu {
 		Optional<RayTraceOptions> result = new RayTraceDialog(scene.getScene().getWindow(), sPreviousMoleculeRayTraceOptions, mMolecule).showAndWait();
 		result.ifPresent(options -> {
 			sPreviousMoleculeRayTraceOptions = options;
-			double cameraDistance = -scene.getCamera().getTranslateZ();
+			double cameraX = scene.getCamera().getTranslateX();
+			double cameraY = scene.getCamera().getTranslateY();
+			double cameraZ = scene.getCamera().getTranslateZ();
 			double fieldOfView = scene.getFieldOfView();
-			options.rayTraceInit(cameraDistance, fieldOfView);
+			options.rayTraceInit(cameraX, cameraY, cameraZ, fieldOfView);
 			options.addMolecule(mMolecule);
 			options.rayTraceStart(scene.getScene().getWindow());
 		} );
@@ -521,11 +523,13 @@ public class V3DPopupMenu extends ContextMenu {
 		Optional<RayTraceOptions> result = new RayTraceDialog(scene.getScene().getWindow(), sPreviousSceneRayTraceOptions, null).showAndWait();
 		result.ifPresent(options -> {
 			sPreviousSceneRayTraceOptions = options;
-			double cameraDistance = -scene.getCamera().getTranslateZ();
+			double cameraX = scene.getCamera().getTranslateX();
+			double cameraY = scene.getCamera().getTranslateY();
+			double cameraZ = scene.getCamera().getTranslateZ();
 			double fieldOfView = scene.getFieldOfView();
 			if (((PerspectiveCamera)scene.getCamera()).isVerticalFieldOfView())
 				fieldOfView *= scene.getWidth() / scene.getHeight();
-			options.rayTraceInit(cameraDistance, fieldOfView);
+			options.rayTraceInit(cameraX, cameraY, cameraZ, fieldOfView);
 			for (Node node:scene.getWorld().getChildren())
 				if (node instanceof V3DMolecule)
 					if (node.isVisible())

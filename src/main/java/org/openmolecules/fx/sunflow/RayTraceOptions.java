@@ -21,7 +21,6 @@
 package org.openmolecules.fx.sunflow;
 
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.Molecule3D;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import javafx.collections.ObservableFloatArray;
@@ -46,7 +45,7 @@ public class RayTraceOptions {
 	public String size;
 	public int mode, atomMaterial,bondMaterial;
 	public int[] surfaceMaterial;
-	public float brightness;
+	public float brightness,shiftX,shiftZ;
 	public boolean shinyFloor,optimizeTranslation,optimizeRotation,depthBlurring;
 	public Color backgroundColor,floorColor;
 	private volatile String mSceneName;
@@ -55,28 +54,23 @@ public class RayTraceOptions {
 
 	/**
 	 * Initializes the ray-tracer with background and floor color options,
-	 * atom and bond materials, default camera distance and default field of view.
-	 */
-	public void rayTraceInit() {
-		rayTraceInit(SunflowMoleculeBuilder.DEFAULT_CAMERA_DISTANCE,
-					 SunflowMoleculeBuilder.DEFAULT_FIELD_OF_VIEW);
-	}
-
-	/**
-	 * Initializes the ray-tracer with background and floor color options,
 	 * atom and bond materials, camera distance and field of view.
-	 * @param cameraDistance
+	 * @param cameraX in scene
+	 * @param cameraY in scene
+	 * @param cameraZ in scene
 	 * @param fieldOfView
 	 */
-	public void rayTraceInit(double cameraDistance, double fieldOfView) {
+	public void rayTraceInit(double cameraX, double cameraY, double cameraZ, double fieldOfView) {
 		int i = size.indexOf(" x ");
 		int width = Integer.parseInt(size.substring(0, i));
 		int height = Integer.parseInt(size.substring(i + 3));
 
 		mSceneName = DEFAULT_SCENE_NAME;
+		shiftX = (float)-cameraX; // translate to sunflow coords
+		shiftZ = (float)cameraY;  // translate to sunflow coords
 
 		mRenderer = optimizeTranslation ? new SunflowMoleculeBuilder()
-				: new SunflowMoleculeBuilder((float)cameraDistance, (float)fieldOfView);
+				: new SunflowMoleculeBuilder((float)-cameraZ, (float)fieldOfView);
 		mRenderer.setAtomMaterial(atomMaterial);
 		mRenderer.setBondMaterial(bondMaterial);
 		if (backgroundColor == null)
@@ -98,6 +92,7 @@ public class RayTraceOptions {
 
 	public void addMolecule(V3DMolecule fxmol) {
 		StereoMolecule mol = fxmol.getMolecule();
+		Conformer conformer = new Conformer(mol);
 
 		if (mSceneName.equals(DEFAULT_SCENE_NAME) && mol.getName() != null)
 			mSceneName = mol.getName();
@@ -107,7 +102,7 @@ public class RayTraceOptions {
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
 			Coordinates c = mol.getCoordinates(atom);
 			Point3D sp = fxmol.localToScene(c.x, c.y, c.z);
-			c.set(sp.getX(), sp.getZ(), -sp.getY());
+			conformer.getCoordinates(atom).set(sp.getX() + shiftX, sp.getZ(), shiftZ - sp.getY());
 		}
 
 		double surplus = -1;
@@ -117,7 +112,7 @@ public class RayTraceOptions {
 		Color color = fxmol.getColor();
 		mRenderer.setRenderMode(mode == -1 ? fxmol.getConstructionMode().mode : mode);
 		mRenderer.setOverrideColor(color == null ? null : new java.awt.Color((float)color.getRed(), (float)color.getGreen(), (float)color.getBlue()));
-		mRenderer.drawMolecule(new Conformer(mol), optimizeRotation, optimizeTranslation, surplus);
+		mRenderer.drawMolecule(conformer, optimizeRotation, optimizeTranslation, surplus);
 
 		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++) {
 			SurfaceMesh mesh = fxmol.getSurfaceMesh(type);
@@ -128,9 +123,9 @@ public class RayTraceOptions {
 				float[] p = new float[3 * pointCount];
 				for (int i = 0; i < pointCount; i++) {
 					Point3D sp = fxmol.localToScene(points.get(i * pointSize), points.get(i * pointSize + 1), points.get(i * pointSize + 2));
-					p[3 * i] = (float) sp.getX();
+					p[3 * i] = shiftX + (float)sp.getX();
 					p[3 * i + 1] = (float) sp.getZ();
-					p[3 * i + 2] = (float) -sp.getY();
+					p[3 * i + 2] = shiftZ - (float)sp.getY();
 					if (optimizeRotation || optimizeTranslation)
 						mRenderer.optimizeCoordinate(p, 3 * i);
 				}
@@ -156,7 +151,7 @@ public class RayTraceOptions {
 						: new java.awt.Color((float) c.getRed(), (float) c.getGreen(), (float) c.getBlue());
 
 				ColorProvider cp = (mesh.getTexture() == null) ? null
-						: new MoleculeSurfaceColorProvider(mol, mesh.getTexture());
+						: new MoleculeSurfaceColorProvider(conformer, mesh.getTexture());
 
 				mRenderer.createSurfaceShader(surfaceMaterial[type] == -1 ? getOriginalSurfaceMaterial(fxmol, type)
 						  : surfaceMaterial[type], awtColor, cp, (float)fxmol.getSurfaceTransparency(type), counter);
@@ -168,7 +163,7 @@ public class RayTraceOptions {
 	private class MoleculeSurfaceColorProvider implements ColorProvider {
 		SurfaceTexture mTexture;
 
-		public MoleculeSurfaceColorProvider(StereoMolecule mol, SurfaceTexture texture) {
+		public MoleculeSurfaceColorProvider(Conformer mol, SurfaceTexture texture) {
 			mTexture = texture;
 			texture.initializeSurfaceColor(mol);
 		}
