@@ -72,7 +72,7 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 		initStyle(StageStyle.UNDECORATED);
 		initModality(Modality.WINDOW_MODAL);
 		setTitle("Create Photo-Realistic Image");
-		setHeaderText("Define details to render molecule!");
+		setHeaderText("Define details to render "+(mol == null ? "scene!" : "molecule!"));
 //		setGraphic(new ImageView(this.getClass().getResource("something.png").toString()));
 
 		ButtonType renderButtonType = new ButtonType("Render", ButtonBar.ButtonData.OK_DONE);

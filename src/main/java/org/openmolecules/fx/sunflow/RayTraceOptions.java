@@ -43,7 +43,7 @@ public class RayTraceOptions {
 	private static final float CAMERA_FOCUS = 0.1f; // crisp in front (0.0) or rear (1.0)
 
 	public String size;
-	public int mode, atomMaterial,bondMaterial;
+	public int mode,atomMaterial,bondMaterial;
 	public int[] surfaceMaterial;
 	public float brightness,shiftX,shiftZ;
 	public boolean shinyFloor,optimizeTranslation,optimizeRotation,depthBlurring;
@@ -99,6 +99,12 @@ public class RayTraceOptions {
 		else
 			mSceneName = MULTIMOL_SCENE_NAME;
 
+//		for (Node node:fxmol.getChildren()) {
+//			NodeDetail detail = (NodeDetail)node.getUserData();
+//			if (detail != null && detail.isAtom())
+//				conformer.getCoordinates(detail.getAtom()).set(node.getTranslateX() + shiftX, node.getTranslateZ(), shiftZ - node.getTranslateY());
+//			}
+
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
 			Coordinates c = mol.getCoordinates(atom);
 			Point3D sp = fxmol.localToScene(c.x, c.y, c.z);
@@ -112,6 +118,7 @@ public class RayTraceOptions {
 		Color color = fxmol.getColor();
 		mRenderer.setRenderMode(mode == -1 ? fxmol.getConstructionMode().mode : mode);
 		mRenderer.setOverrideColor(color == null ? null : new java.awt.Color((float)color.getRed(), (float)color.getGreen(), (float)color.getBlue()));
+		mRenderer.setOverrideMode(fxmol.overrideHydrogens() ? SunflowMoleculeBuilder.OVERRIDE_MODE_CARBON_AND_HYDROGEN : SunflowMoleculeBuilder.OVERRIDE_MODE_CARBON);
 		mRenderer.drawMolecule(conformer, optimizeRotation, optimizeTranslation, surplus);
 
 		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++) {
@@ -185,7 +192,7 @@ public class RayTraceOptions {
 		if (fxmol.getSurfaceTransparency(surfaceType) >= 0.1)
 			return SunflowMoleculeBuilder.SURFACE_TRANSPARENT;
 		else
-			return SunflowMoleculeBuilder.SURFACE_SHINY;   // could also by SunflowMoleculeBuilder.SURFACE_FILLED
+			return SunflowMoleculeBuilder.SURFACE_OPAQUE;   // could also by SunflowMoleculeBuilder.SURFACE_FILLED
 	}
 
 	private float[] createSurfaceNormals(int[] tris, float[] verts) {

@@ -20,6 +20,7 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -506,35 +507,39 @@ public class V3DPopupMenu extends ContextMenu {
 	 * Displays a raytrace dialog for rendering one molecule
 	 */
 	private void showMoleculeRayTraceDialog(V3DScene scene) {
-		Optional<RayTraceOptions> result = new RayTraceDialog(scene.getScene().getWindow(), sPreviousMoleculeRayTraceOptions, mMolecule).showAndWait();
-		result.ifPresent(options -> {
-			sPreviousMoleculeRayTraceOptions = options;
-			double cameraX = scene.getCamera().getTranslateX();
-			double cameraY = scene.getCamera().getTranslateY();
-			double cameraZ = scene.getCamera().getTranslateZ();
-			double fieldOfView = scene.getFieldOfView();
-			options.rayTraceInit(cameraX, cameraY, cameraZ, fieldOfView);
-			options.addMolecule(mMolecule);
-			options.rayTraceStart(scene.getScene().getWindow());
+		Platform.runLater(() -> {
+			Optional<RayTraceOptions> result = new RayTraceDialog(scene.getScene().getWindow(), sPreviousMoleculeRayTraceOptions, mMolecule).showAndWait();
+			result.ifPresent(options -> {
+				sPreviousMoleculeRayTraceOptions = options;
+				double cameraX = scene.getCamera().getTranslateX();
+				double cameraY = scene.getCamera().getTranslateY();
+				double cameraZ = scene.getCamera().getTranslateZ();
+				double fieldOfView = scene.getFieldOfView();
+				options.rayTraceInit(cameraX, cameraY, cameraZ, fieldOfView);
+				options.addMolecule(mMolecule);
+				options.rayTraceStart(scene.getScene().getWindow());
+			} );
 		} );
 	}
 
 	public void showSceneRayTraceDialog(V3DScene scene) {
-		Optional<RayTraceOptions> result = new RayTraceDialog(scene.getScene().getWindow(), sPreviousSceneRayTraceOptions, null).showAndWait();
-		result.ifPresent(options -> {
-			sPreviousSceneRayTraceOptions = options;
-			double cameraX = scene.getCamera().getTranslateX();
-			double cameraY = scene.getCamera().getTranslateY();
-			double cameraZ = scene.getCamera().getTranslateZ();
-			double fieldOfView = scene.getFieldOfView();
-			if (((PerspectiveCamera)scene.getCamera()).isVerticalFieldOfView())
-				fieldOfView *= scene.getWidth() / scene.getHeight();
-			options.rayTraceInit(cameraX, cameraY, cameraZ, fieldOfView);
-			for (Node node:scene.getWorld().getChildren())
-				if (node instanceof V3DMolecule)
-					if (node.isVisible())
-						options.addMolecule((V3DMolecule)node);
-			options.rayTraceStart(scene.getScene().getWindow());
+		Platform.runLater(() -> {
+			Optional<RayTraceOptions> result = new RayTraceDialog(scene.getScene().getWindow(), sPreviousSceneRayTraceOptions, null).showAndWait();
+			result.ifPresent(options -> {
+				sPreviousSceneRayTraceOptions = options;
+				double cameraX = scene.getCamera().getTranslateX();
+				double cameraY = scene.getCamera().getTranslateY();
+				double cameraZ = scene.getCamera().getTranslateZ();
+				double fieldOfView = scene.getFieldOfView();
+				if (((PerspectiveCamera)scene.getCamera()).isVerticalFieldOfView())
+					fieldOfView *= scene.getWidth() / scene.getHeight();
+				options.rayTraceInit(cameraX, cameraY, cameraZ, fieldOfView);
+				for (Node node:scene.getWorld().getChildren())
+					if (node instanceof V3DMolecule)
+						if (node.isVisible())
+							options.addMolecule((V3DMolecule)node);
+				options.rayTraceStart(scene.getScene().getWindow());
+			} );
 		} );
 	}
 
