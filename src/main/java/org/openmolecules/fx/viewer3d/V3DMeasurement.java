@@ -1,17 +1,15 @@
 package org.openmolecules.fx.viewer3d;
 
-import java.util.ArrayList;
-
+import com.actelion.research.chem.Coordinates;
+import com.actelion.research.util.DoubleFormat;
+import javafx.geometry.Point3D;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.paint.Color;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 
-import com.actelion.research.chem.Coordinates;
-import com.actelion.research.util.DoubleFormat;
-
-import javafx.geometry.Point3D;
-import javafx.scene.Parent;
-import javafx.scene.paint.Color;
-import javafx.scene.Group;
+import java.util.ArrayList;
 
 public class V3DMeasurement implements MolCoordinatesChangeListener {
 	
@@ -38,8 +36,6 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 		for(V3DMolecule fxmol:mFXmols) {
 			fxmol.visibleProperty().addListener((v,ov,nv) -> setVisibility(nv));
 		}
-
-		
 	}
 	
 	public void cleanup() {
@@ -61,7 +57,7 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 		if(mPoints.length==2) {//distance
 			double distance = mPoints[0].distance(mPoints[1]);
 			String text = DoubleFormat.toString(distance,3);
-			mLabel.update(mPoints[0], mPoints[1], text);
+			mLabel.update(mPoints[0].midpoint(mPoints[1]), text);
 			Color color = mRod.getColor();
 			((Group)mParent).getChildren().remove(mRod);
 			mRod = new DashedRod(mPoints[0],mPoints[1],color);
@@ -72,7 +68,7 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 			Point3D v2 = mPoints[2].subtract(mPoints[1]);
 			double angle = v1.angle(v2);
 			String text = DoubleFormat.toString(angle,3);
-			mLabel.update(mPoints[0], mPoints[2], text);
+			mLabel.update(mPoints[0].midpoint(mPoints[2]), text);
 			Color color = mRod.getColor();
 			((Group)mParent).getChildren().remove(mRod);
 			mRod = new DashedRod(mPoints[0],mPoints[2],color);
@@ -85,21 +81,18 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 			Coordinates c4 = new Coordinates(mPoints[3].getX(),mPoints[3].getY(),mPoints[3].getZ());
 			double dihedral = 180*Coordinates.getDihedral(c1, c2, c3, c4)/Math.PI;
 			String text = DoubleFormat.toString(dihedral,3);
-			mLabel.update(mPoints[0], mPoints[3], text);
+			mLabel.update(mPoints[0].midpoint(mPoints[3]), text);
 			Color color = mRod.getColor();
 			((Group)mParent).getChildren().remove(mRod);
 			mRod = new DashedRod(mPoints[0],mPoints[3],color);
 			((Group)mParent).getChildren().add(mRod);
 		}
-		// TODO Auto-generated method stub
-		
 	}
 	
 	private void setVisibility(boolean visible) {
 		mRod.setVisible(visible);
 		mLabel.setVisible(visible);
 	}
-	
 	
 	public ArrayList<V3DMolecule> getV3DMolecules() {
 		return mFXmols;
@@ -108,15 +101,4 @@ public class V3DMeasurement implements MolCoordinatesChangeListener {
 	public NonRotatingLabel getLabel() {
 		return mLabel;
 	}
-
-
-
-
-
-
-	
-
-
-
-	
 }

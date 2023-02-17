@@ -6,6 +6,7 @@ import com.actelion.research.chem.RingCollection;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.VDWRadii;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 
@@ -81,6 +82,11 @@ public class MoleculeArchitect {
 
 	public static int getAtomARGB(int atomicNo) {
 		return ATOM_ARGB[atomicNo < ATOM_ARGB.length ? atomicNo : 6];   // higher atomicNos are assumed to be some kind of carbon
+	}
+
+	public static Color getAtomColor(int atomicNo, double opacity) {
+		int argb = MoleculeArchitect.getAtomARGB(atomicNo);
+		return Color.rgb((argb & 0xFF0000) >> 16, (argb & 0x00FF00) >> 8, argb & 0x0000FF, opacity);
 	}
 
 	private StereoMolecule mMol;
@@ -236,7 +242,6 @@ public class MoleculeArchitect {
 				}
 			}
 		}
-
 
 	private int getAtomColor(int atom) {
 		return getAtomARGB(mMol.getAtomicNo(atom));

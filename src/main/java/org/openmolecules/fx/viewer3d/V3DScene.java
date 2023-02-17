@@ -56,14 +56,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private Group mRoot;                  	// not rotatable, contains light and camera
 	private V3DMolGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
 	private List<V3DSceneListener> mSceneListeners;
-	private boolean mIsIndividualRotationModus;
 	private int mSurfaceCutMode;
 	private V3DMolecule mSurfaceCutMolecule;
 	private V3DMoleculeEditor mEditor;
 	private boolean mMouseDragged; //don't place molecule fragments if mouse is released after a drag event
 	private ArrayList<V3DMolecule> mPickedMolsList;
 	private MEASUREMENT     mMeasurementMode;
-	private ArrayList<NonRotatingLabel> mLabelList;
 	private ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
 	private volatile V3DPopupMenuController mPopupMenuController;
@@ -94,7 +92,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public enum ViewerSettings {
-		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND, ROLE, ALLOW_PHARMACOPHORES
+		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND, ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION
 	}
 
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES);
@@ -109,7 +107,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
 	private static final Color TORSION_COLOR = Color.VIOLET;
-
 
 	public V3DScene(Group root, double width, double height, EnumSet<V3DScene.ViewerSettings> settings) {
 		super(root, width, height, true, SceneAntialiasing.BALANCED);
@@ -134,7 +131,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMouseDragged = false;
 		mMeasurementMode = MEASUREMENT.NONE;
 		mPickedMolsList = new ArrayList<>();
-		mLabelList = new ArrayList<>();
 		mMayOverrideHydrogens = true;
 		mMoleculeColorID = 0;
 		applySettings();
@@ -224,14 +220,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMeasurementMode = measurement;
 		}
 	
-	public boolean isIndividualRotationModus() {
-		return mIsIndividualRotationModus;
-		}
-
-	public void setIndividualRotationModus(boolean b) {
-		mIsIndividualRotationModus = b;
-		}
-
 	public void cut(V3DMolecule fxmol) {
 		copy3D(fxmol);
 		delete(fxmol);
@@ -739,7 +727,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		Point3D p1 = new Point3D(c1.x,c1.y,c1.z);
 		Point3D p2 = new Point3D(c2.x,c2.y,c2.z);
 		DashedRod line = new DashedRod(p1, p2, color);
-		NonRotatingLabel label = NonRotatingLabel.create(mWorld, text, p1, p2, color);
+		NonRotatingLabel label = NonRotatingLabel.create(mWorld, text, p1.midpoint(p2), color);
 		label.setLabelDeletionListener(this);
 		V3DMeasurement measurement = new V3DMeasurement(this,atoms,fxmols,line,label,mWorld);
 		mMeasurements.add(measurement);
@@ -748,14 +736,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public ArrayList<V3DMeasurement> getMeasurements() {
 		return mMeasurements;
 	}
-	
+
 	public void removeMeasurements() {
 		for(V3DMeasurement measurement: mMeasurements)
 			measurement.cleanup();
 
 		mMeasurements.clear();
 	}
-	
+
 	public void moveToGroup(List<V3DMolGroup> toMove, V3DMolGroup target) {
 		List<V3DMolGroup> targetChildren = target.getAllAttachedMolGroups();
 		List<V3DMolGroup> notToMove = new ArrayList<V3DMolGroup>(); //MolGroups that are subGroups of other groups that will be moved, shouldn't be moved separately

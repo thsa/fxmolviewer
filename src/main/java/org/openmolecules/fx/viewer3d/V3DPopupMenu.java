@@ -313,7 +313,20 @@ public class V3DPopupMenu extends ContextMenu {
 				itemHide.setOnAction(e -> fxmol.setVisible(false));
 				getItems().add(itemHide);
 			}
-			
+
+			if (settings.contains(V3DScene.ViewerSettings.ATOM_INDEXES)) {
+				if (fxmol.hasAtomIndexLabels()) {
+					MenuItem itemAI = new MenuItem("Remove Atom Indexes");
+					itemAI.setOnAction(e -> fxmol.removeAtomIndexLabels());
+					getItems().add(itemAI);
+				}
+				else {
+					MenuItem itemAI = new MenuItem("Add Atom Indexes");
+					itemAI.setOnAction(e -> fxmol.addAtomIndexLabels(mScene.getWorld()));
+					getItems().add(itemAI);
+				}
+			}
+
 			if (!settings.contains(V3DScene.ViewerSettings.UPPERPANEL)
 			 && (settings.contains(V3DScene.ViewerSettings.EDITING) || settings.contains(V3DScene.ViewerSettings.ALLOW_PHARMACOPHORES))) {
 				MenuItem itemPP = new MenuItem("Add Pharmacophores");

@@ -358,10 +358,8 @@ public class AtomicNoTexture extends SurfaceTexture {
 		color[0] = new Color(0,0,0,opacity);
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++) {
 			int atomicNo = mMol.getAtomicNo(atom);
-			if (color[atomicNo] == null) {
-				int argb = MoleculeArchitect.getAtomARGB(atomicNo);
-				color[atomicNo] = Color.rgb((argb & 0xFF0000) >> 16, (argb & 0x00FF00) >> 8, argb & 0x0000FF, opacity);
-			}
+			if (color[atomicNo] == null)
+				color[atomicNo] = MoleculeArchitect.getAtomColor(atomicNo, opacity);
 		}
 
 		if (moleculeColor != null)
