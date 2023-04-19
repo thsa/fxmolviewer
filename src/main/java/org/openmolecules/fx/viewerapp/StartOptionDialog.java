@@ -43,7 +43,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 		initOwner(parent);
 		initStyle(StageStyle.UNDECORATED);
 		initModality(Modality.WINDOW_MODAL);
-		setTitle("FXMolViewer Mode");
+		setTitle("FXMolViewer Test Mode");
 //		setHeaderText("Select modus:");
 //		setGraphic(new ImageView(this.getClass().getResource("something.png").toString()));
 

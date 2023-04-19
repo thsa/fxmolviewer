@@ -483,6 +483,7 @@ public class StartOptions {
 			mol.translate(dx, dy, dz);
 			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND);
 			double transparency = 0.20 + 0.1 * (i % 7);
+//			vm.setMode(MoleculeArchitect.ConstructionMode.BALL_AND_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT);
 			vm.setSurface(0, V3DMolecule.SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, transparency);
 
 //			vm.activateEvents();

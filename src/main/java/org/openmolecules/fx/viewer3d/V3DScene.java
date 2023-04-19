@@ -79,6 +79,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	protected static final double CAMERA_NEAR_CLIP = 1.0;
 	protected static final double CAMERA_FAR_CLIP = 1000.0;
 	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2.0;
+	private static final double EYE_DISTANCE = 0.5;
 	private static final double CLIP_ATOM_PADDING = 3.0;
 
 	public enum MEASUREMENT { NONE(0), DISTANCE(2), ANGLE(3), TORSION(4);
@@ -92,14 +93,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public enum ViewerSettings {
-		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND, ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION
+		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND,
+		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION, STEREO_HSBS, STEREO_HOU
 	}
 
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES);
 	public static final EnumSet<ViewerSettings> VISUALIZATION_MINIMALIST_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS);
 	public static final EnumSet<ViewerSettings> VISUALIZATION_EXTENDED_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.EDITING);
-	
-	
+
 	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(
 			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.WHITE_HYDROGENS,
 			ViewerSettings.BLACK_BACKGROUND, ViewerSettings.UPPERPANEL,ViewerSettings.ROLE);
@@ -642,9 +643,44 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		camera.setNearClip(CAMERA_NEAR_CLIP);
 		camera.setFarClip(CAMERA_FAR_CLIP);
 		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
+		if (mSettings.contains(ViewerSettings.STEREO_HSBS)) {
+			camera.setScaleX(2.0);
+			camera.setTranslateX(-EYE_DISTANCE/2);
+		}
+		else if (mSettings.contains(ViewerSettings.STEREO_HOU)) {
+			camera.setScaleY(2.0);
+			camera.setTranslateX(-EYE_DISTANCE/2);
+		}
 		setCamera(camera);
 		mRoot.getChildren().add(camera);
 		}
+
+	public RightEyeView buildRightEyeView() {
+		PerspectiveCamera camera = new PerspectiveCamera(true);
+		camera.setNearClip(CAMERA_NEAR_CLIP);
+		camera.setFarClip(CAMERA_FAR_CLIP);
+		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
+		if (mSettings.contains(ViewerSettings.STEREO_HSBS)) {
+			camera.setScaleX(2.0);
+		}
+		else if (mSettings.contains(ViewerSettings.STEREO_HOU)) {
+			camera.setScaleY(2.0);
+		}
+		camera.setTranslateX(EYE_DISTANCE/2);
+
+		getCamera().translateXProperty().addListener((observableValue, number, t1) -> camera.setTranslateX(getCamera().getTranslateX() + EYE_DISTANCE));
+		getCamera().translateYProperty().addListener((observableValue, number, t1) -> camera.setTranslateY(getCamera().getTranslateY()));
+		getCamera().translateZProperty().addListener((observableValue, number, t1) -> camera.setTranslateZ(getCamera().getTranslateZ()));
+
+		RightEyeView view = new RightEyeView(this, camera);
+
+		view.fitWidthProperty().bind(widthProperty());
+		view.fitHeightProperty().bind(heightProperty());
+
+		return view;
+	}
+
+
 	/*
 	public void updateEditorAction(AbstractV3DEditorAction action) {
 		for (Node node : mWorld.getChildren())

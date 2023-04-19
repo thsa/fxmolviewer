@@ -132,15 +132,9 @@ public class V3DSceneWithSidePane extends BorderPane {
 	    stackPane.getChildren().add(sceneWithSelection);
 	    stackPane.getChildren().add(center);
 	    center.setPickOnBounds(false);
-		if(settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
-			//SplitPane splitPane = new SplitPane();
+		if(settings.contains(V3DScene.ViewerSettings.SIDEPANEL))
 			createSidePane(center,settings);
-			//center.setCenter(splitPane);
-			setCenter(stackPane);
-		}
-		else {
-			setCenter(stackPane);
-		}
+		setCenter(stackPane);
 		if(settings.contains(V3DScene.ViewerSettings.UPPERPANEL))
 			createUpperPanel();
 		mScene3D.chartProperty().addListener((o,ov,nv) -> {

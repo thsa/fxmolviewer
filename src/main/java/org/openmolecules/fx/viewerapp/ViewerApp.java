@@ -22,16 +22,25 @@ package org.openmolecules.fx.viewerapp;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 import javafx.stage.Stage;
-import org.openmolecules.fx.viewer3d.*;
+import org.openmolecules.fx.viewer3d.RightEyeView;
+import org.openmolecules.fx.viewer3d.V3DScene;
+import org.openmolecules.fx.viewer3d.V3DSceneWithSidePane;
 
 import java.io.File;
+import java.util.EnumSet;
 import java.util.Optional;
 
 public class ViewerApp extends Application {
-	private V3DSceneWithSidePane mViewer;
+	private static final int INTIAL_WIDTH = 1200;
+	private static final int INTIAL_HEIGHT = 900;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -41,24 +50,73 @@ public class ViewerApp extends Application {
 	public void start(Stage primaryStage) {
 		String modeString = System.getProperty("mode", "viewer");
 		String path = System.getProperty("file", "");
-		boolean isEditor = modeString.startsWith("editor");
 		int mode = -1;
 		try { mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
-		mViewer =  new V3DSceneWithSidePane(V3DScene.GENERAL_MODE);
+
+		EnumSet<V3DScene.ViewerSettings> sceneMode = V3DScene.GENERAL_MODE;
+
+		if (System.getProperty("stereo", "").toLowerCase().equals("hou"))
+			sceneMode.add(V3DScene.ViewerSettings.STEREO_HOU);
+		else if (System.getProperty("stereo", "").toLowerCase().equals("hsbs"))
+			sceneMode.add(V3DScene.ViewerSettings.STEREO_HSBS);
+
+		Parent view;
+		V3DScene scene3D;
+
+		if (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HSBS)) {
+			GridPane stereoPane = new GridPane();
+			ColumnConstraints column1 = new ColumnConstraints();
+			column1.setPercentWidth(50);
+			ColumnConstraints column2 = new ColumnConstraints();
+			column2.setPercentWidth(50);
+			stereoPane.getColumnConstraints().addAll(column1, column2);
+			scene3D = new V3DScene(new Group(), INTIAL_WIDTH/2, INTIAL_HEIGHT, sceneMode);
+			stereoPane.add(scene3D, 0, 0);
+			RightEyeView cameraView = scene3D.buildRightEyeView();
+			stereoPane.add(cameraView, 1, 0);
+
+			cameraView.startViewing();
+
+			view = stereoPane;
+		}
+		else if (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HOU)) {
+			GridPane stereoPane = new GridPane();
+			RowConstraints row1 = new RowConstraints();
+			row1.setPercentHeight(50);
+			RowConstraints row2 = new RowConstraints();
+			row2.setPercentHeight(50);
+			stereoPane.getRowConstraints().addAll(row1, row2);
+			scene3D = new V3DScene(new Group(), INTIAL_WIDTH, INTIAL_HEIGHT/2, sceneMode);
+			stereoPane.add(scene3D, 0, 0);
+			RightEyeView cameraView = scene3D.buildRightEyeView();
+			stereoPane.add(cameraView, 0, 1);
+
+			cameraView.startViewing();
+
+			view = stereoPane;
+		}
+		else {
+			V3DSceneWithSidePane sceneWithSidePane =  new V3DSceneWithSidePane(sceneMode);
+			scene3D = sceneWithSidePane.getScene3D();
+			view = sceneWithSidePane;
+		}
+
+		Scene scene = new Scene(view, INTIAL_WIDTH, INTIAL_HEIGHT, true, SceneAntialiasing.BALANCED);
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
-		Scene scene = new Scene(mViewer, 1024, 768, true, SceneAntialiasing.BALANCED);
 		scene.getStylesheets().add(css);
-		mViewer.getScene3D().widthProperty().bind(scene.widthProperty());
-		mViewer.getScene3D().heightProperty().bind(scene.heightProperty());
+
+		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.widthProperty().set(scene.getWidth() / (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HSBS) ? 2 : 1)));
+		scene.heightProperty().addListener((observableValue, number, t1) -> scene3D.setHeight(scene.getHeight() / (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HOU) ? 2 : 1)));
+
 		primaryStage.setTitle("Molecule Viewer");
 		primaryStage.setScene(scene);
 		primaryStage.show();
 		if (path.length() != 0)
-			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path.substring(0, path.lastIndexOf(File.separatorChar)+1), true).initializeScene(mViewer.getScene3D()) );
+			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path.substring(0, path.lastIndexOf(File.separatorChar)+1), true).initializeScene(scene3D) );
 		else if (mode != -1)
-			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(mViewer.getScene3D()) );
+			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(scene3D) );
 		else if (System.getProperty("test") != null)
-			Platform.runLater(() -> showStartOptionDialog(mViewer.getScene3D()) );
+			Platform.runLater(() -> showStartOptionDialog(scene3D) );
 	}
 
 	private static void showStartOptionDialog(V3DScene scene) {
@@ -67,5 +125,4 @@ public class ViewerApp extends Application {
 			options.initializeScene(scene);
 		} );
 	}
-
 }
