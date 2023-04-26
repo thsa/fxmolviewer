@@ -39,8 +39,8 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 public class ViewerApp extends Application {
-	private static final int INTIAL_WIDTH = 1200;
-	private static final int INTIAL_HEIGHT = 900;
+	private static final int INITIAL_WIDTH = 1200;
+	private static final int INITIAL_HEIGHT = 900;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -55,9 +55,9 @@ public class ViewerApp extends Application {
 
 		EnumSet<V3DScene.ViewerSettings> sceneMode = V3DScene.GENERAL_MODE;
 
-		if (System.getProperty("stereo", "").toLowerCase().equals("hou"))
+		if (System.getProperty("stereo", "").equalsIgnoreCase("hou"))
 			sceneMode.add(V3DScene.ViewerSettings.STEREO_HOU);
-		else if (System.getProperty("stereo", "").toLowerCase().equals("hsbs"))
+		else if (System.getProperty("stereo", "").equalsIgnoreCase("hsbs"))
 			sceneMode.add(V3DScene.ViewerSettings.STEREO_HSBS);
 
 		Parent view;
@@ -70,7 +70,7 @@ public class ViewerApp extends Application {
 			ColumnConstraints column2 = new ColumnConstraints();
 			column2.setPercentWidth(50);
 			stereoPane.getColumnConstraints().addAll(column1, column2);
-			scene3D = new V3DScene(new Group(), INTIAL_WIDTH/2, INTIAL_HEIGHT, sceneMode);
+			scene3D = new V3DScene(new Group(), INITIAL_WIDTH /2, INITIAL_HEIGHT, sceneMode);
 			stereoPane.add(scene3D, 0, 0);
 			RightEyeView cameraView = scene3D.buildRightEyeView();
 			stereoPane.add(cameraView, 1, 0);
@@ -86,7 +86,7 @@ public class ViewerApp extends Application {
 			RowConstraints row2 = new RowConstraints();
 			row2.setPercentHeight(50);
 			stereoPane.getRowConstraints().addAll(row1, row2);
-			scene3D = new V3DScene(new Group(), INTIAL_WIDTH, INTIAL_HEIGHT/2, sceneMode);
+			scene3D = new V3DScene(new Group(), INITIAL_WIDTH, INITIAL_HEIGHT /2, sceneMode);
 			stereoPane.add(scene3D, 0, 0);
 			RightEyeView cameraView = scene3D.buildRightEyeView();
 			stereoPane.add(cameraView, 0, 1);
@@ -101,7 +101,7 @@ public class ViewerApp extends Application {
 			view = sceneWithSidePane;
 		}
 
-		Scene scene = new Scene(view, INTIAL_WIDTH, INTIAL_HEIGHT, true, SceneAntialiasing.BALANCED);
+		Scene scene = new Scene(view, INITIAL_WIDTH, INITIAL_HEIGHT, true, SceneAntialiasing.BALANCED);
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		scene.getStylesheets().add(css);
 
