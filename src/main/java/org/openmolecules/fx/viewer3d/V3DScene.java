@@ -234,6 +234,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void copy2D(V3DMolecule fxmol) {
 		mCopiedMol = fxmol;
 		StereoMolecule mol = fxmol.getMolecule().getCompactCopy();
+		mol.ensureHelperArrays(Molecule.cHelperParities);
 		new CoordinateInventor().invent(mol);
 		mClipboardHandler.copyMolecule(mol);
 		}
