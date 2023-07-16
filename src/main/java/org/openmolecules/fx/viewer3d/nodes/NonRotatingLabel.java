@@ -22,11 +22,6 @@ package org.openmolecules.fx.viewer3d.nodes;
 
 
 
-import org.openmolecules.fx.viewer3d.LabelDeletionListener;
-import org.openmolecules.fx.viewer3d.RotatableGroup;
-import org.openmolecules.fx.viewer3d.TransformationListener;
-
-import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import javafx.scene.Group;
@@ -38,8 +33,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Transform;
-import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.MouseEvent;
+import org.openmolecules.fx.viewer3d.LabelDeletionListener;
+import org.openmolecules.fx.viewer3d.RotatableGroup;
+import org.openmolecules.fx.viewer3d.TransformationListener;
 
 public class NonRotatingLabel extends Label implements TransformationListener {
 	private static final String FONT_NAME = "Tahoma";
@@ -49,7 +45,7 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 	private static Font sFont;
 
 	private Parent mParent;
-	private Point3D mP1,mP2;
+	private Point3D mPoint;
 	private double mWidth, mHeight;
 	private ContextMenu mMenu;
 	private boolean mDeleted;
@@ -60,16 +56,14 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 	 * Create a correctly sized and positioned label.
 	 * @parem parent
 	 * @param text
-	 * @param p1
-	 * @param p2
+	 * @param point
 	 * @param color
 	 */
-	private NonRotatingLabel(Parent parent, String text, Point3D p1, Point3D p2, Color color) {
+	private NonRotatingLabel(Parent parent, String text, Point3D point, Color color) {
 		super(text);
 		mDeleted = false;
 		mParent = parent;
-		mP1 = p1;
-		mP2 = p2;
+		mPoint = point;
 		if (sFont == null)
 			sFont = Font.font(FONT_NAME, FONT_SIZE);
 
@@ -90,11 +84,12 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 		updatePosition();
 		
 		mMenu = new ContextMenu();
-		MenuItem deleteMeasurement = new MenuItem("Remove");
-		deleteMeasurement.setOnAction(e -> {mDeleted = true;
-		mListener.labelDeleted(this);
+		MenuItem itemRemove = new MenuItem("Remove");
+		itemRemove.setOnAction(e -> {
+			mDeleted = true;
+			mListener.labelDeleted(this);
 		});
-		mMenu.getItems().add(deleteMeasurement);
+		mMenu.getItems().add(itemRemove);
 	}
 	
 
@@ -102,8 +97,8 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 		mListener = l;
 	}
 
-	public static NonRotatingLabel create(Parent parent, String text, Point3D p1, Point3D p2, Color color) {
-		NonRotatingLabel label = new NonRotatingLabel(parent, text, p1, p2, color);
+	public static NonRotatingLabel create(Parent parent, String text, Point3D point, Color color) {
+		NonRotatingLabel label = new NonRotatingLabel(parent, text, point, color);
 		if (parent instanceof RotatableGroup)
 			((RotatableGroup) parent).addRotationListener(label);
 		while (parent.getParent() != null) {
@@ -125,22 +120,19 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 		}
 
 	private void updatePosition() {
-		Point3D p = mParent.localToScene(mP1.midpoint(mP2));
+		Point3D p = mParent.localToScene(mPoint);
 		setTranslateX(p.getX() - mWidth/2);
 		setTranslateY(p.getY() - mHeight/2);
 		setTranslateZ(p.getZ() - 0.5);
-		
 		}
-	public void update(Point3D p1, Point3D p2, String text) {
-		mP1 = p1;
-		mP2 = p2;
+
+	public void update(Point3D point, String text) {
+		mPoint = point;
 		setText(text);
-		Point3D p = mParent.localToScene(mP1.midpoint(mP2));
+		Point3D p = mParent.localToScene(mPoint);
 		setTranslateX(p.getX() - mWidth/2);
 		setTranslateY(p.getY() - mHeight/2);
 		setTranslateZ(p.getZ() - 0.5);
-		
-		
 	}
 	
 	public boolean isDeleted() {
@@ -153,7 +145,6 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 		}
 	
 	public void showMenu(double x, double y) {
-
 		mMenu.show(this, x, y);
         }
 	}

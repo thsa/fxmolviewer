@@ -104,6 +104,7 @@ public class V3DMolecule extends V3DMolGroup {
 	private Color mCarbonColor;
 	private BondRotationHelper mBondRotationHelper;
 	private TorsionStrainVisualization torsionStrainVis;
+	private ArrayList<AtomIndexLabel> mLabelList;
 	private int mnUnconnectedFragments;
 	
 	public enum MoleculeRole{
@@ -123,8 +124,7 @@ public class V3DMolecule extends V3DMolGroup {
 	private Coordinates[] mInitialCoordinates;
 
 	public static Color getDefaultAtomColor(int atomicNo) {
-		int argb = MoleculeArchitect.getAtomARGB(atomicNo);
-		return Color.rgb((argb & 0x00FF0000) >> 16, (argb & 0x0000FF00) >> 8, argb & 0x000000FF);
+		return MoleculeArchitect.getAtomColor(atomicNo, 1.0);
 	}
 
 	/**
@@ -266,7 +266,33 @@ public class V3DMolecule extends V3DMolGroup {
 			mFXMolUpdater.update();
 		});
 	}
-	
+
+	public boolean hasAtomIndexLabels() {
+		return mLabelList != null;
+	}
+
+	public void addAtomIndexLabels(V3DMolGroup world) {
+		if (mLabelList == null) {
+			mLabelList = new ArrayList<>();
+			for (Node node:getChildren()) {
+				NodeDetail detail = (NodeDetail)node.getUserData();
+				if (detail != null && detail.isAtom()) {
+					AtomIndexLabel label  = new AtomIndexLabel(world,this, detail);
+					mLabelList.add(label);
+				}
+			}
+		}
+	}
+
+	public void removeAtomIndexLabels() {
+		if (mLabelList != null) {
+			for (AtomIndexLabel l : mLabelList)
+				l.remove();
+
+			mLabelList = null;
+		}
+	}
+
 	public void addTorsionStrainVisualization() {
 		V3DTorsionStrainAnalyzer torsionAnalyzer = new V3DTorsionStrainAnalyzer(this);
 		torsionAnalyzer.init();
@@ -1245,10 +1271,4 @@ public class V3DMolecule extends V3DMolGroup {
 	public TorsionStrainVisualization getTorsionStrainVis() {
 		return torsionStrainVis;
 	}
-	
-
-
-
-
-
-	}
+}

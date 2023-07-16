@@ -6,6 +6,7 @@ import com.actelion.research.chem.RingCollection;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.VDWRadii;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 
@@ -81,6 +82,11 @@ public class MoleculeArchitect {
 
 	public static int getAtomARGB(int atomicNo) {
 		return ATOM_ARGB[atomicNo < ATOM_ARGB.length ? atomicNo : 6];   // higher atomicNos are assumed to be some kind of carbon
+	}
+
+	public static Color getAtomColor(int atomicNo, double opacity) {
+		int argb = MoleculeArchitect.getAtomARGB(atomicNo);
+		return Color.rgb((argb & 0xFF0000) >> 16, (argb & 0x00FF00) >> 8, argb & 0x0000FF, opacity);
 	}
 
 	private StereoMolecule mMol;
@@ -236,7 +242,6 @@ public class MoleculeArchitect {
 				}
 			}
 		}
-
 
 	private int getAtomColor(int atom) {
 		return getAtomARGB(mMol.getAtomicNo(atom));
@@ -397,6 +402,27 @@ public class MoleculeArchitect {
 			buildStickBond(bond, color1, color2, p1, p2, r1, d, b, c);
 			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, piShift, d, b, c);
 			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, piShift, d, b, c);
+			return;
+			}
+
+		if (order == 4) {
+			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(0.4*piShift);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, 0.5*piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, 0.5*piShift, d, b, c);
+			ds.scale(3.0);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, 1.5*piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, 1.5*piShift, d, b, c);
+			return;
+			}
+
+		if (order == 5) {
+			buildPiStickBond(bond, color1, color2, p1, p2, r2, 0, d, b, c);
+			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(0.75*piShift);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, piShift, d, b, c);
+			ds.scale(2.0);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).add(ds), point2.set(p2).add(ds), r2, 2*piShift, d, b, c);
+			buildPiStickBond(bond, color1, color2, point1.set(p1).sub(ds), point2.set(p2).sub(ds), r2, 2*piShift, d, b, c);
 			return;
 			}
 		}

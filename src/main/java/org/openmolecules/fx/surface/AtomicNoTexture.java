@@ -59,6 +59,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 	private int[] mSortedAtomicNoBuffer;
 	private float mSurfaceSurplus;
 	private int mNeutralRGB;
+	private org.sunflow.image.Color mNeutralColor;
 
 	private float mPixelWidth,mPixelHeight,mPixelWidthHalf,mPixelHeightHalf;
 
@@ -78,6 +79,10 @@ public class AtomicNoTexture extends SurfaceTexture {
 					: ((int)(255.99 * color.getRed()) << 16)
 					+ ((int)(255.99 * color.getGreen()) << 8)
 					+  (int)(255.99 * color.getBlue());
+
+		int argb = (color == null) ? MoleculeArchitect.getAtomARGB(6) : mNeutralRGB;
+		mNeutralColor = new org.sunflow.image.Color((float)(argb & 0x00FF0000) / 16711680f,
+				(float)(argb & 0x0000FF00) / 65280f, (float)(argb & 0x000000FF) / 255f);
 	}
 
 	@Override
@@ -85,7 +90,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		float r = 0f;
 		float g = 0f;
 		float b = 0f;
-		float weightSum = 0.0000001f;   // to avoid infinity
+		float weightSum = 0f;
 		int i1 = getLowIndex(p.x - REACH - mSurfaceSurplus, mSortedAtomsSunFlow);
 		int i2 = getHighIndex(p.x + REACH + mSurfaceSurplus, mSortedAtomsSunFlow);
 		for (int index=i1; index<i2; index++) {
@@ -104,9 +109,10 @@ public class AtomicNoTexture extends SurfaceTexture {
 				weightSum += weight;
 			}
 		}
-		if (weightSum == 0.0000001f) {
-			System.out.println("WARNING: no atom for surface color found+");
-		}
+
+		if (weightSum == 0f)
+			return mNeutralColor;
+
 		return new org.sunflow.image.Color(r/weightSum, g/weightSum, b/weightSum);
 	}
 
@@ -352,10 +358,8 @@ public class AtomicNoTexture extends SurfaceTexture {
 		color[0] = new Color(0,0,0,opacity);
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++) {
 			int atomicNo = mMol.getAtomicNo(atom);
-			if (color[atomicNo] == null) {
-				int argb = MoleculeArchitect.getAtomARGB(atomicNo);
-				color[atomicNo] = Color.rgb((argb & 0xFF0000) >> 16, (argb & 0x00FF00) >> 8, argb & 0x0000FF, opacity);
-			}
+			if (color[atomicNo] == null)
+				color[atomicNo] = MoleculeArchitect.getAtomColor(atomicNo, opacity);
 		}
 
 		if (moleculeColor != null)

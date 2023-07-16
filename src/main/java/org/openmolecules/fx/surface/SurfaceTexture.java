@@ -71,12 +71,26 @@ public abstract class SurfaceTexture {
 	 * Creates a sorted atom list based on the given conformer's coordinates.
 	 * This must be called once before calling getSurfaceColor().
 	 * @param mol
-	 */
+	 *
 	public void initializeSurfaceColor(StereoMolecule mol) {
 		mConformerSunFlow = new Conformer(mol);		// TODO check, whether we really need a copy
 		mSortedAtomsSunFlow = new SortedList<>();
 		for (int atom=0; atom<mMol.getAtoms(); atom++) {
 			float x = (float)mol.getAtomX(atom);
+			mSortedAtomsSunFlow.add(new AtomWithXCoord(atom, x));
+		}
+	}*/
+
+	/**
+	 * Creates a sorted atom list based on the given conformer's coordinates.
+	 * This must be called once before calling getSurfaceColor().
+	 * @param conformer
+	 */
+	public void initializeSurfaceColor(Conformer conformer) {
+		mConformerSunFlow = conformer;		// TODO check, whether we really need a copy
+		mSortedAtomsSunFlow = new SortedList<>();
+		for (int atom=0; atom<mMol.getAtoms(); atom++) {
+			float x = (float)conformer.getX(atom);
 			mSortedAtomsSunFlow.add(new AtomWithXCoord(atom, x));
 		}
 	}

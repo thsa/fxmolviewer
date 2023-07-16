@@ -45,11 +45,16 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 	public static final int DEFAULT_BOND_MATERIAL = MATERIAL_SHINY;
 	public static final int DEFAULT_SURFACE_MATERIAL = SURFACE_TRANSPARENT;
 
+	public static final int OVERRIDE_MODE_ALL = 0;
+	public static final int OVERRIDE_MODE_CARBON = 1;
+	public static final int OVERRIDE_MODE_CARBON_AND_HYDROGEN = 2;
+
 	private static final int ARGB_NONE = 0x12345678;
 
 	private float	mCameraDistance,mCameraX, mCameraZ,mFieldOfView, mMaxAtomY, mMinAtomY, mBrightness;
 	private double  mFloorZ,mXShift,mYShift,mZShift;
-	private int     mRenderMode,mMeshNo,mCylinderNo,mLastRGB,mLastMaterial,mSphereNo,mAtomMaterial,mBondMaterial,mOverrideARGB;
+	private int     mRenderMode,mMeshNo,mCylinderNo,mLastRGB,mLastMaterial,mSphereNo,mAtomMaterial,mBondMaterial,
+					mOverrideMode,mOverrideARGB;
 	private boolean mFlipFeaturesToFront,mFlipXAndZ,mIsGlossyFloor;
 	private Color   mBackgroundColor,mFloorColor;
 	private StereoMolecule mMol;
@@ -84,6 +89,10 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 /*	public void setRandomSeed(long seed) {
 	  	mRandomSeed = seed;
 		}*/
+
+	public void setOverrideMode(int mode) {
+		mOverrideMode = mode;
+		}
 
 	public void setOverrideColor(Color c) {
 		mOverrideARGB = (c == null) ? ARGB_NONE : 0xFF000000 | c.getRGB();
@@ -501,7 +510,11 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 
 	@Override
 	public void addSphere(int role, Coordinates c, double radius, int argb) {
-		if (mOverrideARGB != ARGB_NONE)
+		if (mOverrideARGB != ARGB_NONE
+		 && (mOverrideMode == OVERRIDE_MODE_ALL
+		  || (mOverrideMode == OVERRIDE_MODE_CARBON && argb == MoleculeArchitect.getAtomARGB(6))
+		  || (mOverrideMode == OVERRIDE_MODE_CARBON_AND_HYDROGEN
+					&& (argb == MoleculeArchitect.getAtomARGB(1) || argb == MoleculeArchitect.getAtomARGB(6)))))
 			argb = mOverrideARGB;
 
 		// if is bond -> stickbond or dotted bond
@@ -522,7 +535,11 @@ public class SunflowMoleculeBuilder extends SunflowAPIAPI implements MoleculeBui
 
 	@Override
 	public void addCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
-		if (mOverrideARGB != ARGB_NONE)
+		if (mOverrideARGB != ARGB_NONE
+				&& (mOverrideMode == OVERRIDE_MODE_ALL
+				|| (mOverrideMode == OVERRIDE_MODE_CARBON && argb == MoleculeArchitect.getAtomARGB(6))
+				|| (mOverrideMode == OVERRIDE_MODE_CARBON_AND_HYDROGEN
+				&& (argb == MoleculeArchitect.getAtomARGB(1) || argb == MoleculeArchitect.getAtomARGB(6)))))
 			argb = mOverrideARGB;
 
 		if (mLastRGB != argb || mLastMaterial != mBondMaterial) {

@@ -407,9 +407,6 @@ public class V3DMouseHandler {
 		Point3D p1 = fxmol.sceneToLocal(eSphere.localToScene(point).subtract(f*dx, f*dy, f*dz));
 		Point3D change = new Point3D(p0.getX() - p1.getX(), p0.getY() - p1.getY(), p0.getZ() - p1.getZ());
 		eSphere.addTranslate(change.getX(), change.getY(),  change.getZ());
-
-
-		
 	}
 
 	private void translateCameraXY(double dx, double dy) {
@@ -462,7 +459,7 @@ public class V3DMouseHandler {
 				p1 = new Point3D(dy, -dx, 0);
 			}
 
-			if (mAffectedMol != null || mScene.isIndividualRotationModus()) {
+			if (mAffectedMol != null || mScene.getSettings().contains(V3DScene.ViewerSettings.INDIVIDUAL_ROTATION)) {
 				RotatableGroup world = mScene.getWorld();
 				Point3D p0 = world.sceneToLocal(new Point3D(0, 0, 0));
 				Point3D p2 = world.sceneToLocal(p1).subtract(p0);
