@@ -24,7 +24,7 @@
 		     mvn versions:display-dependency-updates
 
 		     to check for updates for these below -->
-		<javafx.version>19</javafx.version>
+		<javafx.version>19.0.2</javafx.version>
 		<mmtf.version>1.0.10</mmtf.version>
 		<openchemlib.version>2021.10.1</openchemlib.version>
 		<janino.version>2.7.4</janino.version>
