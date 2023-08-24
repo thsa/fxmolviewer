@@ -3,7 +3,7 @@
 	<groupId>org.openmolecules.fx</groupId>
 	<artifactId>fxmolviewer</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${release_version}</version>
 	<name>fxmolviewer</name>
 
 	<licenses>
