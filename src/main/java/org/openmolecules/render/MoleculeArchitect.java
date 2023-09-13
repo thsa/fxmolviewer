@@ -303,7 +303,7 @@ public class MoleculeArchitect {
 
 		switch (mConstructionMode) {
 		case BALL_AND_STICKS:
-			buildStickBond(bond, d, b, c);
+			buildBallAndStickBond(bond, d, b, c);
 			break;
 		case STICKS:
 			buildStickBond(bond, d, b, c);
