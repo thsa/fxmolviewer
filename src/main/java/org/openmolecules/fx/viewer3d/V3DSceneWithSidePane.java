@@ -367,9 +367,9 @@ public class V3DSceneWithSidePane extends BorderPane {
 				File selectedFile = fileChooser.showOpenDialog(null);
 				if (selectedFile != null) {
 					List<V3DMolecule> fxMols = V3DMoleculeParser.readPheSAQuery(mMoleculePanel.getV3DScene(), selectedFile, 0);
-					V3DMolGroup phesaInput = new V3DMolGroup("PheSA Queries");
+					V3DRotatableGroup phesaInput = new V3DRotatableGroup("PheSA Queries");
 				    for(V3DMolecule fxMol: fxMols) 
-				    	phesaInput.addMolGroup(fxMol);
+				    	phesaInput.addGroup(fxMol);
 				    mMoleculePanel.getV3DScene().addMolGroup(phesaInput);
 				
 				}
@@ -404,7 +404,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 	}
 	
 	protected void handlePheSACustomVolume(int function) {
-		List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
+		List<V3DRotatableGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
 		if(selectedGroups.size()!=1)
 			ONLY_ONE_PHESA_ALERT.showAndWait();
 		else if(!(selectedGroups.get(0) instanceof V3DCustomizablePheSA))
@@ -686,7 +686,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		MenuItem shapeDockItem = new MenuItem("Shape Docking");
 		shapeDockItem.setOnAction(e -> {
 			V3DBindingSiteVolume siteVol = null;
-			List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
+			List<V3DRotatableGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
 			if(selectedGroups.size()!=1)
 				return;
 			if(selectedGroups.get(0) instanceof V3DBindingSiteVolume)
@@ -827,8 +827,8 @@ public class V3DSceneWithSidePane extends BorderPane {
 		singleConf.setToggleGroup(toggleGroupInput);
 		hbox1.getChildren().addAll(label, singleConf, ensembleConf);
 		List<V3DCustomizablePheSA> phesaModels = new ArrayList<>();
-		List<V3DMolGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
-		for(V3DMolGroup molGroup : selectedGroups) {
+		List<V3DRotatableGroup> selectedGroups = mMoleculePanel.getAllSelectedMolGroups();
+		for(V3DRotatableGroup molGroup : selectedGroups) {
 			if(molGroup instanceof V3DCustomizablePheSA)
 				phesaModels.add((V3DCustomizablePheSA) molGroup);
 		}

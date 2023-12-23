@@ -20,25 +20,22 @@
 
 package org.openmolecules.fx.viewer3d.panel;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TreeTableView;
-import java.util.ArrayList;
-import java.util.List;
-
-
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DScene;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * Created by thomas on 27.09.16.
  */
-public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMolGroup> {
+public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRotatableGroup> {
 	//private static final boolean AUTO_HIDE_AT_START = false;
 	private V3DScene mScene3D;
 	private MoleculeGroupTable mGroupTable;
@@ -108,8 +105,8 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 	
 
 	
-	public List<V3DMolGroup> getAllSelectedMolGroups(){
-		List<V3DMolGroup> allSelectedMols = new ArrayList<V3DMolGroup>();
+	public List<V3DRotatableGroup> getAllSelectedMolGroups(){
+		List<V3DRotatableGroup> allSelectedMols = new ArrayList<V3DRotatableGroup>();
 		allSelectedMols.addAll(mGroupTable.getSelectedMols());
 		return allSelectedMols;
 	}
@@ -134,15 +131,15 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 
 
 	
-	public void addMolecule(V3DMolGroup fxmol) {
-		V3DMolGroup parent = mScene3D.getParent(fxmol);	
+	public void addMolecule(V3DRotatableGroup fxmol) {
+		V3DRotatableGroup parent = mScene3D.getParent(fxmol);
 		addMolecule(fxmol,parent);
 	}
 	
-	private void addMolecule(V3DMolGroup fxmol, V3DMolGroup parent) {
+	private void addMolecule(V3DRotatableGroup fxmol, V3DRotatableGroup parent) {
 		mGroupTable.addGroup(fxmol, parent);
 		if(fxmol.getMolGroups().size()>0) {
-			for(V3DMolGroup child : fxmol.getMolGroups()) {
+			for(V3DRotatableGroup child : fxmol.getMolGroups()) {
 				addMolecule(child,fxmol);
 			}
 		}
@@ -155,7 +152,7 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 
 
 	//@Override
-	public void removeMolecule(V3DMolGroup fxmol) {
+	public void removeMolecule(V3DRotatableGroup fxmol) {
 	
 		mGroupTable.removeMolecule(fxmol);
 
@@ -166,15 +163,15 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DMo
 
 
 	@Override
-	public void onChanged(Change<? extends V3DMolGroup> c) {
+	public void onChanged(Change<? extends V3DRotatableGroup> c) {
 		while(c.next()) {
-			List<? extends V3DMolGroup> added = c.getAddedSubList();
-			for(V3DMolGroup group : added) {
+			List<? extends V3DRotatableGroup> added = c.getAddedSubList();
+			for(V3DRotatableGroup group : added) {
 				addMolecule(group);
 			}
 			
-			List<? extends V3DMolGroup> removed = c.getRemoved();
-			for(V3DMolGroup group : removed) {
+			List<? extends V3DRotatableGroup> removed = c.getRemoved();
+			for(V3DRotatableGroup group : removed) {
 				removeMolecule(group);
 			}
 		}

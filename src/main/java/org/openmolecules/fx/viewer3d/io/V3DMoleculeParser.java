@@ -7,7 +7,6 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.ConformerSet;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.CompoundFileParser;
-import com.actelion.research.chem.io.CompoundTableConstants;
 import com.actelion.research.chem.io.DWARFileParser;
 import com.actelion.research.chem.io.DWARFileParser.SpecialField;
 import com.actelion.research.chem.io.Mol2FileParser;
@@ -21,7 +20,7 @@ import com.actelion.research.chem.phesa.PheSAMolecule;
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
@@ -114,7 +113,7 @@ public class V3DMoleculeParser {
 
 	
 	private static void parseFile(V3DScene scene,String file) {
-		List<V3DMolGroup> molGroups = new ArrayList<V3DMolGroup>();
+		List<V3DRotatableGroup> molGroups = new ArrayList<V3DRotatableGroup>();
 
 		if(file.endsWith(".mol") || file.endsWith(".mol2") || file.endsWith(".sdf") || file.endsWith(".dwar") 
 				|| file.endsWith(".mol") ) {
@@ -124,7 +123,7 @@ public class V3DMoleculeParser {
 		}
 		else if(file.endsWith(".pdb")) {
 			try {
-				V3DMolGroup pdbGroup = new V3DMolGroup(new File(file).getName().split("\\.")[0]);
+				V3DRotatableGroup pdbGroup = new V3DRotatableGroup(new File(file).getName().split("\\.")[0]);
 				scene.addMolGroup(pdbGroup);
 				PDBFileParser parser = new PDBFileParser();
 				parser.parse(new File(file)).extractMols().forEach((k,v) -> {
@@ -139,7 +138,7 @@ public class V3DMoleculeParser {
 						role =  V3DMolecule.MoleculeRole.MACROMOLECULE;
 						isProtein = true;
 					}
-					V3DMolGroup molGroup = new V3DMolGroup(k.toUpperCase());
+					V3DRotatableGroup molGroup = new V3DRotatableGroup(k.toUpperCase());
 					v.forEach(e -> {
 						if(role==V3DMolecule.MoleculeRole.SOLVENT) 
 							e.setName("HOH" + " " + e.getAtomChainId(0));
@@ -153,7 +152,7 @@ public class V3DMoleculeParser {
 						groupMols.add(fxmol);
 						
 					});
-					pdbGroup.addMolGroup(molGroup);
+					pdbGroup.addGroup(molGroup);
 					for(V3DMolecule fxmol : groupMols) {
 						scene.addMolecule(fxmol, molGroup);
 						if(isProtein) 

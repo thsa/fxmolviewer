@@ -23,36 +23,27 @@ package org.openmolecules.fx.viewer3d.panel;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.coords.CoordinateInventor;
-
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import org.openmolecules.fx.viewer3d.MolStructureChangeListener;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
+
+import java.util.HashSet;
 
 /**
  * Created by thomas on 09/10/16.
  */
 public class MolGroupModel implements MolStructureChangeListener {
-	private V3DMolGroup mMol3D;
+	private V3DRotatableGroup mMol3D;
 	private BooleanProperty isMolVisible;
 	private ObjectProperty<StereoMolecule> mMol2D;
 	private ObjectProperty<MoleculeRole> mRole;
 	private HashSet<MolGroupModelChangeListener> mChangeListeners;
 
-	public MolGroupModel(V3DMolGroup mol3D)  {
+	public MolGroupModel(V3DRotatableGroup mol3D)  {
 		mMol3D = mol3D;
 		mChangeListeners = new HashSet<>();
 		mMol2D = new SimpleObjectProperty<StereoMolecule>();
@@ -65,7 +56,7 @@ public class MolGroupModel implements MolStructureChangeListener {
 		isMolVisible.addListener((v,ov,nv) -> mChangeListeners.forEach(e -> e.groupModelChanged()));
 	}
 
-	private StereoMolecule createMolecule2D(V3DMolGroup molGroup) {
+	private StereoMolecule createMolecule2D(V3DRotatableGroup molGroup) {
 		StereoMolecule mol2D = null;
 		if(molGroup instanceof V3DMolecule) {
 			V3DMolecule mol3D = (V3DMolecule) molGroup;
@@ -95,7 +86,7 @@ public class MolGroupModel implements MolStructureChangeListener {
 
 
 
-	public V3DMolGroup getMolecule3D() {
+	public V3DRotatableGroup getMolecule3D() {
 		return mMol3D;
 	}
 

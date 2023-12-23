@@ -1,32 +1,20 @@
 package org.openmolecules.fx.viewer3d.panel;
 
+import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
+import org.openmolecules.fx.viewer3d.V3DScene.ViewerSettings;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
-import org.openmolecules.fx.viewer3d.V3DScene.ViewerSettings;
-import org.openmolecules.fx.viewer3d.io.V3DMoleculeParser;
-import org.openmolecules.fx.viewer3d.io.V3DMoleculeWriter;
-
-import com.actelion.research.chem.phesa.VolumeGaussian;
-
-import javafx.event.EventHandler;
-import javafx.scene.Node;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.TreeTableRow;
-import javafx.scene.input.MouseEvent;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 
 public class MolPaneMouseHandler {
 	
@@ -89,7 +77,7 @@ public class MolPaneMouseHandler {
 		sContextMenu = popup;
 		popup.getItems().add(new SeparatorMenuItem());
 		if(model!=null) {
-			V3DMolGroup group = model.getMolecule3D();
+			V3DRotatableGroup group = model.getMolecule3D();
 			if(!(group instanceof V3DMolecule))
 					return;
 			MenuItem itemZoom = new MenuItem("Center View");
@@ -103,7 +91,7 @@ public class MolPaneMouseHandler {
 				MenuItem itemAddSubGroup = new MenuItem("Add New Subgroup");
 				itemAddSubGroup.setOnAction(e-> {
 					String groupName = createGroupDialog();
-					group.addMolGroup(new V3DMolGroup(groupName));
+					group.addGroup(new V3DRotatableGroup(groupName));
 				});
 				popup.getItems().add(itemAddSubGroup);
 				
@@ -242,10 +230,10 @@ public class MolPaneMouseHandler {
 	}
 	
 	
-	private V3DMolGroup createGroupChooserDialog() {
-		V3DMolGroup targetGroup = null;
+	private V3DRotatableGroup createGroupChooserDialog() {
+		V3DRotatableGroup targetGroup = null;
 		List<String> choices = new ArrayList<>();
-		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllAttachedMolGroups())
+		for(V3DRotatableGroup group : mMolPane.getV3DScene().getWorld().getAllAttachedRotatableGroups())
 			choices.add(group.getName());
 
 		ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0),choices);
@@ -253,7 +241,7 @@ public class MolPaneMouseHandler {
 		dialog.setContentText("Select Target Group: ");
 		Optional<String> result = dialog.showAndWait();
 		String target = result.get();
-		for(V3DMolGroup group : mMolPane.getV3DScene().getWorld().getAllAttachedMolGroups()) {
+		for(V3DRotatableGroup group : mMolPane.getV3DScene().getWorld().getAllAttachedRotatableGroups()) {
 			if(group.getName()==target) {
 				targetGroup = group;
 				break;

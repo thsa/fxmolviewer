@@ -5,19 +5,19 @@ import javafx.geometry.Point3D;
 import javafx.scene.paint.Color;
 import org.openmolecules.fx.viewer3d.MolCoordinatesChangeListener;
 import org.openmolecules.fx.viewer3d.TransformationListener;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.render.MoleculeArchitect;
 
 public class AtomIndexLabel {
-	private V3DMolGroup mWorld;
+	private V3DRotatableGroup mWorld;
 	private NodeDetail mNodeDetail;
 	private NonRotatingLabel mLabel;
 	private V3DMolecule mFXMol;
 	private MolCoordinatesChangeListener mMCCL;
 	private TransformationListener mTL;
 
-	public AtomIndexLabel(V3DMolGroup world, V3DMolecule fxmol, NodeDetail detail) {
+	public AtomIndexLabel(V3DRotatableGroup world, V3DMolecule fxmol, NodeDetail detail) {
 		mWorld = world;
 		mFXMol = fxmol;
 		mNodeDetail = detail;

@@ -1,10 +1,9 @@
 package org.openmolecules.fx.tasks;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.openmolecules.fx.viewer3d.V3DBindingSite;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
 import org.openmolecules.fx.viewer3d.V3DScene;
@@ -17,7 +16,6 @@ import com.actelion.research.chem.docking.DockingEngine.DockingResult;
 import com.actelion.research.chem.docking.DockingFailedException;
 
 import javafx.application.Platform;
-import javafx.geometry.Point3D;
 
 public class V3DDockingEngine {
 	
@@ -62,7 +60,7 @@ public class V3DDockingEngine {
 			DockingResult result = engine.dockMolecule(mol);
 			StereoMolecule docked = result.getPose();
 
-			V3DMolGroup dockedGroup = new V3DMolGroup("DOCKED");
+			V3DRotatableGroup dockedGroup = new V3DRotatableGroup("DOCKED");
 			Platform.runLater(() -> {
 				scene3D.addMolGroup(dockedGroup);
 				V3DMolecule fxmol = new V3DMolecule(docked);
@@ -83,7 +81,7 @@ public class V3DDockingEngine {
 		StereoMolecule mol = new StereoMolecule(newLig);
 		mol.ensureHelperArrays(Molecule.cHelperCIP);
 		
-		V3DMolGroup dockedGroup = new V3DMolGroup("DOCKED");
+		V3DRotatableGroup dockedGroup = new V3DRotatableGroup("DOCKED");
 		Platform.runLater(() -> {
 			scene3D.addMolGroup(dockedGroup);
 		});

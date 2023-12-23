@@ -9,58 +9,58 @@ import javafx.geometry.Point3D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
+public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	
-	protected ObservableList<V3DMolGroup> children;
-	protected List<ListChangeListener<V3DMolGroup>> listeners;
+	protected ObservableList<V3DRotatableGroup> children;
+	protected List<ListChangeListener<V3DRotatableGroup>> listeners;
 
 	
-	public V3DMolGroup(String name) {
+	public V3DRotatableGroup(String name) {
 		super(name);
 		children = FXCollections.observableArrayList();
-		listeners = new ArrayList<ListChangeListener<V3DMolGroup>>();
+		listeners = new ArrayList<ListChangeListener<V3DRotatableGroup>>();
 	}
 
 	
-	public void addMolGroup(V3DMolGroup fxmol) {
-		for(ListChangeListener<V3DMolGroup> listener : listeners)
-			fxmol.addListener(listener);
-		children.add(fxmol);
-		getChildren().add(fxmol);
-		this.visibleProperty().addListener((v,ov,nv) -> fxmol.setVisible(nv));
+	public void addGroup(V3DRotatableGroup group) {
+		for(ListChangeListener<V3DRotatableGroup> listener : listeners)
+			group.addListener(listener);
+		children.add(group);
+		getChildren().add(group);
+		this.visibleProperty().addListener((v,ov,nv) -> group.setVisible(nv));
 	}
 	
-	public void deleteMolecule(V3DMolGroup toDelete) {
+	public void deleteMolecule(V3DRotatableGroup toDelete) {
 		deleteMolecule(toDelete,this);
 	}
 	
-	private void deleteMolecule(V3DMolGroup toDelete, V3DMolGroup root) {
-		List<V3DMolGroup> children = root.children;
+	private void deleteMolecule(V3DRotatableGroup toDelete, V3DRotatableGroup root) {
+		List<V3DRotatableGroup> children = root.children;
 		if(children.size()==0)
 			return;
 		if(children.contains(toDelete)) {
 			root.children.remove(toDelete);
 			root.getChildren().remove(toDelete);
 		}
-		for(V3DMolGroup child : children)
+		for(V3DRotatableGroup child : children)
 			deleteMolecule(toDelete,child);
 	}
 	
 	/*
-	public V3DMolGroup getParent(V3DMolGroup group) {
+	public V3DRotatableGroup getParent(V3DRotatableGroup group) {
 		return getParent(group,this);
 	}
 	
-	private V3DMolGroup getParent(V3DMolGroup group, V3DMolGroup root) {
-		List<V3DMolGroup> children = root.children;
+	private V3DRotatableGroup getParent(V3DRotatableGroup group, V3DRotatableGroup root) {
+		List<V3DRotatableGroup> children = root.children;
 		if(children.size()==0)
 			return null;
 		else {
 			if(children.contains(group))
 				return root;
 			else {
-				for(V3DMolGroup child : children) {
-					V3DMolGroup temp = getParent(group,child);
+				for(V3DRotatableGroup child : children) {
+					V3DRotatableGroup temp = getParent(group,child);
 					if(temp!=null)
 						return temp;
 				}
@@ -71,27 +71,27 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	}
 	*/
 	//all nodes of the subtree attached to this group
-	public List<V3DMolGroup> getAllAttachedMolGroups() {
-		List<V3DMolGroup> allChildren = new ArrayList<V3DMolGroup>();
-		getAllAttachedMolGroups(this,allChildren);
+	public List<V3DRotatableGroup> getAllAttachedRotatableGroups() {
+		List<V3DRotatableGroup> allChildren = new ArrayList<V3DRotatableGroup>();
+		getAllAttachedRotatableGroups(this,allChildren);
 		return allChildren;
 	}
 	
-	private void getAllAttachedMolGroups(V3DMolGroup root, List<V3DMolGroup> allChildren) {
+	private void getAllAttachedRotatableGroups(V3DRotatableGroup root, List<V3DRotatableGroup> allChildren) {
 		allChildren.add(root);
 		if(root.getMolGroups().size()==0)
 			return;
-		for(V3DMolGroup group :root.getMolGroups())
-			getAllAttachedMolGroups(group,allChildren);
+		for(V3DRotatableGroup group :root.getMolGroups())
+			getAllAttachedRotatableGroups(group,allChildren);
 		
 	}
 	
-	public List<V3DMolGroup> getMolGroups() {
+	public List<V3DRotatableGroup> getMolGroups() {
 		return this.children;
 	}
 
 	
-	public void addListener(ListChangeListener<V3DMolGroup> listener) {
+	public void addListener(ListChangeListener<V3DRotatableGroup> listener) {
 		listeners.add(listener);
 		children.addListener(listener);
 		children.forEach(e -> e.addListener(listener));
@@ -104,12 +104,12 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	 * @return
 	 */
 	/*
-	public V3DMolGroup getParentSubGroup(V3DMolGroup world) {
+	public V3DRotatableGroup getParentSubGroup(V3DRotatableGroup world) {
 		if(this==world)
 			return null;
-		V3DMolGroup subGroup = this;
+		V3DRotatableGroup subGroup = this;
 		while(true) {
-			V3DMolGroup parent = world.getParent(subGroup);
+			V3DRotatableGroup parent = world.getParent(subGroup);
 			if(parent==world)
 				return subGroup;
 			subGroup = parent;
@@ -120,9 +120,9 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
 		if(this==scene.getWorld())
 			return new Coordinates(coordinates.x, coordinates.y, coordinates.z);
-		V3DMolGroup subGroup = this;
+		V3DRotatableGroup subGroup = this;
 		while(true) {
-			V3DMolGroup parent = scene.getParent(subGroup);
+			V3DRotatableGroup parent = scene.getParent(subGroup);
 			point = subGroup.localToParent(point);
 			if(parent==scene.getWorld())
 				return new Coordinates(point.getX(), point.getY(), point.getZ());
@@ -136,9 +136,9 @@ public class V3DMolGroup extends RotatableGroup implements IV3DMoleculeGroup {
 		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
 		if(this==scene.getWorld())
 			return new Coordinates(coordinates.x, coordinates.y, coordinates.z);
-		V3DMolGroup subGroup = this;
+		V3DRotatableGroup subGroup = this;
 		while(true) {
-			V3DMolGroup parent = scene.getParent(subGroup);
+			V3DRotatableGroup parent = scene.getParent(subGroup);
 			point = subGroup.parentToLocal(point);
 			if(parent==scene.getWorld())
 				return new Coordinates(point.getX(), point.getY(), point.getZ());

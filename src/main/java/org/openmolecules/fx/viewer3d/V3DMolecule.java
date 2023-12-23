@@ -61,7 +61,7 @@ import java.util.stream.IntStream;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
-public class V3DMolecule extends V3DMolGroup {
+public class V3DMolecule extends V3DRotatableGroup {
 	private static final float HIGHLIGHT_SCALE = 1.2f;
 	private static int MAX_ID = 0;
 	private static final double DEFAULT_SURFACE_TRANSPARENCY = 0.1;
@@ -271,7 +271,7 @@ public class V3DMolecule extends V3DMolGroup {
 		return mLabelList != null;
 	}
 
-	public void addAtomIndexLabels(V3DMolGroup world) {
+	public void addAtomIndexLabels(V3DRotatableGroup world) {
 		if (mLabelList == null) {
 			mLabelList = new ArrayList<>();
 			for (Node node:getChildren()) {
@@ -317,19 +317,19 @@ public class V3DMolecule extends V3DMolGroup {
 
 	private void constructNegativeReceptorImage(V3DBindingSiteVolume bsVolume) {
 		bsVolume.buildVolume();
-		this.addMolGroup(bsVolume);
+		this.addGroup(bsVolume);
 	}
 	
 	private void constructPharmacophore(V3DCustomizablePheSA pharmacophore) {
 		pharmacophore.buildPharmacophore();
-		this.addMolGroup(pharmacophore);
+		this.addGroup(pharmacophore);
 		//Platform.runLater(() -> getChildren().add(mPharmacophore));
 		mListeners.add(pharmacophore);
 	}
 	
 	public List<V3DCustomizablePheSA> getPharmacophoreModels() {
 		List<V3DCustomizablePheSA> phesaModels = new ArrayList<>();
-		for(V3DMolGroup customizablePheSA : this.getMolGroups()) {
+		for(V3DRotatableGroup customizablePheSA : this.getMolGroups()) {
 			if(customizablePheSA instanceof V3DCustomizablePheSA) {
 				phesaModels.add((V3DCustomizablePheSA)customizablePheSA);
 			}
@@ -1228,8 +1228,8 @@ public class V3DMolecule extends V3DMolGroup {
 	
 	
 	public void removeAllPharmacophores() {
-		List<V3DMolGroup> allChildren = this.getAllAttachedMolGroups();
-		for(V3DMolGroup child : allChildren) {
+		List<V3DRotatableGroup> allChildren = this.getAllAttachedRotatableGroups();
+		for(V3DRotatableGroup child : allChildren) {
 			if(child instanceof V3DCustomizablePheSA)
 				removePharmacophore((V3DCustomizablePheSA)child);
 		}

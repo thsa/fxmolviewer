@@ -13,7 +13,7 @@ import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 
-public class V3DBindingSiteVolume extends V3DMolGroup implements BindingSiteVolumeBuilder {
+public class V3DBindingSiteVolume extends V3DRotatableGroup implements BindingSiteVolumeBuilder {
 	
 	private ShapeVolume bsVol;
 	

@@ -386,7 +386,7 @@ public class V3DMouseHandler {
 	}
 
 	private void translateMolecule(V3DMolecule fxmol, double dx, double dy, double dz) {
-		V3DMolGroup world = (V3DMolGroup)fxmol.getParent();
+		V3DRotatableGroup world = (V3DRotatableGroup)fxmol.getParent();
 
 		double f = getScreenToObjectFactor(fxmol.getHighlightedZ());
 

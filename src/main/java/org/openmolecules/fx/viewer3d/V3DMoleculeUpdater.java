@@ -1,25 +1,18 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.conf.Conformer;
-import com.actelion.research.chem.conf.TorsionDB;
 import com.actelion.research.chem.phesa.VolumeGaussian;
 import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
-import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
-import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
 
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
-import org.openmolecules.fx.viewer3d.nodes.PPArrow;
 import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.fx.viewer3d.nodes.AbstractPPNode;
-import org.openmolecules.fx.viewer3d.nodes.IPPNode;
-import org.openmolecules.mesh.Cone;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreArchitect;
@@ -67,7 +60,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 		}
 		
 		
-		for(V3DMolGroup group : fxmol.getMolGroups()) {
+		for(V3DRotatableGroup group : fxmol.getMolGroups()) {
 			if(group instanceof V3DCustomizablePheSA) { 
 				V3DCustomizablePheSA pharmacophore = (V3DCustomizablePheSA) group;
 				for (Node node:pharmacophore.getChildren()) {
@@ -84,7 +77,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 
 	public void update() {
 		mArchitect.buildMolecule(mV3DMolecule.getMolecule());
-		for(V3DMolGroup group : mV3DMolecule.getMolGroups()) {
+		for(V3DRotatableGroup group : mV3DMolecule.getMolGroups()) {
 			if(group instanceof V3DCustomizablePheSA) { 
 				V3DCustomizablePheSA pharmacophore = (V3DCustomizablePheSA) group;
 				mPPArchitect.buildPharmacophore(pharmacophore.getMolVol(), 0);

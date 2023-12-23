@@ -31,7 +31,7 @@ import javafx.scene.shape.MeshView;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.pdb.MMTFParser;
@@ -375,7 +375,7 @@ public class StartOptions {
 							SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+shift),
 							SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+2*shift), 1.0);
 				}
-				V3DMolGroup complex = new V3DMolGroup(pdbEntryCode);
+				V3DRotatableGroup complex = new V3DRotatableGroup(pdbEntryCode);
 				System.out.println(pdbEntryCode);
 				scene.addMolGroup(complex);
 				int largeMoleculeIndex = 0;

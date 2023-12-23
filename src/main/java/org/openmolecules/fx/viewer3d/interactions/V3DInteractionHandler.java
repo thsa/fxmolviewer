@@ -3,7 +3,7 @@ package org.openmolecules.fx.viewer3d.interactions;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.V3DScene;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
+public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGroup> {
 	
 	private V3DScene mScene3D;
 	private List<V3DInteractingPair> mInteractingPairs;
@@ -92,13 +92,13 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 			else 
 				compatibleByGroup = false; // one is in the world, the other belongs to a subgroup
 		}
-		V3DMolGroup subgroup1 = null; 
-		V3DMolGroup subgroup2 = null;
+		V3DRotatableGroup subgroup1 = null;
+		V3DRotatableGroup subgroup2 = null;
 		//neither fxmol1 nor fxmol2 are attached directly to the world group, but belong to subgroups
-		for(V3DMolGroup subgroup : mScene3D.getWorld().getMolGroups()) {
-			if(subgroup.getAllAttachedMolGroups().contains(fxmol1))
+		for(V3DRotatableGroup subgroup : mScene3D.getWorld().getMolGroups()) {
+			if(subgroup.getAllAttachedRotatableGroups().contains(fxmol1))
 				subgroup1 = subgroup;
-			if(subgroup.getAllAttachedMolGroups().contains(fxmol2))
+			if(subgroup.getAllAttachedRotatableGroups().contains(fxmol2))
 				subgroup2 = subgroup;
 			
 		}
@@ -121,7 +121,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 		return interacting;
 	}
 
-	public void removeMolecule(V3DMolGroup group) {
+	public void removeGroup(V3DRotatableGroup group) {
 		if(group instanceof V3DMolecule) {
 			V3DMolecule fxmol = (V3DMolecule) group;
 			mInteractionSites.remove(fxmol);
@@ -137,7 +137,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DMolGroup> {
 		
 	}
 	@Override
-	public void onChanged(Change<? extends V3DMolGroup> c) {
+	public void onChanged(Change<? extends V3DRotatableGroup> c) {
 		update();
 	}
 

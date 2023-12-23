@@ -1,22 +1,16 @@
 package org.openmolecules.fx.viewer3d.panel;
 
-import java.io.IOException;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.NodeOrientation;
+import javafx.scene.control.*;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
+import org.openmolecules.fx.viewer3d.V3DScene.ViewerSettings;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.openmolecules.fx.viewer3d.V3DMolGroup;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
-import org.openmolecules.fx.viewer3d.V3DScene.ViewerSettings;
-
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.geometry.NodeOrientation;
-import javafx.scene.control.Label;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableView;
 
 
 public class MoleculeGroupTable {
@@ -92,11 +86,11 @@ public class MoleculeGroupTable {
 
 	}
 
-	public void addGroup(V3DMolGroup molGroup, V3DMolGroup parent) {
+	public void addGroup(V3DRotatableGroup molGroup, V3DRotatableGroup parent) {
 		addChild(molGroup,parent);
 	}
 	
-	public void removeMolecule(V3DMolGroup fxmol) {
+	public void removeMolecule(V3DRotatableGroup fxmol) {
 		mMolTable.getSelectionModel().clearSelection();
 		TreeItem<MolGroupModel> root = mMolTable.getRoot();
 		deleteTreeItem(root,fxmol);
@@ -182,7 +176,7 @@ public class MoleculeGroupTable {
 	}
 
 	
-	public List<V3DMolGroup> getSelectedMols() {
+	public List<V3DRotatableGroup> getSelectedMols() {
 		 return  mMolTable.getSelectionModel().getSelectedItems().stream().map(e -> e.getValue().getMolecule3D()).collect(Collectors.toList());
 	}
 	
@@ -193,7 +187,7 @@ public class MoleculeGroupTable {
 		return treeItems;
 	}
 	
-	private void deleteTreeItem(TreeItem<MolGroupModel> parent, V3DMolGroup toDelete) {
+	private void deleteTreeItem(TreeItem<MolGroupModel> parent, V3DRotatableGroup toDelete) {
 
 			
 		if(parent.getChildren().size()==0)
@@ -207,7 +201,7 @@ public class MoleculeGroupTable {
 		}
 	}
 	
-	private void addChild(V3DMolGroup child, V3DMolGroup parent) {
+	private void addChild(V3DRotatableGroup child, V3DRotatableGroup parent) {
 		MolGroupModel newModel = new MolGroupModel(child);
 		TreeItem<MolGroupModel> newItem = new TreeItem<>(newModel);
 		if(newItem.getValue().getMolecule3D() instanceof V3DMolecule) {

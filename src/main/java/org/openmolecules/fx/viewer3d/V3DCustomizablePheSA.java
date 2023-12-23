@@ -4,10 +4,8 @@ import java.util.ArrayList;
 
 import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.fx.viewer3d.nodes.FXColorHelper;
-import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.PPArrow;
 import org.openmolecules.fx.viewer3d.nodes.PPSphere;
-import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreArchitect;
 import org.openmolecules.render.PharmacophoreBuilder;
 
@@ -16,17 +14,13 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.alignment3d.transformation.Rotation;
-import com.actelion.research.chem.alignment3d.transformation.Transformation;
 import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
 import com.actelion.research.chem.alignment3d.transformation.Translation;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.conf.ConformerSet;
 import com.actelion.research.chem.conf.ConformerSetGenerator;
 import com.actelion.research.chem.phesa.VolumeGaussian;
-import com.actelion.research.chem.phesa.DescriptorHandlerShape;
-import com.actelion.research.chem.phesa.Gaussian3D;
 import com.actelion.research.chem.phesa.MolecularVolume;
-import com.actelion.research.chem.phesa.PheSAAlignment;
 import com.actelion.research.chem.phesa.PheSAMolecule;
 import com.actelion.research.chem.phesa.pharmacophore.pp.AcceptorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.AromRingPoint;
@@ -35,9 +29,6 @@ import com.actelion.research.chem.phesa.pharmacophore.pp.DonorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
 
-import javafx.application.Platform;
-import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 
@@ -45,7 +36,7 @@ import java.util.Random;
 
 
 
-public class V3DCustomizablePheSA extends V3DMolGroup implements MolCoordinatesChangeListener, PharmacophoreBuilder{
+public class V3DCustomizablePheSA extends V3DRotatableGroup implements MolCoordinatesChangeListener, PharmacophoreBuilder{
 	
 	public static PhongMaterial sDonorMaterial;
 	public static PhongMaterial sAcceptorMaterial;
