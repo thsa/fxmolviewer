@@ -370,7 +370,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 					V3DRotatableGroup phesaInput = new V3DRotatableGroup("PheSA Queries");
 				    for(V3DMolecule fxMol: fxMols) 
 				    	phesaInput.addGroup(fxMol);
-				    mMoleculePanel.getV3DScene().addMolGroup(phesaInput);
+				    mMoleculePanel.getV3DScene().addGroup(phesaInput);
 				
 				}
 		});

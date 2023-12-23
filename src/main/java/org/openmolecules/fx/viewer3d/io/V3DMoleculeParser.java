@@ -124,7 +124,7 @@ public class V3DMoleculeParser {
 		else if(file.endsWith(".pdb")) {
 			try {
 				V3DRotatableGroup pdbGroup = new V3DRotatableGroup(new File(file).getName().split("\\.")[0]);
-				scene.addMolGroup(pdbGroup);
+				scene.addGroup(pdbGroup);
 				PDBFileParser parser = new PDBFileParser();
 				parser.parse(new File(file)).extractMols().forEach((k,v) -> {
 					List<V3DMolecule> groupMols = new ArrayList<V3DMolecule>();

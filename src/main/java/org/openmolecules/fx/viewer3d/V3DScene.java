@@ -284,9 +284,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			((V3DMolecule)group).removeAtomIndexLabels();
 		}
 //		fxmol.deactivateEvents();
-		mWorld.deleteMolecule(group);
+		mWorld.deleteGroup(group);
 		for(V3DSceneListener listener : mSceneListeners)
-			listener.removeMolecule(group);
+			listener.removeGroup(group);
 		}
 	
 	public void delete(List<? extends V3DRotatableGroup> groups) {
@@ -340,10 +340,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void clearAll() {
 		mMoleculeColorID = 0;
-		for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups()) {
-			delete(fxmol);
+		for(V3DRotatableGroup group : mWorld.getAllAttachedRotatableGroups()) {
+			delete(group);
 			for(V3DSceneListener listener : mSceneListeners)
-				listener.removeMolecule(fxmol);
+				listener.removeGroup(group);
 		}
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.initialize();
@@ -505,12 +505,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		optimizeView();
 	}
 	
-	public void addMolGroup(V3DRotatableGroup group, V3DRotatableGroup parent) {
+	public void addGroup(V3DRotatableGroup group, V3DRotatableGroup parent) {
 		parent.addGroup(group);
 	}
 
-	public void addMolGroup(V3DRotatableGroup group) {
-		addMolGroup(group, mWorld);
+	public void addGroup(V3DRotatableGroup group) {
+		addGroup(group, mWorld);
 	}
 
 	public void addMolecule(V3DMolecule fxmol) {
@@ -524,7 +524,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			fxmol.setColor(color);
 		group.addGroup(fxmol);
 		for(V3DSceneListener listener : mSceneListeners)
-			listener.addMolecule(fxmol);
+			listener.addGroup(fxmol);
 	}
 	
 	public void applySettings() {
@@ -816,12 +816,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				continue;
 			else 
 				visited.add(candidate);
-			if(candidate.getMolGroups().contains(child)) {
+			if(candidate.getGroups().contains(child)) {
 				parent = candidate;
 				foundParent = true;
 			}
 			else {
-				candidate.getMolGroups().stream().forEach(e -> queue.add(e));
+				candidate.getGroups().stream().forEach(e -> queue.add(e));
 			}
 		}
 		return parent;

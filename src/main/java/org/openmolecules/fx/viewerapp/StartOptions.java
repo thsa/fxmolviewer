@@ -377,7 +377,7 @@ public class StartOptions {
 				}
 				V3DRotatableGroup complex = new V3DRotatableGroup(pdbEntryCode);
 				System.out.println(pdbEntryCode);
-				scene.addMolGroup(complex);
+				scene.addGroup(complex);
 				int largeMoleculeIndex = 0;
 				int id = V3DMolecule.getNextID();
 				for (int i=0; i<mol.length; i++) {

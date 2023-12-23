@@ -18,7 +18,7 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 	public V3DRotatableGroup(String name) {
 		super(name);
 		children = FXCollections.observableArrayList();
-		listeners = new ArrayList<ListChangeListener<V3DRotatableGroup>>();
+		listeners = new ArrayList<>();
 	}
 
 	
@@ -30,20 +30,20 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 		this.visibleProperty().addListener((v,ov,nv) -> group.setVisible(nv));
 	}
 	
-	public void deleteMolecule(V3DRotatableGroup toDelete) {
-		deleteMolecule(toDelete,this);
+	public void deleteGroup(V3DRotatableGroup group) {
+		deleteGroup(group,this);
 	}
 	
-	private void deleteMolecule(V3DRotatableGroup toDelete, V3DRotatableGroup root) {
+	private void deleteGroup(V3DRotatableGroup group, V3DRotatableGroup root) {
 		List<V3DRotatableGroup> children = root.children;
 		if(children.size()==0)
 			return;
-		if(children.contains(toDelete)) {
-			root.children.remove(toDelete);
-			root.getChildren().remove(toDelete);
+		if(children.contains(group)) {
+			root.children.remove(group);
+			root.getChildren().remove(group);
 		}
 		for(V3DRotatableGroup child : children)
-			deleteMolecule(toDelete,child);
+			deleteGroup(group,child);
 	}
 	
 	/*
@@ -79,14 +79,14 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 	
 	private void getAllAttachedRotatableGroups(V3DRotatableGroup root, List<V3DRotatableGroup> allChildren) {
 		allChildren.add(root);
-		if(root.getMolGroups().size()==0)
+		if(root.getGroups().size()==0)
 			return;
-		for(V3DRotatableGroup group :root.getMolGroups())
+		for(V3DRotatableGroup group :root.getGroups())
 			getAllAttachedRotatableGroups(group,allChildren);
 		
 	}
 	
-	public List<V3DRotatableGroup> getMolGroups() {
+	public List<V3DRotatableGroup> getGroups() {
 		return this.children;
 	}
 

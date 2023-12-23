@@ -138,8 +138,8 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRo
 	
 	private void addMolecule(V3DRotatableGroup fxmol, V3DRotatableGroup parent) {
 		mGroupTable.addGroup(fxmol, parent);
-		if(fxmol.getMolGroups().size()>0) {
-			for(V3DRotatableGroup child : fxmol.getMolGroups()) {
+		if(fxmol.getGroups().size()>0) {
+			for(V3DRotatableGroup child : fxmol.getGroups()) {
 				addMolecule(child,fxmol);
 			}
 		}

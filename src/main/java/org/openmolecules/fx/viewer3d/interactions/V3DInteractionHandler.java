@@ -95,7 +95,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 		V3DRotatableGroup subgroup1 = null;
 		V3DRotatableGroup subgroup2 = null;
 		//neither fxmol1 nor fxmol2 are attached directly to the world group, but belong to subgroups
-		for(V3DRotatableGroup subgroup : mScene3D.getWorld().getMolGroups()) {
+		for(V3DRotatableGroup subgroup : mScene3D.getWorld().getGroups()) {
 			if(subgroup.getAllAttachedRotatableGroups().contains(fxmol1))
 				subgroup1 = subgroup;
 			if(subgroup.getAllAttachedRotatableGroups().contains(fxmol2))

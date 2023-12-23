@@ -329,7 +329,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	
 	public List<V3DCustomizablePheSA> getPharmacophoreModels() {
 		List<V3DCustomizablePheSA> phesaModels = new ArrayList<>();
-		for(V3DRotatableGroup customizablePheSA : this.getMolGroups()) {
+		for(V3DRotatableGroup customizablePheSA : this.getGroups()) {
 			if(customizablePheSA instanceof V3DCustomizablePheSA) {
 				phesaModels.add((V3DCustomizablePheSA)customizablePheSA);
 			}
@@ -1237,7 +1237,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	}
 	
 	public void removePharmacophore(V3DCustomizablePheSA pharmacophore) {
-		this.deleteMolecule(pharmacophore);
+		this.deleteGroup(pharmacophore);
 		//Platform.runLater(() -> getChildren().add(mPharmacophore));
 		mListeners.remove(pharmacophore);
 

@@ -62,7 +62,7 @@ public class V3DDockingEngine {
 
 			V3DRotatableGroup dockedGroup = new V3DRotatableGroup("DOCKED");
 			Platform.runLater(() -> {
-				scene3D.addMolGroup(dockedGroup);
+				scene3D.addGroup(dockedGroup);
 				V3DMolecule fxmol = new V3DMolecule(docked);
 				scene3D.addMolecule(fxmol, dockedGroup);
 			});
@@ -83,7 +83,7 @@ public class V3DDockingEngine {
 		
 		V3DRotatableGroup dockedGroup = new V3DRotatableGroup("DOCKED");
 		Platform.runLater(() -> {
-			scene3D.addMolGroup(dockedGroup);
+			scene3D.addGroup(dockedGroup);
 		});
 		for(StereoMolecule toDock : library) {
 			try {

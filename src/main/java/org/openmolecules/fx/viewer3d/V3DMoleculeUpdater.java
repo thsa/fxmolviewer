@@ -60,7 +60,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 		}
 		
 		
-		for(V3DRotatableGroup group : fxmol.getMolGroups()) {
+		for(V3DRotatableGroup group : fxmol.getGroups()) {
 			if(group instanceof V3DCustomizablePheSA) { 
 				V3DCustomizablePheSA pharmacophore = (V3DCustomizablePheSA) group;
 				for (Node node:pharmacophore.getChildren()) {
@@ -77,7 +77,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 
 	public void update() {
 		mArchitect.buildMolecule(mV3DMolecule.getMolecule());
-		for(V3DRotatableGroup group : mV3DMolecule.getMolGroups()) {
+		for(V3DRotatableGroup group : mV3DMolecule.getGroups()) {
 			if(group instanceof V3DCustomizablePheSA) { 
 				V3DCustomizablePheSA pharmacophore = (V3DCustomizablePheSA) group;
 				mPPArchitect.buildPharmacophore(pharmacophore.getMolVol(), 0);

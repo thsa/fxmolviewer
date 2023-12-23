@@ -24,8 +24,7 @@ package org.openmolecules.fx.viewer3d;
  * Created by thomas on 09/10/16.
  */
 public interface V3DSceneListener {
-//	public void updateMolecule(V3DMolecule fxmol);
-	public void addMolecule(V3DRotatableGroup fxmol);
-	public void removeMolecule(V3DRotatableGroup fxmol);
+	public void addGroup(V3DRotatableGroup group);
+	public void removeGroup(V3DRotatableGroup group);
 	public void initialize();
 }
