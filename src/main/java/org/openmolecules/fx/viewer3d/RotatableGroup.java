@@ -39,7 +39,7 @@ public class RotatableGroup extends Group implements ChangeListener<Number>, IV3
 	public RotatableGroup(String name) {
 		mRotation = new Rotate();
 		getTransforms().add(mRotation);
-		mTransformationListenerList = new ArrayList<TransformationListener>();
+		mTransformationListenerList = new ArrayList<>();
 		translateXProperty().addListener(this);
 		translateYProperty().addListener(this);
 		translateZProperty().addListener(this);

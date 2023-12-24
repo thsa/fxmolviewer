@@ -133,9 +133,8 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 				}
 			}
 		}
-		
-		
 	}
+
 	@Override
 	public void onChanged(Change<? extends V3DRotatableGroup> c) {
 		update();
@@ -154,8 +153,6 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 		for(V3DInteractingPair pair: mInteractingPairs) 
 			pair.cleanup();
 		}
-
-
 	}
 
 

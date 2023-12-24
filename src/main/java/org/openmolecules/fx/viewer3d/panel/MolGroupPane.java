@@ -54,9 +54,7 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRo
 		MolPaneMouseHandler mouseHandler = new MolPaneMouseHandler(this);
 		mGroupTable = new MoleculeGroupTable(this);
 		setContent(mGroupTable.getTable());
-
 	}
-	
 	
 	public void clearTableSelections() {
 		mGroupTable.getTable().getSelectionModel().clearSelection();
@@ -65,8 +63,6 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRo
 	public V3DScene getV3DScene() {
 		return mScene3D;
 	}
-	
-
 	
 	public TreeTableView<MolGroupModel> getMolTable() {
 		return mGroupTable.getTable();
@@ -79,31 +75,22 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRo
 	
 	public void changeVisibilitySelected(boolean isVisible) {
 		mGroupTable.changeVisibilitySelected(isVisible);
-
 	}
 	
 	public void changeRoleSelected(MoleculeRole role) {
-
 			mGroupTable.changeRoleSelected(role);
-		
 	}
 	
 	public void updateTableSelection() {
 		mGroupTable.updateTableSelection();
 	}
-	
-	
+
 	/*
 	public void changeGroupSelected(int targetGroup) {
-
 			mGroupTable.changeGroupSelected(targetGroup);
 		}
 	}
-	
-
 	*/
-	
-
 	
 	public List<V3DRotatableGroup> getAllSelectedMolGroups(){
 		List<V3DRotatableGroup> allSelectedMols = new ArrayList<V3DRotatableGroup>();
@@ -128,8 +115,6 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRo
 		});
 		return allMols;
 	}
-
-
 	
 	public void addMolecule(V3DRotatableGroup fxmol) {
 		V3DRotatableGroup parent = mScene3D.getParent(fxmol);
@@ -148,19 +133,10 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRo
 		}
 	}
 
-	
-
-
 	//@Override
 	public void removeMolecule(V3DRotatableGroup fxmol) {
-	
 		mGroupTable.removeMolecule(fxmol);
-
-		
 	}
-	
-
-
 
 	@Override
 	public void onChanged(Change<? extends V3DRotatableGroup> c) {
@@ -176,7 +152,4 @@ public class MolGroupPane extends ScrollPane implements ListChangeListener<V3DRo
 			}
 		}
 	}
-		
-		
-	
 }

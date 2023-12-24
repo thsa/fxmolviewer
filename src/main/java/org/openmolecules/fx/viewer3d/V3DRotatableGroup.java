@@ -1,6 +1,7 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -11,41 +12,42 @@ import java.util.List;
 
 public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGroup {
 	
-	protected ObservableList<V3DRotatableGroup> children;
-	protected List<ListChangeListener<V3DRotatableGroup>> listeners;
+	private ObservableList<V3DRotatableGroup> children;
+	private List<ListChangeListener<V3DRotatableGroup>> listeners;
+	private final ChangeListener<Boolean> mVisibilityListener;
 
-	
 	public V3DRotatableGroup(String name) {
 		super(name);
 		children = FXCollections.observableArrayList();
 		listeners = new ArrayList<>();
+		mVisibilityListener = (observable, oldValue, newValue) -> setVisible(newValue);
 	}
 
-	
 	public void addGroup(V3DRotatableGroup group) {
 		for(ListChangeListener<V3DRotatableGroup> listener : listeners)
 			group.addListener(listener);
 		children.add(group);
 		getChildren().add(group);
-		this.visibleProperty().addListener((v,ov,nv) -> group.setVisible(nv));
+		visibleProperty().addListener(group.mVisibilityListener);
 	}
-	
+
 	public void deleteGroup(V3DRotatableGroup group) {
 		deleteGroup(group,this);
 	}
-	
+
 	private void deleteGroup(V3DRotatableGroup group, V3DRotatableGroup root) {
 		List<V3DRotatableGroup> children = root.children;
-		if(children.size()==0)
-			return;
-		if(children.contains(group)) {
-			root.children.remove(group);
-			root.getChildren().remove(group);
+		if(!children.isEmpty()) {
+			if(children.contains(group)) {
+				root.children.remove(group);
+				root.getChildren().remove(group);
+				root.visibleProperty().removeListener(group.mVisibilityListener);
+			}
+			for(V3DRotatableGroup child : children)
+				deleteGroup(group,child);
 		}
-		for(V3DRotatableGroup child : children)
-			deleteGroup(group,child);
 	}
-	
+
 	/*
 	public V3DRotatableGroup getParent(V3DRotatableGroup group) {
 		return getParent(group,this);
@@ -67,9 +69,8 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 			}
 		}
 		return null;
-		
-	}
-	*/
+	}	*/
+
 	//all nodes of the subtree attached to this group
 	public List<V3DRotatableGroup> getAllAttachedRotatableGroups() {
 		List<V3DRotatableGroup> allChildren = new ArrayList<V3DRotatableGroup>();
@@ -83,39 +84,42 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 			return;
 		for(V3DRotatableGroup group :root.getGroups())
 			getAllAttachedRotatableGroups(group,allChildren);
-		
 	}
 	
 	public List<V3DRotatableGroup> getGroups() {
 		return this.children;
 	}
 
-	
 	public void addListener(ListChangeListener<V3DRotatableGroup> listener) {
 		listeners.add(listener);
 		children.addListener(listener);
 		children.forEach(e -> e.addListener(listener));
 	}
-	
-	/**
-	 * the parent group of all V3DMolGroups (and therefore all V3DMolecules) is the "world" group which is 
-	 * attached to the scene. As subGroups we consider all groups that are child nodes of the world group.
-	 * @param world
-	 * @return
-	 */
-	/*
-	public V3DRotatableGroup getParentSubGroup(V3DRotatableGroup world) {
-		if(this==world)
-			return null;
-		V3DRotatableGroup subGroup = this;
-		while(true) {
-			V3DRotatableGroup parent = world.getParent(subGroup);
-			if(parent==world)
-				return subGroup;
-			subGroup = parent;
-		}
+
+	public void removeListener(ListChangeListener<V3DRotatableGroup> listener) {
+		listeners.remove(listener);
+		children.removeListener(listener);
+		children.forEach(e -> e.removeListener(listener));
 	}
-	*/
+
+//	/**
+//	 * the parent group of all V3DMolGroups (and therefore all V3DMolecules) is the "world" group which is
+//	 * attached to the scene. As subGroups we consider all groups that are child nodes of the world group.
+//	 * @param world
+//	 * @return
+//	 */
+//	public V3DRotatableGroup getParentSubGroup(V3DRotatableGroup world) {
+//		if(this==world)
+//			return null;
+//		V3DRotatableGroup subGroup = this;
+//		while(true) {
+//			V3DRotatableGroup parent = world.getParent(subGroup);
+//			if(parent==world)
+//				return subGroup;
+//			subGroup = parent;
+//		}
+//	}
+
 	public Coordinates getWorldCoordinates(V3DScene scene, Coordinates coordinates) {
 		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
 		if(this==scene.getWorld())
@@ -144,11 +148,5 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 				return new Coordinates(point.getX(), point.getY(), point.getZ());
 			subGroup = parent;
 		}
-		
-		
 	}
-	
-
-	
-	
 }
