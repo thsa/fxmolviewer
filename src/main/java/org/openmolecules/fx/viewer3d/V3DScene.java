@@ -94,7 +94,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 	public enum ViewerSettings {
 		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND,
-		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION, STEREO_HSBS, STEREO_HOU
+		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION, STEREO_HSBS, STEREO_HOU, STEREO_SBS
 	}
 
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES);
@@ -644,7 +644,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		camera.setNearClip(CAMERA_NEAR_CLIP);
 		camera.setFarClip(CAMERA_FAR_CLIP);
 		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
-		if (mSettings.contains(ViewerSettings.STEREO_HSBS)) {
+		if (mSettings.contains(ViewerSettings.STEREO_SBS)) {
+			camera.setTranslateX(-EYE_DISTANCE/2);
+		}
+		else if (mSettings.contains(ViewerSettings.STEREO_HSBS)) {
 			camera.setScaleX(2.0);
 			camera.setTranslateX(-EYE_DISTANCE/2);
 		}

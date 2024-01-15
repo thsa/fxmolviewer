@@ -59,11 +59,29 @@ public class ViewerApp extends Application {
 			sceneMode.add(V3DScene.ViewerSettings.STEREO_HOU);
 		else if (System.getProperty("stereo", "").equalsIgnoreCase("hsbs"))
 			sceneMode.add(V3DScene.ViewerSettings.STEREO_HSBS);
+		else if (System.getProperty("stereo", "").equalsIgnoreCase("sbs"))
+			sceneMode.add(V3DScene.ViewerSettings.STEREO_SBS);
 
 		Parent view;
 		V3DScene scene3D;
 
-		if (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HSBS)) {
+		if (sceneMode.contains(V3DScene.ViewerSettings.STEREO_SBS)) {
+			GridPane stereoPane = new GridPane();
+			ColumnConstraints column1 = new ColumnConstraints();
+			column1.setPercentWidth(50);
+			ColumnConstraints column2 = new ColumnConstraints();
+			column2.setPercentWidth(50);
+			stereoPane.getColumnConstraints().addAll(column1, column2);
+			scene3D = new V3DScene(new Group(), INITIAL_WIDTH, INITIAL_HEIGHT, sceneMode);
+			stereoPane.add(scene3D, 0, 0);
+			RightEyeView cameraView = scene3D.buildRightEyeView();
+			stereoPane.add(cameraView, 1, 0);
+
+			cameraView.startViewing();
+
+			view = stereoPane;
+		}
+		else if (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HSBS)) {
 			GridPane stereoPane = new GridPane();
 			ColumnConstraints column1 = new ColumnConstraints();
 			column1.setPercentWidth(50);
@@ -105,7 +123,7 @@ public class ViewerApp extends Application {
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		scene.getStylesheets().add(css);
 
-		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.widthProperty().set(scene.getWidth() / (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HSBS) ? 2 : 1)));
+		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.widthProperty().set(scene.getWidth() / (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HSBS) || sceneMode.contains(V3DScene.ViewerSettings.STEREO_SBS) ? 2 : 1)));
 		scene.heightProperty().addListener((observableValue, number, t1) -> scene3D.setHeight(scene.getHeight() / (sceneMode.contains(V3DScene.ViewerSettings.STEREO_HOU) ? 2 : 1)));
 
 		primaryStage.setTitle("Molecule Viewer");
