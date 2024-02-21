@@ -545,6 +545,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 				}
 				else {
 					material = new PhongMaterial();
+					material.setSpecularColor(Color.GRAY);
 					material.setDiffuseMap(mSurfaceMesh[i].getTexture().getImage());
 				}
 
@@ -744,6 +745,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 			material = createMaterial(mSurfaceColor[surfaceType], 1.0 - mSurfaceTransparency[surfaceType]);
 		} else {
 			material = new PhongMaterial();
+			material.setSpecularColor(Color.GRAY);
 			material.setDiffuseMap(mSurfaceMesh[surfaceType].getTexture().getImage());
 		}
 		mSurface[surfaceType].setUserData(new NodeDetail(material, 0, true));
