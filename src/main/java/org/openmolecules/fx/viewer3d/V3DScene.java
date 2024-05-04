@@ -196,7 +196,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mPopupMenuController = controller;
 	}
 
-
 	public void addSceneListener(V3DSceneListener sl) {
 		mSceneListeners.add(sl);
 		}
