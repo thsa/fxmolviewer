@@ -20,11 +20,8 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import org.openmolecules.fx.viewer3d.panel.EditorPane;
-
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
@@ -38,7 +35,7 @@ public class V3DSceneWithSelection extends BorderPane {
 
 		setOnMousePressed(me -> {
 			mSelection = null;
-			if (me.getButton() == MouseButton.PRIMARY && !me.isMetaDown()) {
+			if (me.getButton() == MouseButton.PRIMARY && !me.isMetaDown() && !me.isAltDown()) {
 				mSelectionMode = me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0;
 				startSelection(me.getX(), me.getY());
 			}

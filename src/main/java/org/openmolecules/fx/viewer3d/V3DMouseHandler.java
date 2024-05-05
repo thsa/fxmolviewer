@@ -44,16 +44,16 @@ import org.openmolecules.render.TorsionHistogram;
 import java.util.stream.IntStream;
 
 public class V3DMouseHandler {
-	public static final long POPUP_DELAY = 750;	// milli seconds delay right mouse click may be used for rotation
+	public static final long POPUP_DELAY = 750;	// milliseconds delay right mouse click may be used for rotation
 	private static final int SINGLE_MOL_KEY = 1;	// 0: Shift; 1: Ctrl; 2: none (single mol if highlighted)
 
-	private static final long WHEEL_DELAY_LIMIT = 250;	// milli seconds; above this delay we have the smallest clip change
+	private static final long WHEEL_DELAY_LIMIT = 250;	// milliseconds; above this delay we have the smallest clip change
 	private static final double WHEEL_MIN_FACTOR = 0.05;// smallest clip change = this factor * smallest mouse wheel delta
 	private static final double WHEEL_MAX_FACTOR = 50;	// largest clip change * this factor * smallest clip change (when mouse wheel is rotated quickly)
 	private static final double DIHEDRAL_FACTOR = 0.0015;
 	
 	private volatile boolean mShowPopup;
-	private V3DScene mScene;
+	private final V3DScene mScene;
 	private double mMouseX,mMouseY;
 	private long mRecentWheelMillis;
 	private V3DMolecule mHighlightedMol,mAffectedMol;
@@ -166,7 +166,7 @@ public class V3DMouseHandler {
 			}
 		} );
 		scene.setOnMouseReleased(me -> {
-			if(mScene.isMouseDragged()==false) {
+			if(!mScene.isMouseDragged()) {
 				if ((me.getButton() == MouseButton.PRIMARY)) {
 					Node parent = mSelectedNode;
 					while (parent != null && !(parent instanceof V3DMolecule)) {
@@ -247,7 +247,7 @@ public class V3DMouseHandler {
 					translateCameraXY(-dx, -dy);
 				}
 			}
-			else if (me.isSecondaryButtonDown()) {
+			else if (isDraggingToRotate(me)) {
 				mShowPopup = false;
 				rotate(dx, dy, me.isShiftDown());
 			}
@@ -256,6 +256,10 @@ public class V3DMouseHandler {
 
 	private boolean isDraggingInXY(MouseEvent me) {
 		return me.isMiddleButtonDown() || (me.isPrimaryButtonDown() && me.isMetaDown());
+		}
+
+	private boolean isDraggingToRotate(MouseEvent me) {
+		return me.isSecondaryButtonDown() || (me.isPrimaryButtonDown() && me.isAltDown());
 		}
 
 	private void trackAffectedMol(boolean moleculeKeyIsDown) {
