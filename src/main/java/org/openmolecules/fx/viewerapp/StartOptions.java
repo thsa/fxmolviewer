@@ -348,7 +348,7 @@ public class StartOptions {
 			Molecule3D[] mol = null;
 			if (mmtfFile != null)
 				mol = MMTFParser.getStructureFromFile(mmtfFile, pdbEntryCode, MMTFParser.MODE_SPLIT_CHAINS);
-			else if (pdbEntryCode.length() != 0)
+			else if (!pdbEntryCode.isEmpty())
 				mol = MMTFParser.getStructureFromName(pdbEntryCode, MMTFParser.MODE_SPLIT_CHAINS);
 
 			if (mol != null) {

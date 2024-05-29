@@ -24,7 +24,9 @@ import org.rcsb.mmtf.dataholders.MmtfStructure;
 import org.rcsb.mmtf.decoder.GenericDecoder;
 import org.rcsb.mmtf.decoder.ReaderUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.TreeMap;
 
@@ -35,6 +37,22 @@ public class MMTFParser {
 
 	private static final int[] BOND_TYPE = { 0, 1, 2, 4, 4 };   // quadruple bond is not supported and generates a triple bond
 	private static TreeMap<String,Integer> sAtomicNoMap;
+
+	public static File saveMMTF(String name, String filepath) {
+		File file = new File(filepath);
+		if (file.exists())
+			return null;
+
+		try {
+			byte[] bytes = ReaderUtils.getByteArrayFromUrl(name);
+			Files.write(file.toPath(), bytes);
+			return file;
+		}
+		catch (IOException ioe) {
+			ioe.printStackTrace();
+			return null;
+		}
+	}
 
 	public static Molecule3D[] getStructureFromName(String name, int mode) {
 		try {
