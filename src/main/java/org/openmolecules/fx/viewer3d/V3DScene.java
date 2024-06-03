@@ -25,6 +25,7 @@ import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.chem.dnd.ChemistryDataFormats;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
+import com.actelion.research.gui.clipboard.TextClipboardHandler;
 import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -237,7 +238,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		new CoordinateInventor().invent(mol);
 		mClipboardHandler.copyMolecule(mol);
 		}
-	
+
+	public void copyIDCode(V3DMolecule fxmol) {
+		mCopiedMol = fxmol;
+		Canonizer canonizer = new Canonizer(fxmol.getMolecule());
+		TextClipboardHandler.copyText(canonizer.getIDCode()+" "+canonizer.getEncodedCoordinates());
+		}
+
 
 	public void paste() {
 		StereoMolecule mol = mClipboardHandler.pasteMolecule(false, SmilesParser.SMARTS_MODE_IS_SMILES);

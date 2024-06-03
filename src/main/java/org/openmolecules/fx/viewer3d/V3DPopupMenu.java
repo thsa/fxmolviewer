@@ -92,6 +92,10 @@ public class V3DPopupMenu extends ContextMenu {
 			itemCopy2D.setDisable(fxmol == null);
 			itemCopy2D.setOnAction(e -> scene.copy2D(fxmol));
 
+			MenuItem itemCopyIDCode = new MenuItem("Copy Molecule ID-Code");
+			itemCopyIDCode.setDisable(fxmol == null);
+			itemCopyIDCode.setOnAction(e -> scene.copyIDCode(fxmol));
+
 			MenuItem itemPaste = new MenuItem("Paste Molecule");
 			itemPaste.setOnAction(e -> scene.paste());
 
@@ -102,7 +106,7 @@ public class V3DPopupMenu extends ContextMenu {
 			MenuItem itemClear = new MenuItem("Clear All");
 			itemClear.setOnAction(e -> scene.clearAll());
 
-			menuEdit.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemPaste, itemDelete, new SeparatorMenuItem(), itemClear);
+			menuEdit.getItems().addAll(itemCut, itemCopy3D, itemCopy2D, itemCopyIDCode, itemPaste, itemDelete, new SeparatorMenuItem(), itemClear);
 
 			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SMALL_MOLS)) {
 				MenuItem itemCrop6 = new MenuItem("0.6 nm");
@@ -135,8 +139,12 @@ public class V3DPopupMenu extends ContextMenu {
 			itemCopy2D.setDisable(fxmol == null);
 			itemCopy2D.setOnAction(e -> scene.copy2D(fxmol));
 
+			MenuItem itemCopyIDCode = new MenuItem("Copy Molecule ID-Code");
+			itemCopyIDCode.setDisable(fxmol == null);
+			itemCopyIDCode.setOnAction(e -> scene.copyIDCode(fxmol));
+
 			Menu menuCopy = new Menu("Copy");
-			menuCopy.getItems().addAll(itemCopy3D, itemCopy2D);
+			menuCopy.getItems().addAll(itemCopy3D, itemCopy2D, itemCopyIDCode);
 
 			getItems().add(menuCopy);
 			getItems().add(new SeparatorMenuItem());

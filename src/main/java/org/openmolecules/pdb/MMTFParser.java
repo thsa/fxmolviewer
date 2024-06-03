@@ -64,10 +64,10 @@ public class MMTFParser {
 		}
 	}
 
-	public static Molecule3D[] getStructureFromFile(String path, String name, int mode) {
+	public static Molecule3D[] getStructureFromFile(String path, String pdbName, int mode) {
 		try {
-			MmtfStructure mmtfData = ReaderUtils.getDataFromFile(Paths.get(path + name + ".mmtf"));
-			return getStructure(mmtfData, name, mode);
+			MmtfStructure mmtfData = ReaderUtils.getDataFromFile(Paths.get(path));
+			return getStructure(mmtfData, pdbName, mode);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 			return null;

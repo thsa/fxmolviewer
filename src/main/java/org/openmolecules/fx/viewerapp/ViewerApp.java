@@ -129,8 +129,8 @@ public class ViewerApp extends Application {
 		primaryStage.setTitle("Molecule Viewer");
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		if (path.length() != 0)
-			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path.substring(0, path.lastIndexOf(File.separatorChar)+1), true).initializeScene(scene3D) );
+		if (!path.isEmpty())
+			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path, true).initializeScene(scene3D) );
 		else if (mode != -1)
 			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(scene3D) );
 		else if (System.getProperty("test") != null)
