@@ -239,10 +239,28 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mClipboardHandler.copyMolecule(mol);
 		}
 
-	public void copyIDCode(V3DMolecule fxmol) {
+	public void copyAsIDCode(V3DMolecule fxmol) {
 		mCopiedMol = fxmol;
 		Canonizer canonizer = new Canonizer(fxmol.getMolecule());
 		TextClipboardHandler.copyText(canonizer.getIDCode()+" "+canonizer.getEncodedCoordinates());
+		}
+
+
+	public void copyAsMolfileV2(V3DMolecule fxmol) {
+		mCopiedMol = fxmol;
+		TextClipboardHandler.copyText(new MolfileCreator(fxmol.getMolecule()).getMolfile());
+		}
+
+
+	public void copyAsMolfileV3(V3DMolecule fxmol) {
+		mCopiedMol = fxmol;
+		TextClipboardHandler.copyText(new MolfileV3Creator(fxmol.getMolecule()).getMolfile());
+		}
+
+
+	public void copyAsSmiles(V3DMolecule fxmol) {
+		mCopiedMol = fxmol;
+		TextClipboardHandler.copyText(new IsomericSmilesCreator(fxmol.getMolecule()).getSmiles());
 		}
 
 
@@ -280,6 +298,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), role);
 		mCopiedMol = null;
 		addMolecule(fxmol);
+		optimizeView(fxmol);
 		}
 	
 

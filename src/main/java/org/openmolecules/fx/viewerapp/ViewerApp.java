@@ -88,7 +88,7 @@ public class ViewerApp extends Application {
 			ColumnConstraints column2 = new ColumnConstraints();
 			column2.setPercentWidth(50);
 			stereoPane.getColumnConstraints().addAll(column1, column2);
-			scene3D = new V3DScene(new Group(), INITIAL_WIDTH /2, INITIAL_HEIGHT, sceneMode);
+			scene3D = new V3DScene(new Group(), INITIAL_WIDTH / 2f, INITIAL_HEIGHT, sceneMode);
 			stereoPane.add(scene3D, 0, 0);
 			RightEyeView cameraView = scene3D.buildRightEyeView();
 			stereoPane.add(cameraView, 1, 0);
@@ -104,7 +104,7 @@ public class ViewerApp extends Application {
 			RowConstraints row2 = new RowConstraints();
 			row2.setPercentHeight(50);
 			stereoPane.getRowConstraints().addAll(row1, row2);
-			scene3D = new V3DScene(new Group(), INITIAL_WIDTH, INITIAL_HEIGHT /2, sceneMode);
+			scene3D = new V3DScene(new Group(), INITIAL_WIDTH, INITIAL_HEIGHT / 2f, sceneMode);
 			stereoPane.add(scene3D, 0, 0);
 			RightEyeView cameraView = scene3D.buildRightEyeView();
 			stereoPane.add(cameraView, 0, 1);
