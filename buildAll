@@ -10,3 +10,4 @@ jar xf ../lib/openchemlib.jar
 cd ..
 jar -cfm fxmolviewer.jar manifest_additions.txt -C ./bin .
 chmod 755 fxmolviewer.jar
+ls -al fxmolviewer.jar

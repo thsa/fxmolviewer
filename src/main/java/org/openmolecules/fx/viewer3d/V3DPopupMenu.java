@@ -88,25 +88,23 @@ public class V3DPopupMenu extends ContextMenu {
 			itemCopy3D.setDisable(fxmol == null);
 			itemCopy3D.setOnAction(e -> scene.copy3D(fxmol));
 
-
-
-			MenuItem itemCopy2D = new MenuItem("As 2D-Molecule");
+			MenuItem itemCopy2D = new MenuItem("2D-Molecule");
 			itemCopy2D.setDisable(fxmol == null);
 			itemCopy2D.setOnAction(e -> scene.copy2D(fxmol));
 
-			MenuItem itemCopyIDCode = new MenuItem("As ID-Code");
+			MenuItem itemCopyIDCode = new MenuItem("ID-Code");
 			itemCopyIDCode.setDisable(fxmol == null);
 			itemCopyIDCode.setOnAction(e -> scene.copyAsIDCode(fxmol));
 
-			MenuItem itemCopyMolfileV2 = new MenuItem("As Molfile V2");
+			MenuItem itemCopyMolfileV2 = new MenuItem("Molfile V2");
 			itemCopyMolfileV2.setDisable(fxmol == null);
 			itemCopyMolfileV2.setOnAction(e -> scene.copyAsMolfileV2(fxmol));
 
-			MenuItem itemCopyMolfileV3 = new MenuItem("As Molfile V3");
+			MenuItem itemCopyMolfileV3 = new MenuItem("Molfile V3");
 			itemCopyMolfileV3.setDisable(fxmol == null);
 			itemCopyMolfileV3.setOnAction(e -> scene.copyAsMolfileV3(fxmol));
 
-			MenuItem itemCopySmiles = new MenuItem("As SMILES");
+			MenuItem itemCopySmiles = new MenuItem("SMILES");
 			itemCopySmiles.setDisable(fxmol == null);
 			itemCopySmiles.setOnAction(e -> scene.copyAsSmiles(fxmol));
 
@@ -148,31 +146,31 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(new SeparatorMenuItem());
 		}
 		else {
-			MenuItem itemCopy3D = new MenuItem("As 3D-Molecule");
+			MenuItem itemCopy3D = new MenuItem("3D-Molecule");
 			itemCopy3D.setDisable(fxmol == null);
 			itemCopy3D.setOnAction(e -> scene.copy3D(fxmol));
 
-			MenuItem itemCopy2D = new MenuItem("As 2D-Molecule");
+			MenuItem itemCopy2D = new MenuItem("2D-Molecule");
 			itemCopy2D.setDisable(fxmol == null);
 			itemCopy2D.setOnAction(e -> scene.copy2D(fxmol));
 
-			MenuItem itemCopyIDCode = new MenuItem("As ID-Code");
+			MenuItem itemCopyIDCode = new MenuItem("ID-Code");
 			itemCopyIDCode.setDisable(fxmol == null);
 			itemCopyIDCode.setOnAction(e -> scene.copyAsIDCode(fxmol));
 
-			MenuItem itemCopyMolfileV2 = new MenuItem("As Molfile V2");
+			MenuItem itemCopyMolfileV2 = new MenuItem("Molfile V2");
 			itemCopyMolfileV2.setDisable(fxmol == null);
 			itemCopyMolfileV2.setOnAction(e -> scene.copyAsMolfileV2(fxmol));
 
-			MenuItem itemCopyMolfileV3 = new MenuItem("As Molfile V3");
+			MenuItem itemCopyMolfileV3 = new MenuItem("Molfile V3");
 			itemCopyMolfileV3.setDisable(fxmol == null);
 			itemCopyMolfileV3.setOnAction(e -> scene.copyAsMolfileV3(fxmol));
 
-			MenuItem itemCopySmiles = new MenuItem("As SMILES");
+			MenuItem itemCopySmiles = new MenuItem("SMILES");
 			itemCopySmiles.setDisable(fxmol == null);
 			itemCopySmiles.setOnAction(e -> scene.copyAsSmiles(fxmol));
 
-			Menu menuCopy = new Menu("Copy Molecule");
+			Menu menuCopy = new Menu("Copy Molecule As");
 			menuCopy.getItems().addAll(itemCopy3D, itemCopy2D, itemCopyIDCode, itemCopyMolfileV2, itemCopyMolfileV3, itemCopySmiles);
 
 			getItems().add(menuCopy);

@@ -10,3 +10,4 @@ jar xf ../lib/commons-compiler-2.7.0.jar
 jar xf ../lib/janino-2.7.0.jar
 cd ..
 jar -cf molviewerlib.jar -C ./bin .
+ls -al molviewerlib.jar
