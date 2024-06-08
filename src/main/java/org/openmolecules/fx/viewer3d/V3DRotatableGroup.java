@@ -10,7 +10,7 @@ import javafx.geometry.Point3D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGroup {
+public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DMoleculeGroup {
 	
 	private ObservableList<V3DRotatableGroup> children;
 	private List<ListChangeListener<V3DRotatableGroup>> listeners;
@@ -21,6 +21,15 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 		children = FXCollections.observableArrayList();
 		listeners = new ArrayList<>();
 		mVisibilityListener = (observable, oldValue, newValue) -> setVisible(newValue);
+	}
+
+	public Object clone() throws CloneNotSupportedException {
+		V3DRotatableGroup rg = (V3DRotatableGroup)super.clone();
+		rg.children = FXCollections.observableArrayList();
+		for (V3DRotatableGroup child : children)
+			rg.children.add((V3DRotatableGroup)child.clone());
+
+		return rg;
 	}
 
 	public void addGroup(V3DRotatableGroup group) {
@@ -80,7 +89,7 @@ public class V3DRotatableGroup extends RotatableGroup implements IV3DMoleculeGro
 	
 	private void getAllAttachedRotatableGroups(V3DRotatableGroup root, List<V3DRotatableGroup> allChildren) {
 		allChildren.add(root);
-		if(root.getGroups().size()==0)
+		if(root.getGroups().isEmpty())
 			return;
 		for(V3DRotatableGroup group :root.getGroups())
 			getAllAttachedRotatableGroups(group,allChildren);

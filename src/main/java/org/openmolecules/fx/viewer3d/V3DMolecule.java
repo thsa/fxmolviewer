@@ -20,10 +20,7 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import com.actelion.research.chem.AtomFunctionAnalyzer;
-import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.Molecule;
-import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
 import com.actelion.research.chem.phesa.ShapeVolume;
@@ -81,26 +78,26 @@ public class V3DMolecule extends V3DRotatableGroup {
 
 	private static PhongMaterial sSolidHighlightedMaterial,sTransparentHighlightedMaterial,sPickedMaterial,sSelectedMaterial;
 
-	private StereoMolecule	mMol;
-	private Node			mLastPickedNode;
-	private Shape3D			mHighlightedShape;
-	private PhongMaterial	mOverrideMaterial,mHydrogenMaterial;
-	private MeshView[]		mSurface;
-	private SurfaceMesh[]   mSurfaceMesh;
-	private Color[]			mSurfaceColor;
-	private int[]           mSurfaceColorMode;
-	private SurfaceMode[]	 mSurfaceMode;
+	private StereoMolecule mMol;
+	private Node mLastPickedNode;
+	private Shape3D mHighlightedShape;
+	private PhongMaterial mOverrideMaterial,mHydrogenMaterial;
+	private final MeshView[] mSurface;
+	private final SurfaceMesh[] mSurfaceMesh;
+	private final Color[] mSurfaceColor;
+	private final int[] mSurfaceColorMode;
+	private final SurfaceMode[] mSurfaceMode;
 	private MoleculeArchitect.ConstructionMode mConstructionMode;
 	private MoleculeArchitect.HydrogenMode mHydrogenMode;
-	private LinkedList<Sphere> mPickedAtomList;
-	private boolean			mOverrideHydrogens;
-	private double[]        mSurfaceTransparency;
-	private Set<MolCoordinatesChangeListener> mListeners;
-	private Set<MolStructureChangeListener> mStructureListeners;
-	private Point3D			mRotationCenter;
-	private ObjectProperty<MoleculeRole> mRoleProperty;
-	private IntegerProperty mIDProperty;
-	private BooleanProperty mSelectedProperty;
+	private final LinkedList<Sphere> mPickedAtomList;
+	private boolean mOverrideHydrogens;
+	private final double[] mSurfaceTransparency;
+	private final Set<MolCoordinatesChangeListener> mListeners;
+	private final Set<MolStructureChangeListener> mStructureListeners;
+	private Point3D mRotationCenter;
+	private final ObjectProperty<MoleculeRole> mRoleProperty;
+	private final IntegerProperty mIDProperty;
+	private final BooleanProperty mSelectedProperty;
 	private Color mCarbonColor;
 	private BondRotationHelper mBondRotationHelper;
 	private TorsionStrainVisualization torsionStrainVis;
@@ -236,7 +233,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 
 		constructMaterials();
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
-// we cannot center pre-alligned conformers			builder.centerMolecule(conformer);
+// we cannot center pre-aligned conformers			builder.centerMolecule(conformer);
 		builder.buildMolecule();
 
 		if (surfaceMode != SurfaceMode.NONE) {

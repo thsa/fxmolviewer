@@ -51,27 +51,29 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.*;
 
+import static org.openmolecules.fx.viewer3d.V3DStereoPane.*;
+
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
-	private ClipboardHandler mClipboardHandler;
-	private Group mRoot;                  	// not rotatable, contains light and camera
-	private V3DRotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
-	private List<V3DSceneListener> mSceneListeners;
+	private final ClipboardHandler mClipboardHandler;
+	private final Group mRoot;                  	// not rotatable, contains light and camera
+	private final V3DRotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
+	private final List<V3DSceneListener> mSceneListeners;
 	private int mSurfaceCutMode;
 	private V3DMolecule mSurfaceCutMolecule;
 	private V3DMoleculeEditor mEditor;
 	private boolean mMouseDragged; //don't place molecule fragments if mouse is released after a drag event
-	private ArrayList<V3DMolecule> mPickedMolsList;
+	private final ArrayList<V3DMolecule> mPickedMolsList;
 	private MEASUREMENT     mMeasurementMode;
-	private ArrayList<V3DMeasurement> mMeasurements;
+	private final ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
 	private volatile V3DPopupMenuController mPopupMenuController;
-	private EnumSet<ViewerSettings> mSettings;
+	private final EnumSet<ViewerSettings> mSettings;
 	private boolean mMayOverrideHydrogens;
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
-	private ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle) 
+	private final ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle)
 
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
@@ -95,7 +97,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 	public enum ViewerSettings {
 		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND,
-		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION, STEREO_HSBS, STEREO_HOU, STEREO_SBS
+		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION
 	}
 
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES);
@@ -125,7 +127,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		setFill(Color.BLACK);
 		buildLight();
-		buildCamera();
+		buildCamera(MODE_NONE);
 		mMeasurements = new ArrayList<V3DMeasurement>();
 		new V3DMouseHandler(this);
 		new V3DKeyHandler(this);
@@ -153,12 +155,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			getScene().setOnDragDropped((DragEvent event) -> {
 				StereoMolecule mol = null;
 				Object o = event.getDragboard().getContent(ChemistryDataFormats.DF_SERIALIZED_OBJECT);
-				if (o != null && o instanceof StereoMolecule)
+				if (o instanceof StereoMolecule)
 					mol = (StereoMolecule)o;
 
 				if (mol == null) {
 					o = event.getDragboard().getContent(ChemistryDataFormats.DF_IDCODE);
-					if (o != null && o instanceof String)
+					if (o instanceof String)
 						mol = new IDCodeParser(false).getCompactMolecule((String)o);
 					}
 
@@ -166,7 +168,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 					o = event.getDragboard().getContent(ChemistryDataFormats.DF_MDLMOLFILEV3);
 					if (o == null)
 						o = event.getDragboard().getContent(ChemistryDataFormats.DF_MDLMOLFILE);
-					if (o != null && o instanceof String)
+					if (o instanceof String)
 						new MolfileParser().getCompactMolecule((String)o);
 					}
 
@@ -664,19 +666,20 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mRoot.getChildren().addAll(lightGroup);
 		}
 
-	private void buildCamera() {
+	private void buildCamera(int stereoMode) {
 		PerspectiveCamera camera = new PerspectiveCamera(true);
 		camera.setNearClip(CAMERA_NEAR_CLIP);
 		camera.setFarClip(CAMERA_FAR_CLIP);
 		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
-		if (mSettings.contains(ViewerSettings.STEREO_SBS)) {
+		if (stereoMode == MODE_SBS
+		 || stereoMode == MODE_OU) {
 			camera.setTranslateX(-EYE_DISTANCE/2);
 		}
-		else if (mSettings.contains(ViewerSettings.STEREO_HSBS)) {
+		else if (stereoMode == MODE_HSBS) {
 			camera.setScaleX(2.0);
 			camera.setTranslateX(-EYE_DISTANCE/2);
 		}
-		else if (mSettings.contains(ViewerSettings.STEREO_HOU)) {
+		else if (stereoMode == MODE_HOU) {
 			camera.setScaleY(2.0);
 			camera.setTranslateX(-EYE_DISTANCE/2);
 		}
@@ -684,29 +687,24 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mRoot.getChildren().add(camera);
 		}
 
-	public RightEyeView buildRightEyeView() {
+	public OneEyeView buildOneEyeView(boolean isRightEye, int stereoMode) {
 		PerspectiveCamera camera = new PerspectiveCamera(true);
 		camera.setNearClip(CAMERA_NEAR_CLIP);
 		camera.setFarClip(CAMERA_FAR_CLIP);
 		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
-		if (mSettings.contains(ViewerSettings.STEREO_HSBS)) {
+		if (stereoMode == MODE_HSBS) {
 			camera.setScaleX(2.0);
 		}
-		else if (mSettings.contains(ViewerSettings.STEREO_HOU)) {
-			camera.setScaleY(2.0);
+		else if (stereoMode == MODE_HOU) {
+			camera.setScaleX(0.5);
 		}
-		camera.setTranslateX(EYE_DISTANCE/2);
+		camera.setTranslateX(isRightEye ? EYE_DISTANCE/2 : -EYE_DISTANCE/2);
 
 		getCamera().translateXProperty().addListener((observableValue, number, t1) -> camera.setTranslateX(getCamera().getTranslateX() + EYE_DISTANCE));
 		getCamera().translateYProperty().addListener((observableValue, number, t1) -> camera.setTranslateY(getCamera().getTranslateY()));
 		getCamera().translateZProperty().addListener((observableValue, number, t1) -> camera.setTranslateZ(getCamera().getTranslateZ()));
 
-		RightEyeView view = new RightEyeView(this, camera);
-
-		view.fitWidthProperty().bind(widthProperty());
-		view.fitHeightProperty().bind(heightProperty());
-
-		return view;
+		return new OneEyeView(this, camera);
 	}
 
 
@@ -834,9 +832,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public V3DRotatableGroup getParent(V3DRotatableGroup child) {
 		boolean foundParent = false;
 		V3DRotatableGroup parent = null;
-		V3DRotatableGroup root = mWorld;
 		LinkedList<V3DRotatableGroup> queue = new LinkedList<>();
-		queue.add(root); 
+		queue.add(mWorld);
 		Set<V3DRotatableGroup> visited = new HashSet<V3DRotatableGroup>();
 		while(!queue.isEmpty() && !foundParent ) {
 			V3DRotatableGroup candidate = queue.poll();

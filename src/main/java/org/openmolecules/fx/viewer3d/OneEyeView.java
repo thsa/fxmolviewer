@@ -9,14 +9,14 @@ import javafx.scene.SubScene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 
-public final class RightEyeView extends ImageView {
+public final class OneEyeView extends ImageView {
 	private final SnapshotParameters mParams = new SnapshotParameters();
 	private WritableImage mImage = null;
-	private Group mWorldRoot;
-	private AnimationTimer mTimer;
+	private final Group mWorldRoot;
+	private final AnimationTimer mTimer;
 
 
-	public RightEyeView(SubScene scene, PerspectiveCamera camera) {
+	public OneEyeView(SubScene scene, PerspectiveCamera camera) {
 		mWorldRoot = (Group)scene.getRoot();
 
 		mParams.setCamera(camera);
