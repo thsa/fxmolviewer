@@ -5,23 +5,25 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.SubScene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.stage.Screen;
 
 public final class OneEyeView extends ImageView {
 	private final SnapshotParameters mParams = new SnapshotParameters();
 	private WritableImage mImage = null;
 	private final Group mWorldRoot;
 	private final AnimationTimer mTimer;
+	private final Screen mTagetScreen;
 
 
-	public OneEyeView(SubScene scene, PerspectiveCamera camera) {
-		mWorldRoot = (Group)scene.getRoot();
+	public OneEyeView(V3DScene sourceScene, PerspectiveCamera camera, Screen targetScreen) {
+		mWorldRoot = (Group)sourceScene.getRoot();
+		mTagetScreen = targetScreen;
 
 		mParams.setCamera(camera);
 		mParams.setDepthBuffer(true);
-		mParams.setFill(scene.getFill());
+		mParams.setFill(sourceScene.getFill());
 
 		mTimer = new AnimationTimer() {
 			@Override
@@ -40,9 +42,9 @@ public final class OneEyeView extends ImageView {
 	}
 
 	private void redraw() {
-		double QUALITY_FACTOR = 2;
-		int width = (int)(QUALITY_FACTOR * getFitWidth());
-		int height = (int)(QUALITY_FACTOR * getFitHeight());
+		double QUALITY_FACTOR = 1.5;
+		int width = Math.round((float)mTagetScreen.getOutputScaleX() * (float)getFitWidth());
+		int height = Math.round((float)mTagetScreen.getOutputScaleY() * (float)getFitHeight());
 
 		mParams.setViewport(new Rectangle2D(0, 0, width, height));
 		if (mImage == null

@@ -42,6 +42,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
+import javafx.stage.Screen;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
@@ -51,7 +52,8 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.*;
 
-import static org.openmolecules.fx.viewer3d.V3DStereoPane.*;
+import static org.openmolecules.fx.viewer3d.V3DStereoPane.MODE_HOU;
+import static org.openmolecules.fx.viewer3d.V3DStereoPane.MODE_HSBS;
 
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
@@ -694,7 +696,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mRoot.getChildren().add(camera);
 		}
 
-	public OneEyeView buildOneEyeView(final double eyeShift, int stereoMode) {
+	public OneEyeView buildOneEyeView(final double eyeShift, int stereoMode, Screen targetScreen) {
 		final PerspectiveCamera camera = new PerspectiveCamera(true);
 		if (stereoMode == MODE_HSBS) {
 			camera.setScaleX(2.0);
@@ -715,7 +717,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		getCamera().nearClipProperty().addListener((observableValue, number, t1) -> camera.setNearClip(getCamera().getNearClip()));
 		getCamera().farClipProperty().addListener((observableValue, number, t1) -> camera.setFarClip(getCamera().getFarClip()));
 
-		return new OneEyeView(this, camera);
+		return new OneEyeView(this, camera, targetScreen);
 	}
 
 

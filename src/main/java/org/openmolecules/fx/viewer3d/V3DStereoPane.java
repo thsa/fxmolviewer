@@ -43,14 +43,14 @@ public class V3DStereoPane extends GridPane {
 	 * with different camera perspectives for the left and for the right eye.
 	 * Typically, gd is another device than the one where the original V3DScene is displayed.
 	 * @param sourceScene3D
-	 * @param screen
+	 * @param targetScreen
 	 * @param stereoMode
 	 * @return
 	 */
-	public static void createFullScreenView(V3DScene sourceScene3D, Screen screen, int stereoMode) {
+	public static void createFullScreenView(V3DScene sourceScene3D, Screen targetScreen, int stereoMode) {
 		closeFullScreenView();
 
-		Rectangle2D bounds = screen.getBounds();
+		Rectangle2D bounds = targetScreen.getBounds();
 		float wf = 0.6f;
 		float hf = 0.6f;
 		if (stereoMode == MODE_SBS) {
@@ -68,7 +68,7 @@ public class V3DStereoPane extends GridPane {
 		Bounds sceneBounds = sourceScene3D.localToScreen(sourceScene3D.getBoundsInLocal());
 		boolean fullScreen = !bounds.contains(sceneBounds.getMinX(), sceneBounds.getMinY());
 
-		V3DStereoPane view = new V3DStereoPane(sourceScene3D, stereoMode);
+		V3DStereoPane view = new V3DStereoPane(sourceScene3D, stereoMode, targetScreen);
 		view.updateWidth(width);
 		view.updateHeight(height);
 
@@ -87,8 +87,8 @@ public class V3DStereoPane extends GridPane {
 		sFullScreenView.setY(bounds.getMinY() + (bounds.getHeight() - height) / 2.0);
 		sFullScreenView.setWidth(width);
 		sFullScreenView.setHeight(height);
-		sFullScreenView.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> sFullScreenView = null );
-		if (fullScreen)
+		sFullScreenView.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> closeFullScreenView() );
+//		if (fullScreen)
 			sFullScreenView.setFullScreen(true);
 		sFullScreenView.show();
 	}
@@ -111,7 +111,7 @@ public class V3DStereoPane extends GridPane {
 	 * @param sourceScene3D scene for which to create stereo view
 	 * @param stereoMode one of MODE_xxx
 	 */
-	private V3DStereoPane(V3DScene sourceScene3D, int stereoMode) {
+	private V3DStereoPane(V3DScene sourceScene3D, int stereoMode, Screen targetScreen) {
 		if (stereoMode == MODE_SBS || stereoMode == MODE_HSBS) {
 			ColumnConstraints column1 = new ColumnConstraints();
 			column1.setPercentWidth(50);
@@ -127,9 +127,9 @@ public class V3DStereoPane extends GridPane {
 			getRowConstraints().addAll(row1, row2);
 		}
 
-		mLeftEyeView = sourceScene3D.buildOneEyeView(-EYE_DISTANCE/2, stereoMode);
+		mLeftEyeView = sourceScene3D.buildOneEyeView(-EYE_DISTANCE/2, stereoMode, targetScreen);
 		add(mLeftEyeView, 0, 0);
-		mRightEyeView = sourceScene3D.buildOneEyeView(EYE_DISTANCE/2, stereoMode);
+		mRightEyeView = sourceScene3D.buildOneEyeView(EYE_DISTANCE/2, stereoMode, targetScreen);
 		if (stereoMode == MODE_HSBS || stereoMode == MODE_SBS)
 			add(mRightEyeView, 1, 0);
 		else
