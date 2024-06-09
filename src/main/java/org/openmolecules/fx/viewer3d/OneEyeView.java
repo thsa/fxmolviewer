@@ -42,7 +42,6 @@ public final class OneEyeView extends ImageView {
 	}
 
 	private void redraw() {
-		double QUALITY_FACTOR = 1.5;
 		int width = Math.round((float)mTagetScreen.getOutputScaleX() * (float)getFitWidth());
 		int height = Math.round((float)mTagetScreen.getOutputScaleY() * (float)getFitHeight());
 

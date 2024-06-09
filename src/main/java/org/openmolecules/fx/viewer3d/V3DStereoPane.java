@@ -1,6 +1,5 @@
 package org.openmolecules.fx.viewer3d;
 
-import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
@@ -64,17 +63,15 @@ public class V3DStereoPane extends GridPane {
 		int width =  Math.round(wf * (float)bounds.getWidth());
 		int height = Math.round(hf * (float)bounds.getHeight());
 
-		// We only do full-screen if on a different screen device
-		Bounds sceneBounds = sourceScene3D.localToScreen(sourceScene3D.getBoundsInLocal());
-		boolean fullScreen = !bounds.contains(sceneBounds.getMinX(), sceneBounds.getMinY());
+// We only do full-screen if on a different screen device
+//		Bounds sceneBounds = sourceScene3D.localToScreen(sourceScene3D.getBoundsInLocal());
+//		boolean fullScreen = !bounds.contains(sceneBounds.getMinX(), sceneBounds.getMinY());
 
 		V3DStereoPane view = new V3DStereoPane(sourceScene3D, stereoMode, targetScreen);
 		view.updateWidth(width);
 		view.updateHeight(height);
 
 		Scene scene = new Scene(view, width, height, true, SceneAntialiasing.BALANCED);
-//		String css = V3DStereoPane.class.getResource("/resources/molviewer.css").toExternalForm();
-//		scene.getStylesheets().add(css);
 		scene.widthProperty().addListener((observableValue, number, t1) -> view.updateWidth(scene.getWidth()) );
 		scene.heightProperty().addListener((observableValue, number, t1) -> view.updateHeight(scene.getHeight()) );
 
@@ -88,8 +85,7 @@ public class V3DStereoPane extends GridPane {
 		sFullScreenView.setWidth(width);
 		sFullScreenView.setHeight(height);
 		sFullScreenView.addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> closeFullScreenView() );
-//		if (fullScreen)
-			sFullScreenView.setFullScreen(true);
+		sFullScreenView.setFullScreen(true);
 		sFullScreenView.show();
 	}
 
