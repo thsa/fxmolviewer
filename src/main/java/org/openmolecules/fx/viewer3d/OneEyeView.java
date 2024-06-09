@@ -31,22 +31,27 @@ public final class OneEyeView extends ImageView {
 		};
 	}
 
-	public void startViewing() {
+	public void start() {
 		mTimer.start();
 	}
 
-	public void pause() {
+	public void stop() {
 		mTimer.stop();
 	}
 
 	private void redraw() {
-		mParams.setViewport(new Rectangle2D(0, 0, getFitWidth(), getFitHeight()));
+		double QUALITY_FACTOR = 2;
+		int width = (int)(QUALITY_FACTOR * getFitWidth());
+		int height = (int)(QUALITY_FACTOR * getFitHeight());
+
+		mParams.setViewport(new Rectangle2D(0, 0, width, height));
 		if (mImage == null
-				|| mImage.getWidth() != getFitWidth() || mImage.getHeight() != getFitHeight()) {
+		 || mImage.getWidth() != width
+		 || mImage.getHeight() != height)
 			mImage = mWorldRoot.snapshot(mParams, null);
-		} else {
+		else
 			mWorldRoot.snapshot(mParams, mImage);
-		}
+
 		setImage(mImage);
 	}
 }

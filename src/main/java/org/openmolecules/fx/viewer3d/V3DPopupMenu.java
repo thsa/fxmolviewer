@@ -26,19 +26,17 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Bounds;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Screen;
 import org.openmolecules.fx.sunflow.RayTraceDialog;
 import org.openmolecules.fx.sunflow.RayTraceOptions;
 import org.openmolecules.fx.surface.ClipSurfaceCutter;
@@ -49,7 +47,6 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.TorsionStrainVisualization;
 
-import java.awt.*;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -66,10 +63,9 @@ public class V3DPopupMenu extends ContextMenu {
 	private final V3DMolecule mMolecule;
 	private final V3DScene mScene;
 
-	public V3DPopupMenu(V3DScene scene, V3DMolecule fxmol) {
-		if (sPopupMenu != null && sPopupMenu.isShowing()) {
+	public V3DPopupMenu(final V3DScene scene, final V3DMolecule fxmol) {
+		if (sPopupMenu != null && sPopupMenu.isShowing())
 			sPopupMenu.hide();
-		}
 
 		sPopupMenu = this;
 		mMolecule = fxmol;
@@ -225,28 +221,26 @@ public class V3DPopupMenu extends ContextMenu {
 		MenuItem itemStereoView = null;
 		if (V3DStereoPane.getFullScreenView() == null) {
 			itemStereoView = new Menu("Show Stereo View");
-			GraphicsDevice[] graphicsDevices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-			int deviceNo = 0;
-			for (GraphicsDevice gd : graphicsDevices) {
-				Bounds sceneBounds = scene.localToScreen(scene.getBoundsInLocal());
-				Rectangle deviceRect = gd.getDefaultConfiguration().getBounds();
-				String deviceString = "Screen "+(++deviceNo)+" ["+deviceRect.width+"x"+deviceRect.height+"]";
-				boolean fullscreen = !deviceRect.contains(sceneBounds.getMinX(), sceneBounds.getMinY());
+			ObservableList<Screen> screens = Screen.getScreens();
+			for (int i=0; i<screens.size(); i++) {
+				final Screen screen = screens.get(i);
+				Rectangle2D bounds = screen.getBounds();
+				String deviceString = "Screen "+i+" ["+Math.round(screen.getOutputScaleX()*bounds.getWidth())+"x"+Math.round(screen.getOutputScaleY()*bounds.getHeight())+"]";
 				MenuItem itemSBS = new MenuItem("SBS - "+deviceString);
-				itemSBS.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, gd, V3DStereoPane.MODE_SBS, fullscreen));
+				itemSBS.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, screen, V3DStereoPane.MODE_SBS));
 				MenuItem itemHSBS = new MenuItem("HSBS - "+deviceString);
-				itemHSBS.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, gd, V3DStereoPane.MODE_HSBS, fullscreen));
+				itemHSBS.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, screen, V3DStereoPane.MODE_HSBS));
 				MenuItem itemOU = new MenuItem("OU - "+deviceString);
-				itemOU.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, gd, V3DStereoPane.MODE_OU, fullscreen));
+				itemOU.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, screen, V3DStereoPane.MODE_OU));
 				MenuItem itemHOU = new MenuItem("HOU - "+deviceString);
-				itemHOU.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, gd, V3DStereoPane.MODE_HOU, fullscreen));
+				itemHOU.setOnAction(e -> V3DStereoPane.createFullScreenView(scene, screen, V3DStereoPane.MODE_HOU));
 
 				((Menu)itemStereoView).getItems().addAll(itemSBS, itemHSBS, itemOU, itemHOU);
 			}
 		}
 		else {
 			itemStereoView = new MenuItem("Close Stereo View");
-			itemStereoView.setOnAction(e -> V3DStereoPane.closeFullSCreenView() );
+			itemStereoView.setOnAction(e -> V3DStereoPane.closeFullScreenView() );
 		}
 
 		Menu menuView = new Menu("View");

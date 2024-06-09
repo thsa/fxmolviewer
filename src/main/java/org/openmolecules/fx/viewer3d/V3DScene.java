@@ -82,7 +82,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	protected static final double CAMERA_NEAR_CLIP = 1.0;
 	protected static final double CAMERA_FAR_CLIP = 1000.0;
 	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2.0;
-	private static final double EYE_DISTANCE = 0.5;
 	private static final double CLIP_ATOM_PADDING = 3.0;
 
 	public enum MEASUREMENT { NONE(0), DISTANCE(2), ANGLE(3), TORSION(4);
@@ -127,7 +126,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		setFill(Color.BLACK);
 		buildLight();
-		buildCamera(MODE_NONE);
+		buildMainCamera();
 		mMeasurements = new ArrayList<V3DMeasurement>();
 		new V3DMouseHandler(this);
 		new V3DKeyHandler(this);
@@ -459,6 +458,26 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		return zr;
 	}
 
+	public double getMeanZ() {
+		double meanZ = 0;
+		int count = 0;
+
+		for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups()) {
+			if (fxmol.isVisible()) {
+				for (Node node:fxmol.getChildren()) {
+					NodeDetail detail = (NodeDetail)node.getUserData();
+					if (detail != null && detail.isAtom()) {
+						Point3D p = node.localToScene(0.0, 0.0, 0.0);
+						meanZ += p.getZ();
+						count++;
+					}
+				}
+			}
+		}
+
+		return meanZ / count;
+	}
+
 	public Point3D getCOGInGroup(V3DRotatableGroup group) {
 		int count = 0;
 		double x = 0.0;
@@ -666,43 +685,35 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mRoot.getChildren().addAll(lightGroup);
 		}
 
-	private void buildCamera(int stereoMode) {
+	private void buildMainCamera() {
 		PerspectiveCamera camera = new PerspectiveCamera(true);
 		camera.setNearClip(CAMERA_NEAR_CLIP);
 		camera.setFarClip(CAMERA_FAR_CLIP);
 		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
-		if (stereoMode == MODE_SBS
-		 || stereoMode == MODE_OU) {
-			camera.setTranslateX(-EYE_DISTANCE/2);
-		}
-		else if (stereoMode == MODE_HSBS) {
-			camera.setScaleX(2.0);
-			camera.setTranslateX(-EYE_DISTANCE/2);
-		}
-		else if (stereoMode == MODE_HOU) {
-			camera.setScaleY(2.0);
-			camera.setTranslateX(-EYE_DISTANCE/2);
-		}
 		setCamera(camera);
 		mRoot.getChildren().add(camera);
 		}
 
-	public OneEyeView buildOneEyeView(boolean isRightEye, int stereoMode) {
-		PerspectiveCamera camera = new PerspectiveCamera(true);
-		camera.setNearClip(CAMERA_NEAR_CLIP);
-		camera.setFarClip(CAMERA_FAR_CLIP);
-		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
+	public OneEyeView buildOneEyeView(final double eyeShift, int stereoMode) {
+		final PerspectiveCamera camera = new PerspectiveCamera(true);
 		if (stereoMode == MODE_HSBS) {
 			camera.setScaleX(2.0);
 		}
 		else if (stereoMode == MODE_HOU) {
 			camera.setScaleX(0.5);
 		}
-		camera.setTranslateX(isRightEye ? EYE_DISTANCE/2 : -EYE_DISTANCE/2);
 
-		getCamera().translateXProperty().addListener((observableValue, number, t1) -> camera.setTranslateX(getCamera().getTranslateX() + EYE_DISTANCE));
+		camera.setTranslateX(getCamera().getTranslateX() + eyeShift);
+		camera.setTranslateY(getCamera().getTranslateY());
+		camera.setTranslateZ(getCamera().getTranslateZ());
+		camera.setNearClip(getCamera().getNearClip());
+		camera.setFarClip(getCamera().getFarClip());
+
+		getCamera().translateXProperty().addListener((observableValue, number, t1) -> camera.setTranslateX(getCamera().getTranslateX() + eyeShift));
 		getCamera().translateYProperty().addListener((observableValue, number, t1) -> camera.setTranslateY(getCamera().getTranslateY()));
 		getCamera().translateZProperty().addListener((observableValue, number, t1) -> camera.setTranslateZ(getCamera().getTranslateZ()));
+		getCamera().nearClipProperty().addListener((observableValue, number, t1) -> camera.setNearClip(getCamera().getNearClip()));
+		getCamera().farClipProperty().addListener((observableValue, number, t1) -> camera.setFarClip(getCamera().getFarClip()));
 
 		return new OneEyeView(this, camera);
 	}

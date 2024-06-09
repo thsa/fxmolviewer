@@ -68,46 +68,49 @@ public class V3DMouseHandler {
 		scene.setOnScroll(se -> {
 			// we modify the wheel delta depending on how quickly the wheel is rotated
 			double delta = -WHEEL_MIN_FACTOR * se.getDeltaY();	// delta is the smallest possible clip step
-			long millis = System.currentTimeMillis();
-			long delay = Math.max(1L, millis - mRecentWheelMillis);
-			if (delay < WHEEL_DELAY_LIMIT)
-				delta *= Math.pow(WHEEL_MAX_FACTOR, (1.0 - (double)delay / WHEEL_DELAY_LIMIT));
-			mRecentWheelMillis = millis;
-			if(mHighlightedMol!=null) {
-				boolean actionPerformed=false;
-				actionPerformed = mScene.getEditor().scrolledOnMolecule(mHighlightedMol, mHighlightedMol.getHighlightedShape(), delta);
-				if(actionPerformed) {
-					for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-						mHighlightedMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
-					mHighlightedMol.fireCoordinatesChange();
-					Platform.runLater(() -> {
+			if (delta != 0) {
+				long millis = System.currentTimeMillis();
+				long delay = Math.max(1L, millis - mRecentWheelMillis);
+				if (delay < WHEEL_DELAY_LIMIT)
+					delta *= Math.pow(WHEEL_MAX_FACTOR, (1.0 - (double)delay / WHEEL_DELAY_LIMIT));
+				mRecentWheelMillis = millis;
+				if(mHighlightedMol!=null) {
+					boolean actionPerformed =
+							mScene.getEditor().scrolledOnMolecule(mHighlightedMol, mHighlightedMol.getHighlightedShape(), delta);
+					if(actionPerformed) {
+						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
+							mHighlightedMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
 						mHighlightedMol.fireCoordinatesChange();
-						V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(mHighlightedMol);
-						mFXMolUpdater.update();
-					});
-					return;
+						Platform.runLater(() -> {
+							mHighlightedMol.fireCoordinatesChange();
+							V3DMoleculeUpdater mFXMolUpdater = new V3DMoleculeUpdater(mHighlightedMol);
+							mFXMolUpdater.update();
+						});
+						return;
+					}
 				}
-			}
-			if (V3DPopupMenu.sUseMouseWheelForClipping || se.isShiftDown()) {
-				if (se.isControlDown()) {
-					delta *= getScreenToObjectFactor (mScene.getCamera().farClipProperty().getValue());
-					moveFarClip(delta, false);
+				if (V3DPopupMenu.sUseMouseWheelForClipping || se.isShiftDown()) {
+					if (se.isControlDown()) {
+						delta *= getScreenToObjectFactor (mScene.getCamera().farClipProperty().getValue());
+						moveFarClip(delta, false);
+					}
+					else {
+						delta *= getScreenToObjectFactor (mScene.getCamera().nearClipProperty().getValue());
+						if (delta < 0)
+							moveFarClip(moveNearClip(delta), true);
+						else
+							moveNearClip(moveFarClip(delta, true));
+					}
 				}
 				else {
-					delta *= getScreenToObjectFactor (mScene.getCamera().nearClipProperty().getValue());
-					if (delta < 0)
-						moveFarClip(moveNearClip(delta), true);
+					if (mAffectedMol == null) {
+						translateCameraZ(-delta);
+					}// this does not change the world rotation center
 					else
-						moveNearClip(moveFarClip(delta, true));
+						translateMolecule(mAffectedMol, 0, 0, delta);
 				}
 			}
-			else {
-				if (mAffectedMol == null) {
-					translateCameraZ(-delta);
-				}// this does not change the world rotation center
-				else
-					translateMolecule(mAffectedMol, 0, 0, delta);
-			}
+			se.consume();
 		} );
 		scene.setOnMousePressed(me -> {
 			mSelectedNode = me.getPickResult().getIntersectedNode();
@@ -414,14 +417,14 @@ public class V3DMouseHandler {
 	}
 
 	private void translateCameraXY(double dx, double dy) {
-		double f = getScreenToObjectFactor(mScene.getWorld().getTranslateZ());
+		double f = Math.max(0.01, getScreenToObjectFactor(mScene.getMeanZ()));
 		Camera camera = mScene.getCamera();
 		camera.setTranslateX(camera.getTranslateX() + 2*f*dx);
 		camera.setTranslateY(camera.getTranslateY() + 2*f*dy);
 	}
 
 	private void translateCameraZ(double dz) {
-		double f = getScreenToObjectFactor(mScene.getWorld().getTranslateZ());
+		double f = Math.max(0.01, getScreenToObjectFactor(mScene.getMeanZ()));
 		Camera camera = mScene.getCamera();
 		camera.setTranslateZ(camera.getTranslateZ() + 2*f*dz);
 	}

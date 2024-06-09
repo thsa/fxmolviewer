@@ -28,7 +28,6 @@ import javafx.scene.SceneAntialiasing;
 import javafx.stage.Stage;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.V3DSceneWithSidePane;
-import org.openmolecules.fx.viewer3d.V3DStereoPane;
 
 import java.io.File;
 import java.util.EnumSet;
@@ -51,31 +50,19 @@ public class ViewerApp extends Application {
 
 		EnumSet<V3DScene.ViewerSettings> sceneMode = V3DScene.GENERAL_MODE;
 
-		String stereoModeString = System.getProperty("stereo", "");
-		final int stereoMode = stereoModeString.isEmpty() ? V3DStereoPane.MODE_NONE
-			: stereoModeString.equalsIgnoreCase("hou") ? V3DStereoPane.MODE_HOU
-			: (stereoModeString.equalsIgnoreCase("ou")) ? V3DStereoPane.MODE_OU
-			: (stereoModeString.equalsIgnoreCase("hsbs")) ? V3DStereoPane.MODE_HSBS : V3DStereoPane.MODE_SBS;
-
 		Parent view;
 		V3DScene scene3D;
 
-		if (stereoMode != V3DStereoPane.MODE_NONE) {
-			view = new V3DStereoPane(sceneMode, stereoMode, INITIAL_WIDTH, INITIAL_HEIGHT);
-			scene3D = ((V3DStereoPane)view).getScene3D();
-			}
-		else {
-			V3DSceneWithSidePane sceneWithSidePane =  new V3DSceneWithSidePane(sceneMode);
-			scene3D = sceneWithSidePane.getScene3D();
-			view = sceneWithSidePane;
-		}
+		V3DSceneWithSidePane sceneWithSidePane =  new V3DSceneWithSidePane(sceneMode);
+		scene3D = sceneWithSidePane.getScene3D();
+		view = sceneWithSidePane;
 
 		Scene scene = new Scene(view, INITIAL_WIDTH, INITIAL_HEIGHT, true, SceneAntialiasing.BALANCED);
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		scene.getStylesheets().add(css);
 
-		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.widthProperty().set(scene.getWidth() / (stereoMode == V3DStereoPane.MODE_HSBS || stereoMode == V3DStereoPane.MODE_SBS ? 2 : 1)));
-		scene.heightProperty().addListener((observableValue, number, t1) -> scene3D.setHeight(scene.getHeight() / (stereoMode == V3DStereoPane.MODE_HOU ? 2 : 1)));
+		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.widthProperty().set(scene.getWidth()));
+		scene.heightProperty().addListener((observableValue, number, t1) -> scene3D.setHeight(scene.getHeight()));
 
 		primaryStage.setTitle("Molecule Viewer");
 		primaryStage.setScene(scene);
