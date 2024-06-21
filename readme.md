@@ -15,7 +15,9 @@
 * Surfaces can be colored by atomic no, polarity, donor/acceptor potential
 * Surfaces can be cut smoothly by clipping planes or lasso selection
 * A side panel allows to show and hide individual molecules
+* An optional full-screen stereo view (side-by-side or over-under) supporting XR-glasses, 3D-TVs, ...
 * The open source ray-tracer SunFlow was built in to render scenes and molecules in high quality
+* Viewer can be embedded as library into Swing- or FX-based Java application
 
 
 ### Dependencies
@@ -33,14 +35,10 @@ git clone https://github.com/thsa/fxmolviewer.git
 
 ### How to build the project
 
-JDK8: Make sure your JDK includes JavaFX (e.g. Liberica 8 Full-JDK).
+JDK17+: Make sure your JDK includes JavaFX (e.g. Liberica 21 Full-JDK).
 Then run the following in a terminal on Linux, Macintosh, or Windows with bash shell support:
 ```
 ./buildAll
-```
-JDK11+: Adapt JDKBIN and FXPATH in buildAndRunJDK18 and run
-```
-./buildAndRunJDK18
 ```
 
 ### How to run the project
@@ -65,12 +63,12 @@ java -jar ./target/fxmolviewer-0.0.1-SNAPSHOT-shaded.jar
 
 ### How to contribute
 
-Contact the author under the e-mail shown on www.openmolecules.org
+Contact the first author under the e-mail shown on www.openmolecules.org
 
 ### License
 
 FXMolViewer, showing and manipulating molecules and protein structures in 3D.
-Copyright (C) 2019 Thomas Sander
+Copyright (C) 2024 Thomas Sander & Joel Wahl
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
