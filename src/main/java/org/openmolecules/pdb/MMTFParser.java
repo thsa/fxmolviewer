@@ -30,6 +30,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.TreeMap;
 
+@Deprecated     // MMTF is not supported anymore by the PDB database from July 2nd, 2024 (a pity, because for us,
+				// it is much more useful than its more bulky replacement binaryCIF, because it included bonds!
 public class MMTFParser {
 	public static final int MODE_DONT_SPLIT = 0;
 	public static final int MODE_SPLIT_MODELS = 1;
@@ -235,7 +237,20 @@ public class MMTFParser {
 		for (StereoMolecule mol:molecule)
 			mol.setName((mol.getName() == null ? "" : mol.getName() + " ") + new MolecularFormula(mol).getFormula());
 
+		for (StereoMolecule mol:molecule)
+			addMissingCharges(mol); // in some molecules quarternary nitrogen atoms are not charged, e.g. 8BXH
+
 		return molecule;
+	}
+
+	private static void addMissingCharges(StereoMolecule mol) {
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+		for (int atom=0; atom<mol.getAtoms(); atom++)
+			if (mol.getAtomicNo(atom) == 7
+			 && mol.getOccupiedValence(atom) == 4
+			 && mol.getAtomCharge(atom) == 0
+			 && mol.getAtomRadical(atom) == 0)
+				mol.setAtomCharge(atom, 1);
 	}
 
 	public static void centerMolecules(Molecule3D[] molecule) {
