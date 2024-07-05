@@ -342,9 +342,9 @@ public class StartOptions {
 			testOrganoMetallics(scene);
 		else if (mode == MODE_SMALL_COMFORMERS)
 			testConformers(scene);
-		else if (mode == 4)
+		else if (mode == MODE_PROTEIN)
 			testProtein(scene);
-		else if (mode == 5)
+		else if (mode == MODE_VOXEL_DATA)
 			testVoxelData(scene);
 	}
 
@@ -419,25 +419,46 @@ public class StartOptions {
 			scene.addGroup(complex);
 
 			for (int i=0; i<proteins.size(); i++) {
-				V3DMolecule vm = new V3DMolecule(proteins.get(i), MoleculeArchitect.ConstructionMode.WIRES, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
-						V3DMolecule.SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[i], 0.5, V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.MACROMOLECULE, true);
+				V3DMolecule vm = new V3DMolecule(proteins.get(i),
+						MoleculeArchitect.ConstructionMode.WIRES,
+						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
+						V3DMolecule.SurfaceMode.FILLED,
+						SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS,
+						surfaceColor[i], 0.5,
+						V3DMolecule.getNextID(),
+						V3DMolecule.MoleculeRole.MACROMOLECULE,
+						true);
+				vm.getMolecule().setName("Protein");
 				scene.addMolecule(vm, complex);
+			}
+
+			V3DMolecule v3dligand = null;
+			if (ligand != null) {
+				v3dligand = new V3DMolecule(ligand,
+						MoleculeArchitect.ConstructionMode.BALL_AND_STICKS,
+						MoleculeArchitect.HydrogenMode.ALL,
+						V3DMolecule.getNextID(),
+						V3DMolecule.MoleculeRole.LIGAND,
+						true);
+				v3dligand.getMolecule().setName("Ligand");
+				scene.addMolecule(v3dligand, complex);
 			}
 
 			List<Molecule3D> solvents = map.get(StructureAssembler.SOLVENT_GROUP);
 			for (Molecule3D mol : solvents) {
-				V3DMolecule vm = new V3DMolecule(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HydrogenMode.ALL, V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.SOLVENT,true);
+				V3DMolecule vm = new V3DMolecule(mol,
+						MoleculeArchitect.ConstructionMode.STICKS,
+						MoleculeArchitect.HydrogenMode.ALL,
+						V3DMolecule.getNextID(),
+						V3DMolecule.MoleculeRole.SOLVENT,
+						true);
+				vm.getMolecule().setName(vm.getMolecule().getAllAtoms()==1 && vm.getMolecule().getAtomicNo(0)==8 ? "Water" : "Solvent");
 				scene.addMolecule(vm, complex);
 			}
 
-			if (ligand != null) {
-				V3DMolecule vm = new V3DMolecule(ligand, MoleculeArchitect.ConstructionMode.BALL_AND_STICKS, MoleculeArchitect.HydrogenMode.ALL,V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, true);
-				scene.addMolecule(vm, complex);
-
-				if (cropLigand) {
-					scene.crop(vm, 10.0);
-					scene.optimizeView();
-				}
+			if (v3dligand != null && cropLigand) {
+				scene.crop(v3dligand, 10.0);
+				scene.optimizeView();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
