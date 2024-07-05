@@ -184,7 +184,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		} );
 	}
 
-	private void showMessage(String msg) {
+	public void showMessage(String msg) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
 		alert.setTitle("Information");
 		alert.setHeaderText(null);

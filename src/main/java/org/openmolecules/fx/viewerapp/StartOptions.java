@@ -20,12 +20,13 @@
 
 package org.openmolecules.fx.viewerapp;
 
-import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.IDCodeParser;
-import com.actelion.research.chem.Molecule3D;
-import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.io.pdb.parser.PDBCoordEntryFile;
+import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
+import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
 import com.actelion.research.util.Platform;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
@@ -35,6 +36,10 @@ import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.pdb.MMTFParser;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 public class StartOptions {
 	// home path used when loading pdb file from disk assuming OS is either Linux or MacOSX
@@ -300,13 +305,13 @@ public class StartOptions {
 	private static final double SURFACE_SATURATION = 0.15;   // must be less than 1.0 - SURFACE_BRIGHTNESS
 
 	private int mode;
-	private String pdbEntryCode,mmtfFile;
+	private String pdbEntryCode,pdbFile;
 	private boolean cropLigand;
 
-	public StartOptions(int mode, String pdbEntryCode, String mmtfFile, boolean cropLigand) {
+	public StartOptions(int mode, String pdbEntryCode, String pdbFile, boolean cropLigand) {
 		this.mode = mode;
 		this.pdbEntryCode = pdbEntryCode;
-		this.mmtfFile = mmtfFile;
+		this.pdbFile = pdbFile;
 		this.cropLigand = cropLigand;
 		}
 
@@ -345,76 +350,111 @@ public class StartOptions {
 
 	private void loadPDBEntry(V3DScene scene) {
 		try {
-			Molecule3D[] mol = null;
-			if (mmtfFile != null)
-				mol = MMTFParser.getStructureFromFile(mmtfFile, pdbEntryCode, MMTFParser.MODE_SPLIT_CHAINS);
-			else if (!pdbEntryCode.isEmpty())
-				mol = MMTFParser.getStructureFromName(pdbEntryCode, MMTFParser.MODE_SPLIT_CHAINS);
+			PDBFileParser parser = new PDBFileParser();
+			PDBCoordEntryFile entryFile = (pdbFile != null) ?
+					parser.parse(new File(pdbFile))
+					: (!pdbEntryCode.isEmpty()) ? parser.getFromPDB(pdbEntryCode) : null;
 
-			if (mol != null) {
+			if (entryFile == null) {
+				scene.showMessage("Unexpectedly didn't get PDB entry.");
+				return;
+			}
+
+			Map<String, List<Molecule3D>> map = entryFile.extractMols(false);
+			List<Molecule3D> ligands = map.get(StructureAssembler.LIGAND_GROUP);
+			if (ligands == null || ligands.isEmpty()) {
+				map = entryFile.extractMols(true);
+				ligands = map.get(StructureAssembler.LIGAND_GROUP);
+				if (ligands != null && !ligands.isEmpty())
+					scene.showMessage("Only covalent ligand(s) were found and disconnected from the protein structure.");
+			}
+
+			List<Molecule3D> proteins = map.get(StructureAssembler.PROTEIN_GROUP);
+			if (proteins == null || proteins.isEmpty()) {
+				scene.showMessage("No proteins found in file.");
+				return;
+			}
+
+			Molecule3D ligand = null;
+
+			if (ligands != null && !ligands.isEmpty()) {
+				int index = -1;
+				if (ligands.size() == 1) {
+					index = 0;
+				}
+				else {
+					String[] ligandName = new String[ligands.size()];
+					for (int i=0; i<ligands.size(); i++) {
+						String formula = new MolecularFormula(ligands.get(i)).getFormula();
+						ligandName[i] = (i + 1) + ": " + formula + "; " + (ligands.get(i).getName() == null ? "Unnamed" : ligands.get(i).getName());
+					}
+
+					ChoiceDialog<String> dialog = new ChoiceDialog<>(ligandName[0], ligandName);
+					dialog.titleProperty().set("Select one of multiple ligands:");
+					dialog.showAndWait();
+					String name = dialog.getSelectedItem();
+					if (name != null)
+						index = Integer.parseInt(name.substring(0, name.indexOf(':')))-1;
+				}
+
+				if ((index != -1))
+					ligand = ligands.get(index);
+			}
+
 //					mMoleculePanel.setShowStructure(false);
-				MMTFParser.centerMolecules(mol);
+//				MMTFParser.centerMolecules(mol);
 
-				V3DMolecule ligand = null;
-				int ligandIndex = -2;   // will be -1, if we have more than one potential ligands
-				for (int i=0; i<mol.length; i++)
-					if (mol[i].getAllBonds() != 0 && mol[i].getAllAtoms() <= 100)
-						ligandIndex = (ligandIndex == -2) ? i : -1;
+			Color[] surfaceColor = new Color[proteins.size()];
+			double inc = 2.0 * Math.PI / proteins.size();
+			double shift = 2.0 * Math.PI / 3.0;
+			for (int i=0; i<proteins.size(); i++) {
+				double start = inc * i;
+				surfaceColor[i] = new Color(SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start),
+						SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+shift),
+						SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+2*shift), 1.0);
+			}
 
-				int largeMoleculeCount = 0;
-				for (int i=0; i<mol.length; i++)
-					if (mol[i].getAllBonds() != 0 && mol[i].getAllAtoms() > 100)
-						largeMoleculeCount++;
+			V3DRotatableGroup complex = new V3DRotatableGroup(pdbEntryCode);
+			System.out.println(pdbEntryCode);
+			scene.addGroup(complex);
 
-				Color[] surfaceColor = new Color[largeMoleculeCount];
-				double inc = 2.0 * Math.PI / largeMoleculeCount;
-				double shift = 2.0 * Math.PI / 3.0;
-				for (int i=0; i<largeMoleculeCount; i++) {
-					double start = inc * i;
-					surfaceColor[i] = new Color(SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start),
-							SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+shift),
-							SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+2*shift), 1.0);
-				}
-				V3DRotatableGroup complex = new V3DRotatableGroup(pdbEntryCode);
-				System.out.println(pdbEntryCode);
-				scene.addGroup(complex);
-				int largeMoleculeIndex = 0;
-				int id = V3DMolecule.getNextID();
-				for (int i=0; i<mol.length; i++) {
+			for (int i=0; i<proteins.size(); i++) {
+				V3DMolecule vm = new V3DMolecule(proteins.get(i), MoleculeArchitect.ConstructionMode.WIRES, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
+						V3DMolecule.SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[i], 0.5, V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.MACROMOLECULE, true);
+				scene.addMolecule(vm, complex);
+			}
 
-//						millis = printDelay(millis);
-//						System.out.print("Creating V3DMolecule...  ");
+			List<Molecule3D> solvents = map.get(StructureAssembler.SOLVENT_GROUP);
+			for (Molecule3D mol : solvents) {
+				V3DMolecule vm = new V3DMolecule(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HydrogenMode.ALL, V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.SOLVENT,true);
+				scene.addMolecule(vm, complex);
+			}
 
-					boolean isWater = (mol[i].getAllBonds() == 0);
-					boolean isLargeMolecule = (!isWater && mol[i].getAllAtoms() > 100);
+			if (ligand != null) {
+				V3DMolecule vm = new V3DMolecule(ligand, MoleculeArchitect.ConstructionMode.BALL_AND_STICKS, MoleculeArchitect.HydrogenMode.ALL,V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, true);
+				scene.addMolecule(vm, complex);
 
-					V3DMolecule vm;
-					if (isWater)
-						vm = new V3DMolecule(mol[i], MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HydrogenMode.ALL, id, V3DMolecule.MoleculeRole.SOLVENT,true);
-					else if (isLargeMolecule)
-						vm = new V3DMolecule(mol[i], MoleculeArchitect.ConstructionMode.WIRES, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
-								V3DMolecule.SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS, surfaceColor[largeMoleculeIndex++], 0.5, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.MACROMOLECULE,true);
-					else
-						vm = new V3DMolecule(mol[i], MoleculeArchitect.ConstructionMode.BALL_AND_STICKS, MoleculeArchitect.HydrogenMode.ALL,id,V3DMolecule.MoleculeRole.LIGAND, true);
-					vm.setID(id);
-					if (i == ligandIndex)
-						ligand = vm;
-
-//						millis = printDelay(millis);
-//						System.out.print("adding molecule to scene...  ");
-
-					scene.addMolecule(vm,complex);
-//						millis = printDelay(millis);
-				}
-
-				if (ligand != null && cropLigand) {
-					scene.crop(ligand, 10.0);
+				if (cropLigand) {
+					scene.crop(vm, 10.0);
 					scene.optimizeView();
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private Map<String, List<Molecule3D>> addProteinAndLigand(PDBCoordEntryFile entryFile, V3DScene scene) {
+		Map<String, List<Molecule3D>> map = entryFile.extractMols(false);
+		List<Molecule3D> ligands = map.get(StructureAssembler.LIGAND_GROUP);
+		if (ligands == null || ligands.isEmpty()) {
+			map = entryFile.extractMols(true);
+			ligands = map.get(StructureAssembler.LIGAND_GROUP);
+			if (ligands != null && !ligands.isEmpty())
+				scene.showMessage("Only covalent ligand(s) were found and disconnected from the protein structure.");
+		}
+
+		return map;
 	}
 
 	private void testMolecules(V3DScene scene) {
