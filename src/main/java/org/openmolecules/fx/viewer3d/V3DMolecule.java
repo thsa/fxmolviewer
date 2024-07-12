@@ -23,6 +23,7 @@ package org.openmolecules.fx.viewer3d;
 import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
+import com.actelion.research.chem.conf.VDWRadii;
 import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import javafx.application.Platform;
@@ -51,8 +52,10 @@ import org.openmolecules.fx.viewer3d.nodes.*;
 import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
+import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.TorsionStrainVisualization;
 
+import java.sql.Array;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -90,6 +93,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private MoleculeArchitect.ConstructionMode mConstructionMode;
 	private MoleculeArchitect.HydrogenMode mHydrogenMode;
 	private final LinkedList<Sphere> mPickedAtomList;
+	private final ArrayList<Sphere> mTemporaryAtomSpheres;
 	private boolean mOverrideHydrogens;
 	private final double[] mSurfaceTransparency;
 	private final Set<MolCoordinatesChangeListener> mListeners;
@@ -197,6 +201,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mMol = mol;
 		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true);
 		mPickedAtomList = new LinkedList<>();
+		mTemporaryAtomSpheres = new ArrayList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
 		mRoleProperty = new SimpleObjectProperty<MoleculeRole>(role);
@@ -212,8 +217,8 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mSurfaceColorMode = new int[surfaceCount];
 		mSurfaceTransparency = new double[surfaceCount];
 		mBondRotationHelper = new BondRotationHelper(mol);
-		mListeners = new HashSet<MolCoordinatesChangeListener>();
-		mStructureListeners = new HashSet<MolStructureChangeListener>();
+		mListeners = new HashSet<>();
+		mStructureListeners = new HashSet<>();
 
 		mSurfaceMode[0] = surfaceMode;
 		mSurfaceColor[0] = (surfaceColor == null) ? DEFAULT_SURFACE_COLOR : surfaceColor;
@@ -823,10 +828,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 			setHighlightedShape((Shape3D)node);
 		}
 */
-	public void removeHilite() {
-		setHighlightedShape(null);
-		}
-
 	public Node getLastPickedNode() {
 		return mLastPickedNode;
 		}
@@ -884,11 +885,8 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 
 	public void toggleSelection() {
-		if(mSelectedProperty.get()==false)
-			mSelectedProperty.set(true);
-		else 
-			mSelectedProperty.set(false);
-	}
+        mSelectedProperty.set(!mSelectedProperty.get());
+		}
 	
 	private void updateSelectionAppearance() {
 		for (Node node:getChildren()) {
@@ -1027,7 +1025,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 
 	public void clearPickedAtomList() {
 		// clear picked atoms
-		Sphere[] pickedAtom = mPickedAtomList.toArray(new Sphere[mPickedAtomList.size()]);
+		Sphere[] pickedAtom = mPickedAtomList.toArray(new Sphere[0]);
 		mPickedAtomList.clear();
 		for (Sphere atomShape:pickedAtom)
 			updateAppearance(atomShape);
@@ -1103,20 +1101,12 @@ public class V3DMolecule extends V3DRotatableGroup {
 
 	public void updateAppearance(Node node) {
 		
-		if(node.getParent() instanceof PPArrow) {
+		if(node.getParent() instanceof PPArrow)
 			node = ((PPArrow)node.getParent()).getCylinder();
-
-		}
-		
-		if(node.getParent() instanceof PPSphere) {
+		if(node.getParent() instanceof PPSphere)
 			node = ((PPSphere)node.getParent()).getSphere();
-
-		}
-		
-		if(node.getParent() instanceof VolumeSphere) {
+		if(node.getParent() instanceof VolumeSphere)
 			node = ((VolumeSphere)node.getParent()).getSphere();
-
-		}
 
 		if (!(node instanceof Shape3D))
 			return;
@@ -1215,9 +1205,49 @@ public class V3DMolecule extends V3DRotatableGroup {
 				updateAppearance(previousShape);
 			if (shape != null)
 				updateAppearance(shape);
+
+			updateTemporaryAtomSpheres();
 			}
 		}
-	
+
+	private void updateTemporaryAtomSpheres() {
+		for (int i=mTemporaryAtomSpheres.size()-1; i>=0; i--) {
+			Sphere sphere = mTemporaryAtomSpheres.get(i);
+			if (sphere != mHighlightedShape && !mPickedAtomList.contains(sphere)) {
+				getChildren().remove(sphere);
+				mTemporaryAtomSpheres.remove(i);
+				}
+			}
+
+		if (mHighlightedShape instanceof Cylinder
+		 && mConstructionMode == MoleculeArchitect.ConstructionMode.WIRES) {
+			NodeDetail detail = (NodeDetail)mHighlightedShape.getUserData();
+			if (detail != null && detail.isBond()) {
+				int bond = detail.getBond();
+				for (int i=0; i<2; i++) {
+					int atom = mMol.getBondAtom(i, bond);
+					int atomicNo = mMol.getAtomicNo(atom);
+					Sphere sphere = new Sphere(VDWRadii.getVDWRadius(atomicNo)/6, 16);
+
+					int argb = MoleculeArchitect.getAtomARGB(atomicNo);
+					boolean isOverridable = overrideHydrogens() ?
+						  (argb == MoleculeArchitect.getAtomARGB(1)
+						|| argb == MoleculeArchitect.getAtomARGB(6))
+						: (argb == MoleculeArchitect.getAtomARGB(6));
+					PhongMaterial material = V3DMoleculeBuilder.getMaterial(argb);
+
+					sphere.setMaterial(material);
+					sphere.setTranslateX(mMol.getAtomX(atom));
+					sphere.setTranslateY(mMol.getAtomY(atom));
+					sphere.setTranslateZ(mMol.getAtomZ(atom));
+					sphere.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_ATOM | atom, isOverridable));
+					getChildren().add(sphere);
+					mTemporaryAtomSpheres.add(sphere);
+					}
+				}
+			}
+		}
+
 	public void removeAllSurfaces() {
 		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 			setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);

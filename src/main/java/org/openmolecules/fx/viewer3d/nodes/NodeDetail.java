@@ -30,9 +30,10 @@ import org.openmolecules.render.MoleculeBuilder;
  * Created by thomas on 15.11.15.
  */
 public class NodeDetail {
-    private PhongMaterial mMaterial;
+    private final PhongMaterial mMaterial;
     private int mRole;
-    private boolean mMayOverride,mIsSelected;
+    private final boolean mMayOverride;
+    private boolean mIsSelected;
 
     public NodeDetail(PhongMaterial material, int role, boolean mayOverride) {
         mMaterial = material;

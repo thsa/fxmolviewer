@@ -224,7 +224,7 @@ public class V3DMouseHandler {
 			mScene.setMouseDragged(false);
 		} );
 		scene.setOnMouseMoved(me -> {
-			trackHighlightedMol(me.getPickResult());
+			trackHighlightedMol(me);
 			trackAffectedMol(isSingleMolecule(me));
 			
 		} );
@@ -296,7 +296,8 @@ public class V3DMouseHandler {
 		return false;
 	}
 
-	private void trackHighlightedMol(PickResult pr) {
+	private void trackHighlightedMol(MouseEvent me) {
+		PickResult pr = me.getPickResult();
 		Node node = pr.getIntersectedNode();
 		mHighlightedExclusionSphere = (node.getParent() instanceof VolumeSphere) ? (VolumeSphere)node.getParent() : null;
 
@@ -313,7 +314,7 @@ public class V3DMouseHandler {
 			molecule = molecule.getParent();
 
 		if (mHighlightedMol != null && (molecule == null || molecule != mHighlightedMol))
-			mHighlightedMol.removeHilite();
+			mHighlightedMol.setHighlightedShape(null);
 
 		mHighlightedMol = (V3DMolecule) molecule;
 		if (mHighlightedMol != null && node instanceof Shape3D) {
@@ -330,7 +331,6 @@ public class V3DMouseHandler {
 				else {
 					mScene.chartProperty().set(null);
 				}
-				
 			}
 			}
 		if(mHighlightedMol==null)
