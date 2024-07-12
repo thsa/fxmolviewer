@@ -1,17 +1,15 @@
-package org.openmolecules.fx.viewer3d.interactions;
+package org.openmolecules.fx.viewer3d.interactions.simple;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.actelion.research.chem.phesa.pharmacophore.PharmacophoreCalculator;
+import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import org.openmolecules.fx.viewer3d.MolCoordinatesChangeListener;
 import org.openmolecules.fx.viewer3d.MolStructureChangeListener;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 
-import com.actelion.research.chem.phesa.pharmacophore.PharmacophoreCalculator;
-import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
-
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -27,8 +25,8 @@ import javafx.beans.Observable;
 public class V3DInteractionSites implements MolCoordinatesChangeListener, MolStructureChangeListener, Observable{
 	
 	private List<IPharmacophorePoint> interactionSites = new ArrayList<IPharmacophorePoint>();
-	private V3DMolecule fxmol;
-	private List<InvalidationListener> invalidationListeners;
+	private final V3DMolecule fxmol;
+	private final List<InvalidationListener> invalidationListeners;
 	
 	public V3DInteractionSites(V3DMolecule fxmol) {
 		interactionSites = PharmacophoreCalculator.getPharmacophorePoints(fxmol.getMolecule());
@@ -60,7 +58,6 @@ public class V3DInteractionSites implements MolCoordinatesChangeListener, MolStr
 	@Override
 	public void addListener(InvalidationListener listener) {
 		invalidationListeners.add(listener);
-		
 	}
 
 	@Override
@@ -68,9 +65,4 @@ public class V3DInteractionSites implements MolCoordinatesChangeListener, MolStr
 		invalidationListeners.remove(listener);
 		
 	}
-
-
-	
-	
-
 }

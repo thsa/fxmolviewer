@@ -1,4 +1,4 @@
-package org.openmolecules.fx.viewer3d.interactions;
+package org.openmolecules.fx.viewer3d.interactions.simple;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGroup> {
 	
-	private V3DScene mScene3D;
+	private final V3DScene mScene3D;
 	private List<V3DInteractingPair> mInteractingPairs;
 	private Map<V3DMolecule,V3DInteractionSites> mInteractionSites;
 	private BooleanProperty mVisibleProperty;
@@ -116,7 +116,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 				interacting=true; //same for cofactor
 			else if((role1==MoleculeRole.LIGAND) && (role2==MoleculeRole.SOLVENT) ||
 					(role2==MoleculeRole.LIGAND) && (role1==MoleculeRole.SOLVENT))
-				interacting = fxmol1.getID()==fxmol2.getID() ? true : false;
+				interacting = fxmol1.getID() == fxmol2.getID();
 		}
 		return interacting;
 	}
@@ -154,8 +154,3 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 			pair.cleanup();
 		}
 	}
-
-
-	
-
-

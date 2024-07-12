@@ -44,7 +44,8 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
 import javafx.stage.Screen;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
+import org.openmolecules.fx.viewer3d.interactions.rf.RFInteractionHandler;
+import org.openmolecules.fx.viewer3d.interactions.simple.V3DInteractionHandler;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
@@ -57,6 +58,7 @@ import static org.openmolecules.fx.viewer3d.V3DStereoPane.MODE_HSBS;
 
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
+	private static final boolean USE_RF_INTERACTIONS = false;
 	private final ClipboardHandler mClipboardHandler;
 	private final Group mRoot;                  	// not rotatable, contains light and camera
 	private final V3DRotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
@@ -74,7 +76,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private boolean mMayOverrideHydrogens;
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
-	private V3DInteractionHandler mInteractionHandler;
+	private V3DInteractionHandler mSimpleInteractionHandler;
+	private RFInteractionHandler mRFInteractionHandler;
 	private final ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle)
 
 
@@ -756,9 +759,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		for(V3DMolecule fxmol : mols) {
 			pickedAtoms += fxmol.getPickedAtoms().size();
 		}
-		if(pickedAtoms<mMeasurementMode.getRequiredAtoms())
-			return;
-		else {
+		if(pickedAtoms >= mMeasurementMode.getRequiredAtoms()) {
 			Sphere[] pickedAtomList = new Sphere[mMeasurementMode.getRequiredAtoms()];
 			Coordinates[] coords = new Coordinates[mMeasurementMode.getRequiredAtoms()];
 			ArrayList<Integer> atIds = new ArrayList<Integer>();
@@ -888,23 +889,25 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 	public boolean isShowInteractions() {
-		return mInteractionHandler != null && mInteractionHandler.isVisible();
+		return (!USE_RF_INTERACTIONS && mSimpleInteractionHandler != null && mSimpleInteractionHandler.isVisible())
+				|| (USE_RF_INTERACTIONS && mRFInteractionHandler != null && mRFInteractionHandler.isVisible());
 	}
 
 	public void setShowInteractions(boolean b) {
-		if(mInteractionHandler==null)
-			mInteractionHandler = new V3DInteractionHandler(this);
-		mInteractionHandler.setVisibible(b);
+		if(b != isShowInteractions()) {
+			if (USE_RF_INTERACTIONS) {
+				if (mRFInteractionHandler == null)
+					mRFInteractionHandler = new RFInteractionHandler(this);
+				mRFInteractionHandler.setVisibible(b);
+			}
+			else {
+				if (mSimpleInteractionHandler == null)
+					mSimpleInteractionHandler = new V3DInteractionHandler(this);
+				mSimpleInteractionHandler.setVisibible(b);
+			}
+		}
 	}
 	
-	public V3DInteractionHandler getInteractionHandler() {
-		return mInteractionHandler;
-	}
-	
-	public void setInteractionHandler(V3DInteractionHandler handler) {
-		mInteractionHandler = handler;
-	}
-
 	public V3DBindingSite getBindingSiteHelper() {
 		return mBindingSiteHelper;
 	}

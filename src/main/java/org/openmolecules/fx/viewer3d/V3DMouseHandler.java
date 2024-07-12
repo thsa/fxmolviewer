@@ -128,18 +128,16 @@ public class V3DMouseHandler {
 			//System.out.println("mouse pressed isPrimaryButtonDown:"+me.isPrimaryButtonDown()+" isMiddleButtonDown:"+me.isMiddleButtonDown());
 			
 			if (me.getButton() == MouseButton.PRIMARY) {
-				
 				if (isDoubleClick) {
 					mScene.selectMolecule(mHighlightedMol, me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0);
 				}
-				
 				else {
 					if(mScene.getMeasurementMode()!=V3DScene.MEASUREMENT.NONE) {
 						Node parent = mSelectedNode;
-						while (parent != null && !(parent instanceof V3DMolecule)) {
+						while (parent != null && !(parent instanceof V3DMolecule))
 							parent = parent.getParent();
-						}
-						if(parent!=null) {
+
+						if(parent != null) {
 							V3DMolecule fxmol = (V3DMolecule) parent;
 							boolean molPicked = fxmol.pickShape(me);
 							if(molPicked) {
@@ -300,11 +298,8 @@ public class V3DMouseHandler {
 
 	private void trackHighlightedMol(PickResult pr) {
 		Node node = pr.getIntersectedNode();
-		if(node.getParent() instanceof VolumeSphere) 
-			mHighlightedExclusionSphere = (VolumeSphere) (node.getParent());
-		else 
-			mHighlightedExclusionSphere = null;
-		
+		mHighlightedExclusionSphere = (node.getParent() instanceof VolumeSphere) ? (VolumeSphere)node.getParent() : null;
+
 		//	V3DMolecule parentMol = (V3DMolecule) mHighlightedExclusionSphere.getParent();
 		//	parentMol.setHighlightedShape(mHighlightedExclusionSphere);
 		//	if(mHighlightedMol!=null) {

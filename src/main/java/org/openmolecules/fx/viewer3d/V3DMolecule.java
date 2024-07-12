@@ -832,7 +832,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 
 	public boolean pickShape(MouseEvent me) {
-		mLastPickedNode = null;
 		PickResult result = me.getPickResult();
 		mLastPickedNode = result.getIntersectedNode();
 		if (mLastPickedNode instanceof Sphere) {
@@ -1030,9 +1029,8 @@ public class V3DMolecule extends V3DRotatableGroup {
 		// clear picked atoms
 		Sphere[] pickedAtom = mPickedAtomList.toArray(new Sphere[mPickedAtomList.size()]);
 		mPickedAtomList.clear();
-		for (Sphere atomShape:pickedAtom) {
+		for (Sphere atomShape:pickedAtom)
 			updateAppearance(atomShape);
-		}
 		}
 
 

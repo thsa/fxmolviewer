@@ -169,7 +169,7 @@ public class MoleculeArchitect {
 		mMol = mol;
 		mol.ensureHelperArrays(Molecule.cHelperRings);
 		mBuilder.init();
-		// adding non-hydrogen atoms and bonds first allows us to later to add hydrogens without disrupting order of already created primitives
+		// adding non-hydrogen atoms and bonds first allows us to later add hydrogens without disrupting order of already created primitives
 		buildMolecule(fromAtom, mol.getAllAtoms(), fromBond, mol.getAllBonds());
 		//buildMolecule(Math.max(fromAtom, mol.getAtoms()), mol.getAllAtoms(), Math.max(fromBond, mol.getBonds()), mol.getAllBonds());
 		mBuilder.done();

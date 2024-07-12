@@ -1,15 +1,12 @@
-package org.openmolecules.fx.viewer3d.interactions;
-
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.nodes.DashedRod;
-import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
+package org.openmolecules.fx.viewer3d.interactions.simple;
 
 import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
-import com.actelion.research.util.DoubleFormat;
 import javafx.geometry.Point3D;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.paint.Color;
-import javafx.scene.Group;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 
 public class V3DInteraction  {
 	
@@ -22,14 +19,14 @@ public class V3DInteraction  {
 		private static final float DASH_LENGTH = 0.2f;
 		private static final float GAP_LENGTH = 0.2f;
 		
-		private IPharmacophorePoint mPP1;
-		private IPharmacophorePoint mPP2;
-		private V3DMolecule mFXmol1;
-		private V3DMolecule mFXmol2;
+		private final IPharmacophorePoint mPP1;
+		private final IPharmacophorePoint mPP2;
+		private final V3DMolecule mFXmol1;
+		private final V3DMolecule mFXmol2;
 		private DashedRod mRod;
 		//private NonRotatingLabel mLabel;
-		private Parent mParent;
-		private Interaction mInteraction;
+		private final Parent mParent;
+		private final Interaction mInteraction;
 		
 		public V3DInteraction(IPharmacophorePoint pp1,IPharmacophorePoint pp2, Interaction interaction, V3DMolecule fxmol1, V3DMolecule fxmol2, Parent parent) {
 			mPP1 = pp1;

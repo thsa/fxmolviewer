@@ -1,22 +1,16 @@
-package org.openmolecules.fx.viewer3d.interactions;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.openmolecules.fx.viewer3d.MolCoordinatesChangeListener;
-import org.openmolecules.fx.viewer3d.MolStructureChangeListener;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DScene;
-import org.openmolecules.fx.viewer3d.interactions.V3DInteraction.Interaction;
+package org.openmolecules.fx.viewer3d.interactions.simple;
 
 import com.actelion.research.chem.phesa.pharmacophore.pp.AcceptorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.ChargePoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.DonorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
-import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
-
-import javafx.application.Platform;
 import javafx.geometry.Point3D;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DScene;
+import org.openmolecules.fx.viewer3d.interactions.simple.V3DInteraction.Interaction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class V3DInteractingPair {
 	
@@ -145,11 +139,4 @@ public class V3DInteractingPair {
 		boolean contains;
 		return contains = (fxmol==fxmol1 || fxmol==fxmol2) ? true : false;
 	}
-
-
-
-				
-	
 }
-	
-	

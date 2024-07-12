@@ -38,6 +38,7 @@ import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.pdb.MMTFParser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
 
@@ -452,7 +453,7 @@ public class StartOptions {
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.SOLVENT,
 						true);
-				vm.getMolecule().setName(vm.getMolecule().getAllAtoms()==1 && vm.getMolecule().getAtomicNo(0)==8 ? "Water" : "Solvent");
+				mol.setName((mol.getAllAtoms()==1 && mol.getAtomicNo(0)==8 ? "Water " : "Solvent ")+mol.getAtomChainId(0));
 				scene.addMolecule(vm, complex);
 			}
 
@@ -460,22 +461,11 @@ public class StartOptions {
 				scene.crop(v3dligand, 10.0);
 				scene.optimizeView();
 			}
+		} catch (FileNotFoundException fnfe) {
+			scene.showMessage("File not found: "+fnfe.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	private Map<String, List<Molecule3D>> addProteinAndLigand(PDBCoordEntryFile entryFile, V3DScene scene) {
-		Map<String, List<Molecule3D>> map = entryFile.extractMols(false);
-		List<Molecule3D> ligands = map.get(StructureAssembler.LIGAND_GROUP);
-		if (ligands == null || ligands.isEmpty()) {
-			map = entryFile.extractMols(true);
-			ligands = map.get(StructureAssembler.LIGAND_GROUP);
-			if (ligands != null && !ligands.isEmpty())
-				scene.showMessage("Only covalent ligand(s) were found and disconnected from the protein structure.");
-		}
-
-		return map;
 	}
 
 	private void testMolecules(V3DScene scene) {
