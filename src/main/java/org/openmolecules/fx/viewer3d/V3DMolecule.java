@@ -20,19 +20,17 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import com.actelion.research.chem.*;
+import com.actelion.research.chem.AtomFunctionAnalyzer;
+import com.actelion.research.chem.Coordinates;
+import com.actelion.research.chem.Molecule;
+import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
 import com.actelion.research.chem.conf.VDWRadii;
-import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.MolecularVolume;
+import com.actelion.research.chem.phesa.ShapeVolume;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -44,8 +42,8 @@ import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
-import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.MarkedAtomSurfaceCutter;
+import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.nodes.*;
@@ -55,7 +53,6 @@ import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.TorsionStrainVisualization;
 
-import java.sql.Array;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -1227,7 +1224,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 				for (int i=0; i<2; i++) {
 					int atom = mMol.getBondAtom(i, bond);
 					int atomicNo = mMol.getAtomicNo(atom);
-					Sphere sphere = new Sphere(VDWRadii.getVDWRadius(atomicNo)/6, 16);
+					Sphere sphere = new Sphere(VDWRadii.getVDWRadius(atomicNo)/8, 16);
 
 					int argb = MoleculeArchitect.getAtomARGB(atomicNo);
 					boolean isOverridable = overrideHydrogens() ?

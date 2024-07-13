@@ -20,8 +20,8 @@ public class V3DInteractingPair {
 	public static final double HBOND_LOWER_CUTOFF = 1.5;
 	public static final double CUTOFF_ANGLE_DEVIATION_HBOND = 45; //in degree
 	public static final double CUTOFF_ANGLE_DEVIATION_HBOND_SP3O = 60; //in degree
-	private V3DMolecule fxmol1;
-	private V3DMolecule fxmol2;
+	private final V3DMolecule fxmol1;
+	private final V3DMolecule fxmol2;
 	private V3DInteractionSites iSites1;
 	private V3DInteractionSites iSites2;
 	private List<V3DInteraction> interactions;
@@ -36,78 +36,34 @@ public class V3DInteractingPair {
 		//fxmol2.addMoleculeCoordinatesChangeListener(this);
 		//fxmol1.addMoleculeCoordinatesChangeListener(this);
 		//fxmol2.addMoleculeCoordinatesChangeListener(this);
-		interactions = new ArrayList<V3DInteraction>();
+		interactions = new ArrayList<>();
 		iSites1.addListener((o) -> recalc());
 		iSites2.addListener((o) -> recalc());
 		fxmol1.visibleProperty().addListener((v,ov,nv) -> molVisibilityChanged(nv));
 		fxmol2.visibleProperty().addListener((v,ov,nv) -> molVisibilityChanged(nv));
 	}
-		
-	
+
 	public void analyze() {
 		for(IPharmacophorePoint p1: iSites1.getSites() ) {
-			for(IPharmacophorePoint p2: iSites2.getSites() ) {
-				Interaction interaction = getInteraction(p1,p2);
-				if(interaction!=Interaction.NONE)
+			for (IPharmacophorePoint p2 : iSites2.getSites()) {
+				Interaction interaction = getInteraction(p1, p2);
+				if (interaction != Interaction.NONE)
 					//TODO: make static????
 					interactions.add(new V3DInteraction(p1,
-							p2,interaction,fxmol1,fxmol2,fxmol1.getParent()));
-					
-				}
-					
+							p2, interaction, fxmol1, fxmol2, fxmol1.getParent()));
 			}
-		
+		}
 	}
 	
-	
-	
-	
 	public Interaction getInteraction(IPharmacophorePoint pp1, IPharmacophorePoint pp2) {
-		Interaction interaction = Interaction.NONE;
-		if(pp1 instanceof ChargePoint && pp2 instanceof ChargePoint) { //ionic interaction
-			ChargePoint cp1 = (ChargePoint) pp1;
-			ChargePoint cp2 = (ChargePoint) pp2;
-			if(cp1.getCharge()*cp2.getCharge()<0) {
-				Point3D center1 = fxmol1.localToParent(pp1.getCenter().x, pp1.getCenter().y, pp1.getCenter().z);
-				Point3D center2 = fxmol2.localToParent(pp2.getCenter().x, pp2.getCenter().y, pp2.getCenter().z);
-				double dist = center1.distance(center2);
-				if(dist>CHARGE_CHARGE_LOWER_CUTOFF && dist<CHARGE_CHARGE_UPPER_CUTOFF)
-					interaction = Interaction.IONIC;
-			}
-		}
-		else if((pp1 instanceof AcceptorPoint && pp2 instanceof DonorPoint) || (pp1 instanceof DonorPoint && pp2 instanceof AcceptorPoint)) { //hbond
-			Point3D center1 = fxmol1.localToParent(pp1.getCenter().x, pp1.getCenter().y, pp1.getCenter().z);
-			Point3D center2 = fxmol2.localToParent(pp2.getCenter().x, pp2.getCenter().y, pp2.getCenter().z);
-			double dist = center1.distance(center2);
-			if(dist>HBOND_LOWER_CUTOFF && dist<HBOND_UPPER_CUTOFF) {
-				Point3D endPoint1 = fxmol1.localToParent(pp1.getCenter().x + pp1.getDirectionality().x, 
-						pp1.getCenter().y + pp1.getDirectionality().y, pp1.getCenter().z + pp1.getDirectionality().z);
-				Point3D endPoint2 = fxmol2.localToParent(pp2.getCenter().x + pp2.getDirectionality().x, 
-						pp2.getCenter().y + pp2.getDirectionality().y, pp2.getCenter().z + pp2.getDirectionality().z);
-				Point3D direc1 = endPoint1.subtract(center1);
-				Point3D direc2 = endPoint2.subtract(center2);
-				if(pp1 instanceof AcceptorPoint) { //acceptor-donor hbond
-					double linearity = center2.angle(center2.add(direc2.multiply(-1.0)), center1); //angle between D-H and A
-					if(linearity<180+CUTOFF_ANGLE_DEVIATION_HBOND && linearity>180-CUTOFF_ANGLE_DEVIATION_HBOND) {
-						double directionality = direc1.angle(center1.subtract(center2));
-						double directionalityCutoff = ((AcceptorPoint)pp1).getAcceptorID()==0 ? CUTOFF_ANGLE_DEVIATION_HBOND_SP3O: CUTOFF_ANGLE_DEVIATION_HBOND;
-						if(directionality<180+directionalityCutoff && directionality>180-directionalityCutoff)
-							interaction = Interaction.HBOND;
-					}
-				}
-				else { //donor-acceptor bond
-					double linearity = center1.angle(center1.add(direc1.multiply(-1.0)), center2); //angle between D-H and A
-					if(linearity<180+CUTOFF_ANGLE_DEVIATION_HBOND && linearity>180-CUTOFF_ANGLE_DEVIATION_HBOND) {
-						double directionality = direc2.angle(center2.subtract(center1));
-						double directionalityCutoff = ((AcceptorPoint)pp2).getAcceptorID()==0 ? CUTOFF_ANGLE_DEVIATION_HBOND_SP3O: CUTOFF_ANGLE_DEVIATION_HBOND;
-						if(directionality<180+directionalityCutoff && directionality>180-directionalityCutoff)
-							interaction = Interaction.HBOND;
-					}
-				}
-			}
-			
-		}
-		return interaction;
+		if (pp1 instanceof ChargePoint && pp2 instanceof ChargePoint)
+			return createIonicInteraction((ChargePoint) pp1, (ChargePoint) pp2);
+		if (pp1 instanceof AcceptorPoint && pp2 instanceof DonorPoint)
+			return createHBondInteraction((AcceptorPoint)pp1, (DonorPoint)pp2, fxmol1, fxmol2);
+		if (pp2 instanceof AcceptorPoint && pp1 instanceof DonorPoint)
+			return createHBondInteraction((AcceptorPoint)pp2, (DonorPoint)pp1, fxmol2, fxmol1);
+
+		return Interaction.NONE;
 	}
 
 
@@ -118,8 +74,6 @@ public class V3DInteractingPair {
 		interactions.clear();
 	}
 
-
-	
 	public void recalc() {
 		cleanup();
 		analyze();
@@ -136,7 +90,39 @@ public class V3DInteractingPair {
 	}
 	
 	public boolean containsMolecule3D(V3DMolecule fxmol) {
-		boolean contains;
-		return contains = (fxmol==fxmol1 || fxmol==fxmol2) ? true : false;
+		return fxmol == fxmol1 || fxmol == fxmol2;
+	}
+
+	private Interaction createHBondInteraction(AcceptorPoint ppAcc, DonorPoint ppDon, V3DMolecule accMol, V3DMolecule donMol) {
+		Point3D pAcc = accMol.localToParent(ppAcc.getCenter().x, ppAcc.getCenter().y, ppAcc.getCenter().z);
+		Point3D pDon = donMol.localToParent(ppDon.getCenter().x, ppDon.getCenter().y, ppDon.getCenter().z);
+		double dist = pAcc.distance(pDon);
+		if(dist>HBOND_LOWER_CUTOFF && dist<HBOND_UPPER_CUTOFF) {
+			Point3D endPointAcc = accMol.localToParent(ppAcc.getCenter().x + ppAcc.getDirectionality().x,
+					ppAcc.getCenter().y + ppAcc.getDirectionality().y, ppAcc.getCenter().z + ppAcc.getDirectionality().z);
+			Point3D endPointDon = donMol.localToParent(ppDon.getCenter().x + ppDon.getDirectionality().x,
+					ppDon.getCenter().y + ppDon.getDirectionality().y, ppDon.getCenter().z + ppDon.getDirectionality().z);
+			Point3D direcAcc = endPointAcc.subtract(pAcc);
+			Point3D direcDon = endPointDon.subtract(pDon);
+			double linearity = pDon.angle(pDon.add(direcDon.multiply(-1.0)), pAcc); //angle between D-H and A
+			if(linearity<180+CUTOFF_ANGLE_DEVIATION_HBOND && linearity>180-CUTOFF_ANGLE_DEVIATION_HBOND) {
+				double directionality = direcAcc.angle(pAcc.subtract(pDon));
+				double directionalityCutoff = ppAcc.getAcceptorID()==0 ? CUTOFF_ANGLE_DEVIATION_HBOND_SP3O: CUTOFF_ANGLE_DEVIATION_HBOND;
+				if(directionality<180+directionalityCutoff && directionality>180-directionalityCutoff)
+					return Interaction.HBOND;
+			}
+		}
+		return Interaction.NONE;
+	}
+
+	private Interaction createIonicInteraction(ChargePoint cp1, ChargePoint cp2) {
+		if (cp1.getCharge() * cp2.getCharge()<0) {
+			Point3D center1 = fxmol1.localToParent(cp1.getCenter().x, cp1.getCenter().y, cp1.getCenter().z);
+			Point3D center2 = fxmol2.localToParent(cp2.getCenter().x, cp2.getCenter().y, cp2.getCenter().z);
+			double dist = center1.distance(center2);
+			if(dist>CHARGE_CHARGE_LOWER_CUTOFF && dist<CHARGE_CHARGE_UPPER_CUTOFF)
+				return Interaction.IONIC;
+		}
+		return Interaction.NONE;
 	}
 }
