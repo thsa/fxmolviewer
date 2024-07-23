@@ -39,7 +39,7 @@ public abstract class SurfaceTexture {
 	protected StereoMolecule mMol;
 	protected Image mImage;
 	protected SortedList<AtomWithXCoord> mSortedAtomsFX, mSortedAtomsSunFlow;
-	private AtomWithXCoord mAtomWithXCoord;  // non thread save buffer
+	private final AtomWithXCoord mAtomWithXCoord;  // non thread save buffer
 	private float mMaxVDWR;
 
 	public SurfaceTexture(TriangleMesh mesh, StereoMolecule mol) {
@@ -67,7 +67,7 @@ public abstract class SurfaceTexture {
 		return (float)Math.exp(-6.0 * Math.max(0, distance));
 	}
 
-	/**
+	/*
 	 * Creates a sorted atom list based on the given conformer's coordinates.
 	 * This must be called once before calling getSurfaceColor().
 	 * @param mol
@@ -114,7 +114,7 @@ public abstract class SurfaceTexture {
 	public int getLowIndex(float x, SortedList<AtomWithXCoord> sortedAtoms) {
 		// for sunflow we cannot use the the mAtomWithXCoord buffer, because it uses multiple threads
 		AtomWithXCoord awxc = (sortedAtoms == mSortedAtomsFX) ?
-				mAtomWithXCoord.setX(x - mMaxVDWR) : new AtomWithXCoord(0,x - mMaxVDWR);
+				mAtomWithXCoord.setX(x - mMaxVDWR) : new AtomWithXCoord(0, x - mMaxVDWR);
 		return sortedAtoms.getIndexAboveEqual(awxc);
 	}
 
@@ -124,9 +124,9 @@ public abstract class SurfaceTexture {
 	 * @return returns index into atom list sorted by x - VDW-radius
 	 */
 	public int getHighIndex(float x, SortedList<AtomWithXCoord> sortedAtoms) {
-		// for sunflow we cannot use the the mAtomWithXCoord buffer, because it uses multiple threads
+		// for sunflow we cannot use the mAtomWithXCoord buffer, because it uses multiple threads
 		AtomWithXCoord awxc = (sortedAtoms == mSortedAtomsFX) ?
-				mAtomWithXCoord.setX(x + mMaxVDWR) : new AtomWithXCoord(0,x + mMaxVDWR);
+				mAtomWithXCoord.setX(x + mMaxVDWR) : new AtomWithXCoord(0, x + mMaxVDWR);
 		return sortedAtoms.getIndexAboveEqual(awxc);
 	}
 
@@ -165,35 +165,37 @@ public abstract class SurfaceTexture {
 	}
 
 	abstract public void applyToSurface();
+
 	public Image getImage() {
 		return mImage;
 	}
+}
 
-	class AtomWithXCoord implements Comparable<AtomWithXCoord> {
-		int atom;
-		float x;
+class AtomWithXCoord implements Comparable<AtomWithXCoord> {
+	int atom;
+	float x;
 
-		public AtomWithXCoord(int atom, float x) {
-			this.atom = atom;
-			this.x = x;
-		}
+	public AtomWithXCoord(int atom, float x) {
+		this.atom = atom;
+		this.x = x;
+	}
 
-		public AtomWithXCoord setX(float x) {
-			this.x = x;
-			return this;
-		}
+	public AtomWithXCoord setX(float x) {
+		this.x = x;
+		return this;
+	}
 
-		@Override
-		public int compareTo(AtomWithXCoord o) {
-			return x < o.x ? -1 : x > o.x ? 1 : atom < o.atom ? -1 : atom > o.atom ? 1 : 0;
-		}
+	@Override
+	public int compareTo(AtomWithXCoord o) {
+		return x < o.x ? -1 : x > o.x ? 1 : Integer.compare(atom, o.atom);
+	}
 
-		@Override
-		public boolean equals(Object o) {
-			if (o == null || !(o instanceof AtomWithXCoord))
-				return false;
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof AtomWithXCoord))
+			return false;
 
-			return x == ((AtomWithXCoord)o).x && atom == ((AtomWithXCoord)o).atom;
-		}
+		return x == ((AtomWithXCoord)o).x && atom == ((AtomWithXCoord)o).atom;
 	}
 }
+

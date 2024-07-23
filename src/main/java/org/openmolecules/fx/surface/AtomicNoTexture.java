@@ -24,7 +24,6 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.VDWRadii;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableIntegerArray;
-import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
@@ -266,7 +265,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		int imageIndex = x + y * imageWidth;
 		Integer textureIndex = mTextureMap.get(imageIndex);
 		if (textureIndex != null)
-			return textureIndex.intValue();
+			return textureIndex;
 
 		ObservableFloatArray texCoords = mMesh.getTexCoords();
 		int index = texCoords.size()/2;
@@ -347,10 +346,6 @@ public class AtomicNoTexture extends SurfaceTexture {
 
 	private int get1DIndex(float weight1, float weight2, int count) {
 		return Math.min(count-1, Math.round(weight2 / (weight1 + weight2) * count));
-	}
-
-	public Image getImage() {
-		return mImage;
 	}
 
 	private void createImage(Color moleculeColor, double opacity) {

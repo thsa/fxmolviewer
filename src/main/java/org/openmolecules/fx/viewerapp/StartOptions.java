@@ -436,7 +436,7 @@ public class StartOptions {
 			V3DMolecule v3dligand = null;
 			if (ligand != null) {
 				v3dligand = new V3DMolecule(ligand,
-						MoleculeArchitect.ConstructionMode.BALL_AND_STICKS,
+						MoleculeArchitect.ConstructionMode.STICKS,
 						MoleculeArchitect.HydrogenMode.ALL,
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.LIGAND,

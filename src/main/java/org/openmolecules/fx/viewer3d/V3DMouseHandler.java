@@ -106,8 +106,10 @@ public class V3DMouseHandler {
 					if (mAffectedMol == null) {
 						translateCameraZ(-delta);
 					}// this does not change the world rotation center
-					else
+					else {
 						translateMolecule(mAffectedMol, 0, 0, delta);
+						mAffectedMol.fireCoordinatesChange();
+					}
 				}
 			}
 			se.consume();

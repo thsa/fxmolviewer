@@ -12,7 +12,7 @@ import java.util.List;
 
 public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DMoleculeGroup {
 	
-	private ObservableList<V3DRotatableGroup> children;
+	public ObservableList<V3DRotatableGroup> children;  // TODO make private again
 	private List<ListChangeListener<V3DRotatableGroup>> listeners;
 	private final ChangeListener<Boolean> mVisibilityListener;
 
@@ -22,6 +22,7 @@ public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DM
 		listeners = new ArrayList<>();
 		mVisibilityListener = (observable, oldValue, newValue) -> setVisible(newValue);
 	}
+
 
 	public Object clone() throws CloneNotSupportedException {
 		V3DRotatableGroup rg = (V3DRotatableGroup)super.clone();
@@ -33,10 +34,10 @@ public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DM
 	}
 
 	public void addGroup(V3DRotatableGroup group) {
+		getChildren().add(group);
+		children.add(group);
 		for(ListChangeListener<V3DRotatableGroup> listener : listeners)
 			group.addListener(listener);
-		children.add(group);
-		getChildren().add(group);
 		visibleProperty().addListener(group.mVisibilityListener);
 	}
 
@@ -48,12 +49,14 @@ public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DM
 		List<V3DRotatableGroup> children = root.children;
 		if(!children.isEmpty()) {
 			if(children.contains(group)) {
+				root.visibleProperty().removeListener(group.mVisibilityListener);
+				for(ListChangeListener<V3DRotatableGroup> listener : listeners)
+					group.removeListener(listener);
 				root.children.remove(group);
 				root.getChildren().remove(group);
-				root.visibleProperty().removeListener(group.mVisibilityListener);
 			}
 			for(V3DRotatableGroup child : children)
-				deleteGroup(group,child);
+				deleteGroup(group, child);
 		}
 	}
 

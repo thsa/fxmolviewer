@@ -1,4 +1,4 @@
-package org.openmolecules.fx.viewer3d.interactions.rf;
+package org.openmolecules.fx.viewer3d.interactions;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -12,26 +12,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RFInteractionHandler implements ListChangeListener<V3DRotatableGroup> {
+public class InteractionHandler implements ListChangeListener<V3DRotatableGroup> {
 
 	private final V3DScene mScene3D;
-	private List<RFInteractingPair> mInteractingPairs;
-	private Map<V3DMolecule, RFInteractionSites> mInteractionSites;
+	InteractionCalculator mCalculator;
+	private List<InteractingPair> mInteractingPairs;
+	private Map<V3DMolecule, InteractionSites> mInteractionSites;
 	private BooleanProperty mVisibleProperty;
 
-	public RFInteractionHandler(V3DScene scene) {
+	public InteractionHandler(V3DScene scene, InteractionCalculator calculator) {
 		mScene3D = scene;
 		mScene3D.getWorld().addListener(this);
+		mCalculator = calculator;
 		init();
 		evaluateInteractions();
 	}
 
 	private void init() {
-		mInteractionSites  = new HashMap<V3DMolecule,RFInteractionSites>();
-		mInteractingPairs = new ArrayList<RFInteractingPair>();
+		mInteractionSites  = new HashMap<>();
+		mInteractingPairs = new ArrayList<>();
 		mVisibleProperty = new SimpleBooleanProperty(true);
 		mVisibleProperty.addListener((v,ov,nv) -> {
-			for(RFInteractingPair interactingPair : mInteractingPairs) {
+			for(InteractingPair interactingPair : mInteractingPairs) {
 				interactingPair.setVisibility(mVisibleProperty.get());
 			}
 		});
@@ -43,7 +45,7 @@ public class RFInteractionHandler implements ListChangeListener<V3DRotatableGrou
 			v3dmol.addImplicitHydrogens();
 			v3dmol.RoleProperty().addListener((v,ov,nv) -> update());
 			v3dmol.IDProperty().addListener((v,ov,nv) -> update());
-			mInteractionSites.put(v3dmol, new RFInteractionSites(v3dmol));
+			mInteractionSites.put(v3dmol, new InteractionSites(v3dmol, mCalculator));
 		}
 
 		calculateInteractionsBetweenMols(fxmols);
@@ -55,23 +57,16 @@ public class RFInteractionHandler implements ListChangeListener<V3DRotatableGrou
 		evaluateInteractions();
 	}
 
-
 	private void calculateInteractionsBetweenMols(List<V3DMolecule> fxmols) {
-		for (int i=0;i<fxmols.size();i++) {
-			V3DMolecule fxmol = fxmols.get(i);
-			if (fxmol.getRole() != V3DMolecule.MoleculeRole.LIGAND) {
-				for (int j=0;j<fxmols.size();j++) {
-					V3DMolecule ligand = fxmols.get(j);
-					if (ligand.getRole() == V3DMolecule.MoleculeRole.LIGAND
-					 || ligand.getRole() == V3DMolecule.MoleculeRole.SOLVENT) {
-						boolean interacting = areTwoMolsInteracting(fxmol,ligand);
-						if(interacting) {
-							RFInteractingPair interactingPair = new RFInteractingPair(fxmol, ligand,
-									mInteractionSites.get(fxmol), mInteractionSites.get(ligand));
-							interactingPair.analyze();
-							mInteractingPairs.add(interactingPair);
-						}
-					}
+		for (int i=1; i<fxmols.size(); i++) {
+			V3DMolecule fxmol1 = fxmols.get(i);
+			for (int j=0; j<i; j++) {
+				V3DMolecule fxmol2 = fxmols.get(j);
+				if (areTwoMolsInteracting(fxmol1, fxmol2)) {
+					InteractingPair interactingPair = new InteractingPair(
+							mInteractionSites.get(fxmol1), mInteractionSites.get(fxmol2), mCalculator);
+					if (interactingPair.hasInteractions())
+						mInteractingPairs.add(interactingPair);
 				}
 			}
 		}
@@ -101,13 +96,13 @@ public class RFInteractionHandler implements ListChangeListener<V3DRotatableGrou
 		if (!compatibleByGroup)
 			return false;
 
-		if(role1== V3DMolecule.MoleculeRole.SOLVENT && role2== V3DMolecule.MoleculeRole.SOLVENT)
+		if(role1 == V3DMolecule.MoleculeRole.SOLVENT && role2 == V3DMolecule.MoleculeRole.SOLVENT)
 			return true;
-		if(role1==role2)
+		if(role1 ==role2)
 			return false;
-		if(role1== V3DMolecule.MoleculeRole.MACROMOLECULE || role2 == V3DMolecule.MoleculeRole.MACROMOLECULE)
+		if(role1 == V3DMolecule.MoleculeRole.MACROMOLECULE || role2 == V3DMolecule.MoleculeRole.MACROMOLECULE)
 			return true; //protein interacts with all other mols in the group
-		if(role1== V3DMolecule.MoleculeRole.COFACTOR || role2== V3DMolecule.MoleculeRole.COFACTOR)
+		if(role1 == V3DMolecule.MoleculeRole.COFACTOR || role2 == V3DMolecule.MoleculeRole.COFACTOR)
 			return true; //same for cofactor
 		if ((role1 == V3DMolecule.MoleculeRole.LIGAND && role2 == V3DMolecule.MoleculeRole.SOLVENT)
 		 || (role2 == V3DMolecule.MoleculeRole.LIGAND && role1 == V3DMolecule.MoleculeRole.SOLVENT))
@@ -116,12 +111,10 @@ public class RFInteractionHandler implements ListChangeListener<V3DRotatableGrou
 		return false;
 	}
 
-
 	@Override
 	public void onChanged(Change<? extends V3DRotatableGroup> c) {
 		update();
 	}
-
 
 	public boolean isVisible() {
 		return mVisibleProperty.get();
@@ -132,7 +125,7 @@ public class RFInteractionHandler implements ListChangeListener<V3DRotatableGrou
 	}
 
 	private void cleanup() {
-		for(RFInteractingPair pair: mInteractingPairs)
+		for(InteractingPair pair: mInteractingPairs)
 			pair.cleanup();
 	}
 }
