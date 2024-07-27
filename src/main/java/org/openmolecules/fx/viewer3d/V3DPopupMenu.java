@@ -495,17 +495,28 @@ public class V3DPopupMenu extends ContextMenu {
 			}
 		});
 
+		Slider slider3 = createSlider(0.0, 1.0, scene.getDepthCueingIntensity());
+		slider3.valueProperty().addListener(newValue ->
+			scene.setDepthCueingIntensity(((DoubleProperty)newValue).doubleValue()));
+
 		CheckMenuItem useWheelForClipping = new CheckMenuItem("Use Mouse Wheel For Clipping");
 		useWheelForClipping.setSelected(sUseMouseWheelForClipping);
 		useWheelForClipping.setOnAction(e -> sUseMouseWheelForClipping = useWheelForClipping.isSelected());
 
-		VBox sliderPane = new VBox();
-		sliderPane.setPadding(new Insets(4, 4, 4, 4));
-		sliderPane.setSpacing(8);
-		sliderPane.getChildren().addAll(new Label("Front of Visible Region"), slider1, new Label("Depth Of Visible Region"), slider2);
-		CustomMenuItem sliderItem = new CustomMenuItem(sliderPane, false);
+		VBox sliderPane1 = new VBox();
+		sliderPane1.setPadding(new Insets(4, 4, 4, 4));
+		sliderPane1.setSpacing(8);
+		sliderPane1.getChildren().addAll(new Label("Front of Visible Region"), slider1, new Label("Depth Of Visible Region"), slider2);
+		CustomMenuItem sliderItem1 = new CustomMenuItem(sliderPane1, false);
+
 		Menu menuClippingPlanes = new Menu("Clipping Planes");
-		menuClippingPlanes.getItems().addAll(sliderItem, useWheelForClipping);
+
+		VBox sliderPane2 = new VBox();
+		sliderPane2.setPadding(new Insets(16, 4, 4, 4));
+		sliderPane2.setSpacing(8);
+		sliderPane2.getChildren().addAll(new Label("Depth Cueing Intensity"), slider3);
+		CustomMenuItem sliderItem2 = new CustomMenuItem(sliderPane2, false);
+		menuClippingPlanes.getItems().addAll(sliderItem1, useWheelForClipping, sliderItem2);
 		getItems().add(menuClippingPlanes);
 		
 		if ((settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) && !settings.contains(V3DScene.ViewerSettings.UPPERPANEL)) {

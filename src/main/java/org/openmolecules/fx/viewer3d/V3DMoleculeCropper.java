@@ -56,7 +56,7 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 				count++;
 			}
 			else if (beyond == 0) {
-				mol.setAtomMarker(atom, true);
+				mol.setAtomMarker(atom, true);  // fixed atom for minimizer
 			}
 		}
 

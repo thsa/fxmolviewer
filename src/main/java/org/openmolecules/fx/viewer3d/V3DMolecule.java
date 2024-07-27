@@ -361,14 +361,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		if (count == 0)
 			return false;
 
-		// mark new hydrogen atoms, if their neighbour atom is also marked
 		mMol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		/*
-		 * hydrogen positions should not be constrained
-		 */
-		//for (int i=oldAtoms; i<mMol.getAllAtoms(); i++)
-		//	if (mMol.isMarkedAtom(mMol.getConnAtom(i, 0)))
-		//		mMol.setAtomMarker(i, true);
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 		builder.buildMolecule(oldAtoms, oldBonds);
 		setInitialCoordinates();
@@ -930,33 +923,38 @@ public class V3DMolecule extends V3DRotatableGroup {
 			}
 		}
 
-	// delete all flagged atoms except those that have a direct connection
+	// Delete all flagged atoms except those that have a direct connection
 	// to an atom not to be deleted. In this case change the atom's atomic no
 	// to 0 unless it is a hydrogen, which is not touched.
+	// Note: This method sets the atom marker for all non-hydrogen atoms that
+	// were not deleted and set to atomicNo=0 (exit vectors).
 	public void deleteAtoms(boolean[] isToBeDeleted) {
 		mMol.ensureHelperArrays(Molecule.cHelperNeighbours);
 
-			// delete also all hydrogens that are connected to an atom destined to be deleted
+		// delete also all hydrogens that are connected to an atom destined to be deleted
 		for (int atom=mMol.getAtoms(); atom<mMol.getAllAtoms(); atom++)
 			if (isToBeDeleted[mMol.getConnAtom(atom, 0)])
 				isToBeDeleted[atom] = true;
 
-			// convert atomic no to 0 for first layer of deleted atoms
-		// (unless for hydrogen) and unset their deletion flag
+		// Set atomicNo to 0 for first layer of deleted non-H atoms.
+		// They stay (deletion flag is purged), but bonds between them go.
 		int[] borderAtom = new int[mMol.getAllAtoms()];
 		int borderAtomCount = 0;
 		for (int bond=0; bond<mMol.getAllBonds(); bond++) {
 			int atom1 = mMol.getBondAtom(0, bond);
 			int atom2 = mMol.getBondAtom(1, bond);
-			if (isToBeDeleted[atom1] ^ isToBeDeleted[atom2]) {
+			if (isToBeDeleted[atom1] ^ isToBeDeleted[atom2])
 				borderAtom[borderAtomCount++] = isToBeDeleted[atom1] ? atom1 : atom2;
-			}
+
+			// Make sure that bond between two atoms for deletion is deleted
+			if (isToBeDeleted[atom1] && isToBeDeleted[atom2])
+				mMol.markBondForDeletion(bond);
 		}
 		for (int i=0; i<borderAtomCount; i++) {
 			int atom = borderAtom[i];
 			if (mMol.getAtomicNo(atom) != 1) {
 				mMol.setAtomicNo(atom, 0);
-				mMol.setAtomMarker(atom, true);
+				mMol.setAtomMarker(atom, true); // fixed atom for minimizer
 			}
 			isToBeDeleted[atom] = false;
 		}

@@ -139,9 +139,8 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 		ForceFieldMMFF94.initialize(ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField = new ForceFieldMMFF94(molScenery, ForceFieldMMFF94.MMFF94SPLUS);
 		mForceField.addListener(this);
-		if (fixedAtomCount != 0) {
-			for (int i = 0; i < mRigidAtoms.size(); i++)
-				fixedAtoms.add(mRigidAtoms.get(i));
+		if (!fixedAtoms.isEmpty()) {
+			fixedAtoms.addAll(mRigidAtoms);
 			int[] fixedAtomsMapped = new int[fixedAtoms.size()];
 			int[] map = molScenery.getHandleHydrogenMap();
 			int i=0;

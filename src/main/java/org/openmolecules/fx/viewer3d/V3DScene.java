@@ -77,14 +77,24 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private V3DBindingSite mBindingSiteHelper;
 	private InteractionHandler mInteractionHandler;
 	private final ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle)
+	private PointLight mLight;
+	private PerspectiveCamera mCamera;
+	private double mDepthCuingIntensity;
 
 
 	public static final Color SELECTION_COLOR = Color.TURQUOISE;
-	protected static final double CAMERA_INITIAL_DISTANCE = 45;
+	protected static final double CAMERA_INITIAL_Z = -45;
 	protected static final double CAMERA_FIELD_OF_VIEW = 30.0;	// default field of view
 	protected static final double CAMERA_NEAR_CLIP = 1.0;
 	protected static final double CAMERA_FAR_CLIP = 1000.0;
 	protected static final double CAMERA_MIN_CLIP_THICKNESS = 2.0;
+
+	private static final double AMBIENT_LIGHT = 0.1;
+	private static final double LIGHT_X_OFFSET = 0;   // Main light position in regard to camera
+	private static final double LIGHT_Y_OFFSET = 0;
+	private static final double LIGHT_Z_OFFSET = -20;
+	private static final double LIGHT_NEAR = 1.0;  // attenuation at camera (for depth cueing)
+	private static final double LIGHT_FAR = 0.1;  // attenuation behind objects (for depth cueing, must be > 0.0)
 	private static final double CLIP_ATOM_PADDING = 3.0;
 
 	public enum MEASUREMENT { NONE(0), DISTANCE(2), ANGLE(3), TORSION(4);
@@ -121,6 +131,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mSettings = settings;
 		mWorld = new V3DRotatableGroup("world");
 		mEditor = new V3DMoleculeEditor();
+		mDepthCuingIntensity = 0.8;
 		mRoot.getChildren().add(mWorld);
 		mRoot.setDepthTest(DepthTest.ENABLE);
 		// gradients work well in a Scene, but don't seem to work in SubScenes
@@ -129,7 +140,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		setFill(Color.BLACK);
 		buildLight();
-		buildMainCamera();
+		buildMainCamera();  // light first, because the camera positions the light
 		mMeasurements = new ArrayList<V3DMeasurement>();
 		new V3DMouseHandler(this);
 		new V3DKeyHandler(this);
@@ -390,9 +401,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		Point3D cog = getCOGInScene(group);
 		double cameraZ = 50;
 
-		double hFOV = ((PerspectiveCamera)getCamera()).getFieldOfView();
+		double hFOV = mCamera.getFieldOfView();
 		double vFOV;
-		if (((PerspectiveCamera)getCamera()).isVerticalFieldOfView()) {
+		if (mCamera.isVerticalFieldOfView()) {
 			vFOV = hFOV;
 			hFOV *= getWidth() / getHeight();
 		}
@@ -422,9 +433,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			}
 		}
 
-		getCamera().setTranslateX(cog.getX());
-		getCamera().setTranslateY(cog.getY());
-		getCamera().setTranslateZ(cameraZ);
+		setCameraXY(cog.getX(), cog.getY());
+		setCameraZ(cameraZ);
 	}
 
 	public double[] getVisibleZRange() {
@@ -478,7 +488,38 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			}
 		}
 
-		return meanZ / count;
+		return (count == 0) ? 0.0 : meanZ / count;
+	}
+
+	public double[] getMinAndMaxZ() {
+		double[] minAndMaxZ = new double[2];
+		minAndMaxZ[0] = 1000000;
+		minAndMaxZ[1] = -1000000;
+
+		for(V3DRotatableGroup group : mWorld.getAllAttachedRotatableGroups())
+			checkMinAndMax(group, minAndMaxZ);
+
+		return minAndMaxZ[0] == 1000000 ? new double[2] : minAndMaxZ;
+	}
+
+	private void checkMinAndMax(V3DRotatableGroup group, double[] minAndMaxZ) {
+		if (group.isVisible()) {
+			if (group instanceof V3DMolecule) {
+				StereoMolecule mol = ((V3DMolecule)group).getMolecule();
+				for (Coordinates coords : mol.getAtomCoordinates()) {
+					Point3D p = group.localToScene(coords.x, coords.y, coords.z);
+					if (minAndMaxZ[0] > p.getZ())
+						minAndMaxZ[0] = p.getZ();
+					else if (minAndMaxZ[1] < p.getZ())
+						minAndMaxZ[1] = p.getZ();
+				}
+			}
+			else {
+				for (Node node:group.getChildren())
+					if (node instanceof V3DRotatableGroup)
+						checkMinAndMax((V3DRotatableGroup)node, minAndMaxZ);
+			}
+		}
 	}
 
 	public Point3D getCOGInGroup(V3DRotatableGroup group) {
@@ -572,6 +613,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		if (fxmol.getColor() == null)
 			fxmol.setColor(color);
 		group.addGroup(fxmol);
+		updateDepthCueing();
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.addGroup(fxmol);
 	}
@@ -592,10 +634,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 /*	public double getDistanceToScreenFactor(double z) {
-		PerspectiveCamera camera = (PerspectiveCamera)getCamera();
-		double fieldOfView = camera.getFieldOfView();
-		double screenSize = camera.isVerticalFieldOfView() ? getHeight() : getWidth();
-		double sizeAtZ0 = -camera.getTranslateZ() * Math.tan(Math.PI*fieldOfView/90);
+		double fieldOfView = mCamera.getFieldOfView();
+		double screenSize = mCamera.isVerticalFieldOfView() ? getHeight() : getWidth();
+		double sizeAtZ0 = -mCamera.getTranslateZ() * Math.tan(Math.PI*fieldOfView/90);
 		return 20;	// TODO calculate something reasonable
 		}*/
 
@@ -616,7 +657,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 	public double getFieldOfView() {
-		return ((PerspectiveCamera)getCamera()).getFieldOfView();
+		return mCamera.getFieldOfView();
 		}
 
 	/**
@@ -674,28 +715,101 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 
 	private void buildLight() {
-		AmbientLight light1=new AmbientLight(new Color(0.3, 0.3, 0.3, 1.0));
-		light1.getScope().addAll(mWorld);
+		AmbientLight ambient = new AmbientLight(new Color(AMBIENT_LIGHT, AMBIENT_LIGHT, AMBIENT_LIGHT, 1.0));
+		ambient.getScope().addAll(mWorld);
 
-		PointLight light2=new PointLight(new Color(0.8, 0.8, 0.8, 1.0));
-		light2.setTranslateX(-100);
-		light2.setTranslateY(-100);
-		light2.setTranslateZ(-200);
-		light2.getScope().addAll(mWorld);
+		mLight = new PointLight(new Color(0.8, 0.8, 0.8, 1.0));
+		mLight.setTranslateX(LIGHT_X_OFFSET);
+		mLight.setTranslateY(LIGHT_Y_OFFSET);
+		mLight.setTranslateZ(CAMERA_INITIAL_Z + LIGHT_Z_OFFSET);
+		mLight.getScope().addAll(mWorld);
 
 		Group lightGroup = new Group();
-		lightGroup.getChildren().addAll(light1, light2);
+		lightGroup.getChildren().addAll(ambient , mLight);
 		mRoot.getChildren().addAll(lightGroup);
-		}
+	}
 
 	private void buildMainCamera() {
-		PerspectiveCamera camera = new PerspectiveCamera(true);
-		camera.setNearClip(CAMERA_NEAR_CLIP);
-		camera.setFarClip(CAMERA_FAR_CLIP);
-		camera.setTranslateZ(-CAMERA_INITIAL_DISTANCE);
-		setCamera(camera);
-		mRoot.getChildren().add(camera);
+		mCamera = new PerspectiveCamera(true);
+		mCamera.setNearClip(CAMERA_NEAR_CLIP);
+		mCamera.setFarClip(CAMERA_FAR_CLIP);
+		setCameraZ(CAMERA_INITIAL_Z);
+		setCamera(mCamera);
+		mRoot.getChildren().add(mCamera);
 		}
+
+	public void setCameraXY(double x, double y) {
+		mCamera.setTranslateX(x);
+		mCamera.setTranslateZ(y);
+		mLight.setTranslateX(x + LIGHT_X_OFFSET);
+		mLight.setTranslateX(y + LIGHT_Y_OFFSET);
+	}
+
+	public void setCameraZ(double z) {
+		mCamera.setTranslateZ(z);
+		mLight.setTranslateZ(z + LIGHT_Z_OFFSET);
+		updateDepthCueing();
+	}
+
+	public void updateDepthCueing() {
+		if (mDepthCuingIntensity == 0) {
+			mLight.setConstantAttenuation(1);
+			mLight.setLinearAttenuation(0);
+			mLight.setQuadraticAttenuation(0);
+			return;
+		}
+
+		double camZ = mCamera.getTranslateZ();
+
+		double[] minAndMaxZ = getMinAndMaxZ();
+
+		// near and far points for which we assign known attenuation
+		// values to then calculate the constants for the attenuation equation
+		double nearZ = Math.max(camZ, minAndMaxZ[0] - 5);    // must be >= camZ
+		double farZ = Math.max(nearZ + 10, Math.max(nearZ + 25, minAndMaxZ[1]));
+
+		double d_near = nearZ - camZ - LIGHT_Z_OFFSET;  // distances from light for these two points
+		double d_far = farZ - camZ- LIGHT_Z_OFFSET;
+
+		double dciFactor = Math.pow(4, mDepthCuingIntensity);
+		double attnNear = dciFactor;  // desired attenuation values at near and far points
+		double attnFar = 1.0 / dciFactor;
+
+		// Attenuation equation in JFX for depth cuing: attn(d) = 1 / (c + l * d + q * d^2); d:distance c,l,q are constants
+
+		// Calculate parameters for linear attenuation
+//		double l = (1.0 / ln - 1.0 / lf) / (d_near - d_far);
+//		double c = 1.0 / ln - d_near * l;
+//		double q = 0.0;
+
+		// Calculate parameters for quadratic attenuation
+		double q = (1.0 / attnNear - 1.0 / attnFar) / (d_near * d_near - d_far * d_far);
+		double c = 1.0 / attnNear - d_near * d_near * q;
+		double l = 0.0;
+
+		mLight.setConstantAttenuation(c);
+		mLight.setLinearAttenuation(l);
+		mLight.setQuadraticAttenuation(q);
+/*
+double dmin = (minAndMaxZ[0] - camZ - LIGHT_Z_OFFSET); // half distance to object front
+double dmax = (minAndMaxZ[1] - camZ - LIGHT_Z_OFFSET); // half distance to object front
+double lnear = 1 / (c + l * d_near + q * d_near * d_near);
+double lfar = 1 / (c + l * d_far + q * d_far * d_far);
+double lmin = 1 / (c + l * dmin + q * dmin * dmin);
+double lmax = 1 / (c + l * dmax + q * dmax * dmax);
+System.out.println();
+System.out.println("Positions: lightZ:"+DoubleFormat.toString(mLight.getTranslateZ())+" camZ:"+DoubleFormat.toString(camZ)
+		+" nearZ:"+DoubleFormat.toString(nearZ)+" farZ:"+DoubleFormat.toString(farZ)
+		+" objNear:"+DoubleFormat.toString(minAndMaxZ[0])+" objFar:"+DoubleFormat.toString(minAndMaxZ[1]));
+System.out.println("Distances: d_cam:"+DoubleFormat.toString(-LIGHT_Z_OFFSET)
+		+" d_near:"+DoubleFormat.toString(d_near)+" d_far:"+DoubleFormat.toString(d_far)
+		+" d_objNear:"+DoubleFormat.toString(dmin)+" d_objFar:"+DoubleFormat.toString(dmax));
+System.out.println("Attenuations: attnNear:"+attnNear+" attnFar:"+attnFar);
+System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.toString(l)+" c:"+DoubleFormat.toString(c)
+		+" l_near:"+DoubleFormat.toString(lnear)+" l_far:"+DoubleFormat.toString(lfar)
+		+" l_objNear:"+DoubleFormat.toString(lmin)+" l_objFar:"+DoubleFormat.toString(lmax));
+ */
+}
 
 	public OneEyeView buildOneEyeView(final double eyeShift, int stereoMode, Screen targetScreen) {
 		final PerspectiveCamera camera = new PerspectiveCamera(true);
@@ -706,17 +820,17 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			camera.setScaleX(0.5);
 		}
 
-		camera.setTranslateX(getCamera().getTranslateX() + eyeShift);
-		camera.setTranslateY(getCamera().getTranslateY());
-		camera.setTranslateZ(getCamera().getTranslateZ());
-		camera.setNearClip(getCamera().getNearClip());
-		camera.setFarClip(getCamera().getFarClip());
+		camera.setTranslateX(mCamera.getTranslateX() + eyeShift);
+		camera.setTranslateY(mCamera.getTranslateY());
+		camera.setTranslateZ(mCamera.getTranslateZ());
+		camera.setNearClip(mCamera.getNearClip());
+		camera.setFarClip(mCamera.getFarClip());
 
-		getCamera().translateXProperty().addListener((observableValue, number, t1) -> camera.setTranslateX(getCamera().getTranslateX() + eyeShift));
-		getCamera().translateYProperty().addListener((observableValue, number, t1) -> camera.setTranslateY(getCamera().getTranslateY()));
-		getCamera().translateZProperty().addListener((observableValue, number, t1) -> camera.setTranslateZ(getCamera().getTranslateZ()));
-		getCamera().nearClipProperty().addListener((observableValue, number, t1) -> camera.setNearClip(getCamera().getNearClip()));
-		getCamera().farClipProperty().addListener((observableValue, number, t1) -> camera.setFarClip(getCamera().getFarClip()));
+		mCamera.translateXProperty().addListener((observableValue, number, t1) -> camera.setTranslateX(mCamera.getTranslateX() + eyeShift));
+		mCamera.translateYProperty().addListener((observableValue, number, t1) -> camera.setTranslateY(mCamera.getTranslateY()));
+		mCamera.translateZProperty().addListener((observableValue, number, t1) -> camera.setTranslateZ(mCamera.getTranslateZ()));
+		mCamera.nearClipProperty().addListener((observableValue, number, t1) -> camera.setNearClip(mCamera.getNearClip()));
+		mCamera.farClipProperty().addListener((observableValue, number, t1) -> camera.setFarClip(mCamera.getFarClip()));
 
 		return new OneEyeView(this, camera, targetScreen);
 	}
@@ -897,7 +1011,16 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			mInteractionHandler.setVisibible(b);
 		}
 	}
-	
+
+	public double getDepthCueingIntensity() {
+		return mDepthCuingIntensity;
+	}
+
+	public void setDepthCueingIntensity(double dci) {
+		mDepthCuingIntensity = dci;
+		updateDepthCueing();
+	}
+
 	public V3DBindingSite getBindingSiteHelper() {
 		return mBindingSiteHelper;
 	}

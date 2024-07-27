@@ -423,7 +423,7 @@ public class V3DMouseHandler {
 	private void translateCameraZ(double dz) {
 		double f = Math.max(0.01, getScreenToObjectFactor(mScene.getMeanZ()));
 		Camera camera = mScene.getCamera();
-		camera.setTranslateZ(camera.getTranslateZ() + 2*f*dz);
+		mScene.setCameraZ(camera.getTranslateZ() + 2*f*dz);
 	}
 
 	private double getScreenToObjectFactor(double objectZ) {
@@ -479,6 +479,9 @@ public class V3DMouseHandler {
 				// world center of gravity:
 				rotateWorld(new Rotate(d, p1), mScene.getCOGInGroup(mScene.getWorld()));
 			}
+
+			if (!aroundZAxis)
+				mScene.updateDepthCueing();
 		}
 	}
 

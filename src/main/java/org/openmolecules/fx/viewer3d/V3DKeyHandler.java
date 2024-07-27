@@ -38,7 +38,7 @@ public class V3DKeyHandler {
 					sControlIsDown = true;
 					break;
 				case Z:
-					camera.setTranslateZ(-V3DScene.CAMERA_INITIAL_DISTANCE);
+					scene.setCameraZ(V3DScene.CAMERA_INITIAL_Z);
 					break;
 				case X:
 					if (mAxis != null)

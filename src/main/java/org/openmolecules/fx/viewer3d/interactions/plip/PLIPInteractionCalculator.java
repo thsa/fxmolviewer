@@ -25,6 +25,7 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 	public static final int IP_TYPE_HALOGEN_ACCEPTOR = 5;
 	public static final int IP_TYPE_POS_CHARGE = 6;
 	public static final int IP_TYPE_NEG_CHARGE = 7;
+	public static final int IP_TYPE_WATER = 8;
 
 
 	// Interaction types:
@@ -34,9 +35,11 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 	public static final int I_TYPE_SALT_BRIDGE = 3;
 	public static final int I_TYPE_PI_CATION = 4;
 	public static final int I_TYPE_PI_STACKING = 5;
+	public static final int I_TYPE_WATER_BRIDGE = 6;
+	public static final int I_TYPE_WATER_WATER = 7;
 
 	private static final Color[] INTERACTION_COLOR = { Color.BEIGE, Color.CORNFLOWERBLUE, Color.MEDIUMPURPLE,
-			Color.DARKOLIVEGREEN, Color.YELLOWGREEN, Color.ORANGE };
+			Color.DARKOLIVEGREEN, Color.YELLOWGREEN, Color.ORANGE, Color.BLUE, Color.BLUE };
 
 
 	//	private static final double BS_DIST_MAX = 8.5;
@@ -47,7 +50,9 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 	private static final double PISTACK_DIST_MAX = 7.5;
 	private static final double PISTACK_ANG_DEV = 30;   // degrees
 	private static final double PISTACK_OFFSET_MAX = 2.0;
-	private static final double PICATION_DIST_MAX = 6.0;
+//	private static final double PICATION_DIST_MAX = 6.0;     // original angle-independent value
+	private static final double PICATION_DIST_MAX_0 = 6.5;     // we model a simple linear angle dependency to better reflect DOI 10.1021/jp906086x
+	private static final double PICATION_DIST_PLUS_PER_DEGREE = 1.5 / 90;   // 5.0 in plane and 6.5 if perpendicular
 	private static final double SALTBRIDGE_DIST_MAX = 5.5;
 	private static final double HALOGEN_DIST_MAX = 4.0;
 	private static final double HALOGEN_ACC_ANGLE = 120;    // degrees
@@ -58,6 +63,8 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 	private static final double WATER_BRIDGE_OMEGA_MIN = 75;    // degrees
 	private static final double WATER_BRIDGE_OMEGA_MAX = 140;    // degrees
 	private static final double WATER_BRIDGE_THETA_MIN = 100;    // degrees
+
+	private static final double WATER_WATER_MAXDIST = 3.5;
 
 
 	/**
@@ -225,7 +232,24 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 		// PI-CATIONS
 		if ((ip1.getType() == IP_TYPE_POS_CHARGE && ip2.getType() == IP_TYPE_AROMATIC_RING)
 		 || (ip2.getType() == IP_TYPE_POS_CHARGE && ip1.getType() == IP_TYPE_AROMATIC_RING)) {
-			if (distance<PICATION_DIST_MAX)
+			double angle;
+			if (ip1.getType() == IP_TYPE_AROMATIC_RING) {
+				Coordinates n1 = ip1.calculatePlaneNormal();
+				Point3D pn1 = ip1.getFXMol().localToParent(c1.x+n1.x, c1.y+n1.y, c1.z+n1.z);
+				Point3D n1l = pn1.subtract(p1);     // plane normal in local space
+				angle = p2.subtract(p1).angle(n1l);
+			}
+			else {
+				Coordinates n2 = ip2.calculatePlaneNormal();
+				Point3D pn2 = ip2.getFXMol().localToParent(c2.x+n2.x, c2.y+n2.y, c2.z+n2.z);
+				Point3D n2l = pn2.subtract(p2);     // plane normal in local space
+				angle = p1.subtract(p2).angle(n2l);
+			}
+			// We model a simple angle dependency to get close to DOI 10.1021/jp906086x
+			if (angle > 90)
+				angle = 180 - 90;
+			double distMax = PICATION_DIST_MAX_0 - angle * PICATION_DIST_PLUS_PER_DEGREE;
+			if (distance<distMax)
 				return new Interaction(ip1, ip2, I_TYPE_PI_CATION, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_PI_CATION]);
 		}
 
@@ -252,7 +276,68 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 			return null;
 		}
 
+		// HBOND from WATER
+		if (ip1.getType() == IP_TYPE_WATER
+		 && (ip2.getType() == IP_TYPE_ACCEPTOR || ip2.getType() == IP_TYPE_DONOR)) {
+			int[] hydrogenHolder = new int[1];
+			if (isHBondToWater(ip2, ip1, p2, p1, distance, hydrogenHolder)) {
+				Interaction ia = new Interaction(ip1, ip2, I_TYPE_WATER_BRIDGE, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_BRIDGE]);
+				if (hydrogenHolder[0] != -1)
+					ia.setVisAtom(1, hydrogenHolder[0]);
+				return ia;
+			}
+		}
+
+		// HBOND to WATER
+		if (ip2.getType() == IP_TYPE_WATER
+		 && (ip1.getType() == IP_TYPE_ACCEPTOR || ip1.getType() == IP_TYPE_DONOR)) {
+			int[] hydrogenHolder = new int[1];
+			if (isHBondToWater(ip1, ip2, p1, p2, distance, hydrogenHolder)) {
+				Interaction ia = new Interaction(ip1, ip2, I_TYPE_WATER_BRIDGE, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_BRIDGE]);
+				if (hydrogenHolder[0] != -1)
+					ia.setVisAtom(0, hydrogenHolder[0]);
+				return ia;
+			}
+		}
+
+		// WATER-WATER
+		if (ip1.getType() == IP_TYPE_WATER
+				&& ip2.getType() == IP_TYPE_WATER) {
+			if (distance < WATER_WATER_MAXDIST)
+				return new Interaction(ip1, ip2, I_TYPE_WATER_WATER, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_WATER]);
+		}
+
 		return null;
+	}
+
+	private boolean isHBondToWater(InteractionPoint ip, InteractionPoint water, Point3D p, Point3D pWater, double distance, int[] hydrogenHolder) {
+		hydrogenHolder[0] = -1;
+
+		if (distance < WATER_BRIDGE_MINDIST || distance > WATER_BRIDGE_MAXDIST)
+			return false;
+
+		if (ip.getType() == IP_TYPE_DONOR) {
+			StereoMolecule don = ip.getMol();
+			Point3D pHyd = null;
+			double mindist = Double.MAX_VALUE;
+			for (int i=0; i<don.getAllConnAtoms(ip.getAtom()); i++) {
+				int atom = don.getConnAtom(ip.getAtom(), i);
+				if (don.getAtomicNo(atom) == 1) {
+					Point3D ph= ip.getFXMol().localToParent(don.getAtomX(atom), don.getAtomY(atom), don.getAtomZ(atom));
+					double dist = pWater.distance(ph);
+					if (mindist > dist) {
+						mindist = dist;
+						pHyd = ph;
+						hydrogenHolder[0] = atom;
+					}
+				}
+			}
+			double angle = pHyd.subtract(pWater).angle(pHyd.subtract(p));
+			if (angle < WATER_BRIDGE_THETA_MIN)
+				return false;
+		}
+
+		return true;
 	}
 
 	private void removeRedundantHydrophobicInteractions(TreeMap<Integer,ArrayList<Interaction>> interactionMap) {
@@ -262,17 +347,12 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 			int atom1 = hydrophobic.getInteractionPoint(0).getAtom();
 			int atom2 = hydrophobic.getInteractionPoint(1).getAtom();
 			boolean found = false;
-System.out.println("π-stacking atoms:"+atom1+","+atom2);
 			for (Interaction piStacking : interactionMap.get(I_TYPE_PI_STACKING)) {
-System.out.print("checking atoms1:");
 				int[] piAtoms1 = piStacking.getInteractionPoint(0).getAtoms();
 				int[] piAtoms2 = piStacking.getInteractionPoint(1).getAtoms();
 				for (int piAtom1 : piAtoms1) {
-System.out.print(" "+piAtom1);
 					if (piAtom1 == atom1) {
-System.out.print("  checking atoms2:");
 						for (int piAtom2 : piAtoms2) {
-System.out.print(" "+piAtom2);
 							if (piAtom2 == atom2) {
 								found = true;
 								break;
@@ -285,7 +365,6 @@ System.out.print(" "+piAtom2);
 				if (found)
 					break;
 			}
-System.out.println(found ? "found" : "not found");
 			if (found)
 				redundant.add(hydrophobic);
 		}
@@ -419,6 +498,7 @@ System.out.println(found ? "found" : "not found");
 		return mol.getAtomicNo(atom) == 7
 			&& mol.getAtomPi(atom) == 0
 			&& mol.getAtomZValue(atom) == 0
+			&& !mol.isAromaticAtom(atom)
 			&& !mol.isStabilizedAtom(atom);
 	}
 
