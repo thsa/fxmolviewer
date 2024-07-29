@@ -301,13 +301,13 @@ public class V3DPopupMenu extends ContextMenu {
 				final int type = i;
 				RadioMenuItem surfaceNone = new RadioMenuItem("None");
 				surfaceNone.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.NONE);
-				surfaceNone.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SurfaceMode.NONE));
+				surfaceNone.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SurfaceMode.NONE));
 				RadioMenuItem surfaceMesh = new RadioMenuItem("Triangles");
 				surfaceMesh.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.WIRES);
-				surfaceMesh.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SurfaceMode.WIRES));
+				surfaceMesh.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SurfaceMode.WIRES));
 				RadioMenuItem surfaceOpaque = new RadioMenuItem("Filled");
 				surfaceOpaque.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.FILLED);
-				surfaceOpaque.setOnAction(e -> fxmol.setSurfaceMode(type, V3DMolecule.SurfaceMode.FILLED));
+				surfaceOpaque.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SurfaceMode.FILLED));
 
 				RadioMenuItem surfaceColorInherit = new RadioMenuItem("From Molecule");
 				surfaceColorInherit.setSelected(fxmol.getSurfaceColorMode(type) == SurfaceMesh.SURFACE_COLOR_INHERIT);
@@ -545,6 +545,14 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuRaytrace = new Menu("Photo-Realistic Image");
 		menuRaytrace.getItems().addAll(itemRayTraceMol, itemRaytraceScene);
 		getItems().add(menuRaytrace);
+	}
+
+	private void setSurfaceMode(V3DMolecule fxmol, int type, V3DMolecule.SurfaceMode mode) {
+		V3DPopupMenuController controller = mScene.getPopupMenuController();
+		if (controller != null && mode != V3DMolecule.SurfaceMode.NONE)
+			controller.markCropDistanceForSurface(fxmol, type, mode);
+		fxmol.setSurfaceMode(type, mode);
+		fxmol.getMolecule().removeAtomMarkers();
 	}
 
 	private double clipValueToSlider(double clipValue) {

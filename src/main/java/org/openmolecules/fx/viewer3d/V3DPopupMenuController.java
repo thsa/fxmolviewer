@@ -7,5 +7,6 @@ public interface V3DPopupMenuController {
 	static final public int TYPE_EDIT = 2;
 	static final public int TYPE_VIEW = 3;
 
-	public void addExternalMenuItems(ContextMenu popup, int type);
+	void addExternalMenuItems(ContextMenu popup, int type);
+	void markCropDistanceForSurface(V3DMolecule fxmol, int type, V3DMolecule.SurfaceMode mode);
 }
