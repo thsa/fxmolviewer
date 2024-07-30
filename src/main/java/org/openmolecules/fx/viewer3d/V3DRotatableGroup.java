@@ -12,7 +12,7 @@ import java.util.List;
 
 public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DMoleculeGroup {
 	
-	public ObservableList<V3DRotatableGroup> children;  // TODO make private again
+	private ObservableList<V3DRotatableGroup> children;  // TODO make private again
 	private List<ListChangeListener<V3DRotatableGroup>> listeners;
 	private final ChangeListener<Boolean> mVisibilityListener;
 

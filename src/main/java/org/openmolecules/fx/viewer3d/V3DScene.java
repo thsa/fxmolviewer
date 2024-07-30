@@ -432,7 +432,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				}
 			}
 		}
-
+System.out.println("V3DScene.optimizeView() camX:"+cog.getX()+" camY:"+cog.getY()+" camZ:"+cameraZ);
 		setCameraXY(cog.getX(), cog.getY());
 		setCameraZ(cameraZ);
 	}
@@ -528,25 +528,27 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		double y = 0.0;
 		double z = 0.0;
 
-		for(V3DRotatableGroup fxmol : group.getAllAttachedRotatableGroups()) {
-			if (fxmol.isVisible()) {
-				for (Node node2:fxmol.getChildren()) {
-					NodeDetail detail = (NodeDetail)node2.getUserData();
-					if (detail != null) {
-						if (detail.isAtom() || detail.isBond()) {
-							Point3D p = node2.localToParent(0.0, 0.0, 0.0);
-							x += p.getX();
-							y += p.getY();
-							z += p.getZ();
-							count++;
-							}
-						}
+		for(V3DRotatableGroup rg : group.getAllAttachedRotatableGroups()) {
+			if (rg.isVisible()) {
+				if (rg instanceof V3DMolecule) {
+					StereoMolecule mol = ((V3DMolecule)rg).getMolecule();
+					Coordinates c = mol.getCenterOfGravity();
+					Point3D p = new Point3D(c.x, c.y, c.z);
+					Node owner = rg;
+					while (owner != group) {   // some of the groups may be deeper in the tree
+						p = owner.localToParent(p);
+						owner = owner.getParent();
 					}
+					x += mol.getAllAtoms() * p.getX();
+					y += mol.getAllAtoms() * p.getY();
+					z += mol.getAllAtoms() * p.getZ();
+					count += mol.getAllAtoms();
 				}
 			}
+		}
 
 		return count == 0 ? new Point3D(0, 0, 0) : new Point3D(x/count, y/count, z/count);
-		}
+	}
 
 	/**
 	 * Calculates and returns the center of gravity in scene coordinates
@@ -740,9 +742,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 	public void setCameraXY(double x, double y) {
 		mCamera.setTranslateX(x);
-		mCamera.setTranslateZ(y);
+		mCamera.setTranslateY(y);
 		mLight.setTranslateX(x + LIGHT_X_OFFSET);
-		mLight.setTranslateX(y + LIGHT_Y_OFFSET);
+		mLight.setTranslateY(y + LIGHT_Y_OFFSET);
 	}
 
 	public void setCameraZ(double z) {
