@@ -432,7 +432,6 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				}
 			}
 		}
-System.out.println("V3DScene.optimizeView() camX:"+cog.getX()+" camY:"+cog.getY()+" camZ:"+cameraZ);
 		setCameraXY(cog.getX(), cog.getY());
 		setCameraZ(cameraZ);
 	}
