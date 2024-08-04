@@ -58,8 +58,8 @@ public class MoleculeArchitect {
 	private static final int CONNECTION_POINT_COLOR = 0xFFCCCA90;   // changed from 0xFFFF1493 to make it less look like oxygen
 
 	private static final int COLOR_NONE = 0x00000000;   // don't draw objects with this color
-	private final static int[] ATOM_ARGB = { CONNECTION_POINT_COLOR,
-						COLOR_NONE, 0xFFD9FFFF, 0xFFCC80FF, 0xFFC2FF00, 0xFFFFB5B5, //  ?, H,He,Li, Be,B
+	private final static int[] ATOM_ARGB = { COLOR_NONE,
+						0xFFFFFFFF, 0xFFD9FFFF, 0xFFCC80FF, 0xFFC2FF00, 0xFFFFB5B5, //  ?, H,He,Li, Be,B
 			0xFF909090, 0xFF3050F8, 0xFFFF0D0D, 0xFF90E050, 0xFFB3E3F5, 0xFFAB5CF2, //  C, N, O, F,Ne,Na
 			0xFF8AFF00, 0xFFBFA6A6, 0xFFF0C8A0, 0xFFFF8000, 0xFFFFFF30, 0xFF1FF01F, // Mg,Al,Si, P, S,Cl
 			0xFF80D1E3, 0xFF8F40D4, 0xFF3DFF00, 0xFFE6E6E6, 0xFFBFC2C7, 0xFFA6A6AB, // Ar, K,Ca,Sc,Ti, V
@@ -186,16 +186,17 @@ public class MoleculeArchitect {
 					buildBond(bond);
 
 		for (int atom=fromAtom; atom<toAtom; atom++) {
-			if (includeAtom(atom)
-			 && (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0)) {
+			if (includeAtom(atom)) {
 				int atomicNo = mMol.getAtomicNo(atom);
-				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
+				boolean isAttachmentPoint = (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom)));
+				if (isAttachmentPoint) {
 					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
+							: (mConstructionMode == ConstructionMode.WIRES) ? VDWRadii.getVDWRadius(atomicNo)/6
 							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
 							:							VDWRadii.getVDWRadius(atomicNo)/4;
-					buildConnection(atom, radius);
+					buildAttachmentPoint(atom, radius);
 					}
-				else {
+				else if (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0) {
 					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == ConstructionMode.STICKS) ?
@@ -222,16 +223,17 @@ public class MoleculeArchitect {
 			}
 
 		for (Integer atom:atoms) {
-			if (includeAtom(atom)
-			 && (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0)) {
+			if (includeAtom(atom)) {
 				int atomicNo = mol.getAtomicNo(atom);
-				if (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom))) {
+				boolean isAttachmentPoint = (atomicNo == 0 || "*".equals(mMol.getAtomCustomLabel(atom)));
+				if (isAttachmentPoint) {
 					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
+							: (mConstructionMode == ConstructionMode.WIRES) ? VDWRadii.getVDWRadius(atomicNo)/6
 							: (mConstructionMode == ConstructionMode.BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
 							:							VDWRadii.getVDWRadius(atomicNo)/4;
-					buildConnection(atom, radius);
+					buildAttachmentPoint(atom, radius);
 					}
-				else {
+				else if (mConstructionMode != ConstructionMode.WIRES || mMol.getConnAtoms(atom) == 0) {
 					double radius = mol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == ConstructionMode.BALL_AND_STICKS) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == ConstructionMode.STICKS) ?
@@ -259,7 +261,7 @@ public class MoleculeArchitect {
 	/**
 	 * @param atom wild card atom drawn as cone, which defines a connection to some other not included part of the molecule
 	 */
-	private void buildConnection(int atom, double radius) {
+	private void buildAttachmentPoint(int atom, double radius) {
 		Coordinates c1 = getCoordinates(atom);
 
 		if (mMol.getConnAtoms(atom) == 0) {
@@ -320,12 +322,28 @@ public class MoleculeArchitect {
 		}
 
 	private void buildBallAndStickBond(int bond, double d, double b, double c) {
-		int color = BALL_AND_STICK_STICK_COLOR;
+		int atom1 = mMol.getBondAtom(0, bond);
+		int atom2 = mMol.getBondAtom(1, bond);
+		int color1 = (getAtomColor(atom1) == COLOR_NONE) ? COLOR_NONE : BALL_AND_STICK_STICK_COLOR;
+		int color2 = (getAtomColor(atom2) == COLOR_NONE) ? COLOR_NONE : BALL_AND_STICK_STICK_COLOR;
+
+		if (color1 == COLOR_NONE && color2 == COLOR_NONE)
+			return;
+
+		if (color1 != COLOR_NONE) {
+			center.between(mMol.getCoordinates(atom1), mMol.getCoordinates(atom2), 0.25);
+			d /= 2.0;
+			}
+		if (color2 != COLOR_NONE) {
+			center.between(mMol.getCoordinates(atom1), mMol.getCoordinates(atom2), 0.75);
+			d /= 2.0;
+			}
+
 		int order = mMol.getBondOrder(bond);
 		if (order == 1) {
 			double dd = 2*calculateBondReduction(bond, 0.2);
 			if (dd < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_SBOND_RADIUS, d-dd, center, b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_SBOND_RADIUS, d-dd, center, b, c, BALL_AND_STICK_STICK_COLOR);
 			return;
 			}
 
@@ -333,8 +351,8 @@ public class MoleculeArchitect {
 			Coordinates ds = calculateDoubleBondShift(bond).scale(BALL_AND_STICK_DBOND_SHIFT);
 			double dd = calculateBondReduction(bond, 0.20+0.10);
 			if (dd != 0f) {
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).add(ds), b, c, color);
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).sub(ds), b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
 				}
 			return;
 			}
@@ -344,11 +362,11 @@ public class MoleculeArchitect {
 			double dd1 = 2*calculateBondReduction(bond, 0.11);
 			double dd2 = 2*calculateBondReduction(bond, 0.22+0.07);
 			if (dd2 < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).add(ds), b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
 			if (dd1 < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd1, center, b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd1, center, b, c, BALL_AND_STICK_STICK_COLOR);
 			if (dd2 < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).sub(ds), b, c, color);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
 			return;
 			}
 
@@ -359,7 +377,7 @@ public class MoleculeArchitect {
 				Coordinates p2 = getCoordinates(mMol.getBondAtom(1, bond));
 				point1.between(p1, p2, dd/d);
 				point2.between(p2, p1, dd/d);
-				buildDottedBond(bond, color, color, point1, point2, BALL_AND_STICK_DOT_RADIUS, d-2*dd);
+				buildDottedBond(bond, color1, color2, point1, point2, BALL_AND_STICK_DOT_RADIUS, d-2*dd);
 				}
 			return;
 			}

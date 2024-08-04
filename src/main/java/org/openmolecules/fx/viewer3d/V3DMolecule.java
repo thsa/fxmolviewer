@@ -398,6 +398,9 @@ public class V3DMolecule extends V3DRotatableGroup {
 		return mBondRotationHelper;
 	}
 
+	private boolean isSurface(Node node) {
+		return node instanceof MeshView && !(node instanceof Cone);
+	}
 
 	/**
 	 * @return center of gravity in local coordinate system
@@ -467,16 +470,16 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param constructionMode one of the MoleculeArchitect.CONSTRUCTION_MODE... options
 	 * @param hydrogenMode one of the MoleculeArchitect.HYDROGEN_MODE... options
 	 */
-	public void setMode(MoleculeArchitect.ConstructionMode  constructionMode, 
-			MoleculeArchitect.HydrogenMode  hydrogenMode) {
+	public void setMode(MoleculeArchitect.ConstructionMode  constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode) {
 		if (constructionMode != mConstructionMode
 		 || hydrogenMode != mHydrogenMode) {
 			mConstructionMode = constructionMode;
 			mHydrogenMode = hydrogenMode;
 
 			for (int i=getChildren().size()-1; i>=0; i--)
-				if (!(getChildren().get(i) instanceof MeshView))
+				if (!isSurface(getChildren().get(i)))
 					getChildren().remove(i);
+
 			V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 			builder.setConstructionMode(constructionMode);
 			builder.setHydrogenMode(hydrogenMode);
@@ -492,7 +495,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	
 	public void reconstruct() {
 		for (int i=getChildren().size()-1; i>=0; i--)
-			if (!(getChildren().get(i) instanceof MeshView))
+			if (!isSurface(getChildren().get(i)))
 				getChildren().remove(i);
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 		builder.setConstructionMode(mConstructionMode);
@@ -1107,7 +1110,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		if (!(node instanceof Shape3D))
 			return;
 
-		if (node instanceof MeshView && !(node instanceof Cone))
+		if (isSurface(node))
 			return;
 
 		Shape3D shape = (Shape3D)node;
@@ -1158,7 +1161,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 
 	private Material getHiliteMaterial(Shape3D shape) {
-		if (shape instanceof MeshView) {
+		if (isSurface(shape)) {
 			NodeDetail detail = (NodeDetail)shape.getUserData();
 			if (detail.getMaterial().getDiffuseColor().getOpacity() == 1.0)
 				return sSolidHighlightedMaterial;
@@ -1171,7 +1174,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 
 	private PhongMaterial getOverrideMaterial(Shape3D shape) {
-		if (!(shape instanceof MeshView)) {
+		if (!isSurface(shape)) {
 			NodeDetail detail = (NodeDetail)shape.getUserData();
 			if (detail != null
 			 && detail.getMaterial() == V3DMoleculeBuilder.getMaterial(MoleculeArchitect.getAtomARGB(1)))
