@@ -48,6 +48,7 @@ import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.nodes.*;
 import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
+import org.openmolecules.mesh.Cone;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
@@ -1106,7 +1107,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		if (!(node instanceof Shape3D))
 			return;
 
-		if (node instanceof MeshView)
+		if (node instanceof MeshView && !(node instanceof Cone))
 			return;
 
 		Shape3D shape = (Shape3D)node;

@@ -118,11 +118,11 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		boolean isOverridable;
 		if(mV3DMolecule.overrideHydrogens()) 
 			isOverridable = (argb == MoleculeArchitect.getAtomARGB(1)
-							  || argb == MoleculeArchitect.getAtomARGB(6)
-							  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
+						  || argb == MoleculeArchitect.getAtomARGB(6)
+						  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
 		else
 			isOverridable = (argb == MoleculeArchitect.getAtomARGB(6)
-							  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
+						  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
 		PhongMaterial material = getMaterial(argb);
 		Cylinder cylinder = new Cylinder(radius, length, mCylinderDivisions);
 		cylinder.setMaterial(material);
@@ -143,9 +143,11 @@ public class V3DMoleculeBuilder implements MoleculeBuilder {
 		boolean isOverridable;
 		if(mV3DMolecule.overrideHydrogens()) 
 			isOverridable = (argb == MoleculeArchitect.getAtomARGB(1)
-						  || argb == MoleculeArchitect.getAtomARGB(6));
+						  || argb == MoleculeArchitect.getAtomARGB(6)
+						  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
 		else
-			isOverridable = (argb == MoleculeArchitect.getAtomARGB(6));
+			isOverridable = (argb == MoleculeArchitect.getAtomARGB(6)
+						  || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR);
 		PhongMaterial material = getMaterial(argb);
 		Cone cone = new Cone(radius, length);
 		cone.setMaterial(material);

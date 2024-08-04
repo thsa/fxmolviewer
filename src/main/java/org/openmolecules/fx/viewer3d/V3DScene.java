@@ -531,17 +531,19 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			if (rg.isVisible()) {
 				if (rg instanceof V3DMolecule) {
 					StereoMolecule mol = ((V3DMolecule)rg).getMolecule();
-					Coordinates c = mol.getCenterOfGravity();
-					Point3D p = new Point3D(c.x, c.y, c.z);
-					Node owner = rg;
-					while (owner != group) {   // some of the groups may be deeper in the tree
-						p = owner.localToParent(p);
-						owner = owner.getParent();
+					if (mol.getAllAtoms() != 0) {
+						Coordinates c = mol.getCenterOfGravity();
+						Point3D p = new Point3D(c.x, c.y, c.z);
+						Node owner = rg;
+						while (owner != group) {   // some of the groups may be deeper in the tree
+							p = owner.localToParent(p);
+							owner = owner.getParent();
+						}
+						x += mol.getAllAtoms() * p.getX();
+						y += mol.getAllAtoms() * p.getY();
+						z += mol.getAllAtoms() * p.getZ();
+						count += mol.getAllAtoms();
 					}
-					x += mol.getAllAtoms() * p.getX();
-					y += mol.getAllAtoms() * p.getY();
-					z += mol.getAllAtoms() * p.getZ();
-					count += mol.getAllAtoms();
 				}
 			}
 		}
@@ -773,7 +775,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		double d_far = farZ - camZ- LIGHT_Z_OFFSET;
 
 		double dciFactor = Math.pow(4, mDepthCuingIntensity);
-		double attnNear = dciFactor;  // desired attenuation values at near and far points
+//		double attnNear = Math.sqrt(dciFactor);  // desired attenuation values at near and far points
+		double attnNear = 1;  // desired attenuation values at near and far points
 		double attnFar = 1.0 / dciFactor;
 
 		// Attenuation equation in JFX for depth cuing: attn(d) = 1 / (c + l * d + q * d^2); d:distance c,l,q are constants
