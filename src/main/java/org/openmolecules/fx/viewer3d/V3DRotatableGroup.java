@@ -92,8 +92,6 @@ public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DM
 	
 	private void getAllAttachedRotatableGroups(V3DRotatableGroup root, List<V3DRotatableGroup> allChildren) {
 		allChildren.add(root);
-		if(root.getGroups().isEmpty())
-			return;
 		for(V3DRotatableGroup group :root.getGroups())
 			getAllAttachedRotatableGroups(group,allChildren);
 	}

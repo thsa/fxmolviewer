@@ -495,7 +495,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		minAndMaxZ[0] = 1000000;
 		minAndMaxZ[1] = -1000000;
 
-		for(V3DRotatableGroup group : mWorld.getAllAttachedRotatableGroups())
+		for(V3DRotatableGroup group : mWorld.getGroups())
 			checkMinAndMax(group, minAndMaxZ);
 
 		return minAndMaxZ[0] == 1000000 ? new double[2] : minAndMaxZ;
@@ -505,8 +505,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		if (group.isVisible()) {
 			if (group instanceof V3DMolecule) {
 				StereoMolecule mol = ((V3DMolecule)group).getMolecule();
-				for (Coordinates coords : mol.getAtomCoordinates()) {
-					Point3D p = group.localToScene(coords.x, coords.y, coords.z);
+				for (int atom=0; atom<mol.getAllAtoms(); atom++) {
+					Coordinates c = mol.getAtomCoordinates(atom);
+					Point3D p = group.localToScene(c.x, c.y, c.z);
 					if (minAndMaxZ[0] > p.getZ())
 						minAndMaxZ[0] = p.getZ();
 					else if (minAndMaxZ[1] < p.getZ())
@@ -514,9 +515,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				}
 			}
 			else {
-				for (Node node:group.getChildren())
-					if (node instanceof V3DRotatableGroup)
-						checkMinAndMax((V3DRotatableGroup)node, minAndMaxZ);
+				for (V3DRotatableGroup g : group.getGroups())
+					checkMinAndMax(g, minAndMaxZ);
 			}
 		}
 	}
@@ -809,7 +809,7 @@ System.out.println("Attenuations: attnNear:"+attnNear+" attnFar:"+attnFar);
 System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.toString(l)+" c:"+DoubleFormat.toString(c)
 		+" l_near:"+DoubleFormat.toString(lnear)+" l_far:"+DoubleFormat.toString(lfar)
 		+" l_objNear:"+DoubleFormat.toString(lmin)+" l_objFar:"+DoubleFormat.toString(lmax));
- */
+*/
 }
 
 	public OneEyeView buildOneEyeView(final double eyeShift, int stereoMode, Screen targetScreen) {
