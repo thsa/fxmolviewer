@@ -768,15 +768,16 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		// near and far points for which we assign known attenuation
 		// values to then calculate the constants for the attenuation equation
-		double nearZ = Math.max(camZ, minAndMaxZ[0] - 5);    // must be >= camZ
-		double farZ = Math.max(nearZ + 10, Math.max(nearZ + 25, minAndMaxZ[1]));
+		double width = minAndMaxZ[1] - minAndMaxZ[0];
+		double nearZ = Math.max(camZ, minAndMaxZ[0] - 0.2 * width);    // must be >= camZ
+		double farZ = Math.max(nearZ + 5, Math.max(nearZ + 50, minAndMaxZ[1]));
 
 		double d_near = nearZ - camZ - LIGHT_Z_OFFSET;  // distances from light for these two points
 		double d_far = farZ - camZ- LIGHT_Z_OFFSET;
 
 		double dciFactor = Math.pow(4, mDepthCuingIntensity);
-//		double attnNear = Math.sqrt(dciFactor);  // desired attenuation values at near and far points
-		double attnNear = 1;  // desired attenuation values at near and far points
+		double attnNear = Math.sqrt(dciFactor);  // desired attenuation values at near and far points
+//		double attnNear = 1;  // desired attenuation values at near and far points
 		double attnFar = 1.0 / dciFactor;
 
 		// Attenuation equation in JFX for depth cuing: attn(d) = 1 / (c + l * d + q * d^2); d:distance c,l,q are constants
