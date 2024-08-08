@@ -330,58 +330,67 @@ public class MoleculeArchitect {
 		if (color1 == COLOR_NONE && color2 == COLOR_NONE)
 			return;
 
-		if (color1 != COLOR_NONE) {
-			center.between(mMol.getCoordinates(atom1), mMol.getCoordinates(atom2), 0.25);
-			d /= 2.0;
-			}
-		if (color2 != COLOR_NONE) {
-			center.between(mMol.getCoordinates(atom1), mMol.getCoordinates(atom2), 0.75);
-			d /= 2.0;
-			}
+		// We want to cut bonds where they disappear inside the atom sphere, because in case of translucent atoms (e.g. glass) we don't want artefacts
+		// Therefore, we calculate length reduction for every bond atom and bond cylinder individually before shifting bond center
 
 		int order = mMol.getBondOrder(bond);
 		if (order == 1) {
-			double dd = 2*calculateBondReduction(bond, 0.2);
-			if (dd < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_SBOND_RADIUS, d-dd, center, b, c, BALL_AND_STICK_STICK_COLOR);
+			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.2);
+			if (d > 0.0) {
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_SBOND_RADIUS, d, center, b, c, BALL_AND_STICK_STICK_COLOR);
+				}
 			return;
 			}
 
 		if (order == 2) {
 			Coordinates ds = calculateDoubleBondShift(bond).scale(BALL_AND_STICK_DBOND_SHIFT);
-			double dd = calculateBondReduction(bond, 0.20+0.10);
-			if (dd != 0f) {
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d-dd, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.20+0.10);
+			if (d > 0.0) {
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
 				}
 			return;
 			}
 
 		if (order == 3) {
 			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(BALL_AND_STICK_TBOND_SHIFT);
-			double dd1 = 2*calculateBondReduction(bond, 0.11);
-			double dd2 = 2*calculateBondReduction(bond, 0.22+0.07);
-			if (dd2 < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
-			if (dd1 < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd1, center, b, c, BALL_AND_STICK_STICK_COLOR);
-			if (dd2 < d)
-				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d-dd2, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
-			return;
+			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.11);
+			if (d > 0.0) {
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				}
+			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.22+0.07);
+			if (d > 0.0)
+				mBuilder.addCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d, center, b, c, BALL_AND_STICK_STICK_COLOR);
 			}
 
 		if (order == 0) {
-			double dd = calculateBondReduction(bond, 0.2);
-			if (2*dd < d) {
+			double d1 = (color1 == COLOR_NONE) ? 0.5 * d : calculateBondReduction(atom1, 0.2);
+			double d2 = (color2 == COLOR_NONE) ? 0.5 * d : calculateBondReduction(atom2, 0.2);
+			if (d1 + d2 >= d) {
 				Coordinates p1 = getCoordinates(mMol.getBondAtom(0, bond));
 				Coordinates p2 = getCoordinates(mMol.getBondAtom(1, bond));
-				point1.between(p1, p2, dd/d);
-				point2.between(p2, p1, dd/d);
-				buildDottedBond(bond, color1, color2, point1, point2, BALL_AND_STICK_DOT_RADIUS, d-2*dd);
+				point1.between(p1, p2, d1/d);
+				point2.between(p2, p1, d2/d);
+				buildDottedBond(bond, color1, color2, point1, point2, BALL_AND_STICK_DOT_RADIUS, d);
 				}
 			return;
 			}
 		}
+
+	/**
+	 * Considering both end length reductions, this method calculates a new weighted center for the bond cylinder
+	 * @return reduced length
+	 */
+	private double calcNewReducedBondCenter(double distance, int atom1, int atom2, int color1, int color2, double sideShift) {
+		double d1 = (color1 == COLOR_NONE) ? 0.5 * distance : calculateBondReduction(atom1, sideShift);
+		double d2 = (color2 == COLOR_NONE) ? 0.5 * distance : calculateBondReduction(atom2, sideShift);
+		if (d1 + d2 >= distance)
+			return 0;
+
+		center.between(mMol.getCoordinates(atom1), mMol.getCoordinates(atom2), 0.5 + 0.5 * (d1 - d2));
+		return distance - d1 - d2;
+	}
 
 	private void buildStickBond(int bond, double d, double b, double c) {
 		int color1 = getAtomColor(mMol.getBondAtom(0, bond));
@@ -620,9 +629,8 @@ public class MoleculeArchitect {
 							: new Coordinates(-v.x*v.z/lxy, -v.y*v.z/lxy, lxy);
 	}
 
-	private double calculateBondReduction(int bond, double sideShift) {
-		double atomRadius = Math.min(VDWRadii.getVDWRadius(mMol.getAtomicNo(mMol.getBondAtom(0, bond))),
-									 VDWRadii.getVDWRadius(mMol.getAtomicNo(mMol.getBondAtom(1, bond)))) / 4;
+	private double calculateBondReduction(int atom, double sideShift) {
+		double atomRadius = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom)) / 4;
 		return (sideShift >= atomRadius) ? 0.0 : Math.sqrt(atomRadius*atomRadius - sideShift*sideShift);
 		}
 
