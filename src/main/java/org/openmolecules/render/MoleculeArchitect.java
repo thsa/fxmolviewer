@@ -318,7 +318,7 @@ public class MoleculeArchitect {
 			break;
 		default:
 			buildStickBond(bond, d, b, c);
-		}
+			}
 		}
 
 	private void buildBallAndStickBond(int bond, double d, double b, double c) {
@@ -388,7 +388,7 @@ public class MoleculeArchitect {
 		if (d1 + d2 >= distance)
 			return 0;
 
-		center.between(mMol.getCoordinates(atom1), mMol.getCoordinates(atom2), 0.5 + 0.5 * (d1 - d2));
+		center.between(getCoordinates(atom1), getCoordinates(atom2), 0.5 + 0.5 * (d1 - d2));
 		return distance - d1 - d2;
 	}
 

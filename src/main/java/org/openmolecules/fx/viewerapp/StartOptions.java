@@ -53,7 +53,8 @@ public class StartOptions {
 			"Test small fragments",
 			"Test metal-organic molecules",
 			"Test Conformers",
-//			"Test protein",
+			"Test simple molecule",
+//			"Test protein from MMTF file",
 //			"Test surface from voxel data"
 	};
 
@@ -63,8 +64,9 @@ public class StartOptions {
 	public static final int MODE_SMALL_FRAGMENTS = 3;
 	public static final int MODE_METAL_ORGANICS = 4;
 	public static final int MODE_SMALL_COMFORMERS = 5;
-	public static final int MODE_PROTEIN = 6;
-	public static final int MODE_VOXEL_DATA = 7;
+	public static final int MODE_SIMPLE = 6;
+	public static final int MODE_PROTEIN = 7;
+	public static final int MODE_VOXEL_DATA = 8;
 
 	private static final double POSITION_FACTOR = 16;
 	private static final double FRAGMENT_POSITION_FACTOR = 16;
@@ -302,59 +304,63 @@ public class StartOptions {
 //	private static final String TEST_MOL_FOR_CONFORMERS = "fikQPBHQ@`Q`peGYEMDeMeDeBeDerWQm@DUUMP@@@@";
 //	private static final String TEST_MOL_FOR_CONFORMERS = "e`TZFH@NAEGFiJemgo`@cIEEEELjeLeMBhhbiPHhXdUSUSSPACUMSTHHSi@@";
 
+	private static final String CAPIVERSATIB_FROM_4GV1 = "eghVDH@AOBfmccG@HcHhdlhdhmHTlheDePqdUMl]]@AUSUUT@QIEAq@@ #qAwJRVFEHdEA^xVuJEHmay@CjsMh@mL_dHMibmCedKPmGYAtjVbhByNAxjJbB_L@MC{ieHzZPSyDjIIDk?]iQuKQh_J]{Qo[ePqCXhjHuLD]UsHLz}^pWj`nhjZp|qqVcVEfBrF_KDWw~aYd_cOUMiW??CQ{iLFJC`{czF`?ccBGehHNyVEcWpw@ektRfDek}mfPxXbzCbvk\\Gyqn~GanPzEeWvSp|}HyXT`plWf}`TIShrFEqmmiwfze?|PMpT?ZTOvrwJczU[NCwNiVSySrZ]QFlLn?GTpFK{RE?X{IglY_WTRtVOPjpheybrYiTcc\\EWYDdx?bloSjvmeyEocnVjDioq{fZrWBSYNoPlKJMvR[DcFqAEKr\\xauqt_\\~__Vg_n~uQ^ngZFXUJr}abGD~F[IcrvvP~Zrn_SGcmQu^RiuFuzaXfkc@V@@[`D";
+
 	private static final double SURFACE_BRIGHTNESS = 0.55;
 	private static final double SURFACE_SATURATION = 0.15;   // must be less than 1.0 - SURFACE_BRIGHTNESS
 
-	private int mode;
-	private String pdbEntryCode,pdbFile;
-	private boolean cropLigand;
+	private final int mMode;
+	private final String mPDBEntryCode, mPDBFile;
+	private final boolean mCropLigand;
 
 	public StartOptions(int mode, String pdbEntryCode, String pdbFile, boolean cropLigand) {
-		this.mode = mode;
-		this.pdbEntryCode = pdbEntryCode;
-		this.pdbFile = pdbFile;
-		this.cropLigand = cropLigand;
+		mMode = mode;
+		mPDBEntryCode = pdbEntryCode;
+		mPDBFile = pdbFile;
+		mCropLigand = cropLigand;
 		}
 
 	public int getMode() {
-		return mode;
+		return mMode;
 		}
 
 	public String getPDBEntryCode() {
-		return pdbEntryCode;
+		return mPDBEntryCode;
 		}
 
 	public boolean geCropLigand() {
-		return cropLigand;
+		return mCropLigand;
 		}
 
 	public void initializeScene(V3DScene scene) {
 		scene.clearAll();
 
-		if (mode == MODE_PDB_ENTRY)
+		if (mMode == MODE_PDB_ENTRY)
 			loadPDBEntry(scene);
-		else if (mode == MODE_SMALL_MOLECULES)
+		else if (mMode == MODE_SMALL_MOLECULES)
 			testMolecules(scene);
-		else if (mode == MODE_SMALL_MOLECULE_SURFACES)
+		else if (mMode == MODE_SMALL_MOLECULE_SURFACES)
 			testSurfaces(scene);
-		else if (mode == MODE_SMALL_FRAGMENTS)
+		else if (mMode == MODE_SMALL_FRAGMENTS)
 			testFragments(scene);
-		else if (mode == MODE_METAL_ORGANICS)
+		else if (mMode == MODE_METAL_ORGANICS)
 			testOrganoMetallics(scene);
-		else if (mode == MODE_SMALL_COMFORMERS)
+		else if (mMode == MODE_SMALL_COMFORMERS)
 			testConformers(scene);
-		else if (mode == MODE_PROTEIN)
+		else if (mMode == MODE_SIMPLE)
+			testSimple(scene);
+		else if (mMode == MODE_PROTEIN)
 			testProtein(scene);
-		else if (mode == MODE_VOXEL_DATA)
+		else if (mMode == MODE_VOXEL_DATA)
 			testVoxelData(scene);
 	}
 
 	private void loadPDBEntry(V3DScene scene) {
 		try {
 			PDBFileParser parser = new PDBFileParser();
-			PDBCoordEntryFile entryFile = (pdbFile != null) ?
-					parser.parse(new File(pdbFile))
-					: (!pdbEntryCode.isEmpty()) ? parser.getFromPDB(pdbEntryCode) : null;
+			PDBCoordEntryFile entryFile = (mPDBFile != null) ?
+					parser.parse(new File(mPDBFile))
+					: (!mPDBEntryCode.isEmpty()) ? parser.getFromPDB(mPDBEntryCode) : null;
 
 			if (entryFile == null) {
 				scene.showMessage("Unexpectedly didn't get PDB entry.");
@@ -415,8 +421,8 @@ public class StartOptions {
 						SURFACE_BRIGHTNESS + SURFACE_SATURATION * Math.sin(start+2*shift), 1.0);
 			}
 
-			V3DRotatableGroup complex = new V3DRotatableGroup(pdbEntryCode);
-			System.out.println(pdbEntryCode);
+			V3DRotatableGroup complex = new V3DRotatableGroup(mPDBEntryCode);
+			System.out.println(mPDBEntryCode);
 			scene.addGroup(complex);
 
 			for (int i=0; i<proteins.size(); i++) {
@@ -457,7 +463,7 @@ public class StartOptions {
 				scene.addMolecule(vm, complex);
 			}
 
-			if (v3dligand != null && cropLigand) {
+			if (v3dligand != null && mCropLigand) {
 				scene.crop(v3dligand, 10.0);
 				scene.optimizeView();
 			}
@@ -609,7 +615,15 @@ public class StartOptions {
 		System.out.println("Generated "+count+" conformers.");
 	}
 
-	private void testProtein(V3DScene scene) {
+	private void testSimple(V3DScene scene) {
+		StereoMolecule mol = new IDCodeParser(false).getCompactMolecule(CAPIVERSATIB_FROM_4GV1);
+		mol = new ConformerGenerator(1467967297811L, false).getOneConformerAsMolecule(mol);
+		V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND);
+		vm.setConstructionMode(MoleculeArchitect.ConstructionMode.BALL_AND_STICKS);
+		scene.addMolecule(vm);
+	}
+
+	private void testProteinFromMMTF(V3DScene scene) {
 		String path = HOME_PATH + "data/pdb/";
 		try {
 			long millis = System.currentTimeMillis();
@@ -618,16 +632,16 @@ public class StartOptions {
 //				Molecule3D[] mol = MMTFParser.getStructureFromFile(path, "1CRN", MMTFParser.MODE_SPLIT_CHAINS);
 //				Molecule3D[] mol = MMTFParser.getStructureFromFile(path, "5OM7", MMTFParser.MODE_SPLIT_CHAINS);
 //				Molecule3D[] mol = MMTFParser.getStructureFromFile(path, "1M19", MMTFParser.MODE_SPLIT_CHAINS);
-			Molecule3D[] mol = MMTFParser.getStructureFromFile(path, "2I4Q", MMTFParser.MODE_SPLIT_CHAINS);
+			Molecule3D[] mols = MMTFParser.getStructureFromFile(path, "2I4Q", MMTFParser.MODE_SPLIT_CHAINS);
 //				Molecule3D[] mol = MMTFParser.getStructureFromFile(path, "1JJ2", MMTFParser.MODE_SPLIT_CHAINS);
 
-			MMTFParser.centerMolecules(mol);
-			for (int i=0; i<mol.length; i++) {
+			MMTFParser.centerMolecules(mols);
+			for (Molecule3D mol : mols) {
 				millis = printDelay(millis);
 				System.out.print("Creating V3DMolecule...  ");
 
-				V3DMolecule vm = new V3DMolecule(mol[i], MoleculeArchitect.ConstructionMode.STICKS,
-						 V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND);
+				V3DMolecule vm = new V3DMolecule(mol, MoleculeArchitect.ConstructionMode.STICKS,
+						V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.LIGAND);
 				//				V3DMolecule vm = new V3DMolecule(conformer, -1, MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 				//						V3DMolecule.SURFACE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.5);
 
