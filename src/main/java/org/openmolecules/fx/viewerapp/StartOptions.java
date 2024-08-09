@@ -350,7 +350,7 @@ public class StartOptions {
 		else if (mMode == MODE_SIMPLE)
 			testSimple(scene);
 		else if (mMode == MODE_PROTEIN)
-			testProtein(scene);
+			testProteinFromMMTF(scene);
 		else if (mMode == MODE_VOXEL_DATA)
 			testVoxelData(scene);
 	}
