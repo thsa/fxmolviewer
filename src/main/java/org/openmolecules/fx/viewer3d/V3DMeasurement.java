@@ -13,13 +13,13 @@ import java.util.ArrayList;
 
 public class V3DMeasurement implements MolCoordinatesChangeListener {
 	
-	private ArrayList<Integer> mAtoms;
-	private ArrayList<V3DMolecule> mFXmols;
+	private final ArrayList<Integer> mAtoms;
+	private final ArrayList<V3DMolecule> mFXmols;
 	private DashedRod mRod;
-	private NonRotatingLabel mLabel;
-	private Point3D[] mPoints;
-	private Parent mParent;
-	private V3DScene mScene;
+	private final NonRotatingLabel mLabel;
+	private final Point3D[] mPoints;
+	private final Parent mParent;
+	private final V3DScene mScene;
 	
 	public V3DMeasurement(V3DScene scene, ArrayList<Integer> atoms, ArrayList<V3DMolecule> fxMols, DashedRod rod, NonRotatingLabel label, Parent parent) {
 		for(V3DMolecule fxmol:fxMols) {

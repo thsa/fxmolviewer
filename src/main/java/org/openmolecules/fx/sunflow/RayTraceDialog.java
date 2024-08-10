@@ -36,14 +36,15 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.render.SunflowMoleculeBuilder;
+import org.openmolecules.render.SunflowPrimitiveBuilder;
 
 public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHandler<ActionEvent> {
-	private static final Color DEFAULT_BACKGROUND = Color.rgb(SunflowMoleculeBuilder.DEFAULT_BACKGROUND.getRed(),
-															  SunflowMoleculeBuilder.DEFAULT_BACKGROUND.getGreen(),
-															  SunflowMoleculeBuilder.DEFAULT_BACKGROUND.getBlue());
-	private static final Color DEFAULT_FLOOR_COLOR = Color.rgb(SunflowMoleculeBuilder.DEFAULT_FLOOR_COLOR.getRed(),
-															   SunflowMoleculeBuilder.DEFAULT_FLOOR_COLOR.getGreen(),
-															   SunflowMoleculeBuilder.DEFAULT_FLOOR_COLOR.getBlue());
+	private static final Color DEFAULT_BACKGROUND = Color.rgb(SunflowPrimitiveBuilder.DEFAULT_BACKGROUND.getRed(),
+															  SunflowPrimitiveBuilder.DEFAULT_BACKGROUND.getGreen(),
+															  SunflowPrimitiveBuilder.DEFAULT_BACKGROUND.getBlue());
+	private static final Color DEFAULT_FLOOR_COLOR = Color.rgb(SunflowPrimitiveBuilder.DEFAULT_FLOOR_COLOR.getRed(),
+															   SunflowPrimitiveBuilder.DEFAULT_FLOOR_COLOR.getGreen(),
+															   SunflowPrimitiveBuilder.DEFAULT_FLOOR_COLOR.getBlue());
 
 	private static final String[] SIZE_OPTIONS = {
 			"160 x 120",
@@ -55,12 +56,13 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 			"2560 x 1600",
 			"3840 x 2160" };
 
-	private ComboBox    mComboboxSize,mComboboxMode,mComboboxAtomMaterial,mComboboxBondMaterial;
-	private ComboBox[]  mComboboxSurfaceMaterial;
-	private CheckBox    mCheckboxOptimizeTranslation,mCheckboxUseBackground,mCheckboxUseFloor,mCheckboxOptimizeRotation,
-						mCheckboxShinyFloor,mCheckboxDepthBlurring;
-	private ColorPicker mBackgroundColorPicker,mFloorColorPicker;
-	private Slider		mSliderBrightness;
+	private final ComboBox<String> mComboboxSize,mComboboxAtomMaterial,mComboboxBondMaterial;
+	private ComboBox<String> mComboboxMode;
+	private final ComboBox<String>[] mComboboxSurfaceMaterial;
+	private final CheckBox mCheckboxUseBackground,mCheckboxUseFloor,mCheckboxShinyFloor,mCheckboxDepthBlurring;
+	private CheckBox mCheckboxOptimizeTranslation,mCheckboxOptimizeRotation;
+	private final ColorPicker mBackgroundColorPicker,mFloorColorPicker;
+	private final Slider mSliderBrightness;
 
 	/**
 	 * @param parent
@@ -86,7 +88,7 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 		int yIndex = 0;
 
 		grid.add(new Label("Image size:"), 0, yIndex);
-		mComboboxSize = new ComboBox();
+		mComboboxSize = new ComboBox<>();
 		for (String item:SIZE_OPTIONS)
 			mComboboxSize.getItems().add(item);
 		mComboboxSize.getSelectionModel().select(options != null ? options.size : SIZE_OPTIONS[0]);
@@ -94,7 +96,7 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 
 		if (mol != null) {
 			grid.add(new Label("Render mode:"), 0, ++yIndex);
-			mComboboxMode = new ComboBox();
+			mComboboxMode = new ComboBox<>();
 			for (String item : MoleculeArchitect.MODE_TEXT)
 				mComboboxMode.getItems().add(item);
 			mComboboxMode.getSelectionModel().select(options != null ? options.mode : mol.getConstructionMode());
@@ -102,15 +104,15 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 		}
 
 		grid.add(new Label("Atom material:"), 0, ++yIndex);
-		mComboboxAtomMaterial = new ComboBox();
-		for (String item: SunflowMoleculeBuilder.MATERIAL_TEXT)
+		mComboboxAtomMaterial = new ComboBox<>();
+		for (String item: SunflowPrimitiveBuilder.MATERIAL_TEXT)
 			mComboboxAtomMaterial.getItems().add(item);
 		mComboboxAtomMaterial.getSelectionModel().select(options != null ? options.atomMaterial : SunflowMoleculeBuilder.DEFAULT_ATOM_MATERIAL);
 		grid.add(mComboboxAtomMaterial, 1, yIndex);
 
 		grid.add(new Label("Bond material:"), 0, ++yIndex);
-		mComboboxBondMaterial = new ComboBox();
-		for (String item: SunflowMoleculeBuilder.MATERIAL_TEXT)
+		mComboboxBondMaterial = new ComboBox<>();
+		for (String item: SunflowPrimitiveBuilder.MATERIAL_TEXT)
 			mComboboxBondMaterial.getItems().add(item);
 		mComboboxBondMaterial.getSelectionModel().select(options != null ? options.bondMaterial : SunflowMoleculeBuilder.DEFAULT_BOND_MATERIAL);
 		grid.add(mComboboxBondMaterial, 1, yIndex);
@@ -120,19 +122,19 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 			if (mol != null && mol.getSurfaceMode(type) != V3DMolecule.SurfaceMode.NONE) {
 				grid.add(new Label(MoleculeSurfaceAlgorithm.SURFACE_TYPE[type]+" surface material:"), 0, ++yIndex);
 				mComboboxSurfaceMaterial[type] = new ComboBox();
-				for (String item : SunflowMoleculeBuilder.SURFACE_TEXT)
+				for (String item : SunflowPrimitiveBuilder.SURFACE_TEXT)
 					mComboboxSurfaceMaterial[type].getItems().add(item);
 				mComboboxSurfaceMaterial[type].getSelectionModel().select(
 						  options != null && options.surfaceMaterial[type] != -1 ? options.surfaceMaterial[type]
-						: mol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.WIRES ? SunflowMoleculeBuilder.SURFACE_WIRES
+						: mol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.WIRES ? SunflowPrimitiveBuilder.SURFACE_WIRES
 						: mol.getSurfaceTransparency(type) > 0.2  ?
-								SunflowMoleculeBuilder.SURFACE_TRANSPARENT : SunflowMoleculeBuilder.SURFACE_SHINY);
+								SunflowPrimitiveBuilder.SURFACE_TRANSPARENT : SunflowPrimitiveBuilder.SURFACE_SHINY);
 				grid.add(mComboboxSurfaceMaterial[type], 1, yIndex);
 			}
 		}
 
 		mCheckboxUseBackground = new CheckBox("Opaque background");
-		mCheckboxUseBackground.setSelected(options != null ? options.backgroundColor != null : SunflowMoleculeBuilder.DEFAULT_USE_BACKGROUND);
+		mCheckboxUseBackground.setSelected(options != null ? options.backgroundColor != null : SunflowPrimitiveBuilder.DEFAULT_USE_BACKGROUND);
 		mCheckboxUseBackground.addEventHandler(ActionEvent.ACTION, this);
 		grid.add(mCheckboxUseBackground, 0, ++yIndex);
 
@@ -140,7 +142,7 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 		grid.add(mBackgroundColorPicker, 1, yIndex);
 
 		mCheckboxUseFloor = new CheckBox("Floor with shadows");
-		mCheckboxUseFloor.setSelected(options != null ? options.floorColor != null : SunflowMoleculeBuilder.DEFAULT_USE_FLOOR);
+		mCheckboxUseFloor.setSelected(options != null ? options.floorColor != null : SunflowPrimitiveBuilder.DEFAULT_USE_FLOOR);
 		mCheckboxUseFloor.addEventHandler(ActionEvent.ACTION, this);
 		grid.add(mCheckboxUseFloor, 0, ++yIndex);
 
@@ -148,13 +150,13 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 		grid.add(mFloorColorPicker, 1, yIndex);
 
 		mCheckboxShinyFloor = new CheckBox("Glossy floor");
-		mCheckboxShinyFloor.setSelected(options != null ? options.shinyFloor : SunflowMoleculeBuilder.DEFAULT_GLOSSY_FLOOR);
+		mCheckboxShinyFloor.setSelected(options != null ? options.shinyFloor : SunflowPrimitiveBuilder.DEFAULT_GLOSSY_FLOOR);
 		mCheckboxShinyFloor.setAlignment(Pos.CENTER);
 		grid.setColumnSpan(mCheckboxShinyFloor, 2);
 		grid.add(mCheckboxShinyFloor, 1, ++yIndex);
 
 		mCheckboxDepthBlurring = new CheckBox("Apply depth blurring");
-		mCheckboxDepthBlurring.setSelected(options != null ? options.depthBlurring : SunflowMoleculeBuilder.DEFAULT_DEPTH_BLURRING);
+		mCheckboxDepthBlurring.setSelected(options != null ? options.depthBlurring : SunflowPrimitiveBuilder.DEFAULT_DEPTH_BLURRING);
 		mCheckboxDepthBlurring.setAlignment(Pos.CENTER);
 		grid.setColumnSpan(mCheckboxDepthBlurring, 2);
 		grid.add(mCheckboxDepthBlurring, 0, ++yIndex);

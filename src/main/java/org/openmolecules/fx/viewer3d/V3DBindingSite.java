@@ -1,26 +1,24 @@
 package org.openmolecules.fx.viewer3d;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.fx.tasks.V3DMinimizer;
-import org.openmolecules.fx.viewer3d.V3DMolecule.SurfaceMode;
-import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
-import org.openmolecules.render.MoleculeArchitect.ConstructionMode;
-import org.openmolecules.render.MoleculeArchitect.HydrogenMode;
-
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
 import com.actelion.research.chem.docking.DockingEngine;
 import com.actelion.research.chem.docking.receptorpharmacophore.NegativeReceptorImageCreator;
 import com.actelion.research.chem.io.pdb.converter.MoleculeGrid;
 import com.actelion.research.chem.phesa.ShapeVolume;
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
+import org.openmolecules.fx.surface.SurfaceMesh;
+import org.openmolecules.fx.tasks.V3DMinimizer;
+import org.openmolecules.fx.viewer3d.V3DMolecule.SurfaceMode;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
+import org.openmolecules.render.MoleculeArchitect;
+import org.openmolecules.render.MoleculeArchitect.HydrogenMode;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * the binding site is a region in a protein in the vicinity of a native ligand, it is the focus
@@ -48,7 +46,7 @@ public class V3DBindingSite {
 	
 	public void initialize() {
 		nativeLigand.assignLikelyProtonationStates();
-		nativeLigand.setConstructionMode(ConstructionMode.BALL_AND_STICKS);
+		nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
 		receptor.assignLikelyProtonationStates();
 		receptor.setHydrogenMode(HydrogenMode.POLAR);
 		grid = new MoleculeGrid(nativeLigand.getMolecule(),GRID_RESOLUTION,
@@ -73,29 +71,29 @@ public class V3DBindingSite {
 		switch(displayModeProperty.get()) {
 		case MODE1:
 			receptor.removeAllSurfaces();
-			nativeLigand.setConstructionMode(ConstructionMode.BALL_AND_STICKS);
-			receptor.setConstructionMode(ConstructionMode.WIRES);
+			nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+			receptor.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			break;
 		case MODE2:
 			receptor.removeAllSurfaces();
-			nativeLigand.setConstructionMode(ConstructionMode.STICKS);
-			receptor.setConstructionMode(ConstructionMode.WIRES);
+			nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
+			receptor.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			break;
 		case MODE3:
 			receptor.removeAllSurfaces();
-			nativeLigand.setConstructionMode(ConstructionMode.BALL_AND_STICKS);
-			receptor.setConstructionMode(ConstructionMode.STICKS);
+			nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+			receptor.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
 			break;
 		case MODE4:
 			receptor.removeAllSurfaces();
-			nativeLigand.setConstructionMode(ConstructionMode.BALL_AND_STICKS);
-			receptor.setConstructionMode(ConstructionMode.STICKS);
+			nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+			receptor.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
 			receptor.setSurface(0, SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.5);
 			break;
 		default:
 			receptor.removeAllSurfaces();
-			nativeLigand.setConstructionMode(ConstructionMode.STICKS);
-			receptor.setConstructionMode(ConstructionMode.WIRES);
+			nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
+			receptor.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			break;
 		}
 

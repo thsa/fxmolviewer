@@ -23,7 +23,6 @@ public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DM
 		mVisibilityListener = (observable, oldValue, newValue) -> setVisible(newValue);
 	}
 
-
 	public Object clone() throws CloneNotSupportedException {
 		V3DRotatableGroup rg = (V3DRotatableGroup)super.clone();
 		rg.children = FXCollections.observableArrayList();

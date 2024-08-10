@@ -265,20 +265,20 @@ public class V3DPopupMenu extends ContextMenu {
 			modeAllHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HydrogenMode.ALL));
 			
 			RadioMenuItem modeBallAndSticks = new RadioMenuItem("Ball And Sticks");
-			modeBallAndSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALL_AND_STICKS);
-			modeBallAndSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.BALL_AND_STICKS));
+			modeBallAndSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
+			modeBallAndSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS));
 			
 			RadioMenuItem modeBalls = new RadioMenuItem("Balls");
-			modeBalls.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.BALLS);
-			modeBalls.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.BALLS));
+			modeBalls.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALLS);
+			modeBalls.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALLS));
 			
 			RadioMenuItem modeSticks = new RadioMenuItem("Sticks");
-			modeSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.STICKS);
-			modeSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.STICKS));
+			modeSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
+			modeSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS));
 			
 			RadioMenuItem modeWires = new RadioMenuItem("Wires");
-			modeWires.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.ConstructionMode.WIRES);
-			modeWires.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.ConstructionMode.WIRES));
+			modeWires.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
+			modeWires.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES));
 			
 			Menu menuMode = new Menu("Molecule Style");
 			menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens,
@@ -628,13 +628,26 @@ public class V3DPopupMenu extends ContextMenu {
 				if (((PerspectiveCamera)scene.getCamera()).isVerticalFieldOfView())
 					fieldOfView *= scene.getWidth() / scene.getHeight();
 				options.rayTraceInit(cameraX, cameraY, cameraZ, fieldOfView);
+
 				for (Node node:scene.getWorld().getChildren())
-					if (node instanceof V3DMolecule)
-						if (node.isVisible())
-							options.addMolecule((V3DMolecule)node);
+					addToRaytraceScene(node, options);
+
 				options.rayTraceStart(scene.getScene().getWindow());
 			} );
 		} );
+	}
+
+	private void addToRaytraceScene(Node node, RayTraceOptions options) {
+		if (node.isVisible()) {
+			if (node instanceof V3DMolecule)
+				options.addMolecule((V3DMolecule)node);
+			else
+				options.addOther(node);
+
+			if (node instanceof V3DRotatableGroup)
+				for (Node n : ((V3DRotatableGroup)node).getChildren())
+					addToRaytraceScene(n, options);
+		}
 	}
 
 	private Slider createSlider(double min, double max, double value) {

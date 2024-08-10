@@ -6,41 +6,10 @@ import javafx.scene.shape.VertexFormat;
 
 public class Cone extends MeshView {
 
-	private static final int DIVISIONS = 36;
-
-/*    public Cone(double radius, double height) {
+	public Cone(double radius, double height, int divisions) {
 		super();
 
-		double segmentAngle = 2.0 * Math.PI / DIVISIONS;
-
-		TriangleMesh mesh = new TriangleMesh();
-		mesh.getPoints().addAll(0, (float)-height/2, 0);
-
-		double angle = 0;
-		for(int i=0; i<DIVISIONS; i++) {
-			float x = (float)(radius * Math.cos(angle));
-			float y = (float)(radius * Math.sin(angle));
-			mesh.getPoints().addAll(x, (float)-height/2, y);
-			angle += segmentAngle;
-		}
-
-		mesh.getPoints().addAll(0, (float)height/2, 0);
-
-		mesh.getTexCoords().addAll(0,0);
-
-		for(int i=0; i<DIVISIONS; i++) {
-			int next = (i == DIVISIONS-1) ? 1 : i+2;
-			mesh.getFaces().addAll(i+1, 0, next, 0, 0, 0,
-					i+1, 0, DIVISIONS+1, 0, next, 0);
-		}
-
-		setMesh(mesh);
-	}*/
-
-	public Cone(double radius, double height) {
-		super();
-
-		double segmentAngle = 2.0 * Math.PI / DIVISIONS;
+		double segmentAngle = 2.0 * Math.PI / divisions;
 
 		TriangleMesh mesh = new TriangleMesh(VertexFormat.POINT_NORMAL_TEXCOORD);
 
@@ -48,7 +17,7 @@ public class Cone extends MeshView {
 		mesh.getNormals().addAll(0f, -1f, 0);              // normal for base triangles
 
 		double angle = 0;
-		for(int i=0; i<DIVISIONS; i++) {
+		for(int i=0; i<divisions; i++) {
 			float x = (float)(radius * Math.cos(angle));
 			float y = (float)(radius * Math.sin(angle));
 			mesh.getPoints().addAll(x, (float)-height/2, y);    // edge of base
@@ -60,10 +29,10 @@ public class Cone extends MeshView {
 
 		mesh.getTexCoords().addAll(0,0);
 
-		for(int i=0; i<DIVISIONS; i++) {
-			int next = (i == DIVISIONS-1) ? 1 : i+2;
+		for(int i=0; i<divisions; i++) {
+			int next = (i == divisions-1) ? 1 : i+2;
 			mesh.getFaces().addAll(i+1, 0, 0, next, 0, 0, 0, 0, 0);     // base triangle
-			mesh.getFaces().addAll(i+1, i+1, 0, DIVISIONS+1, i+1, 0, next, next, 0);    // side triangle
+			mesh.getFaces().addAll(i+1, i+1, 0, divisions+1, i+1, 0, next, next, 0);    // side triangle
 			// after 'DIVISIONS+1' we should use the mean normal between 'i+1' and 'next', but that is not visible
 		}
 

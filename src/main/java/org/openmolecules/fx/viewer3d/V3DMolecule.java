@@ -88,7 +88,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private final Color[] mSurfaceColor;
 	private final int[] mSurfaceColorMode;
 	private final SurfaceMode[] mSurfaceMode;
-	private MoleculeArchitect.ConstructionMode mConstructionMode;
+	private int mConstructionMode;
 	private MoleculeArchitect.HydrogenMode mHydrogenMode;
 	private final LinkedList<Sphere> mPickedAtomList;
 	private final ArrayList<Sphere> mTemporaryAtomSpheres;
@@ -137,7 +137,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param mol
 	 */
 	public V3DMolecule(StereoMolecule mol) {
-		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, 0, MoleculeRole.LIGAND );
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, 0, MoleculeRole.LIGAND );
 	}
 
 	/**
@@ -148,11 +148,11 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param mol
 	 */
 	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role) {
-		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role );
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role );
 		}
 	
 	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role, boolean overrideHydrogen) {
-		this(mol, MoleculeArchitect.ConstructionMode.STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role, overrideHydrogen);
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role, overrideHydrogen);
 		}
 
 	/**
@@ -162,7 +162,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param mol
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 */
-	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, int id, MoleculeRole role) {
+	public V3DMolecule(StereoMolecule mol, int constructionMode, int id, MoleculeRole role) {
 		this(mol, constructionMode, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role);
 	}
 
@@ -172,12 +172,12 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options
 	 */
-	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role) {
+	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role) {
 		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, role, true);
 		}
 	
-	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role, boolean overrideHydrogen) {
+	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role, boolean overrideHydrogen) {
 		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id,  role, overrideHydrogen);
 		}
@@ -192,7 +192,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param surfaceColor null or explicit surface color used for some color modes
 	 * @param transparency
 	 */
-	public V3DMolecule(StereoMolecule mol, MoleculeArchitect.ConstructionMode constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode,
+	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode,
 						SurfaceMode surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
 						int id, MoleculeRole role, boolean overrideHydrogens) {
 		super(mol.getName());
@@ -202,7 +202,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mTemporaryAtomSpheres = new ArrayList<>();
 		mConstructionMode = constructionMode;
 		mHydrogenMode = hydrogenMode;
-		mRoleProperty = new SimpleObjectProperty<MoleculeRole>(role);
+		mRoleProperty = new SimpleObjectProperty<>(role);
 		mIDProperty = new SimpleIntegerProperty(id);
 		mSelectedProperty = new SimpleBooleanProperty(false);
 		mSelectedProperty.addListener((v,ov,nv) -> updateSelectionAppearance());
@@ -449,7 +449,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		fireCoordinatesChange();
 		}
 
-	public MoleculeArchitect.ConstructionMode getConstructionMode() {
+	public int getConstructionMode() {
 		return mConstructionMode;
 		}
 
@@ -457,7 +457,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		return mHydrogenMode;
 	}
 
-	public void setConstructionMode(MoleculeArchitect.ConstructionMode mode) {
+	public void setConstructionMode(int mode) {
 		setMode(mode, mHydrogenMode);
 	}
 
@@ -470,7 +470,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param constructionMode one of the MoleculeArchitect.CONSTRUCTION_MODE... options
 	 * @param hydrogenMode one of the MoleculeArchitect.HYDROGEN_MODE... options
 	 */
-	public void setMode(MoleculeArchitect.ConstructionMode  constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode) {
+	public void setMode(int constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode) {
 		if (constructionMode != mConstructionMode
 		 || hydrogenMode != mHydrogenMode) {
 			mConstructionMode = constructionMode;
@@ -1219,7 +1219,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 			}
 
 		if (mHighlightedShape instanceof Cylinder
-		 && mConstructionMode == MoleculeArchitect.ConstructionMode.WIRES) {
+		 && mConstructionMode == MoleculeArchitect.CONSTRUCTION_MODE_WIRES) {
 			NodeDetail detail = (NodeDetail)mHighlightedShape.getUserData();
 			if (detail != null && detail.isBond()) {
 				int bond = detail.getBond();

@@ -20,9 +20,7 @@
 
 package org.openmolecules.fx.viewer3d.nodes;
 
-import com.actelion.research.chem.Molecule;
 import javafx.scene.paint.PhongMaterial;
-
 import org.openmolecules.fx.viewer3d.V3DMoleculeBuilder;
 import org.openmolecules.render.MoleculeBuilder;
 
@@ -73,7 +71,7 @@ public class NodeDetail {
 	 * @return whether this node is transparent and used as helper for atom picking in wire or stick mode
 	 */
 	public boolean isTransparent() {
-		return mMaterial == V3DMoleculeBuilder.sTransparentMaterial;
+		return mMaterial == V3DMoleculeBuilder.getMaterial(0);
 		}
 
 	public int getRole() {

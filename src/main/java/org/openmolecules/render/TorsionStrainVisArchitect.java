@@ -1,7 +1,6 @@
 package org.openmolecules.render;
 
 import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
-import org.openmolecules.render.MoleculeArchitect.ConstructionMode;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;

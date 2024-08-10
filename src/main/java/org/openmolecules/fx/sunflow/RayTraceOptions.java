@@ -25,6 +25,7 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.Conformer;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.Point3D;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.stage.Window;
@@ -32,8 +33,10 @@ import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.surface.SurfaceTexture;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.SurfaceMode;
+import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.SunflowMoleculeBuilder;
+import org.openmolecules.render.SunflowPrimitiveBuilder;
 import org.sunflow.core.shader.ColorProvider;
 import org.sunflow.math.Point3;
 
@@ -90,6 +93,16 @@ public class RayTraceOptions {
 		mRenderer.initializeScene(width, height);
 	}
 
+	public void localToSunflow(Node node, double x, double y, double z, Coordinates out) {
+		Point3D sp = node.localToScene(x, y, z);
+		out.set(sp.getX() + shiftX, sp.getZ(), shiftZ - sp.getY());
+	}
+
+	public void addOther(Node node) {
+		if (node instanceof DashedRod)
+			((DashedRod)node).build(mRenderer, this);
+	}
+
 	public void addMolecule(V3DMolecule fxmol) {
 		StereoMolecule mol = fxmol.getMolecule();
 		Conformer conformer = new Conformer(mol);
@@ -107,8 +120,7 @@ public class RayTraceOptions {
 
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
 			Coordinates c = mol.getCoordinates(atom);
-			Point3D sp = fxmol.localToScene(c.x, c.y, c.z);
-			conformer.getCoordinates(atom).set(sp.getX() + shiftX, sp.getZ(), shiftZ - sp.getY());
+			localToSunflow(fxmol, c.x, c.y, c.z, conformer.getCoordinates(atom));
 		}
 
 		double surplus = -1;
@@ -116,7 +128,7 @@ public class RayTraceOptions {
 			if (fxmol.getSurfaceMode(type) != V3DMolecule.SurfaceMode.NONE)
 				surplus = Math.max(surplus, fxmol.getSurfaceMesh(type).getSurfaceSurplus());
 		Color color = fxmol.getColor();
-		mRenderer.setRenderMode(mode == -1 ? fxmol.getConstructionMode().mode : mode);
+		mRenderer.setRenderMode(mode == -1 ? fxmol.getConstructionMode() : mode);
 		mRenderer.setOverrideColor(color == null ? null : new java.awt.Color((float)color.getRed(), (float)color.getGreen(), (float)color.getBlue()));
 		mRenderer.setOverrideMode(fxmol.overrideHydrogens() ? SunflowMoleculeBuilder.OVERRIDE_MODE_CARBON_AND_HYDROGEN : SunflowMoleculeBuilder.OVERRIDE_MODE_CARBON);
 		mRenderer.drawMolecule(conformer, optimizeRotation, optimizeTranslation, surplus);
@@ -188,11 +200,11 @@ public class RayTraceOptions {
 	private int getOriginalSurfaceMaterial(V3DMolecule fxmol, int surfaceType) {
 		SurfaceMode surfaceMode = fxmol.getSurfaceMode(surfaceType);
 		if (surfaceMode == V3DMolecule.SurfaceMode.WIRES)
-			return SunflowMoleculeBuilder.SURFACE_WIRES;
+			return SunflowPrimitiveBuilder.SURFACE_WIRES;
 		if (fxmol.getSurfaceTransparency(surfaceType) >= 0.1)
-			return SunflowMoleculeBuilder.SURFACE_TRANSPARENT;
+			return SunflowPrimitiveBuilder.SURFACE_TRANSPARENT;
 		else
-			return SunflowMoleculeBuilder.SURFACE_OPAQUE;   // could also by SunflowMoleculeBuilder.SURFACE_FILLED
+			return SunflowPrimitiveBuilder.SURFACE_OPAQUE;   // could also by SunflowMoleculeBuilder.SURFACE_FILLED
 	}
 
 	private float[] createSurfaceNormals(int[] tris, float[] verts) {

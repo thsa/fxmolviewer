@@ -1,19 +1,16 @@
 package org.openmolecules.fx.viewer3d.nodes;
 
 
-
-import org.openmolecules.mesh.Cone;
-import org.openmolecules.render.MoleculeBuilder;
-import org.openmolecules.render.PharmacophoreBuilder;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
-
 import javafx.geometry.Point3D;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Shape3D;
-import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
+import org.openmolecules.mesh.Cone;
+import org.openmolecules.render.MoleculeBuilder;
+import org.openmolecules.render.PharmacophoreBuilder;
 
 
 public class PPArrow extends AbstractPPNode {
@@ -53,7 +50,7 @@ public class PPArrow extends AbstractPPNode {
 		cylinder = new Cylinder(r, d, 10);
 		cylinder.setMaterial(material);
 		double coneHeight = d*CONE_HEIGHT_RATIO;
-		cone = new Cone(CONE_WIDTH_RATIO*r,coneHeight);
+		cone = new Cone(CONE_WIDTH_RATIO*r,coneHeight, 16);
 		updateNode(cylinder,delta, p1, p2, d);
 		Coordinates c1 = p2;
 		Coordinates c2 = c1.addC(delta.unitC().scaleC(coneHeight));

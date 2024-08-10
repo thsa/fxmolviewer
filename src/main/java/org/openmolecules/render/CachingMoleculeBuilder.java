@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class CachingMoleculeBuilder implements MoleculeBuilder {
-	private MoleculeBuilder mRenderer;
-	private ArrayList<CachedSphere> mSphereList;
-	private ArrayList<CachedCylinder> mCylinderList;
-	private ArrayList<CachedCone> mConeList;
+	private final MoleculeBuilder mRenderer;
+	private final ArrayList<CachedSphere> mSphereList;
+	private final ArrayList<CachedCylinder> mCylinderList;
+	private final ArrayList<CachedCone> mConeList;
 
 	public CachingMoleculeBuilder(MoleculeBuilder renderer) {
 		mRenderer = renderer;
@@ -26,17 +26,17 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		}
 
 	@Override
-	public void addSphere(int role, Coordinates c, double radius, int argb) {
+	public void addAtomSphere(int role, Coordinates c, double radius, int argb) {
 		mSphereList.add(new CachedSphere(role, c, radius, argb));
 		}
 
 	@Override
-	public void addCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
+	public void addBondCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
 		mCylinderList.add(new CachedCylinder(role, radius, length, c, rotationY, rotationZ, argb));
 		}
 
 	@Override
-	public void addCone(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
+	public void addAtomCone(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
 		mConeList.add(new CachedCone(role, radius, length, c, rotationY, rotationZ, argb));
 	}
 
@@ -45,12 +45,12 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		CachedCylinder[] cylinders = mCylinderList.toArray(new CachedCylinder[0]);
 		Arrays.sort(cylinders);
 		for (CachedCylinder c:cylinders)
-			mRenderer.addCylinder(c.role, c.radius, c.length, c.c, c.rotationY, c.rotationZ, c.argb);
+			mRenderer.addBondCylinder(c.role, c.radius, c.length, c.c, c.rotationY, c.rotationZ, c.argb);
 
 		CachedSphere[] spheres = mSphereList.toArray(new CachedSphere[0]);
 		Arrays.sort(spheres);
 		for (CachedSphere s:spheres)
-			mRenderer.addSphere(s.role, s.c, s.radius, s.argb);
+			mRenderer.addAtomSphere(s.role, s.c, s.radius, s.argb);
 		}
 
 	private class CachedSphere implements Comparable<CachedSphere> {
