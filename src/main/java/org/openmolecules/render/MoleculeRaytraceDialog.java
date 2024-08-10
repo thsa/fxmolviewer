@@ -9,10 +9,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Serial;
 
 public class MoleculeRaytraceDialog extends JDialog implements ActionListener {
-	@Serial
 	private static final long serialVersionUID = 20150604L;
 
 	private static final String[] SIZE_OPTIONS = {
@@ -230,7 +228,6 @@ public class MoleculeRaytraceDialog extends JDialog implements ActionListener {
 		}
 
 	static class ColorPanel extends JPanel {
-		@Serial
 		private static final long serialVersionUID = 0x20110427;
 		private final Color mOriginalColor;
 		private Color mColor;
