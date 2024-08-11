@@ -183,11 +183,11 @@ public class MoleculeArchitect {
 							:							VDWRadii.getVDWRadius(atomicNo)/4;
 					buildAttachmentPoint(atom, radius);
 					}
-				else if (mConstructionMode != CONSTRUCTION_MODE_WIRES || mMol.getConnAtoms(atom) == 0) {
+				else if (mConstructionMode != CONSTRUCTION_MODE_WIRES || hasNoVisibleNeighbours(atom)) {
 					double radius = mMol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ?
-									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
+									(hasNoVisibleNeighbours(atom) ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
 							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.getVDWRadius(atomicNo)/8;
 					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
@@ -220,17 +220,25 @@ public class MoleculeArchitect {
 							:							VDWRadii.getVDWRadius(atomicNo)/4;
 					buildAttachmentPoint(atom, radius);
 					}
-				else if (mConstructionMode != CONSTRUCTION_MODE_WIRES || mMol.getConnAtoms(atom) == 0) {
+				else if (mConstructionMode != CONSTRUCTION_MODE_WIRES || hasNoVisibleNeighbours(atom)) {
 					double radius = mol.isMarkedAtom(atom) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS) ? VDWRadii.getVDWRadius(atomicNo)/4
 							: (mConstructionMode == CONSTRUCTION_MODE_STICKS) ?
-									(mMol.getConnAtoms(atom) == 0 ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
+									(hasNoVisibleNeighbours(atom) ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
 							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.getVDWRadius(atomicNo) * 0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.getVDWRadius(atomicNo)/8;
 					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
 					}
 				}
 			}
+		}
+
+	private boolean hasNoVisibleNeighbours(int atom) {
+		if (mHydrogenMode == HydrogenMode.ALL
+		 || (mHydrogenMode == HydrogenMode.POLAR) && mMol.getAtomicNo(atom) != 6)
+			return mMol.getAllConnAtoms(atom) == 0;
+
+		return mMol.getConnAtoms(atom) == 0;
 		}
 
 	private int getAtomColor(int atom) {
@@ -251,10 +259,10 @@ public class MoleculeArchitect {
 	private void buildAttachmentPoint(int atom, double radius) {
 		Coordinates c1 = getCoordinates(atom);
 
-		if (mMol.getConnAtoms(atom) == 0) {
-			mBuilder.addAtomSphere(atomRole(atom), c1, radius, getAtomColor(atom));
-			return;
-			}
+//		if (!hasVisibleNeighbours(atom)) {
+//			mBuilder.addAtomSphere(atomRole(atom), c1, radius, getAtomColor(atom));
+//			return;
+//			}
 
 		int coreAtom = mMol.getConnAtom(atom, 0);
 		Coordinates c2 = getCoordinates(coreAtom);
