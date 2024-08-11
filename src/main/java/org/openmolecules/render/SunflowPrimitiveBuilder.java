@@ -245,9 +245,10 @@ public class SunflowPrimitiveBuilder extends SunflowAPIAPI implements PrimitiveB
 	}
 
 	protected void addConeMesh(float radius, float height, Coordinates c, float rotationY, float rotationZ) {
+System.out.println("addConeMesh() r:"+radius+" h:"+height);
 		final int DIVISIONS = 36;
-		float[] vertexes = new float[2+DIVISIONS];
-		int[] triangles = new int[2*DIVISIONS];
+		float[] vertexes = new float[3*(2+DIVISIONS)];
+		int[] triangles = new int[6*DIVISIONS];
 		double segmentAngle = 2.0 * Math.PI / DIVISIONS;
 
 		int vertex = 0;
@@ -259,8 +260,8 @@ public class SunflowPrimitiveBuilder extends SunflowAPIAPI implements PrimitiveB
 
 		double angle = 0;
 		for(int i=0; i<DIVISIONS; i++) {
-			vertexes[vertex++] = radius * (float)Math.cos(angle);
-			vertexes[vertex++] = radius * (float)Math.sin(angle);
+			vertexes[vertex++] = (float)Math.cos(angle);
+			vertexes[vertex++] = (float)Math.sin(angle);
 			vertexes[vertex++] = -height/(2*radius);
 			angle += segmentAngle;
 		}
@@ -280,7 +281,7 @@ public class SunflowPrimitiveBuilder extends SunflowAPIAPI implements PrimitiveB
 			triangles[triangle++] = DIVISIONS+1;
 		}
 
-		drawMesh("m" + mMeshNo++, vertexes, triangles, (float) radius,
+		drawMesh("m" + mMeshNo++, vertexes, triangles, radius,
 				(float) c.x, (float) c.y, (float) c.z, 0f, rotationY, rotationZ);
 	}
 

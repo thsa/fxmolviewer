@@ -13,9 +13,9 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 
 	public CachingMoleculeBuilder(MoleculeBuilder renderer) {
 		mRenderer = renderer;
-		mSphereList = new ArrayList<CachedSphere>();
-		mCylinderList = new  ArrayList<CachedCylinder>();
-		mConeList = new  ArrayList<CachedCone>();
+		mSphereList = new ArrayList<>();
+		mCylinderList = new  ArrayList<>();
+		mConeList = new  ArrayList<>();
 		}
 
 	@Override
@@ -51,9 +51,14 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 		Arrays.sort(spheres);
 		for (CachedSphere s:spheres)
 			mRenderer.addAtomSphere(s.role, s.c, s.radius, s.argb);
+
+		CachedCone[] cones = mConeList.toArray(new CachedCone[0]);
+		Arrays.sort(cones);
+		for (CachedCone c:cones)
+			mRenderer.addAtomCone(c.role, c.radius, c.length, c.c, c.rotationY, c.rotationZ, c.argb);
 		}
 
-	private class CachedSphere implements Comparable<CachedSphere> {
+	private static class CachedSphere implements Comparable<CachedSphere> {
 		int role,argb;
 		Coordinates c;
 		double radius;
@@ -67,11 +72,11 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 
 		@Override
 		public int compareTo(CachedSphere o) {
-			return (argb == o.argb) ? 0 : (argb < o.argb) ? -1 : 1;
+			return Integer.compare(argb, o.argb);
 			}
 		}
 
-	private class CachedCylinder implements Comparable<CachedCylinder> {
+	private static class CachedCylinder implements Comparable<CachedCylinder> {
 		int role,argb;
 		Coordinates c;
 		double radius,length,rotationY,rotationZ;
@@ -88,11 +93,11 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 
 		@Override
 		public int compareTo(CachedCylinder o) {
-			return (argb == o.argb) ? 0 : (argb < o.argb) ? -1 : 1;
+			return Integer.compare(argb, o.argb);
 			}
 		}
 
-	private class CachedCone implements Comparable<CachedCone> {
+	private static class CachedCone implements Comparable<CachedCone> {
 		int role,argb;
 		Coordinates c;
 		double radius,length,rotationY,rotationZ;
@@ -109,7 +114,7 @@ public class CachingMoleculeBuilder implements MoleculeBuilder {
 
 		@Override
 		public int compareTo(CachedCone o) {
-			return (argb == o.argb) ? 0 : (argb < o.argb) ? -1 : 1;
+			return Integer.compare(argb, o.argb);
 		}
 		}
 	}
