@@ -1,23 +1,19 @@
 package org.openmolecules.fx.tasks;
 
-import org.openmolecules.fx.viewer3d.CarbonAtomColorPalette;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
-import org.openmolecules.fx.viewer3d.V3DScene;
-
-import com.actelion.research.calc.Matrix;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.alignment3d.transformation.Rotation;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
-import com.actelion.research.chem.phesa.PheSAAlignment;
 import com.actelion.research.chem.phesa.PheSAMolecule;
-
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.transform.Transform;
+import org.openmolecules.fx.viewer3d.CarbonAtomColorPalette;
+import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
+import org.openmolecules.fx.viewer3d.V3DScene;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +92,7 @@ public class V3DShapeAlignment {
 		Platform.runLater(() -> {
 		
 		for (int i=0; i<fittedFXMols.size(); i++) {
-			mScene.addMolecule(fittedFXMols.get(i));
+			mScene.addMolecule(fittedFXMols.get(i), true);
 			fittedFXMols.get(i).setColor(CarbonAtomColorPalette.getColor(fittedFXMols.get(i).getID()));
 			fittedFXMols.get(i).fireCoordinatesChange();
 			V3DMoleculeUpdater fxMolUpdater = new V3DMoleculeUpdater(fittedFXMols.get(i));

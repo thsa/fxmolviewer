@@ -189,7 +189,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 					new ConformerGenerator().getOneConformerAsMolecule(mol);
 
 				if (mol != null)
-					addMolecule(new V3DMolecule(mol));
+					addMolecule(new V3DMolecule(mol), true);
 
 				event.consume();
 			});
@@ -312,7 +312,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), role);
 		mCopiedMol = null;
-		addMolecule(fxmol);
+		addMolecule(fxmol, true);
 		optimizeView(fxmol);
 		}
 	
@@ -606,14 +606,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		addGroup(group, mWorld);
 	}
 
-	public void addMolecule(V3DMolecule fxmol) {
-		addMolecule(fxmol, mWorld);
+	public void addMolecule(V3DMolecule fxmol, boolean assignIndividualColor) {
+		addMolecule(fxmol, mWorld, assignIndividualColor);
 	}
 
-	public void addMolecule(V3DMolecule fxmol, V3DRotatableGroup group) {
+	public void addMolecule(V3DMolecule fxmol, V3DRotatableGroup group, boolean assignIndividualColor) {
 		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
 		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
-		if (fxmol.getColor() == null)
+		if (fxmol.getColor() == null && assignIndividualColor)
 			fxmol.setColor(color);
 		group.addGroup(fxmol);
 		updateDepthCueing();

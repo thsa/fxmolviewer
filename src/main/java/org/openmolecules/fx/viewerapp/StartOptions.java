@@ -436,7 +436,7 @@ public class StartOptions {
 						V3DMolecule.MoleculeRole.MACROMOLECULE,
 						true);
 				vm.getMolecule().setName("Protein");
-				scene.addMolecule(vm, complex);
+				scene.addMolecule(vm, complex, true);
 			}
 
 			V3DMolecule v3dligand = null;
@@ -448,7 +448,7 @@ public class StartOptions {
 						V3DMolecule.MoleculeRole.LIGAND,
 						true);
 				v3dligand.getMolecule().setName("Ligand");
-				scene.addMolecule(v3dligand, complex);
+				scene.addMolecule(v3dligand, complex, true);
 			}
 
 			List<Molecule3D> solvents = map.get(StructureAssembler.SOLVENT_GROUP);
@@ -460,7 +460,7 @@ public class StartOptions {
 						V3DMolecule.MoleculeRole.SOLVENT,
 						true);
 				mol.setName((mol.getAllAtoms()==1 && mol.getAtomicNo(0)==8 ? "Water " : "Solvent ")+mol.getAtomChainId(0));
-				scene.addMolecule(vm, complex);
+				scene.addMolecule(vm, complex, true);
 			}
 
 			if (v3dligand != null && mCropLigand) {
@@ -487,7 +487,7 @@ public class StartOptions {
 			mol.center();
 			mol.translate(dx, dy, dz);
 			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND);
-			scene.addMolecule(vm);
+			scene.addMolecule(vm, true);
 		}
 	}
 
@@ -504,7 +504,7 @@ public class StartOptions {
 			mol.center();
 			mol.translate(dx, dy, dz);
 			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(), V3DMolecule.MoleculeRole.LIGAND);
-			scene.addMolecule(vm);
+			scene.addMolecule(vm, true);
 		}
 	}
 
@@ -521,7 +521,7 @@ public class StartOptions {
 			mol.center();
 			mol.translate(dx, dy, dz);
 			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND);
-			scene.addMolecule(vm);
+			scene.addMolecule(vm, true);
 		}
 	}
 
@@ -544,7 +544,7 @@ public class StartOptions {
 			vm.setSurface(0, V3DMolecule.SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, transparency);
 
 //			vm.activateEvents();
-			scene.addMolecule(vm);
+			scene.addMolecule(vm, true);
 		}
 	}
 
@@ -606,7 +606,7 @@ public class StartOptions {
 			vm.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			vm.setColor(Color.hsb(hue, 1.0, 0.5));
 //			vm.activateEvents();
-			scene.addMolecule(vm);
+			scene.addMolecule(vm, true);
 			hue += 37;
 			count ++;
 			if (count == 100)
@@ -620,7 +620,7 @@ public class StartOptions {
 		mol = new ConformerGenerator(1467967297811L, false).getOneConformerAsMolecule(mol);
 		V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND);
 		vm.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
-		scene.addMolecule(vm);
+		scene.addMolecule(vm, false);
 	}
 
 	private void testProteinFromMMTF(V3DScene scene) {
@@ -648,7 +648,7 @@ public class StartOptions {
 				millis = printDelay(millis);
 				System.out.print("adding molecule to scene...  ");
 
-				scene.addMolecule(vm);
+				scene.addMolecule(vm, true);
 				millis = printDelay(millis);
 			}
 		}

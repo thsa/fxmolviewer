@@ -1,12 +1,10 @@
 package org.openmolecules.fx.viewer3d.editor.actions;
 
+import com.actelion.research.chem.StereoMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeModifier;
 import org.openmolecules.fx.viewer3d.V3DScene;
-import org.openmolecules.fx.viewer3d.editor.actions.V3DEditorAction;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
-
-import com.actelion.research.chem.StereoMolecule;
 
 public class V3DAddFragmentAction implements V3DEditorAction {
 	
@@ -58,7 +56,7 @@ public class V3DAddFragmentAction implements V3DEditorAction {
 //		v3dMol.activateEvents();
 		V3DMoleculeModifier.placeFragment(v3dMol, mIDCodes);
 		v3dMol.setInitialCoordinates();
-		scene3D.addMolecule(v3dMol);
+		scene3D.addMolecule(v3dMol, true);
 		return v3dMol;
 	}
 	

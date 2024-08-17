@@ -1,21 +1,15 @@
 package org.openmolecules.fx.tasks;
 
-import java.util.List;
-
-import org.openmolecules.fx.viewer3d.V3DBindingSite;
-import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
-import org.openmolecules.fx.viewer3d.V3DScene;
-
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.docking.DockingEngine;
 import com.actelion.research.chem.docking.DockingEngine.DockingResult;
 import com.actelion.research.chem.docking.DockingFailedException;
-
 import javafx.application.Platform;
+import org.openmolecules.fx.viewer3d.*;
+
+import java.util.List;
 
 public class V3DDockingEngine {
 	
@@ -64,7 +58,7 @@ public class V3DDockingEngine {
 			Platform.runLater(() -> {
 				scene3D.addGroup(dockedGroup);
 				V3DMolecule fxmol = new V3DMolecule(docked);
-				scene3D.addMolecule(fxmol, dockedGroup);
+				scene3D.addMolecule(fxmol, dockedGroup, true);
 			});
 			System.out.println(result.getScore());
 		} catch (DockingFailedException e) {
@@ -91,7 +85,7 @@ public class V3DDockingEngine {
 				StereoMolecule docked = result.getPose();
 				Platform.runLater(() -> {
 					V3DMolecule fxmol = new V3DMolecule(docked);
-					scene3D.addMolecule(fxmol, dockedGroup);
+					scene3D.addMolecule(fxmol, dockedGroup, true);
 				});
 				System.out.println(result.getScore());
 			} catch (DockingFailedException e) {

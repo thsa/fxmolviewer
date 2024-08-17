@@ -115,11 +115,10 @@ public class V3DMoleculeParser {
 	private static void parseFile(V3DScene scene,String file) {
 		List<V3DRotatableGroup> molGroups = new ArrayList<V3DRotatableGroup>();
 
-		if(file.endsWith(".mol") || file.endsWith(".mol2") || file.endsWith(".sdf") || file.endsWith(".dwar") 
-				|| file.endsWith(".mol") ) {
+		if(file.endsWith(".mol") || file.endsWith(".mol2") || file.endsWith(".sdf") || file.endsWith(".dwar")) {
 			List<StereoMolecule> mols = parseChemFile(file);
 
-			mols.stream().forEach(e -> scene.addMolecule(new V3DMolecule(e, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND,false)));
+			mols.stream().forEach(e -> scene.addMolecule(new V3DMolecule(e, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND,false), true));
 		}
 		else if(file.endsWith(".pdb")) {
 			try {
@@ -154,7 +153,7 @@ public class V3DMoleculeParser {
 					});
 					pdbGroup.addGroup(molGroup);
 					for(V3DMolecule fxmol : groupMols) {
-						scene.addMolecule(fxmol, molGroup);
+						scene.addMolecule(fxmol, molGroup, true);
 						if(isProtein) 
 							Platform.runLater(() -> fxmol.setColor(Color.DARKGRAY));
 						
