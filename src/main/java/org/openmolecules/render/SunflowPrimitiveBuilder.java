@@ -173,7 +173,7 @@ public class SunflowPrimitiveBuilder extends SunflowAPIAPI implements PrimitiveB
 			else
 				setDiffuseShader("groundShader", mFloorColor);
 
-			drawPlane("ground", new Point3(0f, 0f, (float)mFloorZ-0.01f), new Vector3(0f, 0f, 1f));
+			drawPlane("ground", new Point3(0f, 0f, mFloorZ-0.01f), new Vector3(0f, 0f, 1f));
 			}
 		}
 

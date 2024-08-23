@@ -30,7 +30,7 @@ public class SunflowMoleculeBuilder extends SunflowPrimitiveBuilder implements M
 
 
 	public SunflowMoleculeBuilder() {
-		this(DEFAULT_CAMERA_X, DEFAULT_CAMERA_Z);
+		this(DEFAULT_CAMERA_DISTANCE, DEFAULT_FIELD_OF_VIEW);
 		}
 
 	public SunflowMoleculeBuilder(float cameraDistance, float fieldOfView) {
