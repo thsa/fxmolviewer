@@ -281,7 +281,11 @@ public class MoleculeArchitect {
 
 		double length = 2 * radius;
 		Coordinates c3 = c1.subC(delta.scale((1.0-length/dist)/2.0));
-		mBuilder.addAtomCone(atomRole(atom), radius, length, c3, b, c, getAtomColor(coreAtom));
+
+		// attachment points may be defined in 2 ways: atomicNo=0 or atomCustomLabel="*". In the latter case they have an atomicNo!
+		int rgb = getAtomARGB(mMol.getAtomicNo(mMol.getAtomicNo(atom) != 0 ? atom : coreAtom));
+
+		mBuilder.addAtomCone(atomRole(atom), radius, length, c3, b, c, rgb);
 		}
 
 	private void buildBond(int bond) {
