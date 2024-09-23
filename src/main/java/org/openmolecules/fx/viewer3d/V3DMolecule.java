@@ -903,10 +903,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param paneOnScreen top let point of parent pane on screen
 	 */
 	public void select(Polygon polygon, int mode, Point2D paneOnScreen) {
-		if(mSelectedProperty.get()==false)
-			mSelectedProperty.set(true);
-		else 
-			mSelectedProperty.set(false);
+		mSelectedProperty.set(!mSelectedProperty.get());
 		for (Node node:getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && !detail.isTransparent()) {

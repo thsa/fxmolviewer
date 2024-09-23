@@ -21,6 +21,7 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
+import com.actelion.research.chem.StereoMolecule;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
@@ -86,9 +87,15 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 						  : argb == MoleculeArchitect.getAtomARGB(6);
 		sphere.setUserData(new NodeDetail((PhongMaterial)sphere.getMaterial(), role, isOverridable));
 
-		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0
-		 && mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS)
-			addTransparentSphere(role, c, STICK_MODE_ATOM_PICK_RADIUS);
+		// dotted bonds also use addAtomSphere()...
+		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0) {
+			if (mV3DMolecule.getMolecule().isSelectedAtom(role & MoleculeBuilder.ROLE_INDEX_BITS)) {
+				((NodeDetail)sphere.getUserData()).setSelected(true);
+				mV3DMolecule.updateAppearance(sphere);
+				}
+			if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS)
+				addTransparentSphere(role, c, STICK_MODE_ATOM_PICK_RADIUS);
+			}
 		}
 
 	@Override
@@ -101,6 +108,12 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 						 :  argb == MoleculeArchitect.getAtomARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR;
 		cylinder.setUserData(new NodeDetail((PhongMaterial)cylinder.getMaterial(), role, isOverridable));
+		StereoMolecule mol = mV3DMolecule.getMolecule();
+		int bond = role & MoleculeBuilder.ROLE_INDEX_BITS;
+		if (mol.isSelectedAtom(mol.getBondAtom(0, bond)) && mol.isSelectedAtom(mol.getBondAtom(1, bond))) {
+			((NodeDetail)cylinder.getUserData()).setSelected(true);
+			mV3DMolecule.updateAppearance(cylinder);
+			}
 		}
 
 	@Override
@@ -113,6 +126,8 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 						 :  argb == MoleculeArchitect.getAtomARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR;
 		cone.setUserData(new NodeDetail((PhongMaterial)cone.getMaterial(), role, isOverridable));
+		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0)
+			((NodeDetail)cone.getUserData()).setSelected(mV3DMolecule.getMolecule().isSelectedAtom(role & MoleculeBuilder.ROLE_INDEX_BITS));
 	}
 
 	private void calculateDivisions() {

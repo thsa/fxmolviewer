@@ -674,21 +674,19 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				mSurfaceCutMolecule.cutSurface(polygon, mSurfaceCutMode, paneOnScreen);
 				}
 			else {
-				for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups()) {
+				for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups())
 					if(fxmol instanceof V3DMolecule)
 						((V3DMolecule)fxmol).cutSurface(polygon, mSurfaceCutMode, paneOnScreen);
-				}
+			}
 				
 			mSurfaceCutMolecule = null;
 			mSurfaceCutMode = 0;
 			return;
-			}
-
-			for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups()) {
-				if(fxmol instanceof V3DMolecule)
-					((V3DMolecule)fxmol).select(polygon, mode, paneOnScreen);
-			}
 		}
+
+		for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups())
+			if(fxmol instanceof V3DMolecule)
+				((V3DMolecule)fxmol).select(polygon, mode, paneOnScreen);
 	}
 		
 	public void activateSurfaceCutter(int mode, V3DMolecule mol3D) {
@@ -739,7 +737,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		setCameraZ(CAMERA_INITIAL_Z);
 		setCamera(mCamera);
 		mRoot.getChildren().add(mCamera);
-		}
+	}
 
 	public void setCameraXY(double x, double y) {
 		mCamera.setTranslateX(x);
