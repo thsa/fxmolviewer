@@ -173,9 +173,9 @@ public class SunflowMoleculeBuilder extends SunflowPrimitiveBuilder implements M
 	public void addAtomSphere(int role, Coordinates c, double radius, int argb) {
 		if (mOverrideARGB != ARGB_NONE
 				&& (mOverrideMode == OVERRIDE_MODE_ALL
-				|| (mOverrideMode == OVERRIDE_MODE_CARBON && argb == MoleculeArchitect.getAtomARGB(6))
+				|| (mOverrideMode == OVERRIDE_MODE_CARBON && argb == MoleculeArchitect.getAtomicNoARGB(6))
 				|| (mOverrideMode == OVERRIDE_MODE_CARBON_AND_HYDROGEN
-				&& (argb == MoleculeArchitect.getAtomARGB(1) || argb == MoleculeArchitect.getAtomARGB(6)))))
+				&& (argb == MoleculeArchitect.getAtomicNoARGB(1) || argb == MoleculeArchitect.getAtomicNoARGB(6)))))
 			argb = mOverrideARGB;
 
 		// if is bond -> stickbond or dotted bond
@@ -198,9 +198,9 @@ public class SunflowMoleculeBuilder extends SunflowPrimitiveBuilder implements M
 	public void addBondCylinder(int role, double radius, double length, Coordinates c, double rotationY, double rotationZ, int argb) {
 		if (mOverrideARGB != ARGB_NONE
 				&& (mOverrideMode == OVERRIDE_MODE_ALL
-				|| (mOverrideMode == OVERRIDE_MODE_CARBON && argb == MoleculeArchitect.getAtomARGB(6))
+				|| (mOverrideMode == OVERRIDE_MODE_CARBON && argb == MoleculeArchitect.getAtomicNoARGB(6))
 				|| (mOverrideMode == OVERRIDE_MODE_CARBON_AND_HYDROGEN
-				&& (argb == MoleculeArchitect.getAtomARGB(1) || argb == MoleculeArchitect.getAtomARGB(6)))))
+				&& (argb == MoleculeArchitect.getAtomicNoARGB(1) || argb == MoleculeArchitect.getAtomicNoARGB(6)))))
 			argb = mOverrideARGB;
 
 		if (mLastRGB != argb || mLastMaterial != mBondMaterial) {

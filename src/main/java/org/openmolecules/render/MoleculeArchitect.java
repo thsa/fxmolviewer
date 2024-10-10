@@ -56,6 +56,8 @@ public class MoleculeArchitect {
 	private static final int CONNECTION_POINT_COLOR = 0xFFCCCA90;   // changed from 0xFFFF1493 to make it less look like oxygen
 
 	private static final int COLOR_NONE = 0x00000000;   // don't draw objects with this color
+	private static final int SELECTION_COLOR = 0x00008B8B;
+
 	private final static int[] ATOM_ARGB = { COLOR_NONE,
 						0xFFFFFFFF, 0xFFD9FFFF, 0xFFCC80FF, 0xFFC2FF00, 0xFFFFB5B5, //  ?, H,He,Li, Be,B
 			0xFF909090, 0xFF3050F8, 0xFFFF0D0D, 0xFF90E050, 0xFFB3E3F5, 0xFFAB5CF2, //  C, N, O, F,Ne,Na
@@ -79,12 +81,12 @@ public class MoleculeArchitect {
 	};
 	public static final int ATOM_ARGB_LENGTH = ATOM_ARGB.length;
 
-	public static int getAtomARGB(int atomicNo) {
+	public static int getAtomicNoARGB(int atomicNo) {
 		return ATOM_ARGB[atomicNo < ATOM_ARGB.length ? atomicNo : 6];   // higher atomicNos are assumed to be some kind of carbon
 	}
 
 	public static Color getAtomColor(int atomicNo, double opacity) {
-		int argb = MoleculeArchitect.getAtomARGB(atomicNo);
+		int argb = getAtomicNoARGB(atomicNo);
 		return Color.rgb((argb & 0xFF0000) >> 16, (argb & 0x00FF00) >> 8, argb & 0x0000FF, opacity);
 	}
 
@@ -96,6 +98,7 @@ public class MoleculeArchitect {
 	private int mConstructionMode;
 	private HydrogenMode mHydrogenMode;
 	private int mBondDetail;
+	private boolean mShowSelection;
 
 	public MoleculeArchitect(MoleculeBuilder builder) {
 		mBuilder = builder;
@@ -126,6 +129,15 @@ public class MoleculeArchitect {
 
 	public void setConstructionMode(int mode) {
 		mConstructionMode = mode;
+	}
+
+	/**
+	 * If set to true, then bonds are always two parts and atoms and bond halfs are shown in
+	 * the selection color (dark cyan) if the respective atom is selected.
+	 * @param b
+	 */
+	public void setShowSelection(boolean b) {
+		mShowSelection = b;
 	}
 
 	public void setHydrogenMode(HydrogenMode mode) {
@@ -190,7 +202,7 @@ public class MoleculeArchitect {
 									(hasNoVisibleNeighbours(atom) ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
 							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.getVDWRadius(atomicNo)/8;
-					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
+					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomRGB(atom));
 					}
 				}
 			}
@@ -227,7 +239,7 @@ public class MoleculeArchitect {
 									(hasNoVisibleNeighbours(atom) ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
 							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.getVDWRadius(atomicNo) * 0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.getVDWRadius(atomicNo)/8;
-					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomColor(atom));
+					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomRGB(atom));
 					}
 				}
 			}
@@ -241,8 +253,13 @@ public class MoleculeArchitect {
 		return mMol.getConnAtoms(atom) == 0;
 		}
 
-	private int getAtomColor(int atom) {
-		return "*".equals(mMol.getAtomCustomLabel(atom)) ? COLOR_NONE : getAtomARGB(mMol.getAtomicNo(atom));
+	private int getAtomRGB(int atom) {
+		return (mShowSelection && mMol.isSelectedAtom(atom)) ? SELECTION_COLOR
+				: getAtomicNoARGB(mMol.getAtomicNo(atom));
+		}
+
+	private int getBondAtomRGB(int atom) {
+		return "*".equals(mMol.getAtomCustomLabel(atom)) ? COLOR_NONE : getAtomRGB(atom);
 		}
 
 	private boolean includeAtom(int atom) {
@@ -283,7 +300,7 @@ public class MoleculeArchitect {
 		Coordinates c3 = c1.subC(delta.scale((1.0-length/dist)/2.0));
 
 		// attachment points may be defined in 2 ways: atomicNo=0 or atomCustomLabel="*". In the latter case they have an atomicNo!
-		int rgb = getAtomARGB(mMol.getAtomicNo(mMol.getAtomicNo(atom) != 0 ? atom : coreAtom));
+		int rgb = getAtomRGB(mMol.getAtomicNo(atom) != 0 ? atom : coreAtom);
 
 		mBuilder.addAtomCone(atomRole(atom), radius, length, c3, b, c, rgb);
 		}
@@ -323,8 +340,8 @@ public class MoleculeArchitect {
 	private void buildBallAndStickBond(int bond, double d, double b, double c) {
 		int atom1 = mMol.getBondAtom(0, bond);
 		int atom2 = mMol.getBondAtom(1, bond);
-		int color1 = (getAtomColor(atom1) == COLOR_NONE) ? COLOR_NONE : BALL_AND_STICK_STICK_COLOR;
-		int color2 = (getAtomColor(atom2) == COLOR_NONE) ? COLOR_NONE : BALL_AND_STICK_STICK_COLOR;
+		int color1 = (getBondAtomRGB(atom1) == COLOR_NONE) ? COLOR_NONE : BALL_AND_STICK_STICK_COLOR;
+		int color2 = (getBondAtomRGB(atom2) == COLOR_NONE) ? COLOR_NONE : BALL_AND_STICK_STICK_COLOR;
 
 		if (color1 == COLOR_NONE && color2 == COLOR_NONE)
 			return;
@@ -392,8 +409,8 @@ public class MoleculeArchitect {
 	}
 
 	private void buildStickBond(int bond, double d, double b, double c) {
-		int color1 = getAtomColor(mMol.getBondAtom(0, bond));
-		int color2 = getAtomColor(mMol.getBondAtom(1, bond));
+		int color1 = getBondAtomRGB(mMol.getBondAtom(0, bond));
+		int color2 = getBondAtomRGB(mMol.getBondAtom(1, bond));
 
 		int atom1 = mMol.getBondAtom(0, bond);
 		int atom2 = mMol.getBondAtom(1, bond);

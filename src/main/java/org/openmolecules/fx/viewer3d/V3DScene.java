@@ -82,7 +82,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private double mDepthCuingIntensity;
 
 
-	public static final Color SELECTION_COLOR = Color.TURQUOISE;
+	public static final Color SELECTION_COLOR = Color.DARKCYAN;
 	protected static final double CAMERA_INITIAL_Z = -45;
 	protected static final double CAMERA_FIELD_OF_VIEW = 30.0;	// default field of view
 	protected static final double CAMERA_NEAR_CLIP = 1.0;
@@ -312,7 +312,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 		V3DMolecule fxmol = new V3DMolecule(mol, V3DMolecule.getNextID(), role);
 		mCopiedMol = null;
-		addMolecule(fxmol, true);
+		addMolecule(fxmol, !getMolsInScene().isEmpty());
 		optimizeView(fxmol);
 		}
 	

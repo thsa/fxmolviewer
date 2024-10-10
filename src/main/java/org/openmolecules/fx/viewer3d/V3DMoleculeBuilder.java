@@ -48,6 +48,7 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 		mArchitect = new MoleculeArchitect(this);
 		mArchitect.setHydrogenMode(v3DMolecule.getHydrogenMode());
 		mArchitect.setConstructionMode(v3DMolecule.getConstructionMode());
+		mArchitect.setShowSelection(true);
 		mV3DMolecule = v3DMolecule;
 		calculateDivisions();
 		}
@@ -82,9 +83,9 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 	public void addAtomSphere(int role, Coordinates c, double radius, int argb) {
 		Sphere sphere = (Sphere)super.addSphere(c, radius, argb, mSphereDivisions);
 		boolean isOverridable = mV3DMolecule.overrideHydrogens() ?
-							argb == MoleculeArchitect.getAtomARGB(1)
-						 || argb == MoleculeArchitect.getAtomARGB(6)
-						  : argb == MoleculeArchitect.getAtomARGB(6);
+							argb == MoleculeArchitect.getAtomicNoARGB(1)
+						 || argb == MoleculeArchitect.getAtomicNoARGB(6)
+						  : argb == MoleculeArchitect.getAtomicNoARGB(6);
 		sphere.setUserData(new NodeDetail((PhongMaterial)sphere.getMaterial(), role, isOverridable));
 
 		// dotted bonds also use addAtomSphere()...
@@ -102,10 +103,10 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 	public void addBondCylinder(int role, double radius, double length, Coordinates center, double rotationY, double rotationZ, int argb) {
 		Cylinder cylinder = (Cylinder)super.addCylinder(radius, length, center, rotationY, rotationZ, argb, mCylinderDivisions);
 		boolean isOverridable = mV3DMolecule.overrideHydrogens() ?
-							argb == MoleculeArchitect.getAtomARGB(1)
-						 || argb == MoleculeArchitect.getAtomARGB(6)
+							argb == MoleculeArchitect.getAtomicNoARGB(1)
+						 || argb == MoleculeArchitect.getAtomicNoARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR
-						 :  argb == MoleculeArchitect.getAtomARGB(6)
+						 :  argb == MoleculeArchitect.getAtomicNoARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR;
 		cylinder.setUserData(new NodeDetail((PhongMaterial)cylinder.getMaterial(), role, isOverridable));
 		StereoMolecule mol = mV3DMolecule.getMolecule();
@@ -120,10 +121,10 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 	public void addAtomCone(int role, double radius, double height, Coordinates center, double rotationY, double rotationZ, int argb) {
 		Cone cone = (Cone)super.addCone(radius, height, center, rotationY, rotationZ, argb, 36);
 		boolean isOverridable = mV3DMolecule.overrideHydrogens() ?
-							argb == MoleculeArchitect.getAtomARGB(1)
-						 || argb == MoleculeArchitect.getAtomARGB(6)
+							argb == MoleculeArchitect.getAtomicNoARGB(1)
+						 || argb == MoleculeArchitect.getAtomicNoARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR
-						 :  argb == MoleculeArchitect.getAtomARGB(6)
+						 :  argb == MoleculeArchitect.getAtomicNoARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR;
 		cone.setUserData(new NodeDetail((PhongMaterial)cone.getMaterial(), role, isOverridable));
 		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0)

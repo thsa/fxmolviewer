@@ -1174,7 +1174,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		if (!isSurface(shape)) {
 			NodeDetail detail = (NodeDetail)shape.getUserData();
 			if (detail != null
-			 && detail.getMaterial() == V3DMoleculeBuilder.getMaterial(MoleculeArchitect.getAtomARGB(1)))
+			 && detail.getMaterial() == V3DMoleculeBuilder.getMaterial(MoleculeArchitect.getAtomicNoARGB(1)))
 				return mHydrogenMaterial;
 			else
 				return mOverrideMaterial;
@@ -1225,11 +1225,11 @@ public class V3DMolecule extends V3DRotatableGroup {
 					int atomicNo = mMol.getAtomicNo(atom);
 					Sphere sphere = new Sphere(VDWRadii.getVDWRadius(atomicNo)/8, 16);
 
-					int argb = MoleculeArchitect.getAtomARGB(atomicNo);
+					int argb = MoleculeArchitect.getAtomicNoARGB(atomicNo);
 					boolean isOverridable = overrideHydrogens() ?
-						  (argb == MoleculeArchitect.getAtomARGB(1)
-						|| argb == MoleculeArchitect.getAtomARGB(6))
-						: (argb == MoleculeArchitect.getAtomARGB(6));
+						  (argb == MoleculeArchitect.getAtomicNoARGB(1)
+						|| argb == MoleculeArchitect.getAtomicNoARGB(6))
+						: (argb == MoleculeArchitect.getAtomicNoARGB(6));
 					PhongMaterial material = V3DMoleculeBuilder.getMaterial(argb);
 
 					sphere.setMaterial(material);

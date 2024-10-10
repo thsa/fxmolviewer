@@ -79,7 +79,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 					+ ((int)(255.99 * color.getGreen()) << 8)
 					+  (int)(255.99 * color.getBlue());
 
-		int argb = (color == null) ? MoleculeArchitect.getAtomARGB(6) : mNeutralRGB;
+		int argb = (color == null) ? MoleculeArchitect.getAtomicNoARGB(6) : mNeutralRGB;
 		mNeutralColor = new org.sunflow.image.Color((float)(argb & 0x00FF0000) / 16711680f,
 				(float)(argb & 0x0000FF00) / 65280f, (float)(argb & 0x000000FF) / 255f);
 	}
@@ -100,7 +100,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 			float d = distanceToPoint(p.x, p.y, p.z, influenceRadius, mConformerSunFlow.getCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
 				int argb = (mNeutralRGB != -1 && (atomicNo == 1 || atomicNo == 6)) ?
-						mNeutralRGB : MoleculeArchitect.getAtomARGB(atomicNo);
+						mNeutralRGB : MoleculeArchitect.getAtomicNoARGB(atomicNo);
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				r += weight * (float)(argb & 0x00FF0000) / 16711680f;
 				g += weight * (float)(argb & 0x0000FF00) / 65280f;
