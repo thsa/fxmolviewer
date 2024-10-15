@@ -7,15 +7,6 @@ import com.actelion.research.chem.Coordinates;
  * to construct a molecule or other object for a 3D environment for rendering.
  */
 public interface MoleculeBuilder {
-	public static final int ROLE_INDEX_BITS = 0x1FFFFF;
-	public static final int ROLE_IS_TORSION_PREF = 0x00200000;
-	public static final int ROLE_IS_PHARMACOPHORE = 0x00800000;
-	public static final int ROLE_IS_EXCLUSION = 0x00400000;
-	public static final int ROLE_IS_ATOM = 0x01000000;
-	public static final int ROLE_IS_BOND = 0x02000000;
-	public static final int ROLE_DETAIL_SHIFT = 26;
-	public static final int ROLE_ORDER_SHIFT = 30;
-
 	public void init();
 	public void done();
 	public void addAtomSphere(int role, Coordinates c, double radius, int argb);

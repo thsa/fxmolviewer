@@ -72,7 +72,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private V3DMolecule mCopiedMol;
 	private volatile V3DPopupMenuController mPopupMenuController;
 	private final EnumSet<ViewerSettings> mSettings;
-	private boolean mMayOverrideHydrogens;
+	private boolean mOverrideHydrogens;
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
 	private InteractionHandler mInteractionHandler;
@@ -109,7 +109,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	
 	public enum ViewerSettings {
 		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND,
-		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION
+		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION, ATOM_LEVEL_SELECTION
 	}
 
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES);
@@ -148,7 +148,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mMouseDragged = false;
 		mMeasurementMode = MEASUREMENT.NONE;
 		mPickedMolsList = new ArrayList<>();
-		mMayOverrideHydrogens = true;
+		mOverrideHydrogens = true;
 		mMoleculeColorID = 0;
 		applySettings();
 		mSceneListeners = new ArrayList<>();
@@ -217,8 +217,12 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 	
 	
-	public boolean mayOverrideHydrogenColor() {
-		return mMayOverrideHydrogens;
+	public boolean isOverrideHydrogenColor() {
+		return mOverrideHydrogens;
+	}
+
+	public boolean isSplitAllBonds() {
+		return mSettings.contains(ViewerSettings.ATOM_LEVEL_SELECTION);
 	}
 	
 	public MEASUREMENT getMeasurementMode() {
@@ -611,7 +615,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 	public void addMolecule(V3DMolecule fxmol, V3DRotatableGroup group, boolean assignIndividualColor) {
-		fxmol.setOverrideHydrogens(mMayOverrideHydrogens);
+		fxmol.setOverrideHydrogens(mOverrideHydrogens);
 		Color color = CarbonAtomColorPalette.getColor(mMoleculeColorID++);
 		if (fxmol.getColor() == null && assignIndividualColor)
 			fxmol.setColor(color);
@@ -656,7 +660,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public void setOverrideHydrogens(boolean override) {
-		mMayOverrideHydrogens = override;
+		mOverrideHydrogens = override;
 	}
 
 	public double getFieldOfView() {

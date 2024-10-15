@@ -179,7 +179,7 @@ public class SunflowMoleculeBuilder extends SunflowPrimitiveBuilder implements M
 			argb = mOverrideARGB;
 
 		// if is bond -> stickbond or dotted bond
-		boolean useBondMaterial = ((role & MoleculeBuilder.ROLE_IS_BOND) != 0
+		boolean useBondMaterial = (RoleHelper.isBond(role)
 				|| mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_STICKS
 				|| mRenderMode == MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 		int material = useBondMaterial? mBondMaterial : mAtomMaterial;

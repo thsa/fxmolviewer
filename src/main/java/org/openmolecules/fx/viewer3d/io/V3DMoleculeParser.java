@@ -118,7 +118,7 @@ public class V3DMoleculeParser {
 		if(file.endsWith(".mol") || file.endsWith(".mol2") || file.endsWith(".sdf") || file.endsWith(".dwar")) {
 			List<StereoMolecule> mols = parseChemFile(file);
 
-			mols.stream().forEach(e -> scene.addMolecule(new V3DMolecule(e, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND,false), true));
+			mols.stream().forEach(e -> scene.addMolecule(new V3DMolecule(e, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND,false, false), true));
 		}
 		else if(file.endsWith(".pdb")) {
 			try {
@@ -147,7 +147,7 @@ public class V3DMoleculeParser {
 							e.setName("PROT");
 						V3DMolecule fxmol;
 						e.ensureHelperArrays(Molecule.cHelperCIP);
-						fxmol = new V3DMolecule(e, V3DMolecule.getNextID(),role,false);
+						fxmol = new V3DMolecule(e, V3DMolecule.getNextID(),role,false, false);
 						groupMols.add(fxmol);
 						
 					});
@@ -193,7 +193,7 @@ public class V3DMoleculeParser {
 					for(MolecularVolume molVol : shapeMol.getVolumes()) {
 						StereoMolecule m = shapeMol.getConformer(molVol);
 						m.setName(mol.getName());
-						V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
+						V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.isOverrideHydrogenColor(), false);
 						fxMol.addPharmacophore(molVol);
 						fxMols.add(fxMol);
 					}
@@ -207,7 +207,7 @@ public class V3DMoleculeParser {
 						for(MolecularVolume molVol : pheSAMol.getVolumes()) {
 							StereoMolecule m = pheSAMol.getConformer(molVol);
 							m.setName(mol.getName());
-							V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.mayOverrideHydrogenColor());
+							V3DMolecule fxMol = new V3DMolecule(m, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, scene.isOverrideHydrogenColor(), false);
 							fxMol.addPharmacophore(molVol);
 							fxMols.add(fxMol);
 						}

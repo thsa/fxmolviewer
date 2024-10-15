@@ -52,7 +52,7 @@ public class V3DShapeAlignment {
 			dhs.getSimilarity(refShape, fitShape);
 
 			try {
-				fittedFXMols.add(new V3DMolecule(dhs.getPreviousAlignment()[1], V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, mScene.mayOverrideHydrogenColor()));
+				fittedFXMols.add(new V3DMolecule(dhs.getPreviousAlignment()[1], V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND, mScene.isOverrideHydrogenColor(), false));
 			}
 			catch(Exception e) {
 				continue;

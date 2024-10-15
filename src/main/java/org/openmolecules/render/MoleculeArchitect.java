@@ -56,7 +56,6 @@ public class MoleculeArchitect {
 	private static final int CONNECTION_POINT_COLOR = 0xFFCCCA90;   // changed from 0xFFFF1493 to make it less look like oxygen
 
 	private static final int COLOR_NONE = 0x00000000;   // don't draw objects with this color
-	private static final int SELECTION_COLOR = 0x00008B8B;
 
 	private final static int[] ATOM_ARGB = { COLOR_NONE,
 						0xFFFFFFFF, 0xFFD9FFFF, 0xFFCC80FF, 0xFFC2FF00, 0xFFFFB5B5, //  ?, H,He,Li, Be,B
@@ -97,8 +96,8 @@ public class MoleculeArchitect {
 	private ColorMode mColorMode;
 	private int mConstructionMode;
 	private HydrogenMode mHydrogenMode;
-	private int mBondDetail;
-	private boolean mShowSelection;
+	private int mBondNodeID;
+	private boolean mSplitAllBonds;
 
 	public MoleculeArchitect(MoleculeBuilder builder) {
 		mBuilder = builder;
@@ -132,12 +131,15 @@ public class MoleculeArchitect {
 	}
 
 	/**
-	 * If set to true, then bonds are always two parts and atoms and bond halfs are shown in
-	 * the selection color (dark cyan) if the respective atom is selected.
+	 * If set to true, then bonds are always created as two parts.
+	 * This may be useful for better showing selections, because then bond halfs
+	 * touching selected atoms are always drawn in the selection color.
+	 * Otherwise, bonds between atoms ow the same kind are one piece and drawn
+	 * in selection color only of both atoms are selected.
 	 * @param b
 	 */
-	public void setShowSelection(boolean b) {
-		mShowSelection = b;
+	public void setSplitAllBonds(boolean b) {
+		mSplitAllBonds = b;
 	}
 
 	public void setHydrogenMode(HydrogenMode mode) {
@@ -202,7 +204,7 @@ public class MoleculeArchitect {
 									(hasNoVisibleNeighbours(atom) ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
 							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.getVDWRadius(atomicNo)*0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.getVDWRadius(atomicNo)/8;
-					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomRGB(atom));
+					mBuilder.addAtomSphere(RoleHelper.createAtomRole(atom), getCoordinates(atom), radius, getAtomRGB(atom));
 					}
 				}
 			}
@@ -239,7 +241,7 @@ public class MoleculeArchitect {
 									(hasNoVisibleNeighbours(atom) ? VDWRadii.getVDWRadius(atomicNo)/6 : STICK_SBOND_RADIUS)
 							: (mConstructionMode == CONSTRUCTION_MODE_BALLS) ? VDWRadii.getVDWRadius(atomicNo) * 0.95  // to avoid collision with vdw-radii based surface
 							: VDWRadii.getVDWRadius(atomicNo)/8;
-					mBuilder.addAtomSphere(atomRole(atom), getCoordinates(atom), radius, getAtomRGB(atom));
+					mBuilder.addAtomSphere(RoleHelper.createAtomRole(atom), getCoordinates(atom), radius, getAtomRGB(atom));
 					}
 				}
 			}
@@ -254,8 +256,7 @@ public class MoleculeArchitect {
 		}
 
 	private int getAtomRGB(int atom) {
-		return (mShowSelection && mMol.isSelectedAtom(atom)) ? SELECTION_COLOR
-				: getAtomicNoARGB(mMol.getAtomicNo(atom));
+		return getAtomicNoARGB(mMol.getAtomicNo(atom));
 		}
 
 	private int getBondAtomRGB(int atom) {
@@ -302,7 +303,7 @@ public class MoleculeArchitect {
 		// attachment points may be defined in 2 ways: atomicNo=0 or atomCustomLabel="*". In the latter case they have an atomicNo!
 		int rgb = getAtomRGB(mMol.getAtomicNo(atom) != 0 ? atom : coreAtom);
 
-		mBuilder.addAtomCone(atomRole(atom), radius, length, c3, b, c, rgb);
+		mBuilder.addAtomCone(RoleHelper.createAtomRole(atom), radius, length, c3, b, c, rgb);
 		}
 
 	private void buildBond(int bond) {
@@ -320,7 +321,7 @@ public class MoleculeArchitect {
 				: (delta.x > 0.0) ? Math.atan(delta.y / delta.x)
 				: (delta.y > 0.0) ? Math.PI / 2 : -Math.PI / 2;
 
-		mBondDetail = 0;	// incremented with every primitiv to give a unique id for the primitiv
+		mBondNodeID = 0;	// incremented with every primitiv to give a unique id for the primitiv
 
 		switch (mConstructionMode) {
 		case CONSTRUCTION_MODE_BALL_AND_STICKS:
@@ -349,11 +350,13 @@ public class MoleculeArchitect {
 		// We want to cut bonds where they disappear inside the atom sphere, because in case of translucent atoms (e.g. glass) we don't want artefacts
 		// Therefore, we calculate length reduction for every bond atom and bond cylinder individually before shifting bond center
 
+		int bondRole = RoleHelper.createBondRole(bond, -1, mBondNodeID++);
+
 		int order = mMol.getBondOrder(bond);
 		if (order == 1) {
 			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.2);
 			if (d > 0.0) {
-				mBuilder.addBondCylinder(bondRole(bond), BALL_AND_STICK_SBOND_RADIUS, d, center, b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_SBOND_RADIUS, d, center, b, c, BALL_AND_STICK_STICK_COLOR);
 				}
 			return;
 			}
@@ -362,8 +365,8 @@ public class MoleculeArchitect {
 			Coordinates ds = calculateDoubleBondShift(bond).scale(BALL_AND_STICK_DBOND_SHIFT);
 			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.20+0.10);
 			if (d > 0.0) {
-				mBuilder.addBondCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
-				mBuilder.addBondCylinder(bondRole(bond), BALL_AND_STICK_DBOND_RADIUS, d, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_DBOND_RADIUS, d, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_DBOND_RADIUS, d, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
 				}
 			return;
 			}
@@ -372,12 +375,12 @@ public class MoleculeArchitect {
 			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(BALL_AND_STICK_TBOND_SHIFT);
 			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.11);
 			if (d > 0.0) {
-				mBuilder.addBondCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
-				mBuilder.addBondCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
 				}
 			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.22+0.07);
 			if (d > 0.0)
-				mBuilder.addBondCylinder(bondRole(bond), BALL_AND_STICK_TBOND_RADIUS, d, center, b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d, center, b, c, BALL_AND_STICK_STICK_COLOR);
 			}
 
 		if (order == 0) {
@@ -475,20 +478,20 @@ public class MoleculeArchitect {
 
 	private void buildStickBond(int bond, int color1, int color2, Coordinates p1, Coordinates p2,
 	                            double r, double d, double b, double c) {
-		if (color1 == color2) {
+		if (!mSplitAllBonds && color1 == color2) {
 			if (color1 != COLOR_NONE) {
 				center.center(p1, p2);
-				mBuilder.addBondCylinder(bondRole(bond), r, d, center, b, c, color1);
+				mBuilder.addBondCylinder(RoleHelper.createBondRole(bond, -1, mBondNodeID++), r, d, center, b, c, color1);
 				}
 			}
 		else {
 			if (color1 != COLOR_NONE) {
 				center.between(p1, p2, 0.25);
-				mBuilder.addBondCylinder(bondRole(bond), r, d / 2, center, b, c, color1);
+				mBuilder.addBondCylinder(RoleHelper.createBondRole(bond, 0, mBondNodeID++), r, d / 2, center, b, c, color1);
 				}
 			if (color2 != COLOR_NONE) {
 				center.between(p1, p2, 0.75);
-				mBuilder.addBondCylinder(bondRole(bond), r, d / 2, center, b, c, color2);
+				mBuilder.addBondCylinder(RoleHelper.createBondRole(bond, 1, mBondNodeID++), r, d / 2, center, b, c, color2);
 				}
 			}
 		}
@@ -496,12 +499,12 @@ public class MoleculeArchitect {
 	private void buildDottedBond(int bond, int color1, int color2, Coordinates p1, Coordinates p2,
 								 double r, double d) {
 		int dots = 2 * Math.max(2, (int)Math.round(d / (r * 5)));
-		double dd = r / (dots-1);
+//		double dd = r / (dots-1);
 		for (int i=1; i<dots-1; i++) {
 			center.between(p1, p2, (double)i/(dots-1));
 			int color = i*2<dots ? color1 : color2;
 			if (color != COLOR_NONE)
-				mBuilder.addAtomSphere(bondRole(bond), center, r, color);
+				mBuilder.addAtomSphere(RoleHelper.createBondRole(bond, i*2<dots ? 0 : 1, mBondNodeID++), center, r, color);
 			}
 		}
 
@@ -543,35 +546,27 @@ public class MoleculeArchitect {
 
 		if (mConstructionMode != CONSTRUCTION_MODE_WIRES) {
 			if (color1 != COLOR_NONE)
-				mBuilder.addAtomSphere(bondRole(bond), p1, r, color1); //modified by JW
+				mBuilder.addAtomSphere(RoleHelper.createBondRole(bond, 0, mBondNodeID++), p1, r, color1); //modified by JW
 			if (color2 != COLOR_NONE)
-				mBuilder.addAtomSphere(bondRole(bond), p2, r, color2); // modified by JW
+				mBuilder.addAtomSphere(RoleHelper.createBondRole(bond, 1, mBondNodeID++), p2, r, color2); // modified by JW
 			}
 
-		if (color1 == color2) {
+		if (!mSplitAllBonds && color1 == color2) {
 			if (color1 != COLOR_NONE) {
 				center.center(p1, p2);
-				mBuilder.addBondCylinder(bondRole(bond), r, l1 + l2, center, b, c, color1);
+				mBuilder.addBondCylinder(RoleHelper.createBondRole(bond, -1, mBondNodeID++), r, l1 + l2, center, b, c, color1);
 				}
 			}
 		else {
 			if (color1 != COLOR_NONE) {
 				p1.center(center);
-				mBuilder.addBondCylinder(bondRole(bond), r, l1, p1, b, c, color1);
+				mBuilder.addBondCylinder(RoleHelper.createBondRole(bond, 0, mBondNodeID++), r, l1, p1, b, c, color1);
 				}
 			if (color2 != COLOR_NONE) {
 				p2.center(center);
-				mBuilder.addBondCylinder(bondRole(bond), r, l2, p2, b, c, color2);
+				mBuilder.addBondCylinder(RoleHelper.createBondRole(bond, 1, mBondNodeID++), r, l2, p2, b, c, color2);
 				}
 			}
-		}
-
-	private int atomRole(int atom) {
-		return /*(mAtomDetail++ << MoleculeBuilder.ROLE_DETAIL_SHIFT) | */ MoleculeBuilder.ROLE_IS_ATOM | atom;
-		}
-
-	private int bondRole(int bond) {
-		return (mBondDetail++ << MoleculeBuilder.ROLE_DETAIL_SHIFT) | MoleculeBuilder.ROLE_IS_BOND | bond;
 		}
 
 	private Coordinates calculateDoubleBondShift(int bond) {

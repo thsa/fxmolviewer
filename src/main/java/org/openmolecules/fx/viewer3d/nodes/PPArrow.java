@@ -9,8 +9,8 @@ import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Shape3D;
 import javafx.scene.transform.Rotate;
 import org.openmolecules.mesh.Cone;
-import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.PharmacophoreBuilder;
+import org.openmolecules.render.RoleHelper;
 
 
 public class PPArrow extends AbstractPPNode {
@@ -23,7 +23,7 @@ public class PPArrow extends AbstractPPNode {
 	private static final Coordinates YAXIS = new Coordinates(0.0,1.0,0.0);
 	
 	public PPArrow(PPGaussian ppg,PhongMaterial material) {
-		super(ppg,material,MoleculeBuilder.ROLE_IS_PHARMACOPHORE);
+		super(ppg, material, RoleHelper.createPharmacophoreRole());
 		construct();
 	}
 	
@@ -36,8 +36,8 @@ public class PPArrow extends AbstractPPNode {
 		Coordinates arrowCenter = center.addC(((PPGaussian)ppg).getPharmacophorePoint().getDirectionality().scaleC(0.5));
 		Coordinates endPoint = arrowCenter.addC(((PPGaussian)ppg).getPharmacophorePoint().getDirectionality().scaleC(arrowLength));
 		constructArrow(arrowCenter,endPoint, cylinderRadius);
-		cylinder.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
-		cone.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
+		cylinder.setUserData(new NodeDetail(material, RoleHelper.createPharmacophoreRole(), false));
+		cone.setUserData(new NodeDetail(material, RoleHelper.createPharmacophoreRole(), false));
 		getChildren().add(cylinder);
 		getChildren().add(cone);
 	}

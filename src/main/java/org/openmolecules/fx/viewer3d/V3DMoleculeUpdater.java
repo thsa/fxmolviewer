@@ -13,13 +13,7 @@ import javafx.scene.transform.Transform;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.fx.viewer3d.nodes.AbstractPPNode;
-import org.openmolecules.render.MoleculeArchitect;
-import org.openmolecules.render.MoleculeBuilder;
-import org.openmolecules.render.PharmacophoreArchitect;
-import org.openmolecules.render.PharmacophoreBuilder;
-import org.openmolecules.render.TorsionStrainVisArchitect;
-import org.openmolecules.render.TorsionStrainVisBuilder;
-import org.openmolecules.render.TorsionStrainVisualization;
+import org.openmolecules.render.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,13 +45,12 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 		mPPNodeMap = new HashMap<PPGaussian,AbstractPPNode>();
 		mVolNodeMap = new HashMap<VolumeGaussian,VolumeSphere>();
 		for (Node node:fxmol.getChildren()) {
-			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
-			if ((role & (MoleculeBuilder.ROLE_IS_ATOM | MoleculeBuilder.ROLE_IS_BOND )) != 0)
-				mNodeMap.put(role, node);
-			else if( (role & MoleculeBuilder.ROLE_IS_TORSION_PREF)!=0)
-				mNodeMap.put(role, node);
+			NodeDetail detail = (NodeDetail)node.getUserData();
+			if (detail != null
+			 && (detail.isAtom() || detail.isBond() || detail.isTorsion())) {
+				mNodeMap.put(detail.getRole(), node);
+			}
 		}
-		
 		
 		for(V3DRotatableGroup group : fxmol.getGroups()) {
 			if(group instanceof V3DCustomizablePheSA) {
@@ -103,7 +96,7 @@ public class V3DMoleculeUpdater implements MoleculeBuilder, PharmacophoreBuilder
 			node.setTranslateY(c.y);
 			node.setTranslateZ(c.z);
 
-			if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS && (role & MoleculeBuilder.ROLE_IS_ATOM) != 0) {
+			if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS && RoleHelper.isAtom(role)) {
 				// update coordinates of transparent spheres
 				node = mNodeMap.get(role | 0x80000000);
 				if (node != null) {

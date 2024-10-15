@@ -1,17 +1,14 @@
 package org.openmolecules.fx.viewer3d.nodes;
 
 
-import org.openmolecules.render.MoleculeBuilder;
-import org.openmolecules.render.PharmacophoreBuilder;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.phesa.Gaussian3D;
-import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
-
-import javafx.scene.effect.Reflection;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
+import org.openmolecules.render.PharmacophoreBuilder;
+import org.openmolecules.render.RoleHelper;
 
 
 public class PPSphere extends AbstractPPNode{
@@ -23,7 +20,7 @@ public class PPSphere extends AbstractPPNode{
 
 	
 	public PPSphere(Gaussian3D ppg,PhongMaterial material, PhongMaterial icoMaterial) {
-		super(ppg,material,MoleculeBuilder.ROLE_IS_PHARMACOPHORE);		
+		super(ppg, material, RoleHelper.createPharmacophoreRole());
 		this.icoMaterial = icoMaterial;
 		construct();
 	}
@@ -42,7 +39,7 @@ public class PPSphere extends AbstractPPNode{
 		icosahedron.setCullFace(CullFace.NONE);
 
 		updateSphere(sphereCenter);
-		sphere.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
+		sphere.setUserData(new NodeDetail(material, RoleHelper.createPharmacophoreRole(), false));
 		getChildren().add(sphere);
 		getChildren().add(icosahedron);
 

@@ -1,32 +1,22 @@
 package org.openmolecules.fx.viewer3d.nodes;
 
-import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
-import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DScene;
-import org.openmolecules.render.MoleculeBuilder;
-import org.openmolecules.render.PharmacophoreBuilder;
-
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.PeriodicTable;
 import com.actelion.research.chem.phesa.VolumeGaussian;
-import com.actelion.research.chem.phesa.Gaussian3D;
-
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Group;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Sphere;
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
+import org.openmolecules.render.RoleHelper;
 
 public class VolumeSphere extends Group  {
 	private static final double RADIUS_SCALING = 0.5;
@@ -49,7 +39,7 @@ public class VolumeSphere extends Group  {
 	}
 	
 	public VolumeSphere (VolumeGaussian volGauss) {
-		setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_EXCLUSION , false));
+		setUserData(new NodeDetail(material, RoleHelper.createExclusionRole(), false));
 		sphereRadius = new SimpleDoubleProperty(PeriodicTable.getElement(volGauss.getAtomicNo()).getVDWRadius());
 		
 		this.setTranslateX(volGauss.getReferenceVector().x);
@@ -168,7 +158,7 @@ public class VolumeSphere extends Group  {
 		sphere.setCullFace(CullFace.NONE);
 		getChildren().add(icosahedron);
 		getChildren().add(sphere);
-		sphere.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_EXCLUSION , false));
+		sphere.setUserData(new NodeDetail(material, RoleHelper.createExclusionRole(), false));
 	}
 	
 	private void cleanup() {

@@ -51,7 +51,7 @@ import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
 import org.openmolecules.mesh.Cone;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
-import org.openmolecules.render.MoleculeBuilder;
+import org.openmolecules.render.RoleHelper;
 import org.openmolecules.render.TorsionStrainVisualization;
 
 import java.util.*;
@@ -66,7 +66,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private static final int DEFAULT_SURFACE_COLOR_MODE = SURFACE_COLOR_PLAIN;
 
 	public enum SurfaceMode {NONE(0), WIRES(1),FILLED(2); 
-		public int mode;
+		public final int mode;
 		SurfaceMode(int mode) {
 			this.mode = mode;
 		}
@@ -105,6 +105,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private TorsionStrainVisualization torsionStrainVis;
 	private ArrayList<AtomIndexLabel> mLabelList;
 	private int mnUnconnectedFragments;
+	private boolean mSplitAllBonds;
 	
 	public enum MoleculeRole{
 		LIGAND { public String toString(){
@@ -144,6 +145,21 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
 	 * - construction mode: sticks<br>
 	 * - default hydrogen mode, i.e. shows all explicit hydrogens<br>
+	 * - shows no surface<br>
+	 * - id = 0<br>
+	 * - group = 0<br>
+	 * - role = LIGAND
+	 * @param mol
+	 * @param splitAllBonds
+	 */
+	public V3DMolecule(StereoMolecule mol, boolean overrideHydrogen, boolean splitAllBonds) {
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, 0, MoleculeRole.LIGAND, overrideHydrogen, splitAllBonds );
+	}
+
+	/**
+	 * Creates a V3DMolecule from the given molecule with the following default specification:<br>
+	 * - construction mode: sticks<br>
+	 * - default hydrogen mode, i.e. shows all explicit hydrogens<br>
 	 * - shows no surface
 	 * @param mol
 	 */
@@ -151,8 +167,8 @@ public class V3DMolecule extends V3DRotatableGroup {
 		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role );
 		}
 	
-	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role, boolean overrideHydrogen) {
-		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role, overrideHydrogen);
+	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role, boolean overrideHydrogen, boolean splitAllBonds) {
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role, overrideHydrogen, splitAllBonds);
 		}
 
 	/**
@@ -174,12 +190,12 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role) {
 		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
-				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, role, true);
+				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, role, true, false);
 		}
 	
-	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role, boolean overrideHydrogen) {
+	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role, boolean overrideHydrogen, boolean splitAllBonds) {
 		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
-				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id,  role, overrideHydrogen);
+				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id,  role, overrideHydrogen, splitAllBonds);
 		}
 
 	/**
@@ -191,10 +207,14 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param surfaceColorMode DEFAULT_SURFACE_COLOR_MODE or one of the SurfaceMesh.SURFACE_COLOR_xxx modes
 	 * @param surfaceColor null or explicit surface color used for some color modes
 	 * @param transparency
+	 * @param id
+	 * @param role
+	 * @param overrideHydrogens whether hydrogen atoms are drawn in the molecule override color
+	 * @param splitAllBonds whether all bonds shall be constructed from two cylinders (allowing better selection coloring)
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode,
 						SurfaceMode surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
-						int id, MoleculeRole role, boolean overrideHydrogens) {
+						int id, MoleculeRole role, boolean overrideHydrogens, boolean splitAllBonds) {
 		super(mol.getName());
 		mMol = mol;
 		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true);
@@ -207,6 +227,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mSelectedProperty = new SimpleBooleanProperty(false);
 		mSelectedProperty.addListener((v,ov,nv) -> updateSelectionAppearance());
 		mOverrideHydrogens = overrideHydrogens;
+		mSplitAllBonds = splitAllBonds;
 		int surfaceCount = MoleculeSurfaceAlgorithm.SURFACE_TYPE.length;
 		mSurface = new MeshView[surfaceCount];
 		mSurfaceMesh = new SurfaceMesh[surfaceCount];
@@ -235,9 +256,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 			}
 
 		constructMaterials();
-		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
-// we cannot center pre-aligned conformers			builder.centerMolecule(conformer);
-		builder.buildMolecule();
+		new V3DMoleculeBuilder(this).buildMolecule();
 
 		if (surfaceMode != SurfaceMode.NONE) {
 			mSurfaceMesh[0] = new SurfaceMesh(mMol, 0, surfaceColorMode, getNeutralColor(0), 1.0 - transparency, createSurfaceCutter());
@@ -639,7 +658,11 @@ public class V3DMolecule extends V3DRotatableGroup {
 	public boolean isSelected() {
 		return mSelectedProperty.get();
 	}
-	
+
+	public boolean isSplitAllBonds() {
+		return mSplitAllBonds;
+	}
+
 	public boolean overrideHydrogens() {
 		return mOverrideHydrogens;
 	}
@@ -881,8 +904,12 @@ public class V3DMolecule extends V3DRotatableGroup {
 	public void toggleSelection() {
         mSelectedProperty.set(!mSelectedProperty.get());
 		}
-	
+
+	/**
+	 * Updates the selection of the entire molecule
+	 */
 	private void updateSelectionAppearance() {
+		// Complete molecule selection
 		for (Node node:getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && !detail.isTransparent()) {
@@ -890,12 +917,10 @@ public class V3DMolecule extends V3DRotatableGroup {
 				updateAppearance(node);
 				}
 			}
+
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++)
 			mMol.setAtomSelection(atom, mSelectedProperty.get());
-		}
-	
-	
-	
+	}
 
 	/**
 	 * @param polygon screen coordinate polygon defining the selection
@@ -903,7 +928,44 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param paneOnScreen top let point of parent pane on screen
 	 */
 	public void select(Polygon polygon, int mode, Point2D paneOnScreen) {
-		mSelectedProperty.set(!mSelectedProperty.get());
+		boolean selectionChanged = false;
+		for (Node node:getChildren()) {
+			NodeDetail detail = (NodeDetail)node.getUserData();
+			if (detail != null && !detail.isTransparent() && detail.isAtom()) {
+				boolean isSelected = (polygon != null)
+					&& polygon.contains(node.localToScreen(0, 0, 0).subtract(paneOnScreen));
+				if (mode == 1)
+					isSelected |= detail.isSelected();
+				else if (mode == 2)
+					isSelected = detail.isSelected() && !isSelected;
+				if (isSelected != detail.isSelected()) {
+					detail.setSelected(isSelected);
+					updateAppearance(node);
+					mMol.setAtomSelection(detail.getAtom(), isSelected);
+					selectionChanged = true;
+				}
+			}
+		}
+		if (selectionChanged) {
+			for (Node node:getChildren()) {
+				NodeDetail detail = (NodeDetail)node.getUserData();
+				if (detail != null && !detail.isTransparent()) {
+					if (detail.isBond()) {
+						int bond = detail.getBond();
+						int bondAtom = detail.getBondAtom(mMol);
+						boolean isSelected = (bondAtom != -1) ? mMol.isSelectedAtom(bondAtom)
+								 : mMol.isSelectedAtom(mMol.getBondAtom(0, bond))
+								&& mMol.isSelectedAtom(mMol.getBondAtom(1, bond));
+						if (isSelected != detail.isSelected()) {
+							detail.setSelected(isSelected);
+							updateAppearance(node);
+						}
+					}
+				}
+			}
+		}
+
+/*		mSelectedProperty.set(!mSelectedProperty.get());
 		for (Node node:getChildren()) {
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail != null && !detail.isTransparent()) {
@@ -921,7 +983,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 						mMol.setAtomSelection(atom, isSelected);
 					}
 				}
-			}
+			}*/
 		}
 
 	// Delete all flagged atoms except those that have a direct connection
@@ -1116,7 +1178,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 				&& ((NodeDetail)shape.getUserData()).getMaterial().getDiffuseColor().getOpacity() == 0.0);
 
 		if (!isInvisibleShape) {
-			float scale = (shape == mHighlightedShape || mPickedAtomList.contains(shape)) ? HIGHLIGHT_SCALE : 1.0f;
+			float scale = (shape == mHighlightedShape || mPickedAtomList.contains(shape) /*|| isSelectedAtom*/) ? HIGHLIGHT_SCALE : 1.0f;
 			if (shape.getScaleX() != scale) {
 				shape.setScaleX(scale);
 				shape.setScaleY(scale);
@@ -1236,7 +1298,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 					sphere.setTranslateX(mMol.getAtomX(atom));
 					sphere.setTranslateY(mMol.getAtomY(atom));
 					sphere.setTranslateZ(mMol.getAtomZ(atom));
-					sphere.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_ATOM | atom, isOverridable));
+					sphere.setUserData(new NodeDetail(material, RoleHelper.createAtomRole(atom), isOverridable));
 					getChildren().add(sphere);
 					mTemporaryAtomSpheres.add(sphere);
 					}

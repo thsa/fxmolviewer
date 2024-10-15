@@ -48,7 +48,7 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 		mArchitect = new MoleculeArchitect(this);
 		mArchitect.setHydrogenMode(v3DMolecule.getHydrogenMode());
 		mArchitect.setConstructionMode(v3DMolecule.getConstructionMode());
-		mArchitect.setShowSelection(true);
+		mArchitect.setSplitAllBonds(v3DMolecule.isSplitAllBonds());
 		mV3DMolecule = v3DMolecule;
 		calculateDivisions();
 		}
@@ -86,11 +86,12 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 							argb == MoleculeArchitect.getAtomicNoARGB(1)
 						 || argb == MoleculeArchitect.getAtomicNoARGB(6)
 						  : argb == MoleculeArchitect.getAtomicNoARGB(6);
-		sphere.setUserData(new NodeDetail((PhongMaterial)sphere.getMaterial(), role, isOverridable));
+		NodeDetail detail = new NodeDetail((PhongMaterial)sphere.getMaterial(), role, isOverridable);
+		sphere.setUserData(detail);
 
 		// dotted bonds also use addAtomSphere()...
-		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0) {
-			if (mV3DMolecule.getMolecule().isSelectedAtom(role & MoleculeBuilder.ROLE_INDEX_BITS)) {
+		if (detail.isAtom()) {
+			if (mV3DMolecule.getMolecule().isSelectedAtom(detail.getAtom())) {
 				((NodeDetail)sphere.getUserData()).setSelected(true);
 				mV3DMolecule.updateAppearance(sphere);
 				}
@@ -108,11 +109,14 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR
 						 :  argb == MoleculeArchitect.getAtomicNoARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR;
-		cylinder.setUserData(new NodeDetail((PhongMaterial)cylinder.getMaterial(), role, isOverridable));
+		NodeDetail detail = new NodeDetail((PhongMaterial)cylinder.getMaterial(), role, isOverridable);
+		cylinder.setUserData(detail);
 		StereoMolecule mol = mV3DMolecule.getMolecule();
-		int bond = role & MoleculeBuilder.ROLE_INDEX_BITS;
-		if (mol.isSelectedAtom(mol.getBondAtom(0, bond)) && mol.isSelectedAtom(mol.getBondAtom(1, bond))) {
-			((NodeDetail)cylinder.getUserData()).setSelected(true);
+		int bond = detail.getBond();
+		int bondAtom = detail.getBondAtom(mol);
+		if ((bondAtom != -1 && mol.isSelectedAtom(bondAtom))
+		 || (mol.isSelectedAtom(mol.getBondAtom(0, bond)) && mol.isSelectedAtom(mol.getBondAtom(1, bond)))) {
+			detail.setSelected(true);
 			mV3DMolecule.updateAppearance(cylinder);
 			}
 		}
@@ -126,9 +130,10 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR
 						 :  argb == MoleculeArchitect.getAtomicNoARGB(6)
 						 || argb == MoleculeArchitect.BALL_AND_STICK_STICK_COLOR;
-		cone.setUserData(new NodeDetail((PhongMaterial)cone.getMaterial(), role, isOverridable));
-		if ((role & MoleculeBuilder.ROLE_IS_ATOM) != 0)
-			((NodeDetail)cone.getUserData()).setSelected(mV3DMolecule.getMolecule().isSelectedAtom(role & MoleculeBuilder.ROLE_INDEX_BITS));
+		NodeDetail detail = new NodeDetail((PhongMaterial)cone.getMaterial(), role, isOverridable);
+		cone.setUserData(detail);
+		if (detail.isAtom())
+			detail.setSelected(mV3DMolecule.getMolecule().isSelectedAtom(detail.getAtom()));
 	}
 
 	private void calculateDivisions() {

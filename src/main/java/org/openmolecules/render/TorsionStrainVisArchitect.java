@@ -54,16 +54,11 @@ public class TorsionStrainVisArchitect {
 		
 		}
 	
-	private int rotBondRole(int bond) {
-		return MoleculeBuilder.ROLE_IS_TORSION_PREF | bond;
-		}
-
 	private void buildStickBond(int bond, int color, Coordinates p1, Coordinates p2,
 	                            double r, double d, double b, double c) {
-		
 		Coordinates center = new Coordinates();
 		center.center(p1, p2);
-		int role = rotBondRole(bond);
+		int role = RoleHelper.createTorsionRole(bond );
 		builder.addTorsionCylinder(role, r, d, center, b, c, color);
 
 			

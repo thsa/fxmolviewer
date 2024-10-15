@@ -1,16 +1,13 @@
 package org.openmolecules.fx.viewer3d.nodes;
 
-import org.openmolecules.fx.viewer3d.V3DBindingSiteVolume;
-import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
-import org.openmolecules.render.MoleculeBuilder;
-import org.openmolecules.render.PharmacophoreBuilder;
-
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.phesa.pharmacophore.pp.PPGaussian;
-
 import javafx.scene.Group;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
+import org.openmolecules.fx.viewer3d.V3DBindingSiteVolume;
+import org.openmolecules.render.PharmacophoreBuilder;
+import org.openmolecules.render.RoleHelper;
 
 public class SimplePPSphere extends Group implements IPPNode{
 	
@@ -45,7 +42,7 @@ public class SimplePPSphere extends Group implements IPPNode{
 		sphere = new Sphere(sphereRadius,20);
 		sphere.setMaterial(material);
 		updateSphere(sphereCenter);
-		sphere.setUserData(new NodeDetail(material, MoleculeBuilder.ROLE_IS_PHARMACOPHORE , false));
+		sphere.setUserData(new NodeDetail(material, RoleHelper.createPharmacophoreRole(), false));
 		getChildren().add(sphere);
 		
 	}

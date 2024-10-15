@@ -38,7 +38,6 @@ import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
-import org.openmolecules.render.MoleculeBuilder;
 import org.openmolecules.render.TorsionHistogram;
 
 import java.util.stream.IntStream;
@@ -320,10 +319,10 @@ public class V3DMouseHandler {
 
 		mHighlightedMol = (V3DMolecule) molecule;
 		if (mHighlightedMol != null && node instanceof Shape3D) {
-			mHighlightedMol.setHighlightedShape((Shape3D)node); 
-			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
-			if( (role & MoleculeBuilder.ROLE_IS_TORSION_PREF)!=0) {
-				int b = ((NodeDetail)node.getUserData()).getBondTorsion();
+			mHighlightedMol.setHighlightedShape((Shape3D)node);
+			NodeDetail detail = (NodeDetail)node.getUserData();
+			if (detail.isTorsion()) {
+				int b = detail.getTorsion();
 				byte[] histogram = mHighlightedMol.getTorsionStrainVis().getTorsionAnalyzer().getHistogram(b);
 				if(histogram!=null) {
 					double angle = mHighlightedMol.getTorsionStrainVis().getTorsionAnalyzer().getAngle(b);

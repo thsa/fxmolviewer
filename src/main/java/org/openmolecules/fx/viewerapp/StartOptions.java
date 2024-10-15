@@ -434,7 +434,7 @@ public class StartOptions {
 						surfaceColor[i], 0.5,
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.MACROMOLECULE,
-						true);
+						true, false);
 				vm.getMolecule().setName("Protein");
 				scene.addMolecule(vm, complex, true);
 			}
@@ -446,7 +446,7 @@ public class StartOptions {
 						MoleculeArchitect.HydrogenMode.ALL,
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.LIGAND,
-						true);
+						true, false);
 				v3dligand.getMolecule().setName("Ligand");
 				scene.addMolecule(v3dligand, complex, true);
 			}
@@ -458,7 +458,7 @@ public class StartOptions {
 						MoleculeArchitect.HydrogenMode.ALL,
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.SOLVENT,
-						true);
+						true, false);
 				mol.setName((mol.getAllAtoms()==1 && mol.getAtomicNo(0)==8 ? "Water " : "Solvent ")+mol.getAtomChainId(0));
 				scene.addMolecule(vm, complex, true);
 			}

@@ -20,9 +20,10 @@
 
 package org.openmolecules.fx.viewer3d.nodes;
 
+import com.actelion.research.chem.StereoMolecule;
 import javafx.scene.paint.PhongMaterial;
 import org.openmolecules.fx.viewer3d.V3DMoleculeBuilder;
-import org.openmolecules.render.MoleculeBuilder;
+import org.openmolecules.render.RoleHelper;
 
 /**
  * Created by thomas on 15.11.15.
@@ -33,7 +34,7 @@ public class NodeDetail {
     private final boolean mMayOverride;
     private boolean mIsSelected;
 
-    public NodeDetail(PhongMaterial material, int role, boolean mayOverride) {
+	public NodeDetail(PhongMaterial material, int role, boolean mayOverride) {
         mMaterial = material;
         mRole = role;
 	    mMayOverride = mayOverride;
@@ -48,18 +49,26 @@ public class NodeDetail {
         }
 
     public boolean isAtom() {
-        return (mRole & MoleculeBuilder.ROLE_IS_ATOM) != 0;
+        return RoleHelper.isAtom(mRole);
         }
 
     public boolean isBond() {
-        return (mRole & MoleculeBuilder.ROLE_IS_BOND) != 0;
-        }
+		return RoleHelper.isBond(mRole);
+	}
     
     public boolean isPharmacophore() {
-        return (mRole & MoleculeBuilder.ROLE_IS_PHARMACOPHORE) != 0;
+        return RoleHelper.isPharmacophore(mRole);
         }
 
-    public boolean isSelected() {
+	public boolean isTorsion() {
+		return RoleHelper.isTorsion(mRole);
+	}
+
+	public boolean isExclusion() {
+		return RoleHelper.isExclusion(mRole);
+	}
+
+	public boolean isSelected() {
         return mIsSelected;
     }
 
@@ -79,23 +88,28 @@ public class NodeDetail {
 		}
 
     public int getAtom() {
-        return (mRole & MoleculeBuilder.ROLE_IS_ATOM) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
+        return RoleHelper.getAtom(mRole);
         }
 
     public int getBond() {
-	    return (mRole & MoleculeBuilder.ROLE_IS_BOND) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
+		return RoleHelper.getBond(mRole);
     }
-    
-    public int getBondTorsion() {
-	    return (mRole & MoleculeBuilder.ROLE_IS_TORSION_PREF) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
+
+	public int getBondAtom(StereoMolecule mol) {
+		int bond = RoleHelper.getBond(mRole);
+		int no = RoleHelper.getBondAtomIndex(mRole);
+		return no == -1 ? -1 : mol.getBondAtom(no, bond);
+	}
+
+	public int getTorsion() {
+		return RoleHelper.getTorsion(mRole);
     }
     
     public int getPharmacophoreAtom() {
-	    return (mRole & MoleculeBuilder.ROLE_IS_PHARMACOPHORE) != 0 ? mRole & MoleculeBuilder.ROLE_INDEX_BITS : -1;
+		return RoleHelper.getPharmacophoreAtom(mRole);
     }
 
     public void setIndex(int index) {
-		mRole &= ~MoleculeBuilder.ROLE_INDEX_BITS;
-		mRole |= index;
+		mRole = RoleHelper.setIndex(mRole, index);
     }
 }

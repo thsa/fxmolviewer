@@ -112,11 +112,10 @@ public class TorsionStrainVisualization implements TorsionStrainVisBuilder {
 	public void toggleVisibility() {
 		boolean isVis = isVisible.get();
 		isVisible.set(!isVis);
-		for(Node node : analyzer.getV3DMolecule().getChildren()) {
-			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
-			if( (role & MoleculeBuilder.ROLE_IS_TORSION_PREF)!=0) {
+		for (Node node : analyzer.getV3DMolecule().getChildren()) {
+			NodeDetail detail = (NodeDetail)node.getUserData();
+			if(detail != null && detail.isTorsion())
 				node.setVisible(isVisible.get());
-			}
 		}
 	}
 	
@@ -127,12 +126,14 @@ public class TorsionStrainVisualization implements TorsionStrainVisBuilder {
 	public void cleanup() {
 		List<Node> toBeRemoved = new ArrayList<Node>();
 		for (Node node:analyzer.getV3DMolecule().getChildren()) {
-			int role = node.getUserData() == null ? 0 : ((NodeDetail)node.getUserData()).getRole();
-			if ((role &  MoleculeBuilder.ROLE_IS_PHARMACOPHORE)!= 0) {
-				toBeRemoved.add(node);
-			}
-			else if ((role &  MoleculeBuilder.ROLE_IS_EXCLUSION)!= 0) {
-				toBeRemoved.add(node);
+			NodeDetail detail = (NodeDetail)node.getUserData();
+			if (detail != null) {
+				if (detail.isPharmacophore()) {
+					toBeRemoved.add(node);
+				}
+				else if (detail.isExclusion()) {
+					toBeRemoved.add(node);
+				}
 			}
 		}
 		Platform.runLater(() -> {
