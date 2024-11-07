@@ -227,7 +227,6 @@ public class V3DMouseHandler {
 		scene.setOnMouseMoved(me -> {
 			trackHighlightedMol(me);
 			trackAffectedMol(isSingleMolecule(me));
-			
 		} );
 		scene.setOnMouseDragged(me -> {
 			double oldMouseX = mMouseX;

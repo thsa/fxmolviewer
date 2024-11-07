@@ -33,8 +33,8 @@ import java.util.ArrayList;
 
 public class RotatableGroup extends Group implements ChangeListener<Number>, IV3DMoleculeGroup {
 	private Transform mRotation;
-	private ArrayList<TransformationListener> mTransformationListenerList;
-	private String mName;
+	private final ArrayList<TransformationListener> mTransformationListenerList;
+	private final String mName;
 
 	public RotatableGroup(String name) {
 		mRotation = new Rotate();
