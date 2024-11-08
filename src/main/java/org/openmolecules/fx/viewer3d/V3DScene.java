@@ -428,8 +428,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 						if (detail != null) {
 							if (detail.isAtom() || detail.isBond()) {
 								Point3D p = node2.localToScene(0.0, 0.0, 0.0);
-								cameraZ = Math.min(cameraZ, p.getZ() - tanH * Math.abs(p.getX()-cog.getX()));
-								cameraZ = Math.min(cameraZ, p.getZ() - tanV * Math.abs(p.getY()-cog.getY()));
+								cameraZ = Math.min(cameraZ, p.getZ() - Math.max(5, tanH * Math.abs(p.getX()-cog.getX())));
+								cameraZ = Math.min(cameraZ, p.getZ() - Math.max(5, tanV * Math.abs(p.getY()-cog.getY())));
 							}
 						}
 					}
