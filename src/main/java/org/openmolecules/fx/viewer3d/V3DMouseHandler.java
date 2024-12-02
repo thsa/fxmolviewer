@@ -317,7 +317,7 @@ public class V3DMouseHandler {
 			mHighlightedMol.setHighlightedShape(null);
 
 		mHighlightedMol = (V3DMolecule) molecule;
-		if (mHighlightedMol != null && node instanceof Shape3D) {
+		if (mHighlightedMol != null && node instanceof Shape3D && node.getUserData() != null) {
 			mHighlightedMol.setHighlightedShape((Shape3D)node);
 			NodeDetail detail = (NodeDetail)node.getUserData();
 			if (detail.isTorsion()) {

@@ -20,10 +20,7 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import com.actelion.research.chem.AtomFunctionAnalyzer;
-import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.Molecule;
-import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
 import com.actelion.research.chem.conf.VDWRadii;
@@ -83,12 +80,13 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private Node mLastPickedNode;
 	private Shape3D mHighlightedShape;
 	private PhongMaterial mOverrideMaterial,mHydrogenMaterial;
+	private Ribbon mRibbon;
 	private final MeshView[] mSurface;
 	private final SurfaceMesh[] mSurfaceMesh;
 	private final Color[] mSurfaceColor;
 	private final int[] mSurfaceColorMode;
 	private final SurfaceMode[] mSurfaceMode;
-	private int mConstructionMode;
+	private int mConstructionMode,mRibbonMode;
 	private MoleculeArchitect.HydrogenMode mHydrogenMode;
 	private final LinkedList<Sphere> mPickedAtomList;
 	private final ArrayList<Sphere> mTemporaryAtomSpheres;
@@ -189,12 +187,12 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role) {
-		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
+		this(mol, constructionMode, hydrogenMode, Ribbon.MODE_NONE, SurfaceMode.NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, role, true, false);
 		}
 	
 	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role, boolean overrideHydrogen, boolean splitAllBonds) {
-		this(mol, constructionMode, hydrogenMode, SurfaceMode.NONE,
+		this(mol, constructionMode, hydrogenMode, Ribbon.MODE_NONE, SurfaceMode.NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id,  role, overrideHydrogen, splitAllBonds);
 		}
 
@@ -203,6 +201,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param mol
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options
+	 * @param ribbonMode combination of Ribbon.MODE_ options
 	 * @param surfaceMode SURFACE_NONE, SURFACE_WIRES, or SURFACE_FILLED
 	 * @param surfaceColorMode DEFAULT_SURFACE_COLOR_MODE or one of the SurfaceMesh.SURFACE_COLOR_xxx modes
 	 * @param surfaceColor null or explicit surface color used for some color modes
@@ -213,7 +212,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param splitAllBonds whether all bonds shall be constructed from two cylinders (allowing better selection coloring)
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode,
-						SurfaceMode surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
+						int ribbonMode, SurfaceMode surfaceMode, int surfaceColorMode, Color surfaceColor, double transparency,
 						int id, MoleculeRole role, boolean overrideHydrogens, boolean splitAllBonds) {
 		super(mol.getName());
 		mMol = mol;
@@ -256,7 +255,14 @@ public class V3DMolecule extends V3DRotatableGroup {
 			}
 
 		constructMaterials();
-		new V3DMoleculeBuilder(this).buildMolecule();
+		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
+		builder.buildMolecule();
+
+		if (ribbonMode != Ribbon.MODE_NONE && role == MoleculeRole.MACROMOLECULE) {
+			mRibbon = new Ribbon((Molecule3D) mMol, this);
+			mRibbon.draw(ribbonMode);
+			mRibbonMode = ribbonMode;
+		}
 
 		if (surfaceMode != SurfaceMode.NONE) {
 			mSurfaceMesh[0] = new SurfaceMesh(mMol, 0, surfaceColorMode, getNeutralColor(0), 1.0 - transparency, createSurfaceCutter());
@@ -270,7 +276,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 			mInitialCoordinates[i] = new Coordinates(mMol.getCoordinates(i));
 		});
 	}
-	
+
 	public void resetCoordinates() {
 		if(mInitialCoordinates!=null && mInitialCoordinates.length==mMol.getAllAtoms()) {
 			IntStream.range(0,mMol.getAllAtoms()).forEach(i -> {
@@ -476,12 +482,20 @@ public class V3DMolecule extends V3DRotatableGroup {
 		return mHydrogenMode;
 	}
 
+	public int getRibbonMode() {
+		return mRibbonMode;
+	}
+
 	public void setConstructionMode(int mode) {
-		setMode(mode, mHydrogenMode);
+		setMode(mode, mHydrogenMode, mRibbonMode);
 	}
 
 	public void setHydrogenMode(MoleculeArchitect.HydrogenMode mode) {
-		setMode(mConstructionMode, mode);
+		setMode(mConstructionMode, mode, mRibbonMode);
+	}
+
+	public void setRibbonMode(int mode) {
+		setMode(mConstructionMode, mHydrogenMode, mode);
 	}
 
 	/**
@@ -489,13 +503,18 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param constructionMode one of the MoleculeArchitect.CONSTRUCTION_MODE... options
 	 * @param hydrogenMode one of the MoleculeArchitect.HYDROGEN_MODE... options
 	 */
-	public void setMode(int constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode) {
+	public void setMode(int constructionMode, MoleculeArchitect.HydrogenMode  hydrogenMode, int ribbonMode) {
+		if (constructionMode == mConstructionMode
+		 && hydrogenMode == mHydrogenMode
+		 && ribbonMode == mRibbonMode)
+			return;
+
 		if (constructionMode != mConstructionMode
 		 || hydrogenMode != mHydrogenMode) {
 			mConstructionMode = constructionMode;
 			mHydrogenMode = hydrogenMode;
 
-			for (int i=getChildren().size()-1; i>=0; i--)
+			for (int i = getChildren().size() - 1; i >= 0; i--)
 				if (!isSurface(getChildren().get(i)))
 					getChildren().remove(i);
 
@@ -503,13 +522,24 @@ public class V3DMolecule extends V3DRotatableGroup {
 			builder.setConstructionMode(constructionMode);
 			builder.setHydrogenMode(hydrogenMode);
 			builder.buildMolecule();
+		}
 
-			// rebuild surfaces after creation of molecule primitives, because surface transparency depends on creation time of triangles
-			for (int i=0; i<mSurfaceMode.length; i++)
-				if (mSurfaceMode[i] != SurfaceMode.NONE)
-					updateSurfaceFromMesh(i);
+		if (ribbonMode != mRibbonMode) {
+			mRibbon.removeRibbon();
+			mRibbon = null;
+			if (ribbonMode != Ribbon.MODE_NONE) {
+				mRibbon = new Ribbon((Molecule3D) mMol, this);
+				mRibbon.draw(ribbonMode);
 			}
-			updateColor();
+			mRibbonMode = ribbonMode;
+		}
+
+		// rebuild surfaces after creation of molecule primitives, because surface transparency depends on creation time of triangles
+		for (int i=0; i<mSurfaceMode.length; i++)
+			if (mSurfaceMode[i] != SurfaceMode.NONE)
+				updateSurfaceFromMesh(i);
+
+		updateColor();
 		}
 	
 	public void reconstruct() {
@@ -681,6 +711,13 @@ public class V3DMolecule extends V3DRotatableGroup {
 	
 	public void setID(int id) {
 		mIDProperty.set(id);
+	}
+
+	public void setRibbonMode() {
+		if (getRole() != MoleculeRole.MACROMOLECULE)
+			return;
+
+
 	}
 
 	/**

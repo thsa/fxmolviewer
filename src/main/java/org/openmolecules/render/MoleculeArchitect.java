@@ -22,7 +22,8 @@ public class MoleculeArchitect {
 	public static final int CONSTRUCTION_MODE_STICKS = 1;
 	public static final int CONSTRUCTION_MODE_BALLS = 2;
 	public static final int CONSTRUCTION_MODE_WIRES = 3;
-	public final static String[] MODE_TEXT = { "Ball & Sticks", "Sticks", "Balls", "Wires" };
+	public static final int CONSTRUCTION_MODE_NONE = 4;
+	public final static String[] MODE_TEXT = { "Ball & Sticks", "Sticks", "Balls", "Wires", "None" };
 
 	public final static int CONSTRUCTION_MODE_DEFAULT = CONSTRUCTION_MODE_BALL_AND_STICKS;
 
@@ -178,6 +179,9 @@ public class MoleculeArchitect {
 		}
 
 	private void buildMolecule(int fromAtom, int toAtom, int fromBond, int toBond) {
+		if (mConstructionMode == CONSTRUCTION_MODE_NONE)
+			return;
+
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_WIRES)
@@ -213,6 +217,9 @@ public class MoleculeArchitect {
 	//added by JW
 	public void buildMolecule(StereoMolecule mol, ArrayList<Integer> atoms, ArrayList<Integer> bonds) {
 		mMol = mol;
+
+		if (mConstructionMode == CONSTRUCTION_MODE_NONE)
+			return;
 
 		if (mConstructionMode == CONSTRUCTION_MODE_STICKS
 		 || mConstructionMode == CONSTRUCTION_MODE_BALL_AND_STICKS

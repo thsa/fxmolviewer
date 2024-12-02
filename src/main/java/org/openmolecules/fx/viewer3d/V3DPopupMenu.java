@@ -43,6 +43,7 @@ import org.openmolecules.fx.surface.ClipSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.tasks.V3DMinimizer;
+import org.openmolecules.fx.viewer3d.nodes.Ribbon;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.TorsionStrainVisualization;
@@ -281,8 +282,9 @@ public class V3DPopupMenu extends ContextMenu {
 			modeWires.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES));
 			
 			Menu menuMode = new Menu("Molecule Style");
-			menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens,
+			menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
 					 modeBallAndSticks, modeBalls, modeSticks, modeWires);
+
 			getItems().add(menuMode);
 
 			Menu menuColor = new Menu("Molecule Color");
@@ -296,6 +298,28 @@ public class V3DPopupMenu extends ContextMenu {
 			menuColor.getItems().addAll(colorNone, colorExplicit);
 			getItems().add(menuColor);
 
+			if (fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE) {
+				RadioMenuItem modeNone = new RadioMenuItem("None");
+				modeNone.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_NONE);
+				modeNone.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_NONE));
+				menuMode.getItems().add(modeNone);
+
+				RadioMenuItem ribbonModeCartoon = new RadioMenuItem("Cartoon");
+				ribbonModeCartoon.setSelected(fxmol.getRibbonMode() == Ribbon.MODE_CARTOON);
+				ribbonModeCartoon.setOnAction(e -> fxmol.setRibbonMode(Ribbon.MODE_CARTOON));
+
+				RadioMenuItem ribbonModeRibbon = new RadioMenuItem("Ribbon");
+				ribbonModeRibbon.setSelected(fxmol.getRibbonMode() == Ribbon.MODE_RIBBON);
+				ribbonModeRibbon.setOnAction(e -> fxmol.setRibbonMode(Ribbon.MODE_RIBBON));
+
+				RadioMenuItem ribbonModeNone = new RadioMenuItem("None");
+				ribbonModeNone.setSelected(fxmol.getRibbonMode() == Ribbon.MODE_NONE);
+				ribbonModeNone.setOnAction(e -> fxmol.setRibbonMode(Ribbon.MODE_NONE));
+
+				Menu menuRibbonMode = new Menu("Show Backbone As");
+				menuRibbonMode.getItems().addAll(ribbonModeCartoon, ribbonModeRibbon, ribbonModeNone);
+				getItems().add(menuRibbonMode);
+			}
 
 			for (int i = 0; i<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; i++) {
 				final int type = i;
