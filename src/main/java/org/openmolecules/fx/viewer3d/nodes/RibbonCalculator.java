@@ -2,8 +2,8 @@ package org.openmolecules.fx.viewer3d.nodes;
 
 import com.actelion.research.chem.Coordinates;
 
-import static org.openmolecules.fx.viewer3d.nodes.Ribbon.POINTS_PER_SECTION;
-import static org.openmolecules.fx.viewer3d.nodes.Ribbon.SECTIONS_PER_RESIDUE;
+import static org.openmolecules.fx.viewer3d.nodes.Ribbons.POINTS_PER_SECTION;
+import static org.openmolecules.fx.viewer3d.nodes.Ribbons.SECTIONS_PER_RESIDUE;
 
 public class RibbonCalculator {
 private static final float SPLINE_FACTOR = 0.8f;
@@ -19,11 +19,11 @@ private static final float SPLINE_FACTOR = 0.8f;
     private static final float CARTOON_WIDTH = 1.0f;
     private static final float CARTOON_COIL_SIZE = 0.2f;
 
-    public RibbonCalculator(Ribbon ribbons) {
-        mRibbon = ribbons;
+    public RibbonCalculator(Ribbons ribbons) {
+        mRibbons = ribbons;
     }
 
-    private final Ribbon mRibbon;
+    private final Ribbons mRibbons;
 
     /**
      * This method calculates smooth residue coordinates and ribbon offset vectors for each
@@ -31,59 +31,56 @@ private static final float SPLINE_FACTOR = 0.8f;
      * ribbon with a uniform cross-section shape from start to end.
      */
     public void drawRibbons() {
-        Coordinates[] coords = new Coordinates[mRibbon.getResidues()];
-        Coordinates[] offset = new Coordinates[mRibbon.getResidues()];
-
-        int typeCA = mRibbon.getAtomType("CA");
-        int typeO = mRibbon.getAtomType("O");
+        int typeCA = mRibbons.getAtomType("CA");
+        int typeO = mRibbons.getAtomType("O");
 
         // calculate offsets
-        int fragmentCount = mRibbon.getFragmentCount();
+        int fragmentCount = mRibbons.getFragmentCount();
         for (int fragment=0; fragment<fragmentCount; fragment++) {
-            boolean cyclic= mRibbon.isCyclicFragment(fragment);
-            int residues = mRibbon.getResiduesInFragment(fragment);
+            Coordinates[] coords = new Coordinates[mRibbons.getResidues(fragment)];
+            Coordinates[] offset = new Coordinates[mRibbons.getResidues(fragment)];
+
+            int residues = mRibbons.getResidues(fragment);
             if (residues < 2)
                 continue;
 
-            int firstResidue = mRibbon.getFirstResidueInFragment(fragment);
-            int atomCA = mRibbon.getAtomInResidue(firstResidue, typeCA);
-            int atomO = mRibbon.getAtomInResidue(firstResidue, typeO);
+            boolean cyclic = mRibbons.isCyclicFragment(fragment);
+            int atomCA = mRibbons.getAtomInResidue(fragment, 0, typeCA);
+            int atomO = mRibbons.getAtomInResidue(fragment, 0, typeO);
 
             if (atomCA == -1 || atomO == -1)
                 continue;    // skip if we cannot find first CA or O
 
-            Coordinates coordCA = mRibbon.getAtomCoords(atomCA);
+            Coordinates coordCA = mRibbons.getAtomCoords(atomCA);
             Coordinates lastCoordCA = coordCA;
-            Coordinates coordO = mRibbon.getAtomCoords(atomO);
+            Coordinates coordO = mRibbons.getAtomCoords(atomO);
             Coordinates lastCoordO = coordO;
             Coordinates backboneOffset = new Coordinates();
 
             if (cyclic) {
-                int lastResidue = firstResidue + residues - 1;
-                int lastAtomCA = mRibbon.getAtomInResidue(lastResidue, typeCA);
-                lastCoordCA = mRibbon.getAtomCoords(lastAtomCA);
+                int lastResidue = residues - 1;
+                int lastAtomCA = mRibbons.getAtomInResidue(fragment, lastResidue, typeCA);
+                lastCoordCA = mRibbons.getAtomCoords(lastAtomCA);
 
-                int lastAtomO = mRibbon.getAtomInResidue(lastResidue, typeO);
-                lastCoordO = mRibbon.getAtomCoords(lastAtomO);
+                int lastAtomO = mRibbons.getAtomInResidue(fragment, lastResidue, typeO);
+                lastCoordO = mRibbons.getAtomCoords(lastAtomO);
                 mixInResidueOffset(backboneOffset, coordCA, lastCoordCA, lastCoordO);
             }
 
-            for (int loop=0; loop<residues; loop++) {
-                int residue = firstResidue + loop;
-
-                atomCA = mRibbon.getAtomInResidue(residue, typeCA);
+            for (int r=0; r<residues; r++) {
+                atomCA = mRibbons.getAtomInResidue(fragment, r, typeCA);
                 if (atomCA != -1)
-                    coordCA = mRibbon.getAtomCoords(atomCA);
+                    coordCA = mRibbons.getAtomCoords(atomCA);
 
-                atomO = mRibbon.getAtomInResidue(residue, typeO);
-                coordO = (atomO != -1) ? mRibbon.getAtomCoords(atomO) : lastCoordO;
+                atomO = mRibbons.getAtomInResidue(fragment, r, typeO);
+                coordO = (atomO != -1) ? mRibbons.getAtomCoords(atomO) : lastCoordO;
 
                 // copy the CA coordinate into the control point array
-                coords[loop] = new Coordinates(coordCA.x, coordCA.y, coordCA.z);
+                coords[r] = new Coordinates(coordCA.x, coordCA.y, coordCA.z);
 
                 // now I need to figure out where the ribbon goes
                 mixInResidueOffset(backboneOffset, coordCA, lastCoordCA, lastCoordO);
-                offset[loop] = new Coordinates(backboneOffset);
+                offset[r] = new Coordinates(backboneOffset);
                 lastCoordCA = coordCA;
                 lastCoordO = coordO;
             }
@@ -101,7 +98,7 @@ private static final float SPLINE_FACTOR = 0.8f;
 
     private void drawFromAtomCACoords(int fragment, Coordinates[] inCoords, Coordinates[] inOffset,
                                       float[] residueWidth, float[] residueHeight, boolean cyclic) {
-        int residues = mRibbon.getResiduesInFragment(fragment);
+        int residues = mRibbons.getResidues(fragment);
 
         float invSectionsPerResidue = 1.0f / ((float) SECTIONS_PER_RESIDUE);
         int halfSectionsPerResidue = SECTIONS_PER_RESIDUE / 2;
@@ -345,7 +342,7 @@ private static final float SPLINE_FACTOR = 0.8f;
 
             Coordinates upDirection = coordDirection.cross(offsetDirection).unit();
 
-            for (int p = 0; p< POINTS_PER_SECTION; p++) {
+            for (int p=0; p<POINTS_PER_SECTION; p++) {
                 float x = sectionPoint[2*p];
                 float y = sectionPoint[2*p+1];
                 int index = (section * POINTS_PER_SECTION + p);
@@ -364,7 +361,7 @@ private static final float SPLINE_FACTOR = 0.8f;
             }
         }
 
-        mRibbon.createTriangeMesh(points, normals, fragment);
+        mRibbons.createTriangeMesh(points, normals, fragment);
     }
 
     /**
@@ -377,66 +374,63 @@ private static final float SPLINE_FACTOR = 0.8f;
      * sequences.
      */
     public void drawCartoons() {
-        Coordinates[] coords = new Coordinates[mRibbon.getResidues()];
-        Coordinates[] offset = new Coordinates[mRibbon.getResidues()];
-
-        float[] widths = new float[mRibbon.getResidues()];
-        float[] heights = new float[mRibbon.getResidues()];
-
-        int typeCA = mRibbon.getAtomType("CA");
-        int typeO = mRibbon.getAtomType("O");
+        int typeCA = mRibbons.getAtomType("CA");
+        int typeO = mRibbons.getAtomType("O");
 
         // calculate offsets
-        int fragmentCount = mRibbon.getFragmentCount();
+        int fragmentCount = mRibbons.getFragmentCount();
         for (int fragment=0; fragment<fragmentCount; fragment++) {
-            boolean cyclic = mRibbon.isCyclicFragment(fragment);
-            int residues = mRibbon.getResiduesInFragment(fragment);
+            Coordinates[] coords = new Coordinates[mRibbons.getResidues(fragment)];
+            Coordinates[] offset = new Coordinates[mRibbons.getResidues(fragment)];
+
+            float[] widths = new float[mRibbons.getResidues(fragment)];
+            float[] heights = new float[mRibbons.getResidues(fragment)];
+
+            boolean cyclic = mRibbons.isCyclicFragment(fragment);
+            int residues = mRibbons.getResidues(fragment);
             if (residues < 2)
                 continue;
 
-            int residue = mRibbon.getFirstResidueInFragment(fragment);
-            int atomCA = mRibbon.getAtomInResidue(residue, typeCA);
-            int atomO = mRibbon.getAtomInResidue(residue, typeO);
+            int atomCA = mRibbons.getAtomInResidue(fragment, 0, typeCA);
+            int atomO = mRibbons.getAtomInResidue(fragment, 0, typeO);
 
             if (atomCA == -1 || atomO == -1)
                 continue;    // skip if we cannot find first CA or O
 
             int currentAtomCA = atomCA;
 
-            Coordinates coordCA = mRibbon.getAtomCoords(atomCA);
+            Coordinates coordCA = mRibbons.getAtomCoords(atomCA);
             Coordinates lastCoordCA = coordCA;
-            Coordinates coordO = mRibbon.getAtomCoords(atomO);
+            Coordinates coordO = mRibbons.getAtomCoords(atomO);
             Coordinates lastCoordO = coordO;
             Coordinates backboneOffset = new Coordinates();
 
             if (cyclic) {
-                int lastResidue = residue + residues - 1;
-                int lastAtomCA = mRibbon.getAtomInResidue(lastResidue, typeCA);
-                lastCoordCA = mRibbon.getAtomCoords(lastAtomCA);
-                int lastAtomO = mRibbon.getAtomInResidue(lastResidue, typeO);
-                lastCoordO = mRibbon.getAtomCoords(lastAtomO);
+                int lastResidue = residues - 1;
+                int lastAtomCA = mRibbons.getAtomInResidue(fragment, lastResidue, typeCA);
+                lastCoordCA = mRibbons.getAtomCoords(lastAtomCA);
+                int lastAtomO = mRibbons.getAtomInResidue(fragment, lastResidue, typeO);
+                lastCoordO = mRibbons.getAtomCoords(lastAtomO);
                 mixInResidueOffset(backboneOffset, coordCA, lastCoordCA, lastCoordO);
             }
 
             for (int r=0; r<residues; r++) {
-                residue = mRibbon.getFirstResidueInFragment(fragment) + r;
-
-                int newAtomCA = mRibbon.getAtomInResidue(residue, typeCA);
+                int newAtomCA = mRibbons.getAtomInResidue(fragment, r, typeCA);
                 if (newAtomCA >= 0) {
                     currentAtomCA = atomCA;
                     atomCA = newAtomCA;
-                    coordCA = mRibbon.getAtomCoords(atomCA);
+                    coordCA = mRibbons.getAtomCoords(atomCA);
                 }
 
-                atomO = mRibbon.getAtomInResidue(residue, typeO);
-                coordO = (atomO >= 0) ? mRibbon.getAtomCoords(atomO) : lastCoordO;
+                atomO = mRibbons.getAtomInResidue(fragment, r, typeO);
+                coordO = (atomO >= 0) ? mRibbons.getAtomCoords(atomO) : lastCoordO;
 
-                if (mRibbon.isSSHelix(residue)) {
+                if (mRibbons.isSSHelix(fragment, r)) {
                     widths[r] = CARTOON_WIDTH;
                     heights[r] = CARTOON_RADIUS;
                     coords[r] = coordCA;
                 }
-                else if (mRibbon.isSSBeta(residue)) {
+                else if (mRibbons.isSSBeta(fragment, r)) {
                     widths[r] = CARTOON_WIDTH;
                     heights[r] = CARTOON_RADIUS;
 
@@ -446,10 +440,9 @@ private static final float SPLINE_FACTOR = 0.8f;
                     int nextAtomCA = -1;
 
                     if ((r + 1) < residues) {
-                        int nextResidue= mRibbon.getFirstResidueInFragment(fragment) + r + 1;
-                        nextAtomCA = mRibbon.getAtomInResidue(nextResidue, typeCA);
+                        nextAtomCA = mRibbons.getAtomInResidue(fragment, r+1, typeCA);
 
-                        if (!mRibbon.isSSBeta(nextResidue))
+                        if (!mRibbons.isSSBeta(fragment, r+1))
                             drawArrow = true;
                     } else {
                         drawArrow = true;
@@ -461,10 +454,10 @@ private static final float SPLINE_FACTOR = 0.8f;
                     if (nextAtomCA < 0)
                         nextAtomCA = atomCA;
 
-                    Coordinates coordsBeta = new Coordinates(mRibbon.getAtomCoords(atomCA));
+                    Coordinates coordsBeta = new Coordinates(mRibbons.getAtomCoords(atomCA));
                     coordsBeta.scale(2f);
-                    coordsBeta.add(mRibbon.getAtomCoords(nextAtomCA));
-                    coordsBeta.add(mRibbon.getAtomCoords(currentAtomCA));
+                    coordsBeta.add(mRibbons.getAtomCoords(nextAtomCA));
+                    coordsBeta.add(mRibbons.getAtomCoords(currentAtomCA));
                     coordsBeta.scale(0.25f);
 
                     coords[r] = coordsBeta;

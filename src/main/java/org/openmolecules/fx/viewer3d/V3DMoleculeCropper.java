@@ -25,6 +25,7 @@ import com.actelion.research.chem.StereoMolecule;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
 import org.openmolecules.fx.surface.SurfaceCutter;
+import org.openmolecules.fx.viewer3d.nodes.Ribbons;
 
 public class V3DMoleculeCropper extends SurfaceCutter {
 	private static final double CROP_ZONE_WIDTH = 1.6;
@@ -45,6 +46,10 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 	}
 
 	public void crop() {
+		int ribbonMode = mFXMol.getRibbonMode();
+		if (ribbonMode != Ribbons.MODE_NONE)
+			mFXMol.setRibbonMode(Ribbons.MODE_NONE);
+
 		StereoMolecule mol = mFXMol.getMolecule();
 		boolean[] deleteAtom = new boolean[mol.getAllAtoms()];
 		int count = 0;
@@ -62,6 +67,8 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 
 		if (count != 0)
 			mFXMol.deleteAtoms(deleteAtom);
+
+		mFXMol.setRibbonMode(ribbonMode);
 	}
 
 	@Override

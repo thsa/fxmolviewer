@@ -43,7 +43,7 @@ import org.openmolecules.fx.surface.ClipSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.tasks.V3DMinimizer;
-import org.openmolecules.fx.viewer3d.nodes.Ribbon;
+import org.openmolecules.fx.viewer3d.nodes.Ribbons;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.TorsionStrainVisualization;
@@ -305,16 +305,16 @@ public class V3DPopupMenu extends ContextMenu {
 				menuMode.getItems().add(modeNone);
 
 				RadioMenuItem ribbonModeCartoon = new RadioMenuItem("Cartoon");
-				ribbonModeCartoon.setSelected(fxmol.getRibbonMode() == Ribbon.MODE_CARTOON);
-				ribbonModeCartoon.setOnAction(e -> fxmol.setRibbonMode(Ribbon.MODE_CARTOON));
+				ribbonModeCartoon.setSelected(fxmol.getRibbonMode() == Ribbons.MODE_CARTOON);
+				ribbonModeCartoon.setOnAction(e -> fxmol.setRibbonMode(Ribbons.MODE_CARTOON));
 
 				RadioMenuItem ribbonModeRibbon = new RadioMenuItem("Ribbon");
-				ribbonModeRibbon.setSelected(fxmol.getRibbonMode() == Ribbon.MODE_RIBBON);
-				ribbonModeRibbon.setOnAction(e -> fxmol.setRibbonMode(Ribbon.MODE_RIBBON));
+				ribbonModeRibbon.setSelected(fxmol.getRibbonMode() == Ribbons.MODE_RIBBON);
+				ribbonModeRibbon.setOnAction(e -> fxmol.setRibbonMode(Ribbons.MODE_RIBBON));
 
 				RadioMenuItem ribbonModeNone = new RadioMenuItem("None");
-				ribbonModeNone.setSelected(fxmol.getRibbonMode() == Ribbon.MODE_NONE);
-				ribbonModeNone.setOnAction(e -> fxmol.setRibbonMode(Ribbon.MODE_NONE));
+				ribbonModeNone.setSelected(fxmol.getRibbonMode() == Ribbons.MODE_NONE);
+				ribbonModeNone.setOnAction(e -> fxmol.setRibbonMode(Ribbons.MODE_NONE));
 
 				Menu menuRibbonMode = new Menu("Show Backbone As");
 				menuRibbonMode.getItems().addAll(ribbonModeCartoon, ribbonModeRibbon, ribbonModeNone);

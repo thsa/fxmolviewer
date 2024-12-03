@@ -30,7 +30,7 @@ import javafx.scene.control.ChoiceDialog;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.nodes.Ribbon;
+import org.openmolecules.fx.viewer3d.nodes.Ribbons;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
@@ -430,7 +430,7 @@ public class StartOptions {
 				V3DMolecule vm = new V3DMolecule(proteins.get(i),
 						MoleculeArchitect.CONSTRUCTION_MODE_WIRES,
 						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
-						Ribbon.MODE_CARTOON,
+						Ribbons.MODE_CARTOON,
 						V3DMolecule.SurfaceMode.FILLED,
 						SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS,
 						surfaceColor[i], 0.5,
@@ -466,7 +466,7 @@ public class StartOptions {
 			}
 
 			if (v3dligand != null && mCropLigand) {
-				scene.crop(v3dligand, 10.0);
+				scene.crop(v3dligand, 12.0);
 				scene.optimizeView();
 			}
 		} catch (FileNotFoundException fnfe) {

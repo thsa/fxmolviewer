@@ -80,7 +80,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private Node mLastPickedNode;
 	private Shape3D mHighlightedShape;
 	private PhongMaterial mOverrideMaterial,mHydrogenMaterial;
-	private Ribbon mRibbon;
+	private Ribbons mRibbons;
 	private final MeshView[] mSurface;
 	private final SurfaceMesh[] mSurfaceMesh;
 	private final Color[] mSurfaceColor;
@@ -187,12 +187,12 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role) {
-		this(mol, constructionMode, hydrogenMode, Ribbon.MODE_NONE, SurfaceMode.NONE,
+		this(mol, constructionMode, hydrogenMode, Ribbons.MODE_NONE, SurfaceMode.NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id, role, true, false);
 		}
 	
 	public V3DMolecule(StereoMolecule mol, int constructionMode, MoleculeArchitect.HydrogenMode hydrogenMode, int id, MoleculeRole role, boolean overrideHydrogen, boolean splitAllBonds) {
-		this(mol, constructionMode, hydrogenMode, Ribbon.MODE_NONE, SurfaceMode.NONE,
+		this(mol, constructionMode, hydrogenMode, Ribbons.MODE_NONE, SurfaceMode.NONE,
 				DEFAULT_SURFACE_COLOR_MODE, null, DEFAULT_SURFACE_TRANSPARENCY, id,  role, overrideHydrogen, splitAllBonds);
 		}
 
@@ -258,9 +258,9 @@ public class V3DMolecule extends V3DRotatableGroup {
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
 		builder.buildMolecule();
 
-		if (ribbonMode != Ribbon.MODE_NONE && role == MoleculeRole.MACROMOLECULE) {
-			mRibbon = new Ribbon((Molecule3D) mMol, this);
-			mRibbon.draw(ribbonMode);
+		if (ribbonMode != Ribbons.MODE_NONE && role == MoleculeRole.MACROMOLECULE) {
+			mRibbons = new Ribbons(mMol, this);
+			mRibbons.draw(ribbonMode);
 			mRibbonMode = ribbonMode;
 		}
 
@@ -525,11 +525,13 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 
 		if (ribbonMode != mRibbonMode) {
-			mRibbon.removeRibbon();
-			mRibbon = null;
-			if (ribbonMode != Ribbon.MODE_NONE) {
-				mRibbon = new Ribbon((Molecule3D) mMol, this);
-				mRibbon.draw(ribbonMode);
+			if (mRibbons != null) {
+				mRibbons.removeRibbon();
+				mRibbons = null;
+			}
+			if (ribbonMode != Ribbons.MODE_NONE) {
+				mRibbons = new Ribbons(mMol, this);
+				mRibbons.draw(ribbonMode);
 			}
 			mRibbonMode = ribbonMode;
 		}
@@ -552,6 +554,9 @@ public class V3DMolecule extends V3DRotatableGroup {
 		builder.buildMolecule();
 	}
 
+	/**
+	 * @return explicit carbon atom color, if defined, or null
+	 */
 	public Color getColor() {
 		return (mOverrideMaterial == null) ? null : mOverrideMaterial.getDiffuseColor();
 		}
@@ -576,6 +581,9 @@ public class V3DMolecule extends V3DRotatableGroup {
 			mOverrideMaterial.setDiffuseColor(color);
 			mOverrideMaterial.setSpecularColor(color.darker());
 			}
+
+		if (mRibbonMode != Ribbons.MODE_NONE)
+			mRibbons.updateColor();
 
 		for (int i=0; i<mSurface.length; i++) {
 			if (mSurfaceMesh[i] != null
