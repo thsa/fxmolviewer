@@ -136,8 +136,8 @@ public class Ribbons {
                 residueList.add(residueAtom);
                 while ((residueAtom = getNextResidue(residueAtom[ATOM_TYPE_C], atomUsed)) != null)
                     residueList.add(residueAtom);
-                while ((residueAtom = getPreviousResidue(residueList.getFirst()[ATOM_TYPE_N], atomUsed)) != null)
-                    residueList.addFirst(residueAtom);
+                while ((residueAtom = getPreviousResidue(residueList.get(0)[ATOM_TYPE_N], atomUsed)) != null)
+                    residueList.add(0, residueAtom);
 
                 fragmentList.add(residueList.toArray(new int[0][]));
                 residueList.clear();
