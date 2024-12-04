@@ -1,7 +1,28 @@
+/*
+ * FXMolViewer, showing and manipulating molecules and protein structures in 3D.
+ * Copyright (C) 2024 Thomas Sander
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @author Thomas Sander
+ */
+
 package org.openmolecules.fx.viewer3d.nodes;
 
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
+import com.actelion.research.chem.Molecule3D;
 import com.actelion.research.chem.StereoMolecule;
 import javafx.collections.ObservableFloatArray;
 import javafx.scene.image.Image;
@@ -59,22 +80,33 @@ public class Ribbons {
         mMol = mol;
         mColor = mMol3D.getColor();
 
-        mResidueAtom = determineBackbone();
-        mRibbonMesh = new MeshView[mResidueAtom.length];
+        mResidueAtom = readBackbone();  // works, if mMol is Molecule3D from PDB entry
+        if (mResidueAtom == null)
+            mResidueAtom = determineBackbone();
 
-/*
+        mRibbonMesh = new MeshView[mResidueAtom.length];
+    }
+
+    private int[][][] readBackbone() {
+        if (!(mMol instanceof Molecule3D)
+         || mMol.getAllAtoms() == 0
+         || ((Molecule3D)mMol).getResSequence(0) == -1)
+            return null;
+
+        Molecule3D mol = (Molecule3D)mMol;
+
         ArrayList<int[]> atomsList = new ArrayList<>();
         int[] atoms = null;
         int previousResidue = -1;
         int atomsFound = 0;
         for (int atom=0; atom<mMol.getAtoms(); atom++) {
-            int residue = mMol.getResSequence(atom);
+            int residue = mol.getResSequence(atom);
             if (residue != previousResidue) {
                 previousResidue = residue;
                 atoms = new int[PROTEIN_ATOM_TYPE.length];
                 atomsFound = 0;
             }
-            String atomName = mMol.getAtomName(atom);
+            String atomName = mol.getAtomName(atom);
             for (int i=0; i<PROTEIN_ATOM_TYPE.length; i++) {
                 if (PROTEIN_ATOM_TYPE[i].equals(atomName)) {
                     atoms[i] = atom;
@@ -86,37 +118,39 @@ public class Ribbons {
             }
         }
 
-        mResidueAtom = atomsList.toArray(new int[0][]);
+        ArrayList<int[][]> fragmentList = new ArrayList<>();
+        ArrayList<int[]> residueList = new ArrayList<>();
 
         // We split into fragments when either the chainID changes or when the
         // residue-ID differs more than 1 from the previous residue. This happens,
         // for instance, after cropping and parts of the protein are cut away.
         int chainIDAtomType = 1;  // we use C-alpha for chain-ID lookup
-        ArrayList<Integer> chainIDStartList = new ArrayList<>();
-        if (mResidueAtom.length != 0) {
-            chainIDStartList.add(0);
-            int atomCA = mResidueAtom[0][chainIDAtomType];
-            int lastResidue = mMol.getResSequence(atomCA);
-            String lastChainID = mMol.getAtomChainId(atomCA);
-            for (int i=1; i<mResidueAtom.length; i++) {
-                atomCA = mResidueAtom[i][chainIDAtomType];
-                int residue = mMol.getResSequence(atomCA);
-                String chainID = mMol.getAtomChainId(atomCA);
+        if (!atomsList.isEmpty()) {
+            residueList.add(atomsList.get(0));
+            int atomCA = atomsList.get(0)[chainIDAtomType];
+            int lastResidue = mol.getResSequence(atomCA);
+            String lastChainID = mol.getAtomChainId(atomCA);
+            for (int i=1; i<atomsList.size(); i++) {
+                atomCA = atomsList.get(i)[chainIDAtomType];
+                int residue = mol.getResSequence(atomCA);
+                String chainID = mol.getAtomChainId(atomCA);
                 if (lastResidue != residue-1
-                 || !lastChainID.equals(chainID))
-                    chainIDStartList.add(i);
+                 || !lastChainID.equals(chainID)) {
+                    if (residueList.size() >= 2)
+                        fragmentList.add(residueList.toArray(new int[0][]));
+                    residueList.clear();
+                }
 
+                residueList.add(atomsList.get(i));
                 lastResidue = residue;
                 lastChainID = chainID;
             }
         }
 
-        mFirstResidueOfFragment = new int[chainIDStartList.size()];
-        for (int i=0; i<chainIDStartList.size(); i++)
-            mFirstResidueOfFragment[i] = chainIDStartList.get(i);
+        if (residueList.size() >= 2)
+            fragmentList.add(residueList.toArray(new int[0][]));
 
-        mRibbonMesh = new MeshView[mFirstResidueOfFragment.length];
-*/
+        return fragmentList.toArray(new int[0][][]);
     }
 
     /**
@@ -139,7 +173,9 @@ public class Ribbons {
                 while ((residueAtom = getPreviousResidue(residueList.get(0)[ATOM_TYPE_N], atomUsed)) != null)
                     residueList.add(0, residueAtom);
 
-                fragmentList.add(residueList.toArray(new int[0][]));
+                if (residueList.size() >= 2)
+                    fragmentList.add(residueList.toArray(new int[0][]));
+
                 residueList.clear();
             }
         }
