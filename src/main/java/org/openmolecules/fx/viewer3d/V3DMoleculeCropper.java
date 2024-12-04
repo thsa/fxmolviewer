@@ -46,10 +46,6 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 	}
 
 	public void crop() {
-		int ribbonMode = mFXMol.getRibbonMode();
-		if (ribbonMode != Ribbons.MODE_NONE)
-			mFXMol.setRibbonMode(Ribbons.MODE_NONE);
-
 		StereoMolecule mol = mFXMol.getMolecule();
 		boolean[] deleteAtom = new boolean[mol.getAllAtoms()];
 		int count = 0;
@@ -65,10 +61,16 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 			}
 		}
 
-		if (count != 0)
+		if (count != 0) {
+			int ribbonMode = mFXMol.getRibbonMode();
+			if (ribbonMode != Ribbons.MODE_NONE)
+				mFXMol.setRibbonMode(Ribbons.MODE_NONE);
+
 			mFXMol.deleteAtoms(deleteAtom);
 
-		mFXMol.setRibbonMode(ribbonMode);
+			if (ribbonMode != Ribbons.MODE_NONE)
+				mFXMol.setRibbonMode(ribbonMode);
+		}
 	}
 
 	@Override

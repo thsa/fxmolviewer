@@ -94,6 +94,7 @@ public class Ribbons {
             return null;
 
         Molecule3D mol = (Molecule3D)mMol;
+        mol.ensureHelperArrays(Molecule.cHelperNeighbours);
 
         ArrayList<int[]> atomsList = new ArrayList<>();
         int[] atoms = null;
