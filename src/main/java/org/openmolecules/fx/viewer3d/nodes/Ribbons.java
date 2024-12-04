@@ -264,7 +264,7 @@ public class Ribbons {
                                             int atomN = mMol.getConnAtom(atomCA, k);
                                             if (!atomUsed[atomN] && mMol.getAtomicNo(atomN) == 7) {
                                                 int[] residueAtom = new int[4];
-                                                residueAtom[ATOM_TYPE_N] = atom;
+                                                residueAtom[ATOM_TYPE_N] = atomN;
                                                 residueAtom[ATOM_TYPE_CA] = atomCA;
                                                 residueAtom[ATOM_TYPE_C] = atomC;
                                                 residueAtom[ATOM_TYPE_O] = atomO;
