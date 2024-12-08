@@ -51,12 +51,11 @@ public class Ribbons {
     private static final int SS_OTHER = 0;
     private static final int SS_HELIX = 1;
     private static final int SS_BETA = 2;
-    private static final int HUE_START = 0;
+    private static final int HUE_START = 30;
     private static final int HUE_SPAN = 300;
-    private static final int COLOR_MODE_BY_SS_TYPE = 1;
-    private static final int COLOR_MODE_BY_SS_SECTION = 2;
-    private static final int COLOR_MODE_BY_FRAGMENT = 3;
-    private static final int COLOR_MODE_BY_RESIDUE = 4;
+    private static final int COLOR_MODE_BY_SS_SECTION = 1;
+    private static final int COLOR_MODE_BY_FRAGMENT = 2;
+    private static final int COLOR_MODE_BY_RESIDUE = 3;
     private static final int COLOR_MODE = COLOR_MODE_BY_SS_SECTION;
 
     private int[][][] mResidueAtom;
@@ -405,7 +404,7 @@ public class Ribbons {
     public void draw(int mode) {
         if (mode == MODE_RIBBON) {
             if (mColor == null) {
-                if (COLOR_MODE == COLOR_MODE_BY_SS_TYPE || COLOR_MODE == COLOR_MODE_BY_SS_SECTION)
+                if (COLOR_MODE == COLOR_MODE_BY_SS_SECTION)
                     assignSSTypeToResidues();
                 assignColorToResidues();
             }
@@ -432,23 +431,25 @@ public class Ribbons {
         else
             updateTexCoordsForSingleColor(mesh);
 
+        int[] col = new int[2];
+
         // The ribbon is built by interconnected cycles of n points (n = POINTS_PER_SECTION)
         // |  /  |  /  |  /  |     |
-        // p2 -- p4 -- p --- p ... pn -> (p1)   cycle of n points
+        // p2 -- p4 -- p --- p ... pn -> (p2)   cycle of n points
         // |  /  |  /  |  /  |     |
         // p1 -- p3 -- p --- p ... pn -> (p1)   cycle of n points
         // |  /  |  /  |  /  |     |
         for (int i=POINTS_PER_SECTION; i<points.length; i+=POINTS_PER_SECTION) {
-            int res = Math.min(mResidueAtom[fragment].length-1, i / (SECTIONS_PER_RESIDUE * POINTS_PER_SECTION));
+            if (mColor == null)
+                setColorIndexes(col, fragment, i/POINTS_PER_SECTION-1);
             for (int j=0; j<POINTS_PER_SECTION; j++) {
                 int d = (j == 0) ? POINTS_PER_SECTION -1 : -1;
                 int p1 = i+j-POINTS_PER_SECTION+d;
                 int p2 = i+j+d;
                 int p3 = i+j-POINTS_PER_SECTION;
                 int p4 = i+j;
-                int col = mColor != null ? 0 : mResidueColor[fragment][res];
-                mesh.getFaces().addAll(p1, p1, col, p4, p4, col, p2, p2, col);
-                mesh.getFaces().addAll(p1, p1, col, p3, p3, col, p4, p4, col);
+                mesh.getFaces().addAll(p3, p3, col[0], p4, p4, col[1], p1, p1, col[0]);  // anti-clockwise and alternating between sections
+                mesh.getFaces().addAll(p2, p2, col[1], p1, p1, col[0], p4, p4, col[1]);  // to easy color assignment
             }
         }
 
@@ -460,42 +461,58 @@ public class Ribbons {
         mMol3D.getChildren().add(mRibbonMesh[fragment]);
     }
 
+    private void setColorIndexes(int[] colorIndex, int fragment, int section) {
+        int residue = section / SECTIONS_PER_RESIDUE;
+        section = section % SECTIONS_PER_RESIDUE;
+        if (residue >= mResidueColor[fragment].length-1) {
+            colorIndex[0] = colorIndex[1] = mResidueColor[fragment][mResidueColor[fragment].length-1];
+        }
+        else {
+            int colorDif = mResidueColor[fragment][residue+1] - mResidueColor[fragment][residue];
+            colorIndex[0] = mResidueColor[fragment][residue] + colorDif * section / SECTIONS_PER_RESIDUE;
+            colorIndex[1] = mResidueColor[fragment][residue] + colorDif * (section+1) / SECTIONS_PER_RESIDUE;
+        }
+    }
+
     public void updateColor() {
-        Color newColor = mMol3D.getColor();
-        if (newColor == null && mResidueColor == null)
+        Color molColor = mMol3D.getColor();
+        if (molColor == null && mResidueColor == null)
             assignColorToResidues();
+
+        int[] col = new int[2];
+
         for (int fragment=0; fragment<mResidueAtom.length; fragment++) {
             if (mRibbonMesh[fragment] != null) {
-                if (newColor == null ^ mColor == null) {
+                if (molColor == null ^ mColor == null) {
                     TriangleMesh mesh = (TriangleMesh)mRibbonMesh[fragment].getMesh();
-                    if (newColor == null)
+                    if (molColor == null)
                         updateTexCoordsForMultipleColors(mesh);
 
                     // update texCoord indexes in faces
                     int points = mesh.getPoints().size() / 3;
                     int index = 2;
                     for (int i=POINTS_PER_SECTION; i<points; i+=POINTS_PER_SECTION) {
-                        int res = Math.min(mResidueAtom[fragment].length-1, i / (SECTIONS_PER_RESIDUE * POINTS_PER_SECTION));
+                        if (molColor == null)
+                            setColorIndexes(col, fragment, i/POINTS_PER_SECTION-1);
                         for (int j=0; j<POINTS_PER_SECTION; j++) {
-                            int col = (newColor != null) ? 0 : mResidueColor[fragment][res];
                             for (int k=0; k<6; k++) { // two triangle, 6 corners altogether
-                                mesh.getFaces().set(index, col);
+                                mesh.getFaces().set(index, (k & 1) == 0 ? col[0] : col[1]);
                                 index += 3;
                             }
                         }
                     }
 
-                    if (newColor != null)
+                    if (molColor != null)
                         updateTexCoordsForSingleColor(mesh);
                 }
 
-                if ((newColor == null) ^ (mColor == null)
-                 || (newColor != null && !newColor.equals(mColor)))
-                    mRibbonMesh[fragment].setMaterial(createMaterial(newColor));
+                if ((molColor == null) ^ (mColor == null)
+                 || (molColor != null && !molColor.equals(mColor)))
+                    mRibbonMesh[fragment].setMaterial(createMaterial(molColor));
             }
         }
 
-        mColor = newColor;
+        mColor = molColor;
     }
 
     private void updateTexCoordsForSingleColor(TriangleMesh mesh) {
@@ -531,32 +548,42 @@ public class Ribbons {
             assignSSTypeToResidues();
 
         mResidueColor = new int[mResidueAtom.length][];
-
-        for (int f=0; f<mResidueAtom.length; f++) {
+        for (int f=0; f<mResidueAtom.length; f++)
             mResidueColor[f] = new int[mResidueAtom[f].length];
-            if (COLOR_MODE == COLOR_MODE_BY_SS_SECTION) {
-                int count = 1;
-                for (int r = 1; r< mSSType[f].length; r++)
-                    if (mSSType[f][r] != mSSType[f][r-1])
+
+        if (COLOR_MODE == COLOR_MODE_BY_SS_SECTION) {
+            int count = 1;
+            for (int f=0; f<mResidueAtom.length; f++)
+                for (int r=1; r<mSSType[f].length; r++)
+                    if (mSSType[f][r] != mSSType[f][r - 1])
                         count++;
-                int index = 0;
-                for (int r = 1; r< mSSType[f].length; r++) {
+
+            int index = 0;
+            for (int f=0; f<mResidueAtom.length; f++) {
+                for (int r=1; r<mSSType[f].length; r++) {
                     if (mSSType[f][r] != mSSType[f][r-1])
                         index++;
                     mResidueColor[f][r] = (index == 0) ? 0 : index * HUE_SPAN / (count - 1);
                 }
             }
-            else {
+        }
+        else if (COLOR_MODE == COLOR_MODE_BY_RESIDUE) {
+            int residueCount = 0;
+            for (int f=0; f<mResidueAtom.length; f++)
+                residueCount += mResidueAtom[f].length;
+
+            int index = 0;
+            for (int f=0; f<mResidueAtom.length; f++) {
                 for (int r=0; r<mResidueAtom[f].length; r++) {
-                    if (COLOR_MODE == COLOR_MODE_BY_SS_TYPE) {
-                        mResidueColor[f][r] = (isSSHelix(f, r) ? 0 : isSSBeta(f, r) ? 1 : 2) * HUE_SPAN / 2;
-                    }
-                    else if (COLOR_MODE == COLOR_MODE_BY_RESIDUE) {
-                        mResidueColor[f][r] = (r == 0) ? 0 : r * HUE_SPAN / (mResidueAtom[f].length - 1);
-                    }
-                    else if (COLOR_MODE == COLOR_MODE_BY_FRAGMENT) {
-                        mResidueColor[f][r] = (f == 0) ? 0 : f * HUE_SPAN / (mResidueAtom.length - 1);
-                    }
+                    mResidueColor[f][r] = (index == 0) ? 0 : index * HUE_SPAN / (residueCount - 1);
+                    index++;
+                }
+            }
+        }
+        else if (COLOR_MODE == COLOR_MODE_BY_FRAGMENT) {
+            for (int f=0; f<mResidueAtom.length; f++) {
+                for (int r=0; r<mResidueAtom[f].length; r++) {
+                    mResidueColor[f][r] = (f == 0) ? 0 : f * HUE_SPAN / (mResidueAtom.length - 1);
                 }
             }
         }

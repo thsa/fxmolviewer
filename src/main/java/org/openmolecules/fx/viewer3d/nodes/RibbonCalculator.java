@@ -15,7 +15,7 @@ private static final float SPLINE_FACTOR = 0.8f;
 
     private static final float RIBBON_RADIUS = 0.25f;
     private static final float RIBBON_WIDTH = 0.7f;
-    private static final float CARTOON_RADIUS = 0.1f;
+    private static final float CARTOON_RADIUS = 0.2f;
     private static final float CARTOON_WIDTH = 1.0f;
     private static final float CARTOON_COIL_SIZE = 0.2f;
 
