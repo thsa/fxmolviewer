@@ -78,7 +78,7 @@ public class V3DMouseHandler {
 							mScene.getEditor().scrolledOnMolecule(mHighlightedMol, mHighlightedMol.getHighlightedShape(), delta);
 					if(actionPerformed) {
 						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-							mHighlightedMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
+							mHighlightedMol.setSurfaceMode(type ,V3DMolecule.SURFACE_MODE_NONE);
 						mHighlightedMol.fireCoordinatesChange();
 						Platform.runLater(() -> {
 							mHighlightedMol.fireCoordinatesChange();
@@ -209,8 +209,8 @@ public class V3DMouseHandler {
 						else {
 							V3DMolecule fxmol = (V3DMolecule)parent;
 							mScene.getEditor().moleculeClicked(fxmol, mSelectedNode);
-							for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-								fxmol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
+							for (int type=0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
+								fxmol.setSurfaceMode(type, V3DMolecule.SURFACE_MODE_NONE);
 							mScene.removeMeasurements(fxmol);
 							fxmol.fireStructureChange();
 							fxmol.updateColor();

@@ -97,7 +97,7 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 		if (mol != null) {
 			grid.add(new Label("Render mode:"), 0, ++yIndex);
 			mComboboxMode = new ComboBox<>();
-			for (String item : MoleculeArchitect.MODE_TEXT)
+			for (String item : MoleculeArchitect.CONSTRUCTION_MODE_TEXT)
 				mComboboxMode.getItems().add(item);
 			mComboboxMode.getSelectionModel().select(options != null ? options.mode : mol.getConstructionMode());
 			grid.add(mComboboxMode, 1, yIndex);
@@ -119,14 +119,14 @@ public class RayTraceDialog extends Dialog<RayTraceOptions> implements EventHand
 
 		mComboboxSurfaceMaterial = new ComboBox[MoleculeSurfaceAlgorithm.SURFACE_TYPE.length];
 		for (int type=0; type<mComboboxSurfaceMaterial.length; type++) {
-			if (mol != null && mol.getSurfaceMode(type) != V3DMolecule.SurfaceMode.NONE) {
+			if (mol != null && mol.getSurfaceMode(type) != V3DMolecule.SURFACE_MODE_NONE) {
 				grid.add(new Label(MoleculeSurfaceAlgorithm.SURFACE_TYPE[type]+" surface material:"), 0, ++yIndex);
 				mComboboxSurfaceMaterial[type] = new ComboBox();
 				for (String item : SunflowPrimitiveBuilder.SURFACE_TEXT)
 					mComboboxSurfaceMaterial[type].getItems().add(item);
 				mComboboxSurfaceMaterial[type].getSelectionModel().select(
 						  options != null && options.surfaceMaterial[type] != -1 ? options.surfaceMaterial[type]
-						: mol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.WIRES ? SunflowPrimitiveBuilder.SURFACE_WIRES
+						: mol.getSurfaceMode(type) == V3DMolecule.SURFACE_MODE_WIRES ? SunflowPrimitiveBuilder.SURFACE_WIRES
 						: mol.getSurfaceTransparency(type) > 0.2  ?
 								SunflowPrimitiveBuilder.SURFACE_TRANSPARENT : SunflowPrimitiveBuilder.SURFACE_SHINY);
 				grid.add(mComboboxSurfaceMaterial[type], 1, yIndex);

@@ -11,10 +11,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.tasks.V3DMinimizer;
-import org.openmolecules.fx.viewer3d.V3DMolecule.SurfaceMode;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.render.MoleculeArchitect;
-import org.openmolecules.render.MoleculeArchitect.HydrogenMode;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,8 +33,7 @@ public class V3DBindingSite {
 	
 	private V3DMolecule nativeLigand;
 	private V3DMolecule receptor;
-	private MoleculeGrid grid;
-	private Set<Integer> bindingSiteAtoms;
+	private final Set<Integer> bindingSiteAtoms;
 	private List<V3DMolecule> solventMols;
 	private SimpleObjectProperty<DisplayMode> displayModeProperty;
 	
@@ -48,8 +45,8 @@ public class V3DBindingSite {
 		nativeLigand.assignLikelyProtonationStates();
 		nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
 		receptor.assignLikelyProtonationStates();
-		receptor.setHydrogenMode(HydrogenMode.POLAR);
-		grid = new MoleculeGrid(nativeLigand.getMolecule(),GRID_RESOLUTION,
+		receptor.setHydrogenMode(MoleculeArchitect.HYDROGEN_MODE_POLAR);
+		MoleculeGrid grid = new MoleculeGrid(nativeLigand.getMolecule(),GRID_RESOLUTION,
 				new Coordinates(GRID_DIMENSION,GRID_DIMENSION,
 						GRID_DIMENSION));
 		DockingEngine.getBindingSiteAtoms(receptor.getMolecule(), bindingSiteAtoms, grid, true);
@@ -88,7 +85,7 @@ public class V3DBindingSite {
 			receptor.removeAllSurfaces();
 			nativeLigand.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
 			receptor.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
-			receptor.setSurface(0, SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.5);
+			receptor.setSurface(0, V3DMolecule.SURFACE_MODE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, 0.5);
 			break;
 		default:
 			receptor.removeAllSurfaces();

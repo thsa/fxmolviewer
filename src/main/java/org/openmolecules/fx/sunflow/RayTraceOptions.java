@@ -32,7 +32,6 @@ import javafx.stage.Window;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.surface.SurfaceTexture;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
-import org.openmolecules.fx.viewer3d.V3DMolecule.SurfaceMode;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.SunflowMoleculeBuilder;
@@ -125,7 +124,7 @@ public class RayTraceOptions {
 
 		double surplus = -1;
 		for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-			if (fxmol.getSurfaceMode(type) != V3DMolecule.SurfaceMode.NONE)
+			if (fxmol.getSurfaceMode(type) != V3DMolecule.SURFACE_MODE_NONE)
 				surplus = Math.max(surplus, fxmol.getSurfaceMesh(type).getSurfaceSurplus());
 		Color color = fxmol.getColor();
 		mRenderer.setRenderMode(mode == -1 ? fxmol.getConstructionMode() : mode);
@@ -198,8 +197,8 @@ public class RayTraceOptions {
 	}
 
 	private int getOriginalSurfaceMaterial(V3DMolecule fxmol, int surfaceType) {
-		SurfaceMode surfaceMode = fxmol.getSurfaceMode(surfaceType);
-		if (surfaceMode == V3DMolecule.SurfaceMode.WIRES)
+		int surfaceMode = fxmol.getSurfaceMode(surfaceType);
+		if (surfaceMode == V3DMolecule.SURFACE_MODE_WIRES)
 			return SunflowPrimitiveBuilder.SURFACE_WIRES;
 		if (fxmol.getSurfaceTransparency(surfaceType) >= 0.1)
 			return SunflowPrimitiveBuilder.SURFACE_TRANSPARENT;

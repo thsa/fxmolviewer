@@ -116,7 +116,7 @@ public class V3DMinimizer implements ForceFieldChangeListener {
 		for(V3DMolecule fxmol : mFXMol) {
 			// remove any surfaces
 			for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-				fxmol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
+				fxmol.setSurfaceMode(type ,V3DMolecule.SURFACE_MODE_NONE);
 
 			StereoMolecule mol = fxmol.getMolecule();
 			molScenery.addMolecule(mol);

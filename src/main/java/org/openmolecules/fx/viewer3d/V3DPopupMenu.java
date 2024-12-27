@@ -258,12 +258,12 @@ public class V3DPopupMenu extends ContextMenu {
 
 		if (fxmol != null) {
 			RadioMenuItem modePolarHydrogens = new RadioMenuItem("Display Polar Hydrogens Only");
-			modePolarHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HydrogenMode.POLAR);
-			modePolarHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HydrogenMode.POLAR));
+			modePolarHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HYDROGEN_MODE_POLAR);
+			modePolarHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HYDROGEN_MODE_POLAR));
 			
 			RadioMenuItem modeAllHydrogens = new RadioMenuItem("Display All Hydrogens");
-			modeAllHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HydrogenMode.ALL);
-			modeAllHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HydrogenMode.ALL));
+			modeAllHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HYDROGEN_MODE_ALL);
+			modeAllHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HYDROGEN_MODE_ALL));
 			
 			RadioMenuItem modeBallAndSticks = new RadioMenuItem("Ball And Sticks");
 			modeBallAndSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
@@ -276,14 +276,18 @@ public class V3DPopupMenu extends ContextMenu {
 			RadioMenuItem modeSticks = new RadioMenuItem("Sticks");
 			modeSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS);
 			modeSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_STICKS));
-			
+
+			RadioMenuItem modeThinSticks = new RadioMenuItem("Thin Sticks");
+			modeThinSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_THINSTICKS);
+			modeThinSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_THINSTICKS));
+
 			RadioMenuItem modeWires = new RadioMenuItem("Wires");
 			modeWires.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			modeWires.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES));
 			
 			Menu menuMode = new Menu("Molecule Style");
 			menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
-					 modeBallAndSticks, modeBalls, modeSticks, modeWires);
+					 modeBallAndSticks, modeBalls, modeSticks, modeThinSticks, modeWires);
 
 			getItems().add(menuMode);
 
@@ -324,14 +328,14 @@ public class V3DPopupMenu extends ContextMenu {
 			for (int i = 0; i<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; i++) {
 				final int type = i;
 				RadioMenuItem surfaceNone = new RadioMenuItem("None");
-				surfaceNone.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.NONE);
-				surfaceNone.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SurfaceMode.NONE));
+				surfaceNone.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SURFACE_MODE_NONE);
+				surfaceNone.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SURFACE_MODE_NONE));
 				RadioMenuItem surfaceMesh = new RadioMenuItem("Triangles");
-				surfaceMesh.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.WIRES);
-				surfaceMesh.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SurfaceMode.WIRES));
+				surfaceMesh.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SURFACE_MODE_WIRES);
+				surfaceMesh.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SURFACE_MODE_WIRES));
 				RadioMenuItem surfaceOpaque = new RadioMenuItem("Filled");
-				surfaceOpaque.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SurfaceMode.FILLED);
-				surfaceOpaque.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SurfaceMode.FILLED));
+				surfaceOpaque.setSelected(fxmol.getSurfaceMode(type) == V3DMolecule.SURFACE_MODE_FILLED);
+				surfaceOpaque.setOnAction(e -> setSurfaceMode(fxmol, type, V3DMolecule.SURFACE_MODE_FILLED));
 
 				RadioMenuItem surfaceColorInherit = new RadioMenuItem("From Molecule");
 				surfaceColorInherit.setSelected(fxmol.getSurfaceColorMode(type) == SurfaceMesh.SURFACE_COLOR_INHERIT);
@@ -571,11 +575,11 @@ public class V3DPopupMenu extends ContextMenu {
 		getItems().add(menuRaytrace);
 	}
 
-	private void setSurfaceMode(V3DMolecule fxmol, int type, V3DMolecule.SurfaceMode mode) {
+	private void setSurfaceMode(V3DMolecule fxmol, int type, int surfaceMode) {
 		V3DPopupMenuController controller = mScene.getPopupMenuController();
-		if (controller != null && mode != V3DMolecule.SurfaceMode.NONE)
-			controller.markCropDistanceForSurface(fxmol, type, mode);
-		fxmol.setSurfaceMode(type, mode);
+		if (controller != null && surfaceMode != V3DMolecule.SURFACE_MODE_NONE)
+			controller.markCropDistanceForSurface(fxmol, type, surfaceMode);
+		fxmol.setSurfaceMode(type, surfaceMode);
 		fxmol.getMolecule().removeAtomMarkers();
 	}
 

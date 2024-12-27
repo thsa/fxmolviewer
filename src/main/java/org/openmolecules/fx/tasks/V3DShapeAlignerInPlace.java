@@ -1,35 +1,23 @@
 package org.openmolecules.fx.tasks;
 
-import com.actelion.research.calc.Matrix;
 import com.actelion.research.chem.Canonizer;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.alignment3d.transformation.Rotation;
 import com.actelion.research.chem.conf.Conformer;
-import com.actelion.research.chem.forcefield.ForceField;
-import com.actelion.research.chem.forcefield.ForceFieldChangeListener;
-import com.actelion.research.chem.forcefield.mmff.ForceFieldMMFF94;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.DescriptorHandlerShapeOneConf;
 import com.actelion.research.chem.phesa.MolecularVolume;
-import com.actelion.research.chem.phesa.PheSAAlignment;
 import com.actelion.research.chem.phesa.PheSAMolecule;
-import com.actelion.research.chem.phesa.VolumeGaussian;
-import com.actelion.research.util.ArrayUtils;
-import com.actelion.research.util.DoubleFormat;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.geometry.Point3D;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
-
-import org.openmolecules.fx.viewer3d.CarbonAtomColorPalette;
+import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMoleculeUpdater;
-import org.openmolecules.fx.viewer3d.V3DCustomizablePheSA;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
@@ -101,7 +89,7 @@ public class V3DShapeAlignerInPlace implements IAlignmentTask {
 
 		for(V3DMolecule v3dMol : mFitMols) {
 			for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-				v3dMol.setSurfaceMode(type ,V3DMolecule.SurfaceMode.NONE);
+				v3dMol.setSurfaceMode(type ,V3DMolecule.SURFACE_MODE_NONE);
 				mScene.removeMeasurements(v3dMol);
 		}
 

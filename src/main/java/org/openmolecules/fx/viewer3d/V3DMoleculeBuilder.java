@@ -27,8 +27,10 @@ import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.Sphere;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.mesh.Cone;
+import org.openmolecules.render.ConstructionFilter;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.MoleculeBuilder;
+import org.openmolecules.render.RangeConstructionFilter;
 
 import java.util.ArrayList;
 
@@ -58,7 +60,7 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 		calculateDivisions();
 		}
 
-	public void setHydrogenMode(MoleculeArchitect.HydrogenMode mode) {
+	public void setHydrogenMode(int mode) {
 		mArchitect.setHydrogenMode(mode);
 		}
 
@@ -66,8 +68,13 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 		buildMolecule(0, 0);
 	}
 
+	public void buildMolecule(ConstructionFilter cf) {
+		mArchitect.buildMolecule(mV3DMolecule.getMolecule(), cf);
+	}
+
 	public void buildMolecule(int fromAtom, int fromBond) {
-		mArchitect.buildMolecule(mV3DMolecule.getMolecule(), fromAtom, fromBond);
+		StereoMolecule mol = mV3DMolecule.getMolecule();
+		mArchitect.buildMolecule(mol, new RangeConstructionFilter(fromAtom, mol.getAllAtoms(), fromBond, mol.getAllBonds()));
 		}
 	
 	public void buildMolecule(ArrayList<Integer> atoms, ArrayList<Integer> bonds) {

@@ -29,17 +29,20 @@ import com.actelion.research.util.Platform;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.nodes.Ribbons;
-import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.fx.surface.SurfaceMesh;
-import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DScene;
+import org.openmolecules.fx.viewer3d.nodes.Ribbons;
 import org.openmolecules.pdb.MMTFParser;
+import org.openmolecules.render.MoleculeArchitect;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +51,8 @@ public class StartOptions {
 	private static final String HOME_PATH = Platform.isLinux() ? "~/" : "~/Documents/";
 
 	public static final String[] MODE_OPTIONS = {
-			"Get from PDB",
+			"Get from PDB-Database",
+			"Open from PDB-File",
 			"Test small molecules",
 			"Test molecules surfaces",
 			"Test small fragments",
@@ -60,14 +64,15 @@ public class StartOptions {
 	};
 
 	public static final int MODE_PDB_ENTRY = 0;
-	public static final int MODE_SMALL_MOLECULES = 1;
-	public static final int MODE_SMALL_MOLECULE_SURFACES = 2;
-	public static final int MODE_SMALL_FRAGMENTS = 3;
-	public static final int MODE_METAL_ORGANICS = 4;
-	public static final int MODE_SMALL_COMFORMERS = 5;
-	public static final int MODE_SIMPLE = 6;
-	public static final int MODE_PROTEIN = 7;
-	public static final int MODE_VOXEL_DATA = 8;
+	public static final int MODE_PDB_FILE = 1;
+	public static final int MODE_SMALL_MOLECULES = 2;
+	public static final int MODE_SMALL_MOLECULE_SURFACES = 3;
+	public static final int MODE_SMALL_FRAGMENTS = 4;
+	public static final int MODE_METAL_ORGANICS = 5;
+	public static final int MODE_SMALL_COMFORMERS = 6;
+	public static final int MODE_SIMPLE = 7;
+	public static final int MODE_PROTEIN = 8;
+	public static final int MODE_VOXEL_DATA = 9;
 
 	private static final double POSITION_FACTOR = 16;
 	private static final double FRAGMENT_POSITION_FACTOR = 16;
@@ -311,7 +316,8 @@ public class StartOptions {
 	private static final double SURFACE_SATURATION = 0.15;   // must be less than 1.0 - SURFACE_BRIGHTNESS
 
 	private final int mMode;
-	private final String mPDBEntryCode, mPDBFile;
+	private final String mPDBEntryCode;
+	private String mPDBFile;
 	private final boolean mCropLigand;
 
 	public StartOptions(int mode, String pdbEntryCode, String pdbFile, boolean cropLigand) {
@@ -338,6 +344,8 @@ public class StartOptions {
 
 		if (mMode == MODE_PDB_ENTRY)
 			loadPDBEntry(scene);
+		if (mMode == MODE_PDB_FILE)
+			loadPDBFile(scene);
 		else if (mMode == MODE_SMALL_MOLECULES)
 			testMolecules(scene);
 		else if (mMode == MODE_SMALL_MOLECULE_SURFACES)
@@ -354,6 +362,19 @@ public class StartOptions {
 			testProteinFromMMTF(scene);
 		else if (mMode == MODE_VOXEL_DATA)
 			testVoxelData(scene);
+	}
+
+	private void loadPDBFile(V3DScene scene) {
+		String path = System.getProperty("homepath") != null ? System.getProperty("homepath") : HOME_PATH;
+		File dir = new File(path);
+		FileChooser fileChooser = new FileChooser();
+		if (dir.exists())
+			fileChooser.setInitialDirectory(dir);
+		fileChooser.setTitle("Open Resource File");
+		fileChooser.getExtensionFilters().addAll(
+				new FileChooser.ExtensionFilter("PDB-Files", "*.pdb"));
+		mPDBFile = fileChooser.showOpenDialog((Stage)scene.getScene().getWindow()).getPath();
+		loadPDBEntry(scene);
 	}
 
 	private void loadPDBEntry(V3DScene scene) {
@@ -426,17 +447,23 @@ public class StartOptions {
 			System.out.println(mPDBEntryCode);
 			scene.addGroup(complex);
 
+			ArrayList<StereoMolecule> ligandList = null;
+			if (ligand != null) {
+				ligandList = new ArrayList<>();
+				ligandList.add(ligand);
+			}
+
 			for (int i=0; i<proteins.size(); i++) {
 				V3DMolecule vm = new V3DMolecule(proteins.get(i),
 						MoleculeArchitect.CONSTRUCTION_MODE_WIRES,
 						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 						Ribbons.MODE_CARTOON,
-						V3DMolecule.SurfaceMode.FILLED,
+						V3DMolecule.SURFACE_MODE_FILLED,
 						SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS,
 						surfaceColor[i], 0.5,
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.MACROMOLECULE,
-						true, false);
+						true, false, ligandList);
 				vm.getMolecule().setName("Protein");
 				scene.addMolecule(vm, complex, true);
 			}
@@ -445,7 +472,7 @@ public class StartOptions {
 			if (ligand != null) {
 				v3dligand = new V3DMolecule(ligand,
 						MoleculeArchitect.CONSTRUCTION_MODE_STICKS,
-						MoleculeArchitect.HydrogenMode.ALL,
+						MoleculeArchitect.HYDROGEN_MODE_ALL,
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.LIGAND,
 						true, false);
@@ -457,7 +484,7 @@ public class StartOptions {
 			for (Molecule3D mol : solvents) {
 				V3DMolecule vm = new V3DMolecule(mol,
 						MoleculeArchitect.CONSTRUCTION_MODE_STICKS,
-						MoleculeArchitect.HydrogenMode.ALL,
+						MoleculeArchitect.HYDROGEN_MODE_ALL,
 						V3DMolecule.getNextID(),
 						V3DMolecule.MoleculeRole.SOLVENT,
 						true, false);
@@ -543,7 +570,7 @@ public class StartOptions {
 			V3DMolecule vm = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND);
 			double transparency = 0.20 + 0.1 * (i % 7);
 //			vm.setMode(MoleculeArchitect.ConstructionMode.BALL_AND_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT);
-			vm.setSurface(0, V3DMolecule.SurfaceMode.FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, transparency);
+			vm.setSurface(0, V3DMolecule.SURFACE_MODE_FILLED, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS, transparency);
 
 //			vm.activateEvents();
 			scene.addMolecule(vm, true);

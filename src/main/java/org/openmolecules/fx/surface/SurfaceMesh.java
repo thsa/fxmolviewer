@@ -52,6 +52,7 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 //	public static final int SURFACE_COLOR_ELECTRONEGATIVITY = ?;  // dummy for now
 	public static final int SURFACE_COLOR_DONORS_ACCEPTORS = 3;	// this and above have 1D color gradient
 	public static final int SURFACE_COLOR_ATOMIC_NOS = 4;	// this has 2D color gradients
+	public static final String[] SURFACE_COLOR_MODE_CODE = { "inherit", "plain", "polarity", "donorsAcceptors", "atomicNo" };
 
 	public static final boolean VERBOSE_POINTS_AND_TRIANGLES = false;    // print addPoint and addTriangle
 

@@ -65,6 +65,7 @@ public class Ribbons {
     private final StereoMolecule mMol;
     private final MeshView[] mRibbonMesh;
     private Color mColor;   // ribbon color; if null, then mesh colors are according to COLOR_MODE
+    private boolean[] mIsBackboneAtom;
 
     /**
      * Calculates and adds a ribbon or cartoon visualization of the protein backbone
@@ -94,6 +95,7 @@ public class Ribbons {
 
         Molecule3D mol = (Molecule3D)mMol;
         mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+        mIsBackboneAtom = new boolean[mol.getAtoms()];
 
         ArrayList<int[]> atomsList = new ArrayList<>();
         int[] atoms = null;
@@ -111,8 +113,11 @@ public class Ribbons {
                 if (PROTEIN_ATOM_TYPE[i].equals(atomName)) {
                     atoms[i] = atom;
                     atomsFound++;
-                    if (atomsFound == PROTEIN_ATOM_TYPE.length)
+                    if (atomsFound == PROTEIN_ATOM_TYPE.length) {
                         atomsList.add(atoms);
+                        for (int a : atoms)
+                            mIsBackboneAtom[a] = true;
+                    }
                     break;
                 }
             }
@@ -163,14 +168,14 @@ public class Ribbons {
 
         ArrayList<int[][]> fragmentList = new ArrayList<>();
         ArrayList<int[]> residueList = new ArrayList<>();
-        boolean[] atomUsed = new boolean[mMol.getAtoms()];
+        mIsBackboneAtom = new boolean[mMol.getAtoms()];
         for (int atom=0; atom<mMol.getAtoms(); atom++) {
-            int[] residueAtom = findResidue(atom, atomUsed);
+            int[] residueAtom = findResidue(atom);
             if (residueAtom != null) {
                 residueList.add(residueAtom);
-                while ((residueAtom = getNextResidue(residueAtom[ATOM_TYPE_C], atomUsed)) != null)
+                while ((residueAtom = getNextResidue(residueAtom[ATOM_TYPE_C])) != null)
                     residueList.add(residueAtom);
-                while ((residueAtom = getPreviousResidue(residueList.get(0)[ATOM_TYPE_N], atomUsed)) != null)
+                while ((residueAtom = getPreviousResidue(residueList.get(0)[ATOM_TYPE_N])) != null)
                     residueList.add(0, residueAtom);
 
                 if (residueList.size() >= 2)
@@ -188,30 +193,29 @@ public class Ribbons {
      * consisting of hitherto unused atoms. If yes, then an array of the four
      * fragment atoms is returned and these atoms are flagged in atomUsed.
      * @param atom
-     * @param atomUsed
      * @return null or array of backbone members
      */
-    private int[] findResidue(int atom, boolean[] atomUsed) {
-        if (!atomUsed[atom] && mMol.getAtomicNo(atom) == 7) {
+    private int[] findResidue(int atom) {
+        if (!mIsBackboneAtom[atom] && mMol.getAtomicNo(atom) == 7) {
             for (int i=0; i<mMol.getConnAtoms(atom); i++) {
                 if (mMol.getConnBondOrder(atom, i) == 1) {
                     int atomCA = mMol.getConnAtom(atom, i);
-                    if (!atomUsed[atomCA] && mMol.getAtomicNo(atomCA) == 6) {
+                    if (!mIsBackboneAtom[atomCA] && mMol.getAtomicNo(atomCA) == 6) {
                         for (int j=0; j<mMol.getConnAtoms(atomCA); j++) {
                             if (mMol.getConnBondOrder(atomCA, j) == 1) {
                                 int atomC = mMol.getConnAtom(atomCA, j);
-                                if (!atomUsed[atomC] && mMol.getAtomicNo(atomC) == 6) {
+                                if (!mIsBackboneAtom[atomC] && mMol.getAtomicNo(atomC) == 6) {
                                     for (int k=0; k<mMol.getConnAtoms(atomC); k++) {
                                         if (mMol.getConnBondOrder(atomC, k) == 2) {
                                             int atomO = mMol.getConnAtom(atomC, k);
-                                            if (!atomUsed[atomO] && mMol.getAtomicNo(atomO) == 8) {
+                                            if (!mIsBackboneAtom[atomO] && mMol.getAtomicNo(atomO) == 8) {
                                                 int[] residueAtom = new int[4];
                                                 residueAtom[ATOM_TYPE_N] = atom;
                                                 residueAtom[ATOM_TYPE_CA] = atomCA;
                                                 residueAtom[ATOM_TYPE_C] = atomC;
                                                 residueAtom[ATOM_TYPE_O] = atomO;
                                                 for (int ra : residueAtom)
-                                                    atomUsed[ra] = true;
+                                                    mIsBackboneAtom[ra] = true;
                                                 return residueAtom;
                                             }
                                         }
@@ -226,10 +230,10 @@ public class Ribbons {
         return null;
     }
 
-    private int[] getNextResidue(int atom, boolean[] atomUsed) {
+    private int[] getNextResidue(int atom) {
         for (int i=0; i<mMol.getConnAtoms(atom); i++) {
             if (mMol.getConnBondOrder(atom, i) == 1) {
-                int[] residueAtom = findResidue(mMol.getConnAtom(atom, i), atomUsed);
+                int[] residueAtom = findResidue(mMol.getConnAtom(atom, i));
                 if (residueAtom != null)
                     return residueAtom;
             }
@@ -237,17 +241,17 @@ public class Ribbons {
         return null;
     }
 
-    private int[] getPreviousResidue(int atom, boolean[] atomUsed) {
+    private int[] getPreviousResidue(int atom) {
         for (int i=0; i<mMol.getConnAtoms(atom); i++) {
             if (mMol.getConnBondOrder(atom, i) == 1) {
                 int atomC = mMol.getConnAtom(atom, i);
-                if (!atomUsed[atomC] && mMol.getAtomicNo(atomC) == 6) {
+                if (!mIsBackboneAtom[atomC] && mMol.getAtomicNo(atomC) == 6) {
                     int atomO = -1;
                     for (int j=0; j<mMol.getConnAtoms(atomC); j++) {
                         if (mMol.getConnBondOrder(atomC, j) == 2) {
                             int connAtom = mMol.getConnAtom(atomC, j);
                             if (mMol.getAtomicNo(connAtom) == 8
-                             && !atomUsed[connAtom]) {
+                             && !mIsBackboneAtom[connAtom]) {
                                 atomO = connAtom;
                                 break;
                             }
@@ -257,18 +261,18 @@ public class Ribbons {
                         for (int j=0; j<mMol.getConnAtoms(atomC); j++) {
                             if (mMol.getConnBondOrder(atomC, j) == 1) {
                                 int atomCA = mMol.getConnAtom(atomC, j);
-                                if (!atomUsed[atomCA] && mMol.getAtomicNo(atomCA) == 6) {
+                                if (!mIsBackboneAtom[atomCA] && mMol.getAtomicNo(atomCA) == 6) {
                                     for (int k=0; k<mMol.getConnAtoms(atomCA); k++) {
                                         if (mMol.getConnBondOrder(atomCA, k) == 1) {
                                             int atomN = mMol.getConnAtom(atomCA, k);
-                                            if (!atomUsed[atomN] && mMol.getAtomicNo(atomN) == 7) {
+                                            if (!mIsBackboneAtom[atomN] && mMol.getAtomicNo(atomN) == 7) {
                                                 int[] residueAtom = new int[4];
                                                 residueAtom[ATOM_TYPE_N] = atomN;
                                                 residueAtom[ATOM_TYPE_CA] = atomCA;
                                                 residueAtom[ATOM_TYPE_C] = atomC;
                                                 residueAtom[ATOM_TYPE_O] = atomO;
                                                 for (int ra : residueAtom)
-                                                    atomUsed[ra] = true;
+                                                    mIsBackboneAtom[ra] = true;
                                                 return residueAtom;
                                             }
                                         }
@@ -399,6 +403,10 @@ public class Ribbons {
         int atomC2 = mResidueAtom[f][mResidueAtom[f].length-1][ATOM_TYPE_C];
         return atomN1 != -1 && atomC2 != -1
             && mMol.getAtomCoordinates(atomN1).distance(mMol.getAtomCoordinates(atomC2)) < 2;
+    }
+
+    public boolean[] getBackboneMask() {
+        return mIsBackboneAtom;
     }
 
     public void draw(int mode) {
