@@ -475,9 +475,7 @@ public class V3DMouseHandler {
 			}
 			else {
 				// world center of gravity:
-				Point3D cog = mScene.getCOGInGroup(mScene.getWorld());
-				mScene.rotateWorld(new Rotate(d, cog.getX(), cog.getY(), cog.getZ(), p1));
-//				mScene.rotateWorld(new Rotate(d, p1), mScene.getCOGInGroup(mScene.getWorld()));
+				mScene.rotateWorld(new Rotate(d, p1), mScene.getCOGInGroup(mScene.getWorld()));
 			}
 
 			if (!aroundZAxis)

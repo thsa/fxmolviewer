@@ -702,7 +702,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		value.addListener((observable, oldValue, newValue) -> {
 			double angle = 0.5 * Math.cos(newValue.doubleValue());
 			Point3D cog = getCOGInGroup(mWorld);
-			mWorld.rotate(new Rotate(angle, cog.getX(), cog.getY(), cog.getZ(), new Point3D(0, 1, 0)));
+//			mWorld.rotate(new Rotate(angle, cog.getX(), cog.getY(), cog.getZ(), new Point3D(0, 1, 0)));
+			rotateWorldInternal(new Rotate(angle, new Point3D(0, 1, 0)), cog);
 		});
 		mAnimation = new Timeline(new KeyFrame(Duration.seconds(5), new KeyValue(value, 2*Math.PI)));
 		mAnimation.setCycleCount(Animation.INDEFINITE);
@@ -726,17 +727,36 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				mAnimationRevivalThread.start();
 			}
 		}
-
 		mPreviousManualRotationMillis = System.currentTimeMillis();
+
 		mWorld.rotate(r);
 	}
 
-/*	public void rotateWorld(Rotate r, Point3D cog) {	// we now put the pivot point into the Rotate
-		if (mAnimation != null) {
+	public void rotateWorld(Rotate r, Point3D cog) {    // we now put the pivot point into the Rotate
+		if (mAnimation != null && mAnimation.getStatus() != Animation.Status.STOPPED) {
 			mAnimation.stop();
-			// on manual rotate stop animation, but keep object for isAnimate() to return true
-		}
+			if (mAnimationRevivalThread == null) {
+				mAnimationRevivalThread = new Thread(() -> {
+					while (System.currentTimeMillis()<mPreviousManualRotationMillis + 1500)
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException ie) {
+						}
 
+					if (Thread.currentThread() == mAnimationRevivalThread) {
+						Platform.runLater(() -> reviveAnimation());
+						mAnimationRevivalThread = null;
+					}
+				});
+				mAnimationRevivalThread.start();
+			}
+		}
+		mPreviousManualRotationMillis = System.currentTimeMillis();
+
+		rotateWorldInternal(r, cog);
+	}
+
+	private void rotateWorldInternal(Rotate r, Point3D cog) {	// we now put the pivot point into the Rotate
 		Point3D p1 = mWorld.getRotation().transform(cog);
 		Point3D p2 = r.transform(p1.getX(), p1.getY(), p1.getZ());
 
@@ -745,7 +765,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mWorld.setTranslateX(mWorld.getTranslateX()+p1.getX()-p2.getX());
 		mWorld.setTranslateY(mWorld.getTranslateY()+p1.getY()-p2.getY());
 		mWorld.setTranslateZ(mWorld.getTranslateZ()+p1.getZ()-p2.getZ());
-	}	*/
+	}
 
 	/**
 	 * @param polygon
