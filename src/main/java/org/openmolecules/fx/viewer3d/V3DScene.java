@@ -700,7 +700,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private void startAnimation() {
 		DoubleProperty value = new SimpleDoubleProperty(0);
 		value.addListener((observable, oldValue, newValue) -> {
-			double angle = 0.5 * Math.cos(newValue.doubleValue());
+			double angle = 0.4 * Math.cos(newValue.doubleValue());
 			Point3D cog = getCOGInGroup(mWorld);
 //			mWorld.rotate(new Rotate(angle, cog.getX(), cog.getY(), cog.getZ(), new Point3D(0, 1, 0)));
 			rotateWorldInternal(new Rotate(angle, new Point3D(0, 1, 0)), cog);
