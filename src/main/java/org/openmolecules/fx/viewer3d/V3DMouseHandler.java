@@ -475,26 +475,15 @@ public class V3DMouseHandler {
 			}
 			else {
 				// world center of gravity:
-				rotateWorld(new Rotate(d, p1), mScene.getCOGInGroup(mScene.getWorld()));
+				Point3D cog = mScene.getCOGInGroup(mScene.getWorld());
+				mScene.rotateWorld(new Rotate(d, cog.getX(), cog.getY(), cog.getZ(), p1));
+//				mScene.rotateWorld(new Rotate(d, p1), mScene.getCOGInGroup(mScene.getWorld()));
 			}
 
 			if (!aroundZAxis)
 				mScene.updateDepthCueing();
 		}
 	}
-
-	public void rotateWorld(Rotate r, Point3D cor) {
-		RotatableGroup world = mScene.getWorld();
-
-		Point3D p1 = world.getRotation().transform(cor);
-		Point3D p2 = r.transform(p1.getX(), p1.getY(), p1.getZ());
-
-		world.rotate(r);
-
-		world.setTranslateX(world.getTranslateX()+p1.getX()-p2.getX());
-		world.setTranslateY(world.getTranslateY()+p1.getY()-p2.getY());
-		world.setTranslateZ(world.getTranslateZ()+p1.getZ()-p2.getZ());
-		}
 
 	private double angle(double dx, double dy) {
 		if (dy == 0.0)

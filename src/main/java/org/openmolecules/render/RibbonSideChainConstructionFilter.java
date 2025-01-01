@@ -6,7 +6,7 @@ import com.actelion.research.chem.StereoMolecule;
 import java.util.ArrayList;
 
 public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
-	private static final double MAX_DISTANCE = 3.6;
+	private static final double MAX_DISTANCE = 3.8;
 	/**
 	 * Creates a construction filter for a protein with known ligand that marks all
 	 * protein backbone atoms and all side chains of which atom least one atom is in

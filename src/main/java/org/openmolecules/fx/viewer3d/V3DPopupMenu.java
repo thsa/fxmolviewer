@@ -204,6 +204,10 @@ public class V3DPopupMenu extends ContextMenu {
 		});
 		menuReset.getItems().addAll(itemResetMolecule, itemResetAll);
 
+		CheckMenuItem itemAnimate = new CheckMenuItem("Animate");
+		itemAnimate.setSelected(scene.isAnimate());
+		itemAnimate.setOnAction(e -> scene.setAnimate(!scene.isAnimate()));
+
 		RadioMenuItem measurementsNone = new RadioMenuItem("None");
 		measurementsNone.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.NONE);
 		measurementsNone.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.NONE));
@@ -245,7 +249,7 @@ public class V3DPopupMenu extends ContextMenu {
 		}
 
 		Menu menuView = new Menu("View");
-		menuView.getItems().addAll(itemCenter, menuReset, new SeparatorMenuItem(), itemStereoView);
+		menuView.getItems().addAll(itemCenter, menuReset, new SeparatorMenuItem(), itemAnimate, new SeparatorMenuItem(), itemStereoView);
 
 		getItems().add(menuView);
 		getItems().add(new SeparatorMenuItem());

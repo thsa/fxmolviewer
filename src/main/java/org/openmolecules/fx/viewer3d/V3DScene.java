@@ -27,8 +27,14 @@ import com.actelion.research.chem.dnd.ChemistryDataFormats;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
 import com.actelion.research.gui.clipboard.TextClipboardHandler;
 import com.actelion.research.util.DoubleFormat;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -42,7 +48,9 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Sphere;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Screen;
+import javafx.util.Duration;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.viewer3d.interactions.InteractionHandler;
 import org.openmolecules.fx.viewer3d.interactions.plip.PLIPInteractionCalculator;
@@ -80,7 +88,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private PointLight mLight;
 	private PerspectiveCamera mCamera;
 	private double mDepthCuingIntensity;
-
+	private volatile long mPreviousManualRotationMillis;
+	private volatile Thread mAnimationRevivalThread;
 
 	public static final Color SELECTION_COLOR = Color.DARKCYAN;
 	protected static final double CAMERA_INITIAL_Z = -45;
@@ -666,6 +675,77 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public double getFieldOfView() {
 		return mCamera.getFieldOfView();
 		}
+
+	public boolean isAnimate() {
+		return mAnimation != null;
+	}
+
+	public void setAnimate(boolean animate) {
+		if (animate && (mAnimation == null || mAnimation.getStatus() == Animation.Status.STOPPED)) {
+			startAnimation();
+		}
+		else if (!animate && mAnimation != null) {
+			mAnimation.stop();
+			mAnimation = null;
+		}
+	}
+
+	public void reviveAnimation() {
+		if (mAnimation != null && mAnimation.getStatus() == Animation.Status.STOPPED)
+			startAnimation();
+	}
+
+	private volatile Timeline mAnimation;
+
+	private void startAnimation() {
+		DoubleProperty value = new SimpleDoubleProperty(0);
+		value.addListener((observable, oldValue, newValue) -> {
+			double angle = 0.5 * Math.cos(newValue.doubleValue());
+			Point3D cog = getCOGInGroup(mWorld);
+			mWorld.rotate(new Rotate(angle, cog.getX(), cog.getY(), cog.getZ(), new Point3D(0, 1, 0)));
+		});
+		mAnimation = new Timeline(new KeyFrame(Duration.seconds(5), new KeyValue(value, 2*Math.PI)));
+		mAnimation.setCycleCount(Animation.INDEFINITE);
+		mAnimation.play();
+		mAnimationRevivalThread = null;
+	}
+
+	public void rotateWorld(Rotate r) {
+		if (mAnimation != null && mAnimation.getStatus() != Animation.Status.STOPPED) {
+			mAnimation.stop();
+			if (mAnimationRevivalThread == null) {
+				mAnimationRevivalThread = new Thread(() -> {
+					while (System.currentTimeMillis() < mPreviousManualRotationMillis+1500)
+						try { Thread.sleep(200); } catch (InterruptedException ie) {}
+
+					if (Thread.currentThread() == mAnimationRevivalThread) {
+						Platform.runLater(() -> reviveAnimation());
+						mAnimationRevivalThread = null;
+					}
+				});
+				mAnimationRevivalThread.start();
+			}
+		}
+
+		mPreviousManualRotationMillis = System.currentTimeMillis();
+		mWorld.rotate(r);
+	}
+
+/*	public void rotateWorld(Rotate r, Point3D cog) {	// we now put the pivot point into the Rotate
+		if (mAnimation != null) {
+			mAnimation.stop();
+			// on manual rotate stop animation, but keep object for isAnimate() to return true
+		}
+
+		Point3D p1 = mWorld.getRotation().transform(cog);
+		Point3D p2 = r.transform(p1.getX(), p1.getY(), p1.getZ());
+
+		mWorld.rotate(r);
+
+		mWorld.setTranslateX(mWorld.getTranslateX()+p1.getX()-p2.getX());
+		mWorld.setTranslateY(mWorld.getTranslateY()+p1.getY()-p2.getY());
+		mWorld.setTranslateZ(mWorld.getTranslateZ()+p1.getZ()-p2.getZ());
+	}	*/
 
 	/**
 	 * @param polygon

@@ -83,7 +83,8 @@ public class RotatableGroup extends Group implements ChangeListener<Number>, IV3
 
 	public void rotate(Rotate r) {
 		mRotation = r.createConcatenation(mRotation);
-		getTransforms().set(0, mRotation);
+		getTransforms().clear();
+		getTransforms().add(mRotation);
 		fireTransformationChanged();
 		}
 
