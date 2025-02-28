@@ -126,7 +126,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		outputLog.appendText("\n");
 		outputLog.setPrefWidth(LOG_WIDTH);
 		outputLog.setMaxWidth(LOG_WIDTH);
-		
+
 	    StackPane stackPane = new StackPane();
 	    V3DSceneWithSelection sceneWithSelection = new V3DSceneWithSelection(mScene3D);
 	    stackPane.getChildren().add(sceneWithSelection);
@@ -141,14 +141,10 @@ public class V3DSceneWithSidePane extends BorderPane {
 			if(nv!=null) 
 				nv.prefHeightProperty().bind(this.prefHeightProperty().multiply(0.3));
 			setBottom(nv);
-			
 		});
-
-		
 	}
 	
-	protected void createSidePane(BorderPane center,EnumSet<V3DScene.ViewerSettings> settings) {
-	
+	protected void createSidePane(BorderPane center, EnumSet<V3DScene.ViewerSettings> settings) {
 		this.setStyle("-fx-background-color:black");
 		mMoleculePanel = new MolGroupPane(mScene3D);
 		mMoleculePanel.getStyleClass().add("side-panel");
@@ -163,7 +159,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 				((MoleculeViewSkin) molView.getSkin()).setOverruleColors(Color.WHITE, molView.getBackgroundColor());
 				molView.setMolecule(mol);
 				mMoleculePanel.updateTableSelection();
-			
 			}
 			catch(Exception exc) {};
 		});
@@ -177,12 +172,10 @@ public class V3DSceneWithSidePane extends BorderPane {
 		Pane dummyPane = new Pane();
 		dummyPane.setVisible(false);
 		dummyPane.setPickOnBounds(false);
-		
+
 		slidingBox = new DraggableHBox(borderPane);
 		center.setLeft(slidingBox.getBox());
 		center.setCenter(dummyPane);
-
-		
 	}
 	
 	protected void toggleShowOutputLog() {
@@ -190,10 +183,8 @@ public class V3DSceneWithSidePane extends BorderPane {
 			setRight(null);
 		else 
 			setRight(outputLog);
-
-			
 	}
-	
+
 	protected void createUpperPanel() {
 		upperPanel = new GridPane();
 		upperPanel.setStyle("-fx-background-color:" + GUIColorPalette.BLUE3);
@@ -248,8 +239,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		bindingSiteAnalysisButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.BINDING_SITE_ANALYSIS));
 		pheSAButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.PHESA));
 		alignmentButton.setOnMouseReleased(e -> globalModeProperty.set(GlobalMode.ALIGNMENT));
-		
-		
 	}
 	
 	protected void constructUpperPanel() {
@@ -303,8 +292,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		if(globalModeProperty.get()==GlobalMode.ALIGNMENT) {
 			constructAlignmentButton(i,j);
 		}
-			
-		
 	}
 	
 	protected void constructSeparator(int i, int j) {
@@ -313,7 +300,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		sep.setOrientation(Orientation.VERTICAL);
 		sep.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(sep, i, j);
-
 	}
 	
 	protected void constructPheSAButtons(int i, int j) {
@@ -340,7 +326,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		});
 		addButton.prefHeightProperty().bind(upperPanel.heightProperty());
 		i++;
-		
 		
 		Button saveButton = new Button("");
 		saveButton.getStyleClass().add("save-icon");
@@ -400,7 +385,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 			handlePheSACustomVolume(VolumeGaussian.EXCLUSION);
 		});
 		addExclButton.prefHeightProperty().bind(upperPanel.heightProperty());
-
 	}
 	
 	protected void handlePheSACustomVolume(int function) {
@@ -832,8 +816,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 			if(molGroup instanceof V3DCustomizablePheSA)
 				phesaModels.add((V3DCustomizablePheSA) molGroup);
 		}
-		
-	
+
 		dialog.getDialogPane().setContent(hbox1);
 		
 		ButtonType buttonTypeSave = new ButtonType("Save", ButtonData.OK_DONE);
@@ -849,7 +832,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 				boolean generateConfs = ensembleConf.isSelected() ? true : false;
 		        V3DMoleculeWriter.savePhesaQueries(file, phesaModels,generateConfs);
 		        return true;
-		        
 		    }
 		});
 		
@@ -914,9 +896,6 @@ public class V3DSceneWithSidePane extends BorderPane {
 		alert.setTitle("exception");
 		alert.setHeaderText("Docking Failed");
 		alert.setContentText(e.toString());
-		
 	}
-	
-	
 }
  
