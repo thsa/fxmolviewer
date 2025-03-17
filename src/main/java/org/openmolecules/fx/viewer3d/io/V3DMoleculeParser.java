@@ -4,6 +4,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.conf.AtomAssembler;
 import com.actelion.research.chem.conf.ConformerSet;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.CompoundFileParser;
@@ -43,19 +44,22 @@ public class V3DMoleculeParser {
 			try {
 				StereoMolecule mol;
 				mol = new MolfileParser().getCompactMolecule(new BufferedReader(new FileReader(file)));
-				mol.ensureHelperArrays(Molecule.cHelperRings);
-				if(mol.getName()==null || mol.getName().equals(""))
-					mol.setName("Molecule");
 				if (mol != null) {
+					mol.ensureHelperArrays(Molecule.cHelperRings);
+					if(mol.getName()==null || mol.getName().isEmpty())
+						mol.setName("Molecule");
+
 					if (!mol.is3D())
 						new ConformerGenerator().getOneConformerAsMolecule(mol);
 
-						IntStream.range(0, mol.getAllAtoms()).forEach(a -> {
-							Coordinates c = mol.getCoordinates(a);
-							c.y = -c.y;
-							c.z = -c.z;
-						});
-					
+					IntStream.range(0, mol.getAllAtoms()).forEach(a -> {
+						Coordinates c = mol.getCoordinates(a);
+						c.y = -c.y;
+						c.z = -c.z;
+					});
+
+					new AtomAssembler(mol).addImplicitHydrogens();
+
 					mols.add(mol);
 				}
 				
@@ -66,10 +70,14 @@ public class V3DMoleculeParser {
 			try {
 				StereoMolecule mol;
 				mol = new Mol2FileParser().load(file);
-				mol.ensureHelperArrays(Molecule.cHelperRings);
-				if(mol.getName()==null || mol.getName().equals(""))
-					mol.setName("Molecule");
 				if (mol != null) {
+					mol.ensureHelperArrays(Molecule.cHelperRings);
+
+					if(mol.getName()==null || mol.getName().isEmpty())
+						mol.setName("Molecule");
+
+					new AtomAssembler(mol).addImplicitHydrogens();
+
 					mols.add(mol);
 				}
 			}
@@ -93,10 +101,15 @@ public class V3DMoleculeParser {
 						mol = parser.getMolecule();
 						if (mol != null) {
 							mol.ensureHelperArrays(Molecule.cHelperRings);
-							if(mol.getName()==null || mol.getName().equals(""))
+
+							if(mol.getName()==null || mol.getName().isEmpty())
 								mol.setName("Molecule");
+
 							if(!mol.is3D())
 								confGen.getOneConformerAsMolecule(mol);
+
+							new AtomAssembler(mol).addImplicitHydrogens();
+
 							mols.add(mol);
 						}
 					}
