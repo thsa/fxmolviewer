@@ -154,9 +154,13 @@ private static final float SPLINE_FACTOR = 0.8f;
             // interpolate offsets
             for (int i = 0; i< SECTIONS_PER_RESIDUE; i++) {
                 float f = i * invSectionsPerResidue;
-                offset[sectionCount + i].set((1f - f) * inOffset[cp2].x + f * inOffset[cp2+1].x,
-                                             (1f - f) * inOffset[cp2].y + f * inOffset[cp2+1].y,
-                                             (1f - f) * inOffset[cp2].z + f * inOffset[cp2+1].z);
+// cp2+1 may cause an OutOfBoundsException in cyclic proteins. Seems that we Should use cp3 instead of cp2+1. Changed TLS 27Apr2025
+//                offset[sectionCount + i].set((1f - f) * inOffset[cp2].x + f * inOffset[cp2+1].x,
+//                                             (1f - f) * inOffset[cp2].y + f * inOffset[cp2+1].y,
+//                                             (1f - f) * inOffset[cp2].z + f * inOffset[cp2+1].z);
+                offset[sectionCount + i].set((1f - f) * inOffset[cp2].x + f * inOffset[cp3].x,
+                                             (1f - f) * inOffset[cp2].y + f * inOffset[cp3].y,
+                                             (1f - f) * inOffset[cp2].z + f * inOffset[cp3].z);
                 offset[sectionCount + i].unit();
             }
 
@@ -468,7 +472,8 @@ private static final float SPLINE_FACTOR = 0.8f;
                     coords[r] = coordCA;
                 }
 
-                mixInResidueOffset(backboneOffset, coordCA, lastCoordCA, lastCoordO);
+                if (cyclic || r != 0)   // added condition; TLS 27Apr2025
+                    mixInResidueOffset(backboneOffset, coordCA, lastCoordCA, lastCoordO);
                 offset[r] = new Coordinates(backboneOffset);
                 lastCoordCA = coordCA;
                 lastCoordO = coordO;

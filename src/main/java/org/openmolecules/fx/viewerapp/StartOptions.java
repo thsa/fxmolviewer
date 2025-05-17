@@ -458,7 +458,7 @@ public class StartOptions {
 						MoleculeArchitect.CONSTRUCTION_MODE_WIRES,
 						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 						Ribbons.MODE_CARTOON,
-						V3DMolecule.SURFACE_MODE_FILLED,
+						mCropLigand ? V3DMolecule.SURFACE_MODE_FILLED : V3DMolecule.SURFACE_MODE_NONE,
 						SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS,
 						surfaceColor[i], 0.5,
 						V3DMolecule.getNextID(),
@@ -493,7 +493,7 @@ public class StartOptions {
 			}
 
 			if (v3dligand != null && mCropLigand) {
-				scene.crop(v3dligand, 12.0);
+				scene.crop(v3dligand, 11.0);
 				scene.optimizeView();
 			}
 		} catch (FileNotFoundException fnfe) {

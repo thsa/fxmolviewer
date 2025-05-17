@@ -95,9 +95,9 @@ public class SunflowPrimitiveBuilder extends SunflowAPIAPI implements PrimitiveB
 		}
 
 	/**
-	 * @param r -1 to remove background
-	 * @param g -1 to remove background
-	 * @param b -1 to remove background
+	 * @param r -1 to remove floor
+	 * @param g -1 to remove floor
+	 * @param b -1 to remove floor
 	 */
 	public void setFloorColor(float r, float g, float b) {
 		mFloorColor = (r < 0) ? null : new Color(r, g, b);
@@ -175,6 +175,12 @@ public class SunflowPrimitiveBuilder extends SunflowAPIAPI implements PrimitiveB
 
 			drawPlane("ground", new Point3(0f, 0f, mFloorZ-0.01f), new Vector3(0f, 0f, 1f));
 			}
+
+//		setDiffuseShader("sidePlaneShader", new Color(128, 128, 128));
+//		drawPlane("leftPlane", new Point3(-100f, 0f, 0f), new Vector3(-1f, 0f, 0f));
+//		drawPlane("rightPlane", new Point3(100f, 0f, 0f), new Vector3(1f, 0f, 0f));
+//		drawPlane("topPlane", new Point3(0f, 0f, 100f), new Vector3(0f, 0f, 1f));
+//		drawPlane("bottomPlane", new Point3(0f, 0f, -100f), new Vector3(0f, 0f, -1f));
 		}
 
 	private void createMeshLight() {

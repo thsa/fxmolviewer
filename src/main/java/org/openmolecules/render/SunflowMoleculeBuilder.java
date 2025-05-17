@@ -72,15 +72,32 @@ public class SunflowMoleculeBuilder extends SunflowPrimitiveBuilder implements M
 	 * @param surfaceSurplus -1 or, if a surface is present, the amount that the surface is larger than the van-der-Waals radius
 	 */
 	public void drawMolecule(Conformer conformer, boolean rotateToOptimum, boolean moveAndZoomToOptimum, double surfaceSurplus) {
+		drawMolecule(conformer, rotateToOptimum ? 0 : -1, moveAndZoomToOptimum, surfaceSurplus);
+	}
+
+	/**
+	 * @param conformer with coordinates already translated to scene
+	 * @param degreesFromOptimum -1:don't optimize rotation; 0:optimally rotate; 1-89:degrees to rotate out of optimum
+	 * @param moveAndZoomToOptimum
+	 * @param surfaceSurplus -1 or, if a surface is present, the amount that the surface is larger than the van-der-Waals radius
+	 */
+	public void drawMolecule(Conformer conformer, int degreesFromOptimum, boolean moveAndZoomToOptimum, double surfaceSurplus) {
 		mMol = conformer.getMolecule();
 		mMol.ensureHelperArrays(Molecule.cHelperNeighbours);
-		if (rotateToOptimum) {
+		if (degreesFromOptimum != -1) {
 			rotateIntoView(conformer);
 			flipFeaturesToFront(conformer);
+			if (degreesFromOptimum != 0) {
+				double angleXZ = 2.0 * Math.PI * Math.random();
+				double angleY = degreesFromOptimum * Math.PI / 180;
+				Coordinates normalInPlane = new Coordinates(Math.sin(angleXZ), 0, Math.cos(angleXZ));
+				for (Coordinates c : conformer.getCoordinates())
+					c.rotate(normalInPlane, angleY);
+			}
 		}
 
 		if (moveAndZoomToOptimum)
-			scaleAndCenterForCamera(conformer, getWidth(), getHeight(), rotateToOptimum, surfaceSurplus);
+			scaleAndCenterForCamera(conformer, getWidth(), getHeight(), degreesFromOptimum != -1, surfaceSurplus);
 
 		for (int atom=0; atom<mMol.getAllAtoms(); atom++) {
 			float radius = getAtomRadius(mMol, atom, (float)surfaceSurplus);

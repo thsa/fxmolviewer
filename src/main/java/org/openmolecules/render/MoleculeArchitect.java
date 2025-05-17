@@ -364,12 +364,12 @@ public class MoleculeArchitect {
 
 		if (order == 3) {
 			Coordinates ds = calculateRandomOrthogonalShift(bond).scale(BALL_AND_STICK_TBOND_SHIFT);
-			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.11);
-			if (d > 0.0) {
-				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
-				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+			double d1 = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.26+0.10);
+			if (d1 > 0.0) {
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d1, point1.set(center).add(ds), b, c, BALL_AND_STICK_STICK_COLOR);
+				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d1, point1.set(center).sub(ds), b, c, BALL_AND_STICK_STICK_COLOR);
 				}
-			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.22+0.07);
+			d = calcNewReducedBondCenter(d, atom1, atom2, color1, color2, 0.1);
 			if (d > 0.0)
 				mBuilder.addBondCylinder(bondRole, BALL_AND_STICK_TBOND_RADIUS, d, center, b, c, BALL_AND_STICK_STICK_COLOR);
 			}

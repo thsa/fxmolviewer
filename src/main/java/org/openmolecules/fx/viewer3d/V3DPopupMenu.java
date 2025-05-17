@@ -320,7 +320,7 @@ public class V3DPopupMenu extends ContextMenu {
 				ribbonModeRibbon.setSelected(fxmol.getRibbonMode() == Ribbons.MODE_RIBBON);
 				ribbonModeRibbon.setOnAction(e -> fxmol.setRibbonMode(Ribbons.MODE_RIBBON));
 
-				RadioMenuItem ribbonModeNone = new RadioMenuItem("None");
+				RadioMenuItem ribbonModeNone = new RadioMenuItem("Atoms & Bonds");
 				ribbonModeNone.setSelected(fxmol.getRibbonMode() == Ribbons.MODE_NONE);
 				ribbonModeNone.setOnAction(e -> fxmol.setRibbonMode(Ribbons.MODE_NONE));
 
