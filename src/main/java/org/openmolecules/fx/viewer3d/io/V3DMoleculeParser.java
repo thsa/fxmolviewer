@@ -4,7 +4,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.conf.AtomAssembler;
+import com.actelion.research.chem.conf.HydrogenAssembler;
 import com.actelion.research.chem.conf.ConformerSet;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.CompoundFileParser;
@@ -58,7 +58,7 @@ public class V3DMoleculeParser {
 						c.z = -c.z;
 					});
 
-					new AtomAssembler(mol).addImplicitHydrogens();
+					new HydrogenAssembler(mol).addImplicitHydrogens();
 
 					mols.add(mol);
 				}
@@ -76,7 +76,7 @@ public class V3DMoleculeParser {
 					if(mol.getName()==null || mol.getName().isEmpty())
 						mol.setName("Molecule");
 
-					new AtomAssembler(mol).addImplicitHydrogens();
+					new HydrogenAssembler(mol).addImplicitHydrogens();
 
 					mols.add(mol);
 				}
@@ -108,7 +108,7 @@ public class V3DMoleculeParser {
 							if(!mol.is3D())
 								confGen.getOneConformerAsMolecule(mol);
 
-							new AtomAssembler(mol).addImplicitHydrogens();
+							new HydrogenAssembler(mol).addImplicitHydrogens();
 
 							mols.add(mol);
 						}

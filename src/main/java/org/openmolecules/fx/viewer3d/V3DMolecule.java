@@ -21,7 +21,7 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.*;
-import com.actelion.research.chem.conf.AtomAssembler;
+import com.actelion.research.chem.conf.HydrogenAssembler;
 import com.actelion.research.chem.conf.BondRotationHelper;
 import com.actelion.research.chem.conf.VDWRadii;
 import com.actelion.research.chem.phesa.MolecularVolume;
@@ -407,7 +407,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		int oldAtoms = mMol.getAllAtoms();
 		int oldBonds = mMol.getAllBonds();
 
-		int count = new AtomAssembler(mMol).addImplicitHydrogens();
+		int count = new HydrogenAssembler(mMol).addImplicitHydrogens();
 		if (count == 0)
 			return false;
 

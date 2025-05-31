@@ -1,7 +1,6 @@
 package org.openmolecules.fx.viewer3d;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
@@ -10,7 +9,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.IDCodeParserWithoutCoordinateInvention;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.conf.AtomAssembler;
+import com.actelion.research.chem.conf.HydrogenAssembler;
 import com.actelion.research.chem.conf.BondLengthSet;
 import com.actelion.research.chem.conf.TorsionDB;
 import com.actelion.research.chem.conf.TorsionDetail;
@@ -114,7 +113,7 @@ public class V3DMoleculeModifier {
 	public static void placeAtom(V3DMolecule v3dMol, int atomicNo) {
 		StereoMolecule mol = v3dMol.getMolecule();
 		mol.addAtom(atomicNo);
-		AtomAssembler assembler = new AtomAssembler(mol);
+		HydrogenAssembler assembler = new HydrogenAssembler(mol);
 		assembler.addImplicitHydrogens();
 		mol.ensureHelperArrays(Molecule.cHelperRings);
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
@@ -565,7 +564,7 @@ public class V3DMoleculeModifier {
 
 	
 	public static void constructHydrogens(StereoMolecule mol, int atom, ArrayList<Integer> atomConstructionList, ArrayList<Integer> bondConstructionList) {
-		AtomAssembler assembler = new AtomAssembler(mol);
+		HydrogenAssembler assembler = new HydrogenAssembler(mol);
 
 		int addedHs=assembler.addImplicitHydrogens(atom);
 	
