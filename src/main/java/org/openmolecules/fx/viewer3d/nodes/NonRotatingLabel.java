@@ -44,10 +44,10 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 
 	private static Font sFont;
 
-	private Parent mParent;
+	private final Parent mParent;
 	private Point3D mPoint;
-	private double mWidth, mHeight;
-	private ContextMenu mMenu;
+	private final double mWidth,mHeight;
+	private final ContextMenu mMenu;
 	private boolean mDeleted;
 	private LabelDeletionListener mListener;
 	
@@ -77,7 +77,8 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 			color = Color.AQUA;
 
 		setFont(sFont);
-		setTextFill(color);
+//		setTextFill(color);	// not working in javafx 21, but is supposed to be fixed in 24; we need to use setStyle() instead!!!
+		setStyle("-fx-text-fill: "+toRGBCode(color));
 
 		getTransforms().add(Transform.scale(SCALE, SCALE, 0, 0));
 
@@ -91,7 +92,13 @@ public class NonRotatingLabel extends Label implements TransformationListener {
 		});
 		mMenu.getItems().add(itemRemove);
 	}
-	
+
+	private String toRGBCode(Color color) {
+		return String.format( "#%02X%02X%02X",
+				(int)( color.getRed() * 255 ),
+				(int)( color.getGreen() * 255 ),
+				(int)( color.getBlue() * 255 ) );
+	}
 
 	public void setLabelDeletionListener(LabelDeletionListener l) {
 		mListener = l;

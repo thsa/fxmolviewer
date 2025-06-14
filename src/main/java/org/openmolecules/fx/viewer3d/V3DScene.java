@@ -26,6 +26,7 @@ import com.actelion.research.chem.coords.CoordinateInventor;
 import com.actelion.research.chem.dnd.ChemistryDataFormats;
 import com.actelion.research.gui.clipboard.ClipboardHandler;
 import com.actelion.research.gui.clipboard.TextClipboardHandler;
+import com.actelion.research.util.ColorHelper;
 import com.actelion.research.util.DoubleFormat;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -999,7 +1000,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 			}		
 			if (mMeasurementMode == MEASUREMENT.DISTANCE) {
 				double dist = coords[0].distance(coords[1]);
-				addMeasurementNodes(coords[0],coords[1], DISTANCE_COLOR,
+				addMeasurementNodes(coords[0],coords[1], getContrastColor(DISTANCE_COLOR),
 								DoubleFormat.toString(dist,3),atIds,fxmols);
 			}
 			else if(mMeasurementMode == MEASUREMENT.ANGLE) {
@@ -1007,19 +1008,30 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 				Coordinates v2 = coords[2].subC(coords[1]);
 				double angle = v1.getAngle(v2);
 				angle = 180*angle/Math.PI;
-				addMeasurementNodes(coords[0], coords[2], ANGLE_COLOR, DoubleFormat.toString(angle,3),atIds,fxmols);
+				addMeasurementNodes(coords[0], coords[2], getContrastColor(ANGLE_COLOR), DoubleFormat.toString(angle,3),atIds,fxmols);
 			}
 			
 			else if(mMeasurementMode == MEASUREMENT.TORSION) {
 				double dihedral = Coordinates.getDihedral(coords[0],coords[1],coords[2],coords[3]);
 				dihedral = 180*dihedral/Math.PI;
-				addMeasurementNodes(coords[0], coords[3], TORSION_COLOR, DoubleFormat.toString(dihedral,3),atIds,fxmols);
+				addMeasurementNodes(coords[0], coords[3], getContrastColor(TORSION_COLOR), DoubleFormat.toString(dihedral,3),atIds,fxmols);
 			}
 	
 			mPickedMolsList.clear();
 		}
 	}
-	
+
+	private Color getContrastColor(Color c) {
+		if (!(getFill() instanceof Color))
+			return c;
+
+		Color b = (Color)getFill();
+		float[] rgb = ColorHelper.getContrastColor(
+				new java.awt.Color((float)c.getRed(), (float)c.getGreen(), (float)c.getBlue()),
+				new java.awt.Color((float)b.getRed(), (float)b.getGreen(), (float)b.getBlue())).getRGBColorComponents(null);
+		return new Color(rgb[0], rgb[1], rgb[2], 1f);
+	}
+
 	private void addMeasurementNodes(Coordinates c1, Coordinates c2, Color color, String text, ArrayList<Integer> atoms, ArrayList<V3DMolecule> fxmols) {
 		Point3D p1 = new Point3D(c1.x,c1.y,c1.z);
 		Point3D p2 = new Point3D(c2.x,c2.y,c2.z);
