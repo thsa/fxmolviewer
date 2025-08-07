@@ -22,6 +22,7 @@ package org.openmolecules.fx.viewerapp;
 
 import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.Conformer;
+import com.actelion.research.chem.io.pdb.mmcif.MMCIFParser;
 import com.actelion.research.chem.io.pdb.parser.PDBCoordEntryFile;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
@@ -30,7 +31,6 @@ import javafx.scene.control.ChoiceDialog;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
@@ -372,17 +372,17 @@ public class StartOptions {
 			fileChooser.setInitialDirectory(dir);
 		fileChooser.setTitle("Open Resource File");
 		fileChooser.getExtensionFilters().addAll(
-				new FileChooser.ExtensionFilter("PDB-Files", "*.pdb"));
-		mPDBFile = fileChooser.showOpenDialog((Stage)scene.getScene().getWindow()).getPath();
+				new FileChooser.ExtensionFilter("PDB-Files", "*.pdb", "*.cif"));
+		mPDBFile = fileChooser.showOpenDialog(scene.getScene().getWindow()).getPath();
 		loadPDBEntry(scene);
 	}
 
 	private void loadPDBEntry(V3DScene scene) {
 		try {
-			PDBFileParser parser = new PDBFileParser();
 			PDBCoordEntryFile entryFile = (mPDBFile != null) ?
-					parser.parse(new File(mPDBFile))
-					: (!mPDBEntryCode.isEmpty()) ? parser.getFromPDB(mPDBEntryCode) : null;
+					(mPDBFile.toLowerCase().endsWith(".pdb") ? new PDBFileParser().parse(new File(mPDBFile))
+							: MMCIFParser.parse(mPDBFile))
+					: (!mPDBEntryCode.isEmpty()) ? MMCIFParser.getFromPDB(mPDBEntryCode) : null;
 
 			if (entryFile == null) {
 				scene.showMessage("Unexpectedly didn't get PDB entry.");

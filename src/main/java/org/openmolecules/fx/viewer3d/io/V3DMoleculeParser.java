@@ -4,25 +4,26 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.conf.HydrogenAssembler;
 import com.actelion.research.chem.conf.ConformerSet;
+import com.actelion.research.chem.conf.HydrogenAssembler;
 import com.actelion.research.chem.descriptor.DescriptorConstants;
 import com.actelion.research.chem.io.CompoundFileParser;
 import com.actelion.research.chem.io.DWARFileParser;
 import com.actelion.research.chem.io.DWARFileParser.SpecialField;
 import com.actelion.research.chem.io.Mol2FileParser;
 import com.actelion.research.chem.io.SDFileParser;
+import com.actelion.research.chem.io.pdb.mmcif.MMCIFParser;
+import com.actelion.research.chem.io.pdb.parser.PDBCoordEntryFile;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
-//import com.actelion.research.chem.phesa.ShapeVolume;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.PheSAMolecule;
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
 import java.io.*;
@@ -133,12 +134,12 @@ public class V3DMoleculeParser {
 
 			mols.stream().forEach(e -> scene.addMolecule(new V3DMolecule(e, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.LIGAND,false, false), true));
 		}
-		else if(file.endsWith(".pdb")) {
+		else if(file.endsWith(".pdb") || file.endsWith(".cif") || file.endsWith(".mmcif")) {
 			try {
 				V3DRotatableGroup pdbGroup = new V3DRotatableGroup(new File(file).getName().split("\\.")[0]);
 				scene.addGroup(pdbGroup);
-				PDBFileParser parser = new PDBFileParser();
-				parser.parse(new File(file)).extractMols().forEach((k,v) -> {
+				PDBCoordEntryFile pdbEntry = file.endsWith(".pdb") ? new PDBFileParser().parse(new File(file)) : MMCIFParser.parse(new File(file));
+				pdbEntry.extractMols().forEach((k,v) -> {
 					List<V3DMolecule> groupMols = new ArrayList<V3DMolecule>();
 					V3DMolecule.MoleculeRole role;
 					boolean isProtein = false;
