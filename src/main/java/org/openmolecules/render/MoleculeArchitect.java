@@ -277,10 +277,10 @@ public class MoleculeArchitect {
 	private void buildAttachmentPoint(int atom, double radius) {
 		Coordinates c1 = getCoordinates(atom);
 
-//		if (!hasVisibleNeighbours(atom)) {
-//			mBuilder.addAtomSphere(atomRole(atom), c1, radius, getAtomColor(atom));
-//			return;
-//			}
+		if (mMol.getConnAtoms(atom) == 0) {
+			mBuilder.addAtomSphere(RoleHelper.createAtomRole(atom), c1, radius, getAtomRGB(atom));
+			return;
+			}
 
 		int coreAtom = mMol.getConnAtom(atom, 0);
 		Coordinates c2 = getCoordinates(coreAtom);

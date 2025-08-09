@@ -404,31 +404,34 @@ public class StartOptions {
 				return;
 			}
 
-			Molecule3D ligand = null;
+			if (mCropLigand) {
+				if (ligands != null && !ligands.isEmpty()) {
+					int index = -1;
+					if (ligands.size() == 1) {
+						index = 0;
+					}
+					else {
+						String[] ligandName = new String[ligands.size()];
+						for (int i=0; i<ligands.size(); i++) {
+							String formula = new MolecularFormula(ligands.get(i)).getFormula();
+							ligandName[i] = (i + 1) + ": " + formula + "; " + (ligands.get(i).getName() == null ? "Unnamed" : ligands.get(i).getName());
+						}
 
-			if (ligands != null && !ligands.isEmpty()) {
-				int index = -1;
-				if (ligands.size() == 1) {
-					index = 0;
-				}
-				else {
-					String[] ligandName = new String[ligands.size()];
-					for (int i=0; i<ligands.size(); i++) {
-						String formula = new MolecularFormula(ligands.get(i)).getFormula();
-						ligandName[i] = (i + 1) + ": " + formula + "; " + (ligands.get(i).getName() == null ? "Unnamed" : ligands.get(i).getName());
+						ChoiceDialog<String> dialog = new ChoiceDialog<>(ligandName[0], ligandName);
+						dialog.titleProperty().set("Select one of multiple ligands:");
+						dialog.showAndWait();
+						String name = dialog.getSelectedItem();
+						if (name != null)
+							index = Integer.parseInt(name.substring(0, name.indexOf(':')))-1;
 					}
 
-					ChoiceDialog<String> dialog = new ChoiceDialog<>(ligandName[0], ligandName);
-					dialog.titleProperty().set("Select one of multiple ligands:");
-					dialog.showAndWait();
-					String name = dialog.getSelectedItem();
-					if (name != null)
-						index = Integer.parseInt(name.substring(0, name.indexOf(':')))-1;
+					if ((index != -1)) {
+						Molecule3D ligand = ligands.get(index);
+						ligands.clear();
+						ligands.add(ligand);
+						}
+					}
 				}
-
-				if ((index != -1))
-					ligand = ligands.get(index);
-			}
 
 //					mMoleculePanel.setShowStructure(false);
 //				MMTFParser.centerMolecules(mol);
@@ -447,13 +450,9 @@ public class StartOptions {
 			System.out.println(mPDBEntryCode);
 			scene.addGroup(complex);
 
-			ArrayList<StereoMolecule> ligandList = null;
-			if (ligand != null) {
-				ligandList = new ArrayList<>();
-				ligandList.add(ligand);
-			}
-
 			for (int i=0; i<proteins.size(); i++) {
+				ArrayList<StereoMolecule> ligandList = new ArrayList<>();
+				ligandList.addAll(ligandList);
 				V3DMolecule vm = new V3DMolecule(proteins.get(i),
 						MoleculeArchitect.CONSTRUCTION_MODE_WIRES,
 						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
@@ -469,15 +468,17 @@ public class StartOptions {
 			}
 
 			V3DMolecule v3dligand = null;
-			if (ligand != null) {
-				v3dligand = new V3DMolecule(ligand,
-						MoleculeArchitect.CONSTRUCTION_MODE_STICKS,
-						MoleculeArchitect.HYDROGEN_MODE_ALL,
-						V3DMolecule.getNextID(),
-						V3DMolecule.MoleculeRole.LIGAND,
-						true, false);
-				v3dligand.getMolecule().setName("Ligand");
-				scene.addMolecule(v3dligand, complex, true);
+			if (ligands != null) {
+				for (Molecule3D ligand : ligands) {
+					v3dligand = new V3DMolecule(ligand,
+							MoleculeArchitect.CONSTRUCTION_MODE_STICKS,
+							MoleculeArchitect.HYDROGEN_MODE_ALL,
+							V3DMolecule.getNextID(),
+							V3DMolecule.MoleculeRole.LIGAND,
+							true, false);
+//					v3dligand.getMolecule().setName("Ligand");
+					scene.addMolecule(v3dligand, complex, true);
+				}
 			}
 
 			List<Molecule3D> solvents = map.get(StructureAssembler.SOLVENT_GROUP);
