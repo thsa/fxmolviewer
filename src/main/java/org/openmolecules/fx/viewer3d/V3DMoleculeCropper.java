@@ -21,6 +21,7 @@
 package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.chem.Coordinates;
+import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point3D;
@@ -30,15 +31,15 @@ import org.openmolecules.fx.viewer3d.nodes.Ribbons;
 public class V3DMoleculeCropper extends SurfaceCutter {
 	private static final double CROP_ZONE_WIDTH = 1.6;
 
-	private double mInsideDistance,mSquareInsideDistance,mOutsideDistance,mSquareOutsideDistance;
-	private Point3D[] mRefPoints;
-	private Bounds mRefBounds;
-	private V3DMolecule mFXMol;
+	private final double mSquareInsideDistance,mOutsideDistance,mSquareOutsideDistance;
+	private final Point3D[] mRefPoints;
+	private final Bounds mRefBounds;
+	private final V3DMolecule mFXMol;
 
 	public V3DMoleculeCropper(V3DMolecule fxmol, double distance, Point3D[] refPoints, Bounds refBounds) {
 		mFXMol = fxmol;
-		mInsideDistance = distance - CROP_ZONE_WIDTH / 2;
-		mSquareInsideDistance = mInsideDistance * mInsideDistance;
+		double insideDistance = distance - CROP_ZONE_WIDTH / 2;
+		mSquareInsideDistance = insideDistance * insideDistance;
 		mOutsideDistance = distance + CROP_ZONE_WIDTH / 2;
 		mSquareOutsideDistance = mOutsideDistance * mOutsideDistance;
 		mRefPoints = refPoints;
@@ -47,6 +48,7 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 
 	public void crop() {
 		StereoMolecule mol = mFXMol.getMolecule();
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
 		boolean[] deleteAtom = new boolean[mol.getAllAtoms()];
 		int count = 0;
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
@@ -58,6 +60,19 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 			}
 			else if (beyond == 0) {
 				mol.setAtomMarker(atom, true);  // fixed atom for minimizer
+			}
+		}
+		// also remove atoms close to removal zone that loose all their neighbours and would be single unconnected remaining atoms
+		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
+			if (!deleteAtom[atom]) {
+				int deletedNeighbourCount = 0;
+				for (int i=0; i<mol.getAllConnAtomsPlusMetalBonds(atom); i++)
+					if (deleteAtom[mol.getConnAtom(atom, i)])
+						deletedNeighbourCount++;
+				if (deletedNeighbourCount != 0 && deletedNeighbourCount == mol.getAllConnAtomsPlusMetalBonds(atom)) {
+					deleteAtom[atom] = true;
+					count++;
+				}
 			}
 		}
 

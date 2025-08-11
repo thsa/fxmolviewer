@@ -52,7 +52,7 @@ public class StartOptions {
 
 	public static final String[] MODE_OPTIONS = {
 			"Get from PDB-Database",
-			"Open from PDB-File",
+			"Open PDB/MMCIF File",
 			"Test small molecules",
 			"Test molecules surfaces",
 			"Test small fragments",
