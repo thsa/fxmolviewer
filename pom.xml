@@ -27,7 +27,7 @@
 		     to check for updates for these below -->
 		<javafx.version>19.0.2.1</javafx.version>
 		<mmtf.version>1.0.11</mmtf.version>
-		<openchemlib.version>2025.6.1</openchemlib.version>
+		<openchemlib.version>2025.8.3</openchemlib.version>
 		<janino.version>2.7.4</janino.version>
 
 
