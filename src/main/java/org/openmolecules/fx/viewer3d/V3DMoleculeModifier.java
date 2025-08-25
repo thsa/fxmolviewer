@@ -52,8 +52,8 @@ public class V3DMoleculeModifier {
 					fragment.setAtomicNo(at, 1);
 					int aa1 = fragment.getConnAtom(at, 0);
 					int bond = fragment.getBond(at, aa1);
-					Coordinates c1 = fragment.getCoordinates(at);
-					Coordinates cc1 = fragment.getCoordinates(aa1);
+					Coordinates c1 = fragment.getAtomCoordinates(at);
+					Coordinates cc1 = fragment.getAtomCoordinates(aa1);
 					double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(fragment,bond));
 					Coordinates v = c1.subC(cc1);
 					double l = v.dist();
@@ -65,11 +65,11 @@ public class V3DMoleculeModifier {
 			}
 		}
 		if(dummyAtomFragment==-1 || attachmentPointFragment==-1) return; //no attachment point in fragment
-		Coordinates t = mol.getCoordinates(atom).subC(fragment.getCoordinates(attachmentPointFragment));
+		Coordinates t = mol.getAtomCoordinates(atom).subC(fragment.getAtomCoordinates(attachmentPointFragment));
 		fragment.translate(t.x, t.y, t.z);
 		//preorient fragment so that the two bond extension vectors coincide (Rodrigues Rotation Formula)
-		Coordinates v1 = mol.getCoordinates(attachmentPoint).subC(mol.getCoordinates(atom));
-		Coordinates v2 = fragment.getCoordinates(dummyAtomFragment).subC(fragment.getCoordinates(attachmentPointFragment));
+		Coordinates v1 = mol.getAtomCoordinates(attachmentPoint).subC(mol.getAtomCoordinates(atom));
+		Coordinates v2 = fragment.getAtomCoordinates(dummyAtomFragment).subC(fragment.getAtomCoordinates(attachmentPointFragment));
 		alignFragmentOnBondVector(fragment,v1,v2,attachmentPointFragment);
 		//placeFragment(mol, atom, attachmentPoint, fragment, dummyAtomFragment, attachmentPointFragment);
 		int[] bondMap = mol.getDeleteAtomsBondMap(new int[] {atom});
@@ -92,8 +92,8 @@ public class V3DMoleculeModifier {
 			updateNodeIndeces(v3dMol,atomMap,bondMap);
 		}
 		mol.ensureHelperArrays(Molecule.cHelperRings); //now the indeces of bonds and atoms changed
-		Coordinates c1 = mol.getCoordinates(atomMap[attachmentPoint]);
-		Coordinates cc1 = mol.getCoordinates(atomMap[fragmentMap[attachmentPointFragment]]);
+		Coordinates c1 = mol.getAtomCoordinates(atomMap[attachmentPoint]);
+		Coordinates cc1 = mol.getAtomCoordinates(atomMap[fragmentMap[attachmentPointFragment]]);
 		int bond = mol.getBond(atomMap[attachmentPoint], atomMap[fragmentMap[attachmentPointFragment]]);
 		double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(mol,bond));
 		Coordinates v = cc1.subC(c1);
@@ -101,7 +101,7 @@ public class V3DMoleculeModifier {
 		t = v.scaleC(lNew/l).subC(v);
 		for(int at=0;at<fragment.getAllAtoms();at++) {
 			int index = fragmentMap[at];
-			if(index!=-1 &&  attachmentPoint!=index) mol.getCoordinates(atomMap[index]).add(t);
+			if(index!=-1 &&  attachmentPoint!=index) mol.getAtomCoordinates(atomMap[index]).add(t);
 		}
 		optimizeDihedral(mol,atomMap[attachmentPoint],atomMap[fragmentMap[attachmentPointFragment]],atomConstructionList);
 		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(v3dMol);
@@ -168,10 +168,10 @@ public class V3DMoleculeModifier {
 			}
 		}
 	
-		Coordinates t = mol.getCoordinates(bondAtom1).subC(fragment.getCoordinates(fragmentBondAtoms[0]));
+		Coordinates t = mol.getAtomCoordinates(bondAtom1).subC(fragment.getAtomCoordinates(fragmentBondAtoms[0]));
 		fragment.translate(t.x,t.y,t.z);
-		Coordinates v1 = mol.getCoordinates(bondAtom1).subC(mol.getCoordinates(bondAtom2));
-		Coordinates v2 = fragment.getCoordinates(fragmentBondAtoms[0]).subC(fragment.getCoordinates(fragmentBondAtoms[1]));
+		Coordinates v1 = mol.getAtomCoordinates(bondAtom1).subC(mol.getAtomCoordinates(bondAtom2));
+		Coordinates v2 = fragment.getAtomCoordinates(fragmentBondAtoms[0]).subC(fragment.getAtomCoordinates(fragmentBondAtoms[1]));
 		alignFragmentOnBondVector(fragment,v1,v2,fragmentBondAtoms[0]);
 
 		ArrayList<Integer> fragmentAtomsToDelete = new ArrayList<Integer>();
@@ -195,11 +195,11 @@ public class V3DMoleculeModifier {
 		int dihedralAtom2 = bondAtom1;
 		int dihedralAtom3 = bondAtom2;
 		int dihedralAtom4 = fragmentAnchorPoints[1];
-		Coordinates[] dihedralCoords = {mol.getCoordinates(dihedralAtom1),
-				mol.getCoordinates(dihedralAtom2),mol.getCoordinates(dihedralAtom3),
-				fragment.getCoordinates(dihedralAtom4)};
+		Coordinates[] dihedralCoords = {mol.getAtomCoordinates(dihedralAtom1),
+				mol.getAtomCoordinates(dihedralAtom2),mol.getAtomCoordinates(dihedralAtom3),
+				fragment.getAtomCoordinates(dihedralAtom4)};
 		double dihedral = Math.PI-Coordinates.getDihedral(dihedralCoords[0], dihedralCoords[1], dihedralCoords[2], dihedralCoords[3]);
-		rotateFragmentAroundVector(fragment,-dihedral,v1,mol.getCoordinates(bondAtom1));
+		rotateFragmentAroundVector(fragment,-dihedral,v1,mol.getAtomCoordinates(bondAtom1));
 		int[] fragmentMap = fragment.deleteAtoms(fragmentAtomsToDelete.stream().mapToInt(i->i).toArray());
 		fragmentAnchorPoints[0]= fragmentMap[fragmentAnchorPoints[0]];
 		fragmentAnchorPoints[1]= fragmentMap[fragmentAnchorPoints[1]];
@@ -258,8 +258,8 @@ public class V3DMoleculeModifier {
 		
 		mol.ensureHelperArrays(Molecule.cHelperRings); //now the indeces of bonds and atoms changed
 		//cleaning up the geometry
-		Coordinates c1 = mol.getCoordinates(atomMap[atom]);
-		Coordinates cc1 = mol.getCoordinates(atomMap[aa1]);
+		Coordinates c1 = mol.getAtomCoordinates(atomMap[atom]);
+		Coordinates cc1 = mol.getAtomCoordinates(atomMap[aa1]);
 		double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(mol,bondMap[bond]));
 		Coordinates v = c1.subC(cc1);
 		double l = v.dist();
@@ -547,10 +547,10 @@ public class V3DMoleculeModifier {
 				fragment.setAtomicNo(at, 1);
 				int bond = fragment.getBond(at, fragment.getConnAtom(at, 0));
 				double lNew = BondLengthSet.getBondLength(BondLengthSet.getBondIndex(fragment,bond));
-				Coordinates v = fragment.getCoordinates(at).subC(fragment.getCoordinates(fragment.getConnAtom(at, 0)));
+				Coordinates v = fragment.getAtomCoordinates(at).subC(fragment.getAtomCoordinates(fragment.getConnAtom(at, 0)));
 				double l = v.dist();
 				Coordinates t = v.scaleC(lNew/l).subC(v);
-				fragment.getCoordinates(at).add(t);
+				fragment.getAtomCoordinates(at).add(t);
 		}
 		fragment.ensureHelperArrays(Molecule.cHelperCIP);
 		mol.addMolecule(fragment);
@@ -650,11 +650,11 @@ public class V3DMoleculeModifier {
 
 		
 		for(int at=0;at<fragment.getAllAtoms();at++) {
-			Coordinates v = fragment.getCoordinates(at).subC(fragment.getCoordinates(attachmentPoint));
+			Coordinates v = fragment.getAtomCoordinates(at).subC(fragment.getAtomCoordinates(attachmentPoint));
 			Coordinates vNew = v.scaleC(cosTheta);
 			vNew.add(k.cross(v).scale(sinTheta));
 			vNew.add(k.scaleC(k.dot(v)).scale(1-cosTheta));
-			vNew.add(fragment.getCoordinates(attachmentPoint));
+			vNew.add(fragment.getAtomCoordinates(attachmentPoint));
 			fragment.setAtomX(at, vNew.x);
 			fragment.setAtomY(at, vNew.y);
 			fragment.setAtomZ(at, vNew.z);
@@ -765,8 +765,8 @@ public class V3DMoleculeModifier {
 
 	
 	private static void rotateAtomsAroundBond(StereoMolecule mol, double angle, ArrayList<Integer> atomsToRotate, int torsionAtom1,int torsionAtom2) {
-		Coordinates t2 = mol.getCoordinates(torsionAtom2);
-		Coordinates unit = t2.subC(mol.getCoordinates(torsionAtom1)).unit();
+		Coordinates t2 = mol.getAtomCoordinates(torsionAtom2);
+		Coordinates unit = t2.subC(mol.getAtomCoordinates(torsionAtom1)).unit();
 		
 		double[][] m = getRotationMatrix(unit, -angle);
 		for (int atom:atomsToRotate) {

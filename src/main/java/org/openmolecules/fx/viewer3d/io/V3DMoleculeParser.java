@@ -54,7 +54,7 @@ public class V3DMoleculeParser {
 						new ConformerGenerator().getOneConformerAsMolecule(mol);
 
 					IntStream.range(0, mol.getAllAtoms()).forEach(a -> {
-						Coordinates c = mol.getCoordinates(a);
+						Coordinates c = mol.getAtomCoordinates(a);
 						c.y = -c.y;
 						c.z = -c.z;
 					});

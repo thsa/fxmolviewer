@@ -191,7 +191,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 			int atom = toAtom(index, mSortedAtomsFX);
 			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus + SURPLUS;
-			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom));
+			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getAtomCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
 				if (atomCount == MAX_ATOMS_ON_TRIANGLE-1) {
 					System.out.println("WARNING: more near atoms than MAX_ATOMS_ON_TRIANGLE");
@@ -291,7 +291,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		for (int i=0; i<MAX_ATOMS_ON_TRIANGLE && atom[i] != -1; i++) {
 			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom[i]));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
-			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom[i]));
+			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getAtomCoordinates(atom[i]));
 			if (d != Float.MAX_VALUE) {
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				int atomicNo = mMol.getAtomicNo(atom[i]);
@@ -328,7 +328,7 @@ public class AtomicNoTexture extends SurfaceTexture {
 		for (int i=0; i<MAX_ATOMS_ON_TRIANGLE && atom[i] != -1; i++) {
 			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom[i]));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
-			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getCoordinates(atom[i]));
+			float d = distanceToPoint(x, y, z, influenceRadius, mMol.getAtomCoordinates(atom[i]));
 			if (d != Float.MAX_VALUE) {
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				int atomicNo = mMol.getAtomicNo(atom[i]);

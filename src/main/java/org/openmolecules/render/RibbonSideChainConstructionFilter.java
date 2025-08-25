@@ -41,7 +41,7 @@ public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
 
 		for (StereoMolecule ligand : ligands) {
 			for (int i=0; i<ligand.getAllAtoms(); i++) {
-				Coordinates c = ligand.getCoordinates(i);
+				Coordinates c = ligand.getAtomCoordinates(i);
 				if (minX > c.x)
 					minX = c.x;
 				if (minY > c.y)
@@ -63,7 +63,7 @@ public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
 
 		for (int ap=0; ap<protein.getAllAtoms(); ap++) {
 			if (!atomMask[ap]) {
-				Coordinates cp = protein.getCoordinates(ap);
+				Coordinates cp = protein.getAtomCoordinates(ap);
 
 				if (cp.x < minX - MAX_DISTANCE
 				 || cp.x > maxX + MAX_DISTANCE
@@ -75,7 +75,7 @@ public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
 
 				for (StereoMolecule ligand : ligands) {
 					for (int i=0; i<ligand.getAllAtoms(); i++) {
-						Coordinates cl = ligand.getCoordinates(i);
+						Coordinates cl = ligand.getAtomCoordinates(i);
 						double dx = Math.abs(cl.x - cp.x);
 						if (dx < MAX_DISTANCE) {
 							double dy = Math.abs(cl.y - cp.y);

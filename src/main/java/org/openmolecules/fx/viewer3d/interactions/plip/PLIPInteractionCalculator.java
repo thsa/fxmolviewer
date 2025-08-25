@@ -208,12 +208,12 @@ public class PLIPInteractionCalculator implements InteractionCalculator {
 				InteractionPoint donIP = (ip1.getType() == IP_TYPE_HALOGEN_DONOR) ? ip1 : ip2;
 				Point3D donP = (ip1.getType() == IP_TYPE_HALOGEN_DONOR) ? p1 : p2;
 				Point3D accP = (ip1.getType() == IP_TYPE_HALOGEN_DONOR) ? p2 : p1;
-				Coordinates crDon = donIP.getMol().getCoordinates(donIP.getMol().getConnAtom(donIP.getAtom(), 0));
+				Coordinates crDon = donIP.getMol().getAtomCoordinates(donIP.getMol().getConnAtom(donIP.getAtom(), 0));
 				Point3D prDon = donIP.getFXMol().localToParent(crDon.x, crDon.y, crDon.z);
 				double angle1 = donP.subtract(prDon).angle(donP.subtract(accP));
 				if (Math.abs(angle1 - HALOGEN_DON_ANGLE) < HALOGEN_ANGLE_DEV) {
 					InteractionPoint accIP = (ip1.getType() == IP_TYPE_HALOGEN_DONOR) ? ip2 : ip1;
-					Coordinates accCR = accIP.getMol().getCoordinates(accIP.getMol().getConnAtom(accIP.getAtom(), 0));
+					Coordinates accCR = accIP.getMol().getAtomCoordinates(accIP.getMol().getConnAtom(accIP.getAtom(), 0));
 					Point3D accPR = accIP.getFXMol().localToParent(accCR.x, accCR.y, accCR.z);
 					double angle2 = accP.subtract(accPR).angle(accP.subtract(donP));
 					if (Math.abs(angle2 - HALOGEN_ACC_ANGLE) < HALOGEN_ANGLE_DEV)

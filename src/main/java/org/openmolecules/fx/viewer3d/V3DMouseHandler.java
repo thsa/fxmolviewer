@@ -40,6 +40,7 @@ import org.openmolecules.fx.viewer3d.nodes.VolumeSphere;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.TorsionHistogram;
 
+import java.util.ArrayList;
 import java.util.stream.IntStream;
 
 public class V3DMouseHandler {
@@ -468,10 +469,13 @@ public class V3DMouseHandler {
 				Rotate r = new Rotate(d, p2);
 				if (mAffectedMol != null)
 					mAffectedMol.rotate(r);
-				else
-					for (Node node : mScene.getWorld().getChildren())
+				else {
+					// creating a copy avoids ConcurrentModificationExceptions when we have labels!
+					ArrayList<Node> nodeList = new ArrayList<>(mScene.getWorld().getChildren());
+					for (Node node : nodeList)
 						if (node instanceof V3DMolecule)
-							((V3DMolecule) node).rotate(r);
+							((V3DMolecule)node).rotate(r);
+				}
 			}
 			else {
 				// world center of gravity:

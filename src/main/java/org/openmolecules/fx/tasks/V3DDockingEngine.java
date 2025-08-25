@@ -115,7 +115,7 @@ public class V3DDockingEngine {
 		 */
 		for(int a=0;a<origMol.getAllAtoms();a++) {
 			//Point3D globalCoords = fxmol.localToScene(new Point3D(origMol.getCoordinates(a).x, origMol.getCoordinates(a).y, origMol.getCoordinates(a).z));
-			Coordinates globalCoords = fxmol.getWorldCoordinates(scene3D, origMol.getCoordinates(a));
+			Coordinates globalCoords = fxmol.getWorldCoordinates(scene3D, origMol.getAtomCoordinates(a));
 			newMol.setAtomX(a, globalCoords.x);
 			newMol.setAtomY(a, globalCoords.y);
 			newMol.setAtomZ(a, globalCoords.z);

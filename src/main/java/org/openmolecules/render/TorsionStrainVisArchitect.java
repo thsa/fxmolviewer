@@ -21,8 +21,8 @@ public class TorsionStrainVisArchitect {
 		for(int bond : torsionStrainAnalyzer.getRotBonds()) {
 			int atom1 = mol.getBondAtom(0, bond);
 			int atom2 = mol.getBondAtom(1, bond);
-			Coordinates c1 = mol.getCoordinates(atom1);
-			Coordinates c2 = mol.getCoordinates(atom2);
+			Coordinates c1 = mol.getAtomCoordinates(atom1);
+			Coordinates c2 = mol.getAtomCoordinates(atom2);
 			Coordinates center = new Coordinates();
 			Coordinates delta = new Coordinates();
 			center.center(c1, c2);
@@ -47,8 +47,8 @@ public class TorsionStrainVisArchitect {
 		int atom1 = mol.getBondAtom(0, bond);
 		int atom2 = mol.getBondAtom(1, bond);
 
-		Coordinates p1 = mol.getCoordinates(atom1);
-		Coordinates p2 = mol.getCoordinates(atom2);
+		Coordinates p1 = mol.getAtomCoordinates(atom1);
+		Coordinates p2 = mol.getAtomCoordinates(atom2);
 
 		buildStickBond(bond,color,p1,p2,CYLINDER_RADIUS,d,b,c);
 		

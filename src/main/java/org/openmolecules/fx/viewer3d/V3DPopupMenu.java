@@ -353,6 +353,9 @@ public class V3DPopupMenu extends ContextMenu {
 				RadioMenuItem surfaceColorNegativity = new RadioMenuItem("By Donors & Acceptors");
 				surfaceColorNegativity.setSelected(fxmol.getSurfaceColorMode(type) == SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS);
 				surfaceColorNegativity.setOnAction(e -> fxmol.setSurfaceColorMode(type, SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS));
+				RadioMenuItem surfaceColorCharges = new RadioMenuItem("By Partial Charges");
+				surfaceColorCharges.setSelected(fxmol.getSurfaceColorMode(type) == SurfaceMesh.SURFACE_COLOR_PARTIAL_CHARGES);
+				surfaceColorCharges.setOnAction(e -> fxmol.setSurfaceColorMode(type, SurfaceMesh.SURFACE_COLOR_PARTIAL_CHARGES));
 				RadioMenuItem surfaceColorByAtomicNo = new RadioMenuItem("By Atomic-No");
 				surfaceColorByAtomicNo.setSelected(fxmol.getSurfaceColorMode(type) == SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS);
 				surfaceColorByAtomicNo.setOnAction(e -> fxmol.setSurfaceColorMode(type, SurfaceMesh.SURFACE_COLOR_ATOMIC_NOS));
@@ -363,7 +366,7 @@ public class V3DPopupMenu extends ContextMenu {
 				colorItem.setHideOnClick(false);
 
 				Menu menuSurfaceColor = new Menu("Surface Color");
-				menuSurfaceColor.getItems().addAll(surfaceColorInherit, surfaceColorPlain, surfaceColorAtoms, surfaceColorNegativity, surfaceColorByAtomicNo, colorItem);
+				menuSurfaceColor.getItems().addAll(surfaceColorInherit, surfaceColorPlain, surfaceColorAtoms, surfaceColorNegativity, surfaceColorCharges, surfaceColorByAtomicNo, colorItem);
 
 				Slider sliderTransparency = createSlider(0.0, 0.9, fxmol.getSurfaceTransparency(type));
 				sliderTransparency.valueProperty().addListener(newValue -> fxmol.setSurfaceTransparency(type, ((DoubleProperty) newValue).doubleValue()));

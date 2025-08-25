@@ -22,7 +22,7 @@ public class AtomIndexLabel {
 		mFXMol = fxmol;
 		mNodeDetail = detail;
 		int atom = detail.getAtom();
-		Coordinates c = fxmol.getMolecule().getCoordinates(atom);
+		Coordinates c = fxmol.getMolecule().getAtomCoordinates(atom);
 		Point3D p = new Point3D(c.x, c.y, c.z);
 		Color color = MoleculeArchitect.getAtomColor(fxmol.getMolecule().getAtomicNo(atom), 1.0);
 		mLabel = NonRotatingLabel.create(mFXMol, Integer.toString(atom), p, color);
@@ -42,7 +42,7 @@ public class AtomIndexLabel {
 
 	private void updateAtomLabel() {
 		int atom = mNodeDetail.getAtom();
-		Coordinates wc =  mFXMol.getMolecule().getCoordinates(atom);
+		Coordinates wc =  mFXMol.getMolecule().getAtomCoordinates(atom);
 		mLabel.update(new Point3D(wc.x, wc.y, wc.z), Integer.toString(atom));
 	}
 }

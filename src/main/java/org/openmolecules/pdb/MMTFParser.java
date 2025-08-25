@@ -257,13 +257,13 @@ public class MMTFParser {
 		Coordinates cog = new Coordinates();
 		for (Molecule3D mol:molecule) {
 			for (int atom = 0; atom<mol.getAllAtoms(); atom++)
-				cog.add(mol.getCoordinates(atom));
+				cog.add(mol.getAtomCoordinates(atom));
 			cog.scale(1.0 / mol.getAllAtoms());
 		}
 
 		for (Molecule3D mol:molecule)
 			for (int atom = 0; atom<mol.getAllAtoms(); atom++)
-				mol.getCoordinates(atom).sub(cog);
+				mol.getAtomCoordinates(atom).sub(cog);
 	}
 
 	private static int getAtomicNoFromLabel(String label) {

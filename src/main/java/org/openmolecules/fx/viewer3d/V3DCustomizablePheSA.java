@@ -191,7 +191,7 @@ public class V3DCustomizablePheSA extends V3DRotatableGroup implements MolCoordi
 		Random random = new Random();
 		int atom = 0;
 		Coordinates shift = new Coordinates(3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1),3*(2*random.nextDouble()-1));
-		VolumeGaussian eg = new VolumeGaussian(atom, 6, new Coordinates(mFXMol.getMolecule().getCoordinates(atom)), shift,function);
+		VolumeGaussian eg = new VolumeGaussian(atom, 6, new Coordinates(mFXMol.getMolecule().getAtomCoordinates(atom)), shift,function);
 		mMolVol.getVolumeGaussians().add(eg);
 		addExclusionSphere(eg);
 	}

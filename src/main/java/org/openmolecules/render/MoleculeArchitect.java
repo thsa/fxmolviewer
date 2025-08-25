@@ -641,6 +641,6 @@ public class MoleculeArchitect {
 		}
 
 	private Coordinates getCoordinates(int atom) {
-		return (mConformer != null) ? mConformer.getCoordinates(atom) : mMol.getCoordinates(atom);
+		return (mConformer != null) ? mConformer.getCoordinates(atom) : mMol.getAtomCoordinates(atom);
 		}
 	}

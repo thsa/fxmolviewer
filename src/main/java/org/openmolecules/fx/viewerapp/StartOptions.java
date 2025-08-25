@@ -451,10 +451,9 @@ public class StartOptions {
 			scene.addGroup(complex);
 
 			for (int i=0; i<proteins.size(); i++) {
-				ArrayList<StereoMolecule> ligandList = new ArrayList<>();
-				ligandList.addAll(ligandList);
+				ArrayList<StereoMolecule> ligandList = new ArrayList<>(ligands);
 				V3DMolecule vm = new V3DMolecule(proteins.get(i),
-						MoleculeArchitect.CONSTRUCTION_MODE_WIRES,
+						mCropLigand ? MoleculeArchitect.CONSTRUCTION_MODE_WIRES : MoleculeArchitect.CONSTRUCTION_MODE_NONE,
 						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 						Ribbons.MODE_CARTOON,
 						mCropLigand ? V3DMolecule.SURFACE_MODE_FILLED : V3DMolecule.SURFACE_MODE_NONE,

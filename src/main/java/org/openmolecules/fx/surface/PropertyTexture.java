@@ -22,6 +22,9 @@ package org.openmolecules.fx.surface;
 
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.VDWRadii;
+import com.actelion.research.chem.forcefield.mmff.ForceFieldMMFF94;
+import com.actelion.research.chem.forcefield.mmff.MMFFMolecule;
+import com.actelion.research.chem.forcefield.mmff.Tables;
 import com.actelion.research.chem.prediction.CLogPPredictor;
 import com.actelion.research.util.SortedList;
 import javafx.collections.ObservableFloatArray;
@@ -61,6 +64,10 @@ public class PropertyTexture extends SurfaceTexture {
 		case SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS:
 			createBipolarTexture(opacity);
 			calculateDonorsAndAcceptors();
+			break;
+		case SurfaceMesh.SURFACE_COLOR_PARTIAL_CHARGES:
+			createBipolarTexture(opacity);
+			calculatePartialCharges();
 			break;
 		}
 	}
@@ -159,7 +166,7 @@ public class PropertyTexture extends SurfaceTexture {
 			int atom = toAtom(index, sortedAtomList);
 			float vdwr = VDWRadii.getVDWRadius(mMol.getAtomicNo(atom));
 			float influenceRadius = vdwr + REACH + mSurfaceSurplus;
-			float d = distanceToPoint(x, y, z, influenceRadius, mol.getCoordinates(atom));
+			float d = distanceToPoint(x, y, z, influenceRadius, mol.getAtomCoordinates(atom));
 			if (d != Float.MAX_VALUE) {
 				float weight = calculateWeight(d-vdwr-mSurfaceSurplus);
 				weightSum += weight;
@@ -190,6 +197,19 @@ public class PropertyTexture extends SurfaceTexture {
 			if (mAtomValue[atom] == 0 && (mMol.getAtomicNo(atom) == 7 || mMol.getAtomicNo(atom) == 8))
 				mAtomValue[atom] = -1f;
 		limitAndNormalizeValues(-1f, 1f);
+	}
+
+	private void calculatePartialCharges() {
+		mAtomValue = new float[mMol.getAllAtoms()];
+		try {
+			Tables tables = Tables.newMMFF94(ForceFieldMMFF94.MMFF94SPLUS);
+			MMFFMolecule mmffMol = new com.actelion.research.chem.forcefield.mmff.MMFFMolecule(mMol);
+			double[] charges = com.actelion.research.chem.forcefield.mmff.type.Charge.getCharges(tables, mmffMol);
+			for (int atom=0; atom<mMol.getAllAtoms(); atom++)
+				mAtomValue[atom] = -2*(float)charges[atom];
+			limitAndNormalizeValues(-1f, 1f);
+		}
+		catch (Exception e) {}
 	}
 
 	/**

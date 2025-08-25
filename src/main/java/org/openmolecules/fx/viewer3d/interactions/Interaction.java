@@ -62,8 +62,8 @@ public class Interaction {
 	}
 
 	public void create() {
-		Coordinates c1 = (mVisAtom1 == -1) ? mIP1.getCenter() : mIP1.getMol().getCoordinates(mVisAtom1);
-		Coordinates c2 = (mVisAtom2 == -1) ? mIP2.getCenter() : mIP2.getMol().getCoordinates(mVisAtom2);
+		Coordinates c1 = (mVisAtom1 == -1) ? mIP1.getCenter() : mIP1.getMol().getAtomCoordinates(mVisAtom1);
+		Coordinates c2 = (mVisAtom2 == -1) ? mIP2.getCenter() : mIP2.getMol().getAtomCoordinates(mVisAtom2);
 		Point3D point1 = mIP1.getFXMol().localToParent(c1.x,c1.y,c1.z);
 		Point3D point2 = mIP2.getFXMol().localToParent(c2.x,c2.y,c2.z);
 		mLength = point1.distance(point2);

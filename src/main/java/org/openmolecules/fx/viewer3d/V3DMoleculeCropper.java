@@ -52,7 +52,7 @@ public class V3DMoleculeCropper extends SurfaceCutter {
 		boolean[] deleteAtom = new boolean[mol.getAllAtoms()];
 		int count = 0;
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-			Coordinates c = mol.getCoordinates(atom);
+			Coordinates c = mol.getAtomCoordinates(atom);
 			int beyond = isBeyondDistance(mFXMol.localToScene(c.x, c.y, c.z));
 			if (beyond == 1) {
 				deleteAtom[atom] = true;

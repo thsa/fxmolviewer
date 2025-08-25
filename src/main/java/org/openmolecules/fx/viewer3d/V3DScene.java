@@ -116,13 +116,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			return requiredAtoms;
 		}
 	}
-	
+
 	public enum ViewerSettings {
 		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND,
 		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION, ATOM_LEVEL_SELECTION
 	}
 
+	// IMPORTANT: When deriving a predefined setting for modification, then clone it first!!!
 	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES);
+	public static final EnumSet<ViewerSettings> CONFORMER_EDIT_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES, ViewerSettings.EDITING);
 	public static final EnumSet<ViewerSettings> VISUALIZATION_MINIMALIST_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS);
 	public static final EnumSet<ViewerSettings> VISUALIZATION_EXTENDED_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.EDITING);
 
@@ -433,14 +435,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 
 			for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups()) {
 				if (fxmol.isVisible()) {
-					for (Node node2:fxmol.getChildren()) {
-						NodeDetail detail = (NodeDetail)node2.getUserData();
-						if (detail != null) {
-							if (detail.isAtom() || detail.isBond()) {
-								Point3D p = node2.localToScene(0.0, 0.0, 0.0);
-								cameraZ = Math.min(cameraZ, p.getZ() - Math.max(5, tanH * Math.abs(p.getX()-cog.getX())));
-								cameraZ = Math.min(cameraZ, p.getZ() - Math.max(5, tanV * Math.abs(p.getY()-cog.getY())));
-							}
+					if (fxmol instanceof V3DMolecule) {
+//						for (Coordinates c : ((V3DMolecule)fxmol).getMolecule().getAtomCoordinates()) {
+						for (int atom=0; atom<((V3DMolecule)fxmol).getMolecule().getAllAtoms(); atom++) {
+							Coordinates c = ((V3DMolecule)fxmol).getMolecule().getAtomCoordinates(atom);
+							Point3D p = fxmol.localToScene(c.x, c.y, c.z);
+							cameraZ = Math.min(cameraZ, p.getZ() - Math.max(5, tanH * Math.abs(p.getX()-cog.getX())));
+							cameraZ = Math.min(cameraZ, p.getZ() - Math.max(5, tanV * Math.abs(p.getY()-cog.getY())));
 						}
 					}
 				}
@@ -594,7 +595,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 					StereoMolecule refMol = refMolFX.getMolecule();
 					Point3D[] refPoint = new Point3D[refMol.getAllAtoms()];
 					for (int atom=0; atom<refMol.getAllAtoms(); atom++) {
-						Coordinates c = refMol.getCoordinates(atom);
+						Coordinates c = refMol.getAtomCoordinates(atom);
 						refPoint[atom] = fxmol.localToScene(c.x, c.y, c.z);
 					}
 					V3DMoleculeCropper cropper = new V3DMoleculeCropper((V3DMolecule)fxmol, distance, refPoint, refBounds);
@@ -991,13 +992,13 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 				int atid = ((NodeDetail) pickedAtomList[counter].getUserData()).getAtom();
 				atIds.add(atid);
 				fxmols.add(fxmol);
-				Coordinates c = fxmol.getMolecule().getCoordinates(atid);
+				Coordinates c = fxmol.getMolecule().getAtomCoordinates(atid);
 				//Point3D globalCoords = fxmol.localToParent(c.x,c.y,c.z);
 				Coordinates worldPoint =  fxmol.getWorldCoordinates(this, c);
 				Point3D globalCoords = new Point3D(worldPoint.x, worldPoint.y, worldPoint.z);
 				coords[counter] = new Coordinates(globalCoords.getX(),globalCoords.getY(),globalCoords.getZ());
 				counter++;
-			}		
+			}
 			if (mMeasurementMode == MEASUREMENT.DISTANCE) {
 				double dist = coords[0].distance(coords[1]);
 				addMeasurementNodes(coords[0],coords[1], getContrastColor(DISTANCE_COLOR),

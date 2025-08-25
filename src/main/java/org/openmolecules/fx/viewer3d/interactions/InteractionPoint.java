@@ -49,7 +49,7 @@ public class InteractionPoint {
 
 	public Coordinates getCenter() {
 		if (mAtoms.length == 1)
-			return mMol.getCoordinates(mAtoms[0]);
+			return mMol.getAtomCoordinates(mAtoms[0]);
 
 		Coordinates c = new Coordinates();
 		for (int atom : mAtoms)
@@ -64,7 +64,7 @@ public class InteractionPoint {
 	public Coordinates calculatePlaneNormal() {
 		Coordinates cog = new Coordinates();
 		for (int mAtom : mAtoms)
-			cog.add(mMol.getCoordinates(mAtom));
+			cog.add(mMol.getAtomCoordinates(mAtom));
 		cog.scale(1.0 / mAtoms.length);
 
 		double[][] coords = new double[mAtoms.length][3];

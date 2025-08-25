@@ -118,7 +118,7 @@ public class RayTraceOptions {
 //			}
 
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-			Coordinates c = mol.getCoordinates(atom);
+			Coordinates c = mol.getAtomCoordinates(atom);
 			localToSunflow(fxmol, c.x, c.y, c.z, conformer.getCoordinates(atom));
 		}
 

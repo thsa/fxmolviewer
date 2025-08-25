@@ -264,7 +264,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mSurfaceTransparency[0] = surfaceTransparency;
 		mInitialCoordinates = new Coordinates[mol.getAllAtoms()];
 		IntStream.range(0,mol.getAllAtoms()).forEach(i -> {
-			mInitialCoordinates[i] = new Coordinates(mol.getCoordinates(i));
+			mInitialCoordinates[i] = new Coordinates(mol.getAtomCoordinates(i));
 		});
 
 		for (int i=1; i<surfaceCount; i++) {
@@ -297,7 +297,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	public void setInitialCoordinates() {
 		mInitialCoordinates = new Coordinates[mMol.getAllAtoms()];
 		IntStream.range(0,mMol.getAllAtoms()).forEach(i -> {
-			mInitialCoordinates[i] = new Coordinates(mMol.getCoordinates(i));
+			mInitialCoordinates[i] = new Coordinates(mMol.getAtomCoordinates(i));
 		});
 	}
 
