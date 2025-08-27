@@ -2,12 +2,6 @@ package org.openmolecules.fx.viewer3d.panel;
 
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 
-import com.actelion.research.jfx.gui.chem.MoleculeView;
-import com.actelion.research.jfx.gui.chem.MoleculeViewSkin;
-import com.actelion.research.share.gui.editor.Model;
-
-import javafx.beans.property.BooleanProperty;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.paint.Color;
@@ -22,11 +16,7 @@ public class RoleCell extends TreeTableCell<MolGroupModel,MolGroupModel> impleme
 	private Label mLabel;
 	private MolGroupModel mModel;
 
-	public RoleCell() {
-
-	}
-
-
+	public RoleCell() {}
 
 	@Override
 	public void updateItem(MolGroupModel item, boolean empty) {
@@ -40,8 +30,6 @@ public class RoleCell extends TreeTableCell<MolGroupModel,MolGroupModel> impleme
 		 }
 		if(item!=null)
 			item.addMolGroupModelChangeListener(this);
-		
-
 	}
 
 	public void updateView(boolean empty) {
@@ -74,19 +62,10 @@ public class RoleCell extends TreeTableCell<MolGroupModel,MolGroupModel> impleme
 		}
 	}
 
-
-
-
-
-
 	@Override
 	public void groupModelChanged() {
 		if(mModel==null || mLabel==null)
 			return;
 		updateView(false);
-		
 	}
-
-
-
 }

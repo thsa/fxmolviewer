@@ -4,18 +4,11 @@ import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 
-import com.actelion.research.share.gui.editor.geom.IDrawContext;
-import com.actelion.research.share.gui.editor.io.IKeyEvent;
-import com.actelion.research.share.gui.editor.io.IMouseEvent;
-
-import javafx.scene.Node;
-
 public interface V3DEditorAction {
 
 
     /**
      * Handles the MouseUp event
-     * @param ev
      * @return true if the action handles the event
      */
     
