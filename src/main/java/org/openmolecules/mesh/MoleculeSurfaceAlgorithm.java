@@ -73,7 +73,7 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 	 * marching cubes algorithm that avoids small or skinny triangles.
 	 * If probeSize!=0 then the solvent accessible surface (Conolly surface)
 	 * is created using a sphere with the given size as probe.
-	 * Otherwise the created surface is just the outer hull of all atom spheres
+	 * Otherwise, the created surface is just the outer hull of all atom spheres
 	 * using van-der-Waals radii.
 	 * @param mol
 	 * @param type CONNOLLY or LEE_RICHARDS
@@ -97,6 +97,9 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		float zmin = Float.MAX_VALUE;
 		float zmax = Float.MIN_VALUE;
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
+			if (mol.isMetalAtom(atom))
+				continue;
+
 			float r = VDWRadii.getVDWRadius(mol.getAtomicNo(atom));
 			float x = (float)mol.getAtomX(atom);
 			float y = (float)mol.getAtomY(atom);
@@ -131,6 +134,9 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		float[] grid = new float[mGridSizeX*mGridSizeY*mGridSizeZ];
 
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
+			if (mol.isMetalAtom(atom))
+				continue;
+
 			// translate atom coordinates to voxel space
 			float x = ((float)mol.getAtomX(atom) - offsetX) / mVoxelSize;
 			float y = ((float)mol.getAtomY(atom) - offsetY) / mVoxelSize;
@@ -183,7 +189,7 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		for (float v:grid) {
 			v -= d;
 			if (v > 0f)
-				volume += (v > 1f ? 1f : v);
+				volume += Math.min(v, 1f);
 			}
 		return volume * mVoxelSize * mVoxelSize * mVoxelSize;
 		}

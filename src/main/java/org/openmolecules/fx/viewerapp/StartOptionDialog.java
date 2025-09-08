@@ -70,7 +70,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 		grid.add(mTextFieldPDBCode, 1, yIndex);
 
 		mCheckBoxCropLigand = new CheckBox("Crop ligand");
-		mCheckBoxCropLigand.setSelected(options == null || options.geCropLigand());
+		mCheckBoxCropLigand.setSelected(options == null || options.getCropLigand());
 		grid.add(mCheckBoxCropLigand, 0, ++yIndex);
 
 		getDialogPane().setContent(grid);

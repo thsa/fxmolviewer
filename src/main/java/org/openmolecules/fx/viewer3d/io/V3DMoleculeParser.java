@@ -13,7 +13,7 @@ import com.actelion.research.chem.io.DWARFileParser.SpecialField;
 import com.actelion.research.chem.io.Mol2FileParser;
 import com.actelion.research.chem.io.SDFileParser;
 import com.actelion.research.chem.io.pdb.mmcif.MMCIFParser;
-import com.actelion.research.chem.io.pdb.parser.PDBCoordEntryFile;
+import com.actelion.research.chem.io.pdb.parser.PDBFileEntry;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
 import com.actelion.research.chem.phesa.DescriptorHandlerShape;
@@ -138,7 +138,7 @@ public class V3DMoleculeParser {
 			try {
 				V3DRotatableGroup pdbGroup = new V3DRotatableGroup(new File(file).getName().split("\\.")[0]);
 				scene.addGroup(pdbGroup);
-				PDBCoordEntryFile pdbEntry = file.endsWith(".pdb") ? new PDBFileParser().parse(new File(file)) : MMCIFParser.parse(new File(file));
+				PDBFileEntry pdbEntry = file.endsWith(".pdb") ? new PDBFileParser().parse(new File(file)) : MMCIFParser.parse(new File(file));
 				pdbEntry.extractMols().forEach((k,v) -> {
 					List<V3DMolecule> groupMols = new ArrayList<V3DMolecule>();
 					V3DMolecule.MoleculeRole role;

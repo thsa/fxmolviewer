@@ -23,7 +23,7 @@ package org.openmolecules.fx.viewerapp;
 import com.actelion.research.chem.*;
 import com.actelion.research.chem.conf.Conformer;
 import com.actelion.research.chem.io.pdb.mmcif.MMCIFParser;
-import com.actelion.research.chem.io.pdb.parser.PDBCoordEntryFile;
+import com.actelion.research.chem.io.pdb.parser.PDBFileEntry;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
 import com.actelion.research.util.Platform;
@@ -335,7 +335,7 @@ public class StartOptions {
 		return mPDBEntryCode;
 		}
 
-	public boolean geCropLigand() {
+	public boolean getCropLigand() {
 		return mCropLigand;
 		}
 
@@ -379,7 +379,7 @@ public class StartOptions {
 
 	private void loadPDBEntry(V3DScene scene) {
 		try {
-			PDBCoordEntryFile entryFile = (mPDBFile != null) ?
+			PDBFileEntry entryFile = (mPDBFile != null) ?
 					(mPDBFile.toLowerCase().endsWith(".pdb") ? new PDBFileParser().parse(new File(mPDBFile))
 							: MMCIFParser.parse(mPDBFile))
 					: (!mPDBEntryCode.isEmpty()) ? MMCIFParser.getFromPDB(mPDBEntryCode) : null;
@@ -389,14 +389,17 @@ public class StartOptions {
 				return;
 			}
 
-			Map<String, List<Molecule3D>> map = entryFile.extractMols(false);
+			Map<String, List<Molecule3D>> map = entryFile.extractMols(true);
 			List<Molecule3D> ligands = map.get(StructureAssembler.LIGAND_GROUP);
-			if (ligands == null || ligands.isEmpty()) {
-				map = entryFile.extractMols(true);
-				ligands = map.get(StructureAssembler.LIGAND_GROUP);
-				if (ligands != null && !ligands.isEmpty())
-					scene.showMessage("Only covalent ligand(s) were found and disconnected from the protein structure.");
-			}
+
+			int covalentCount = 0;
+			if (ligands != null)
+				for (Molecule3D ligand : ligands)
+					if (ligand.isCovalentLigand())
+						covalentCount++;
+
+			if (covalentCount != 0)
+				scene.showMessage(covalentCount+" of "+ligands.size()+" ligands were covalently bound and disconnected from the protein structure.");
 
 			List<Molecule3D> proteins = map.get(StructureAssembler.PROTEIN_GROUP);
 			if (proteins == null || proteins.isEmpty()) {
@@ -413,8 +416,10 @@ public class StartOptions {
 					else {
 						String[] ligandName = new String[ligands.size()];
 						for (int i=0; i<ligands.size(); i++) {
-							String formula = new MolecularFormula(ligands.get(i)).getFormula();
-							ligandName[i] = (i + 1) + ": " + formula + "; " + (ligands.get(i).getName() == null ? "Unnamed" : ligands.get(i).getName());
+							Molecule3D ligand = ligands.get(i);
+							String formula = " " + new MolecularFormula(ligand).getFormula();
+							String covalent = ligand.isCovalentLigand() ? " (covalent)" : "";
+							ligandName[i] = (i+1) + ": " + (ligands.get(i).getName() == null ? "Unnamed" : ligands.get(i).getName()) + formula + covalent;
 						}
 
 						ChoiceDialog<String> dialog = new ChoiceDialog<>(ligandName[0], ligandName);
