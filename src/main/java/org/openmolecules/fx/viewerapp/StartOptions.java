@@ -461,6 +461,7 @@ public class StartOptions {
 						mCropLigand ? MoleculeArchitect.CONSTRUCTION_MODE_WIRES : MoleculeArchitect.CONSTRUCTION_MODE_NONE,
 						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 						Ribbons.MODE_CARTOON,
+						V3DMolecule.SIDECHAIN_MODE_NEAR_LIGAND,
 						mCropLigand ? V3DMolecule.SURFACE_MODE_FILLED : V3DMolecule.SURFACE_MODE_NONE,
 						SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS,
 						surfaceColor[i], 0.5,

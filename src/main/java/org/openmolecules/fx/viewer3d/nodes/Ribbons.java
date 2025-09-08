@@ -61,9 +61,9 @@ public class Ribbons {
     private int[][][] mResidueAtom;
     private int[][] mResidueColor;
     private int[][] mSSType;
-    private final V3DMolecule mMol3D;
+    private V3DMolecule mMol3D;
     private final StereoMolecule mMol;
-    private final MeshView[] mRibbonMesh;
+    private MeshView[] mRibbonMesh;
     private Color mColor;   // ribbon color; if null, then mesh colors are according to COLOR_MODE
     private boolean[] mIsBackboneAtom;
 
@@ -85,6 +85,23 @@ public class Ribbons {
             mResidueAtom = determineBackbone();
 
         mRibbonMesh = new MeshView[mResidueAtom.length];
+    }
+
+    private Ribbons(StereoMolecule mol) {
+        mMol = mol;
+    }
+
+    /**
+     * Helper method to determine all backbone atoms even if the molecule was not read from a PDB-file
+     * @param mol
+     * @return
+     */
+    public static boolean[] determineBackboneAtoms(StereoMolecule mol) {
+        Ribbons ribbons = new Ribbons(mol);
+        int[][][] residueAtom = ribbons.readBackbone();  // works, if mMol is Molecule3D from PDB entry
+        if (residueAtom == null)
+            residueAtom = ribbons.determineBackbone();
+        return ribbons.mIsBackboneAtom;
     }
 
     private int[][][] readBackbone() {

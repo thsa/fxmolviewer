@@ -76,7 +76,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private V3DMoleculeEditor mEditor;
 	private boolean mMouseDragged; //don't place molecule fragments if mouse is released after a drag event
 	private final ArrayList<V3DMolecule> mPickedMolsList;
-	private MEASUREMENT     mMeasurementMode;
+	private MEASUREMENT mMeasurementMode;
 	private final ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
 	private volatile V3DPopupMenuController mPopupMenuController;

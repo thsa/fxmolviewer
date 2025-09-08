@@ -31,12 +31,14 @@ public class InteractionHandler implements ListChangeListener<V3DRotatableGroup>
 	private void init() {
 		mInteractionSites  = new HashMap<>();
 		mInteractingPairs = new ArrayList<>();
-		mVisibleProperty = new SimpleBooleanProperty(true);
-		mVisibleProperty.addListener((v,ov,nv) -> {
-			for(InteractingPair interactingPair : mInteractingPairs) {
-				interactingPair.setVisibility(mVisibleProperty.get());
-			}
-		});
+		if (mVisibleProperty == null) {
+			mVisibleProperty = new SimpleBooleanProperty(true);
+			mVisibleProperty.addListener((v,ov,nv) -> {
+				for(InteractingPair interactingPair : mInteractingPairs) {
+					interactingPair.setVisibility(mVisibleProperty.get());
+				}
+			});
+		}
 	}
 
 	public void evaluateInteractions() {
@@ -65,8 +67,10 @@ public class InteractionHandler implements ListChangeListener<V3DRotatableGroup>
 				if (areTwoMolsInteracting(fxmol1, fxmol2)) {
 					InteractingPair interactingPair = new InteractingPair(
 							mInteractionSites.get(fxmol1), mInteractionSites.get(fxmol2), mCalculator);
-					if (interactingPair.hasInteractions())
+					if (interactingPair.hasInteractions()) {
+						interactingPair.setVisibility(mVisibleProperty.get());
 						mInteractingPairs.add(interactingPair);
+					}
 				}
 			}
 		}

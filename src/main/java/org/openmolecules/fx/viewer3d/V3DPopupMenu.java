@@ -268,7 +268,19 @@ public class V3DPopupMenu extends ContextMenu {
 			RadioMenuItem modeAllHydrogens = new RadioMenuItem("Display All Hydrogens");
 			modeAllHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HYDROGEN_MODE_ALL);
 			modeAllHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HYDROGEN_MODE_ALL));
-			
+
+			RadioMenuItem modeNoSideChains = new RadioMenuItem("Display No Side Chains");
+			modeNoSideChains.setSelected(fxmol.getSideChainMode() == V3DMolecule.SIDECHAIN_MODE_NONE);
+			modeNoSideChains.setOnAction(e -> setSideChainMode(fxmol, V3DMolecule.SURFACE_MODE_NONE));
+
+			RadioMenuItem modeNearSideChains = new RadioMenuItem("Display Side Chains Near Ligands");
+			modeNearSideChains.setSelected(fxmol.getSideChainMode() == V3DMolecule.SIDECHAIN_MODE_NEAR_LIGAND);
+			modeNearSideChains.setOnAction(e -> setSideChainMode(fxmol, V3DMolecule.SIDECHAIN_MODE_NEAR_LIGAND));
+
+			RadioMenuItem modeAllSideChains = new RadioMenuItem("Display All Side Chains");
+			modeAllSideChains.setSelected(fxmol.getSideChainMode() == V3DMolecule.SIDECHAIN_MODE_ALL);
+			modeAllSideChains.setOnAction(e -> setSideChainMode(fxmol, V3DMolecule.SIDECHAIN_MODE_ALL));
+
 			RadioMenuItem modeBallAndSticks = new RadioMenuItem("Ball And Sticks");
 			modeBallAndSticks.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS);
 			modeBallAndSticks.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_BALL_AND_STICKS));
@@ -288,10 +300,16 @@ public class V3DPopupMenu extends ContextMenu {
 			RadioMenuItem modeWires = new RadioMenuItem("Wires");
 			modeWires.setSelected(fxmol.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_WIRES);
 			modeWires.setOnAction(e -> fxmol.setConstructionMode(MoleculeArchitect.CONSTRUCTION_MODE_WIRES));
-			
-			Menu menuMode = new Menu("Molecule Style");
-			menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
-					 modeBallAndSticks, modeBalls, modeSticks, modeThinSticks, modeWires);
+
+			Menu menuMode = new Menu(fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE ?
+						"Sidechain Style" : "Molecule Style");
+			if (fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE)
+				menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
+						modeNoSideChains, modeNearSideChains, modeAllSideChains, new SeparatorMenuItem(),
+						modeBallAndSticks, modeBalls, modeSticks, modeThinSticks, modeWires);
+			else
+				menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
+						modeBallAndSticks, modeBalls, modeSticks, modeThinSticks, modeWires);
 
 			getItems().add(menuMode);
 
@@ -580,6 +598,11 @@ public class V3DPopupMenu extends ContextMenu {
 		Menu menuRaytrace = new Menu("Photo-Realistic Image");
 		menuRaytrace.getItems().addAll(itemRayTraceMol, itemRaytraceScene);
 		getItems().add(menuRaytrace);
+	}
+
+	private void setSideChainMode(V3DMolecule fxmol, int mode) {
+		mScene.setShowInteractions(mode != V3DMolecule.SIDECHAIN_MODE_NONE);
+		fxmol.setSideChainMode(mode);
 	}
 
 	private void setSurfaceMode(V3DMolecule fxmol, int type, int surfaceMode) {

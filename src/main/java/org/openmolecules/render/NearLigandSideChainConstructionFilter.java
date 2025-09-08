@@ -5,7 +5,7 @@ import com.actelion.research.chem.StereoMolecule;
 
 import java.util.ArrayList;
 
-public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
+public class NearLigandSideChainConstructionFilter extends AtomConstructionFilter {
 	private static final double MAX_DISTANCE = 3.8;
 	/**
 	 * Creates a construction filter for a protein with known ligand that marks all
@@ -15,8 +15,8 @@ public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
 	 * @param ligands
 	 * @param isBackboneAtom
 	 */
-	public RibbonSideChainConstructionFilter(StereoMolecule protein, ArrayList<StereoMolecule> ligands, boolean[] isBackboneAtom) {
-		super(protein, createMask(protein, ligands, isBackboneAtom));
+	public NearLigandSideChainConstructionFilter(StereoMolecule protein, ArrayList<StereoMolecule> ligands, boolean[] isBackboneAtom, boolean includeBackbone) {
+		super(protein, createMask(protein, ligands, isBackboneAtom, includeBackbone));
 	}
 
 	/**
@@ -28,7 +28,7 @@ public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
 	 * @param isBackboneAtom
 	 * @return
 	 */
-	private static boolean[] createMask(StereoMolecule protein, ArrayList<StereoMolecule> ligands, boolean[] isBackboneAtom) {
+	private static boolean[] createMask(StereoMolecule protein, ArrayList<StereoMolecule> ligands, boolean[] isBackboneAtom, boolean includeBackbone) {
 		protein.ensureHelperArrays(StereoMolecule.cHelperNeighbours);
 		boolean[] atomMask = new boolean[protein.getAllAtoms()];
 
@@ -63,6 +63,12 @@ public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
 
 		for (int ap=0; ap<protein.getAllAtoms(); ap++) {
 			if (!atomMask[ap]) {
+				if (protein.isMetalAtom(ap)
+				 || (includeBackbone && ap<isBackboneAtom.length && isBackboneAtom[ap])) {
+					atomMask[ap] = true;
+					continue;
+				}
+
 				Coordinates cp = protein.getAtomCoordinates(ap);
 
 				if (cp.x < minX - MAX_DISTANCE
@@ -94,25 +100,12 @@ public class RibbonSideChainConstructionFilter extends MaskConstructionFilter {
 											for (int j=0; j<protein.getAllConnAtoms(parent); j++) {
 												int candidate = protein.getConnAtom(parent, j);
 												if (!atomMask[candidate]) {
-													boolean candidateIsBackbondAtom = (candidate < isBackboneAtom.length && isBackboneAtom[candidate]);
+													boolean candidateIsBackboneAtom = (candidate < isBackboneAtom.length && isBackboneAtom[candidate]);
 													// we don't want to extend from backbone atoms to non-backbone atoms
-													if (!parentIsBackbondAtom || candidateIsBackbondAtom) {
+													if (!parentIsBackbondAtom || candidateIsBackboneAtom) {
 														atomMask[candidate] = true;
-														if (!candidateIsBackbondAtom)
+														if (!candidateIsBackboneAtom)
 															graphAtom[++highest] = candidate;
-//														else {	// mark two layers of neighbour backbone atoms
-//															for (int k=0; k<protein.getConnAtoms(candidate); k++) {
-//																int connAtom = protein.getConnAtom(candidate, k);
-//																if (isBackboneAtom[connAtom]) {
-//																	atomMask[connAtom] = true;
-//																	for (int l=0; l<protein.getConnAtoms(connAtom); l++) {
-//																		int nextConn = protein.getConnAtom(connAtom, l);
-//																		if (isBackboneAtom[nextConn])
-//																			atomMask[nextConn] = true;
-//																	}
-//																}
-//															}
-//														}
 													}
 												}
 											}
