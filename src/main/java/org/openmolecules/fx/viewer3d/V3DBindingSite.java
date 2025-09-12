@@ -4,7 +4,7 @@ import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.alignment3d.transformation.TransformationSequence;
 import com.actelion.research.chem.docking.DockingEngine;
 import com.actelion.research.chem.docking.receptorpharmacophore.NegativeReceptorImageCreator;
-import com.actelion.research.chem.io.pdb.converter.MoleculeGrid;
+import com.actelion.research.chem.io.pdb.calc.MoleculeGrid;
 import com.actelion.research.chem.phesa.ShapeVolume;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
