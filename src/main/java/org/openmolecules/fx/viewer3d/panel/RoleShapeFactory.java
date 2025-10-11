@@ -1,23 +1,12 @@
 package org.openmolecules.fx.viewer3d.panel;
 
-import java.net.URL;
-
 import org.openmolecules.fx.viewer3d.V3DMolecule;
-
-import com.actelion.research.chem.interactionstatistics.InteractionDistanceStatistics;
 
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 
 public class RoleShapeFactory {
 		

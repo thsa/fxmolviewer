@@ -564,7 +564,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		addInteractionsButton.setMaxHeight(TOOL_BUTTON_SIZE);
 		upperPanel.add(addInteractionsButton, i, j);
 		//addInteractionsButton.getStyleClass().add("toolBarButton");
-		addInteractionsButton.setOnMouseReleased((e) -> mScene3D.setShowInteractions(!mScene3D.isShowInteractions()));
+		addInteractionsButton.setOnMouseReleased((e) -> mScene3D.setSuspendInteractions(!mScene3D.isSuspendInteractions()));
 		addInteractionsButton.prefHeightProperty().bind(upperPanel.heightProperty());
 	}
 	

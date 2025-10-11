@@ -53,7 +53,9 @@ import javafx.scene.transform.Rotate;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
-import org.openmolecules.fx.viewer3d.interactions.InteractionHandler;
+import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
+import org.openmolecules.fx.viewer3d.interactions.drugscore.DrugScoreInteractionCalculator;
+import org.openmolecules.fx.viewer3d.interactions.jw.JWInteractionHandler;
 import org.openmolecules.fx.viewer3d.interactions.plip.PLIPInteractionCalculator;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
@@ -71,7 +73,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private final Group mRoot;                  	// not rotatable, contains light and camera
 	private final V3DRotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
 	private final List<V3DSceneListener> mSceneListeners;
-	private int mSurfaceCutMode;
+	private int mSurfaceCutMode,mInteractionType,mPreviousInteractionType;
 	private V3DMolecule mSurfaceCutMolecule;
 	private V3DMoleculeEditor mEditor;
 	private boolean mMouseDragged; //don't place molecule fragments if mouse is released after a drag event
@@ -81,10 +83,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private V3DMolecule mCopiedMol;
 	private volatile V3DPopupMenuController mPopupMenuController;
 	private final EnumSet<ViewerSettings> mSettings;
-	private boolean mOverrideHydrogens;
+	private boolean mOverrideHydrogens,mInteractionsSuspended;
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
-	private InteractionHandler mInteractionHandler;
+	private V3DInteractionHandler mInteractionHandler;
+	private JWInteractionHandler mJWInteractionHandler;
 	private final ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle)
 	private PointLight mLight;
 	private PerspectiveCamera mCamera;
@@ -131,7 +134,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(
 			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.WHITE_HYDROGENS,
 			ViewerSettings.BLACK_BACKGROUND, ViewerSettings.UPPERPANEL,ViewerSettings.ROLE);
-	
+
+	public static final int INTERACTION_TYPE_NONE = 0;
+	public static final int INTERACTION_TYPE_PLIP = 1;
+	public static final int INTERACTION_TYPE_DRUGSCORE = 2;
+	public static final int INTERACTION_TYPE_BASIC = 3;
+	public static final String[] INTERACTION_TEXT = {"<none>","PLIP","Drugscore 2018","Basic Atom Types"};
+	public static final String[] INTERACTION_CODE = {"none","plip","drugscore","basic"};
+
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
 	private static final Color TORSION_COLOR = Color.VIOLET;
@@ -165,6 +175,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		applySettings();
 		mSceneListeners = new ArrayList<>();
 		mChartProperty = new SimpleObjectProperty<XYChart<Number,Number>>();
+		setInteractionType(INTERACTION_TYPE_DRUGSCORE);
+		mInteractionsSuspended = false;
 		initializeDragAndDrop();
 	}
 
@@ -961,7 +973,14 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 	public V3DMoleculeEditor getEditor() {
 		return mEditor;
 	}
-	
+
+	public boolean hasProtein() {
+		for (V3DMolecule mol : getMolsInScene())
+			if (mol.getRole().equals(V3DMolecule.MoleculeRole.MACROMOLECULE))
+				return true;
+		return false;
+	}
+
 	public List<V3DMolecule> getMolsInScene() {
 		V3DMolecule fxmol;
 		ArrayList<V3DMolecule> fxmols = new ArrayList<V3DMolecule>();
@@ -1120,15 +1139,53 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		return mChartProperty;
 	}
 
-	public boolean isShowInteractions() {
-		return mInteractionHandler != null && mInteractionHandler.isVisible();
+	public boolean isSuspendInteractions() {
+		return mInteractionsSuspended;
 	}
 
-	public void setShowInteractions(boolean b) {
-		if (b != isShowInteractions()) {
-			if (mInteractionHandler == null)
-				mInteractionHandler = new InteractionHandler(this, new PLIPInteractionCalculator());    // PLIP is currently the only supported option
-			mInteractionHandler.setVisibible(b);
+		public void setSuspendInteractions(boolean suspend) {
+		if (mInteractionsSuspended != suspend) {
+			mInteractionsSuspended = suspend;
+			if (suspend) {
+				mPreviousInteractionType = mInteractionType;
+				setInteractionType(INTERACTION_TYPE_NONE);
+			}
+			else {
+				setInteractionType(mPreviousInteractionType);
+			}
+		}
+	}
+
+	public int getInteractionType() {
+		return mInteractionsSuspended ? INTERACTION_TYPE_NONE : mInteractionType;
+	}
+
+	public void setInteractionType(int type) {
+		if (type != INTERACTION_TYPE_NONE)
+			mInteractionsSuspended = false;
+
+		if (mInteractionType != type) {
+			mInteractionType = type;
+			if (mJWInteractionHandler != null) {
+				mJWInteractionHandler.setVisibible(false);
+				mJWInteractionHandler = null;
+			}
+			if (mInteractionHandler != null) {
+				mInteractionHandler.setVisibible(false);
+				mInteractionHandler = null;
+			}
+			if (mInteractionType == INTERACTION_TYPE_BASIC) {
+				mJWInteractionHandler = new JWInteractionHandler(this);
+				mJWInteractionHandler.setVisibible(true);
+			}
+			if (mInteractionType == INTERACTION_TYPE_PLIP) {    // PLIP interactions, M.Schroeder et al, doi: 10.1093/nar/gkv315
+				mInteractionHandler = new V3DInteractionHandler(this, new PLIPInteractionCalculator());
+				mInteractionHandler.setVisibible(true);
+			}
+			if (mInteractionType == INTERACTION_TYPE_DRUGSCORE) {    // DrugScore2018 (Klebe, Gohlke) interactions
+				mInteractionHandler = new V3DInteractionHandler(this, new DrugScoreInteractionCalculator());
+				mInteractionHandler.setVisibible(true);
+			}
 		}
 	}
 

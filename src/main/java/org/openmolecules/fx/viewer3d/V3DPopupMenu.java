@@ -24,8 +24,6 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
@@ -254,11 +252,25 @@ public class V3DPopupMenu extends ContextMenu {
 		getItems().add(menuView);
 		getItems().add(new SeparatorMenuItem());
 
+		if (mScene.hasProtein()) {
+			RadioMenuItem[] interactionItem = new RadioMenuItem[V3DScene.INTERACTION_CODE.length];
+			for (int i=0; i<interactionItem.length; i++) {
+				interactionItem[i] = new RadioMenuItem(V3DScene.INTERACTION_TEXT[i]);
+				interactionItem[i].setSelected(scene.getInteractionType() == i);
+				final int _i = i;
+				interactionItem[i].setOnAction(e -> scene.setInteractionType(_i));
+			}
+
+			Menu menuInteractions = new Menu("Interactions");
+			for (RadioMenuItem item : interactionItem)
+				menuInteractions.getItems().add(item);
+			getItems().add(menuInteractions);
+		}
+
 		Menu menuMeasurements = new Menu("Measurements");
 		menuMeasurements.getItems().addAll(measurementsNone, measurementsDistance, measurementsAngle, measurementsDihedral, new SeparatorMenuItem(), measurementsRemoveAll);
-
 		getItems().add(menuMeasurements);
-
+		getItems().add(new SeparatorMenuItem());
 
 		if (fxmol != null) {
 			RadioMenuItem modePolarHydrogens = new RadioMenuItem("Display Polar Hydrogens Only");
@@ -423,6 +435,7 @@ public class V3DPopupMenu extends ContextMenu {
 			}
 
 			getItems().add(new SeparatorMenuItem());
+
 			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 				MenuItem itemHide = new MenuItem("Hide Molecule");
 				itemHide.setOnAction(e -> fxmol.setVisible(false));
@@ -483,7 +496,8 @@ public class V3DPopupMenu extends ContextMenu {
 			*/
 		}
 
-		
+		getItems().add(new SeparatorMenuItem());
+
 		if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 			MenuItem itemHideAll = new MenuItem("Hide All Molecules");
 			itemHideAll.setOnAction(e -> scene.setAllVisible(false));
@@ -505,24 +519,21 @@ public class V3DPopupMenu extends ContextMenu {
 		final double slider2Max = clipValueToSlider(zrange[1] - zrange[0]);
 
 		Slider slider1 = createSlider(slider1Min, slider1Max, Math.min(slider1Max, Math.max(slider1Min, clipValueToSlider(scene.getCamera().nearClipProperty().get()))));
-		slider1.valueProperty().addListener(new ChangeListener<Number>() {
-			@Override
-			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-				double nearClip = scene.getCamera().nearClipProperty().getValue();
-				double farClip = scene.getCamera().farClipProperty().getValue();
+		slider1.valueProperty().addListener((observable, oldValue, newValue) -> {
+			double nearClip = scene.getCamera().nearClipProperty().getValue();
+			double farClip = scene.getCamera().farClipProperty().getValue();
 
-				if (newValue.doubleValue() == slider1Min && farClip == V3DScene.CAMERA_FAR_CLIP) {
-					scene.getCamera().nearClipProperty().setValue(V3DScene.CAMERA_NEAR_CLIP);
-				}
-				else {
-					double newClipStart = sliderToClipValue(newValue.doubleValue());
-					scene.getCamera().nearClipProperty().setValue(newClipStart);
+			if (newValue.doubleValue() == slider1Min && farClip == V3DScene.CAMERA_FAR_CLIP) {
+				scene.getCamera().nearClipProperty().setValue(V3DScene.CAMERA_NEAR_CLIP);
+			}
+			else {
+				double newClipStart = sliderToClipValue(newValue.doubleValue());
+				scene.getCamera().nearClipProperty().setValue(newClipStart);
 
-					if (farClip != V3DScene.CAMERA_FAR_CLIP) {
-						double thickness = farClip - nearClip;
-						double newFarClip = Math.min(V3DScene.CAMERA_FAR_CLIP, newClipStart + thickness);
-						scene.getCamera().farClipProperty().setValue(newFarClip);
-					}
+				if (farClip != V3DScene.CAMERA_FAR_CLIP) {
+					double thickness = farClip - nearClip;
+					double newFarClip = Math.min(V3DScene.CAMERA_FAR_CLIP, newClipStart + thickness);
+					scene.getCamera().farClipProperty().setValue(newFarClip);
 				}
 			}
 		});
@@ -588,7 +599,6 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(menuMinimize);
 		}
 
-
 		getItems().add(new SeparatorMenuItem());
 		MenuItem itemRayTraceMol = new MenuItem("Of This Molecule...");
 		itemRayTraceMol.setOnAction(e -> showMoleculeRayTraceDialog(scene));
@@ -601,7 +611,7 @@ public class V3DPopupMenu extends ContextMenu {
 	}
 
 	private void setSideChainMode(V3DMolecule fxmol, int mode) {
-		mScene.setShowInteractions(mode != V3DMolecule.SIDECHAIN_MODE_NONE);
+		mScene.setSuspendInteractions(mode == V3DMolecule.SIDECHAIN_MODE_NONE);
 		fxmol.setSideChainMode(mode);
 	}
 

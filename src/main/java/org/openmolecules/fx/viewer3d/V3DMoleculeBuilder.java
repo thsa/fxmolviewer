@@ -36,6 +36,7 @@ import java.util.ArrayList;
 
 public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeBuilder {
 	private static final double STICK_MODE_ATOM_PICK_RADIUS = 0.35;
+	private static final double THINSTICK_MODE_ATOM_PICK_RADIUS = 0.25;
 	private static final double WIRE_MODE_ATOM_PICK_RADIUS = 0.25;
 	private final MoleculeArchitect mArchitect;
 	private final V3DMolecule mV3DMolecule;
@@ -104,6 +105,8 @@ public class V3DMoleculeBuilder extends V3DPrimitiveBuilder implements MoleculeB
 				}
 			if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_STICKS)
 				addTransparentSphere(role, c, STICK_MODE_ATOM_PICK_RADIUS);
+			else if (mArchitect.getConstructionMode() == MoleculeArchitect.CONSTRUCTION_MODE_THINSTICKS)
+				addTransparentSphere(role, c, THINSTICK_MODE_ATOM_PICK_RADIUS);
 			}
 		}
 
