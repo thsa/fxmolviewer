@@ -5,19 +5,24 @@
 
 ### Features
 
-* Interactive small molecule/protein viewer supporting wire, ball, stick, ball&stick modes
+* Interactive small molecule/protein viewer supporting wire, ball, stick, ball&stick
 * PDB-entries can be downloaded, protein surfaces generated and binding site cropped in one step
 * An *Improved Marching Cubes* algorithm creates fast and smooth molecular surfaces
 * Visible molecules can be energy-minimized using a MMFF94s+ forcefield
 * Entire scene or individual molecules (Ctrl) can be rotated/translated with right/middle mouse button
+* Protein backbone can be shown as cartoon or ribbon with or without side chains
 * Atoms can be selected with lasso selection (left mouse button)
 * Front and rear clipping planes are accessible on popup with right mouse click
-* Surfaces can be colored by atomic no, polarity, donor/acceptor potential
+* Surfaces can be semi-transparent and can be colored by atomic no, polarity, donor/acceptor potential
 * Surfaces can be cut smoothly by clipping planes or lasso selection
 * A side panel allows to show and hide individual molecules
 * An optional full-screen stereo view (side-by-side or over-under) supporting XR-glasses, 3D-TVs, ...
 * The open source ray-tracer SunFlow was built in to render scenes and molecules in high quality
 * Viewer can be embedded as library into Swing- or FX-based Java application
+
+
+### Example Screenshot
+![Image of ligand in cavity (cartoon, surface, interactions)](example.jpeg)
 
 
 ### Dependencies

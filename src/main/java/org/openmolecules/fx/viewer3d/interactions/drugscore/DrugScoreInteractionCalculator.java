@@ -21,6 +21,8 @@ import java.util.TreeMap;
  * http://pubs.acs.org/action/showCitFormats?doi=10.1021/acs.jcim.8b00582
  */
 public class DrugScoreInteractionCalculator implements V3DInteractionCalculator {
+	private static final boolean DEBUG_LIST_INTERACTIONS = false;	// TODO remove
+
 	private static final String[] DRUG_SCORE_POTENTIAL = {
 			// fully normalized
 			"Br-C.2 53 -3497 -3497 -3497 -3497 -3497 -3497 -3497 -5770 -5770 -5770 1032 8212 2246 7046 -3013 6097 5075 -1529 3552 524 5355 -709 2487 -469 385 748 -31 492 392 -850 -158 -89 -242 -885 1741 612 906 696 -522 -144 253 303 -290 -1439 861 -131 -659 -193 1040 -213",
@@ -843,7 +845,7 @@ double mTotalPotential;
 		interactionMap.put(0, new ArrayList<>());	// we don't distinguish interaction types
 
 mTotalPotential = 0;
-System.out.println("Key\tAtom1\tAtom2\tPotential\tabsDistance\trelDistance");
+if (DEBUG_LIST_INTERACTIONS) System.out.println("Key\tAtom1\tAtom2\tPotential\tabsDistance\trelDistance");
 		for (V3DInteractionPoint p1: is1.getSites() ) {
 			for (V3DInteractionPoint p2: is2.getSites() ) {
 				V3DInteraction interaction = determineInteraction(p1,p2);
@@ -851,7 +853,7 @@ System.out.println("Key\tAtom1\tAtom2\tPotential\tabsDistance\trelDistance");
 					interactionMap.get(interaction.getType()).add(interaction);
 			}
 		}
-System.out.println("Total potential: "+DoubleFormat.toString(mTotalPotential)+" --------------------------------------");
+if (DEBUG_LIST_INTERACTIONS) System.out.println("Total potential: "+DoubleFormat.toString(mTotalPotential)+" --------------------------------------");
 
 		removeRedundantInteractions(interactionMap.get(0));
 	}
@@ -873,7 +875,7 @@ mTotalPotential += potential;
 			if (potential != 0) {
 				double vdwSum = VDWRadii.getVDWRadius(ip1.getMol().getAtomicNo(ip1.getAtom())) + VDWRadii.getVDWRadius(ip2.getMol().getAtomicNo(ip2.getAtom()));
 //				if (distance < vdwSum + 1.5)	distance cut-off should be done when creating the statistics
-System.out.println(key+"\t"+ip1.getAtom()+"\t"+ip2.getAtom()+"\t"+DoubleFormat.toString(potential)+"\t"+DoubleFormat.toString(distance)+"\t"+DoubleFormat.toString(distance-vdwSum));
+if (DEBUG_LIST_INTERACTIONS) System.out.println(key+"\t"+ip1.getAtom()+"\t"+ip2.getAtom()+"\t"+DoubleFormat.toString(potential)+"\t"+DoubleFormat.toString(distance)+"\t"+DoubleFormat.toString(distance-vdwSum));
 					if (Math.abs(potential) > 0.1) {
 						Color color = // distance<vdwSum ? new Color(Math.min(1, 5 * (vdwSum - distance)), Math.min(1, 5 * (vdwSum - distance)), 1, 1) :
 									  (potential<0.0) ? Color.GREEN : Color.RED;
