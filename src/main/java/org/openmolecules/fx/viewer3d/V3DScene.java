@@ -69,6 +69,7 @@ import static org.openmolecules.fx.viewer3d.V3DStereoPane.MODE_HSBS;
 
 
 public class V3DScene extends SubScene implements LabelDeletionListener {
+	private Color mDefaultBackground;
 	private final ClipboardHandler mClipboardHandler;
 	private final Group mRoot;                  	// not rotatable, contains light and camera
 	private final V3DRotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
@@ -160,7 +161,9 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 //		Stop[] stops = new Stop[] { new Stop(0, Color.MIDNIGHTBLUE), new Stop(1, Color.MIDNIGHTBLUE.darker().darker().darker())};
 //		LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
 
-		setFill(Color.BLACK);
+		mDefaultBackground = mSettings.contains(ViewerSettings.WHITE_BACKGROUND) ? Color.WHITE :
+							 mSettings.contains(ViewerSettings.BLUE_BACKGROUND) ? Color.BLUE : Color.BLACK;
+		setFill(mDefaultBackground);
 		buildLight();
 		buildMainCamera();  // light first, because the camera positions the light
 		mMeasurements = new ArrayList<V3DMeasurement>();
@@ -218,6 +221,25 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				event.consume();
 			});
 		} );
+	}
+
+	public boolean isDefaultBackground() {
+		return getFill().equals(mDefaultBackground);
+	}
+
+	public Color getBackground() {
+		return (Color)getFill();
+	}
+
+	/**
+	 * Sets background to bg or previous default background; may define new default background.
+	 * @param bg new background or null to set background to previous default background
+	 * @param isDefault true, then bg is the new default background and must not be null
+	 */
+	public void setBackground(Color bg, boolean isDefault) {
+		if (isDefault)
+			mDefaultBackground = bg;
+		setFill(bg == null ? mDefaultBackground : bg);
 	}
 
 	public void showMessage(String msg) {
@@ -658,7 +680,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		if(mSettings.contains(ViewerSettings.BLUE_BACKGROUND))
 			setFill(Color.MIDNIGHTBLUE);
 	}
-		
+
 	public EnumSet<ViewerSettings> getSettings() {
 		return mSettings;
 	}
@@ -1134,7 +1156,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 
 		mMeasurements.removeAll(toBeRemoved);
 	}
-	
+
 	public ObjectProperty<XYChart<Number,Number>> chartProperty() {
 		return mChartProperty;
 	}

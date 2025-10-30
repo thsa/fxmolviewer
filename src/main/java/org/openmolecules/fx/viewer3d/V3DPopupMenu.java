@@ -181,7 +181,6 @@ public class V3DPopupMenu extends ContextMenu {
 		if (controller != null)	// Add external View items
 			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_VIEW);
 
-
 		MenuItem itemCenter = new MenuItem("Center View");
 		itemCenter.setOnAction(e -> scene.optimizeView());
 		Menu menuReset = new Menu("Reset Location");
@@ -202,24 +201,19 @@ public class V3DPopupMenu extends ContextMenu {
 		});
 		menuReset.getItems().addAll(itemResetMolecule, itemResetAll);
 
+		Menu menuBGColor = new Menu("Background Color");
+		RadioMenuItem bgColorNone = new RadioMenuItem("Default");
+		bgColorNone.setSelected(scene.isDefaultBackground());
+		bgColorNone.setOnAction(e -> scene.setBackground(null, false));
+		ColorPicker bgColorPicker = new ColorPicker(scene.getBackground());
+		bgColorPicker.setOnAction(t -> {  scene.setBackground(bgColorPicker.getValue(), false); hide(); });
+		CustomMenuItem bgColorExplicit = new CustomMenuItem(bgColorPicker);
+		bgColorExplicit.setHideOnClick(false);
+		menuBGColor.getItems().addAll(bgColorNone, bgColorExplicit);
+
 		CheckMenuItem itemAnimate = new CheckMenuItem("Animate");
 		itemAnimate.setSelected(scene.isAnimate());
 		itemAnimate.setOnAction(e -> scene.setAnimate(!scene.isAnimate()));
-
-		RadioMenuItem measurementsNone = new RadioMenuItem("None");
-		measurementsNone.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.NONE);
-		measurementsNone.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.NONE));
-		RadioMenuItem measurementsDistance = new RadioMenuItem("Distance");
-		measurementsDistance.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.DISTANCE);
-		measurementsDistance.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.DISTANCE));
-		RadioMenuItem measurementsAngle = new RadioMenuItem("Angle");
-		measurementsAngle.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.ANGLE);
-		measurementsAngle.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.ANGLE));
-		RadioMenuItem measurementsDihedral = new RadioMenuItem("Torsion");
-		measurementsDihedral.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.TORSION);
-		measurementsDihedral.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.TORSION));
-		MenuItem measurementsRemoveAll = new MenuItem("Remove All");
-		measurementsRemoveAll.setOnAction(e -> scene.removeMeasurements());
 
 		MenuItem itemStereoView = null;
 		if (V3DStereoPane.getFullScreenView() == null) {
@@ -247,7 +241,7 @@ public class V3DPopupMenu extends ContextMenu {
 		}
 
 		Menu menuView = new Menu("View");
-		menuView.getItems().addAll(itemCenter, menuReset, new SeparatorMenuItem(), itemAnimate, new SeparatorMenuItem(), itemStereoView);
+		menuView.getItems().addAll(itemCenter, menuReset, new SeparatorMenuItem(), menuBGColor, new SeparatorMenuItem(), itemAnimate, new SeparatorMenuItem(), itemStereoView);
 
 		getItems().add(menuView);
 		getItems().add(new SeparatorMenuItem());
@@ -266,6 +260,21 @@ public class V3DPopupMenu extends ContextMenu {
 				menuInteractions.getItems().add(item);
 			getItems().add(menuInteractions);
 		}
+
+		RadioMenuItem measurementsNone = new RadioMenuItem("None");
+		measurementsNone.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.NONE);
+		measurementsNone.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.NONE));
+		RadioMenuItem measurementsDistance = new RadioMenuItem("Distance");
+		measurementsDistance.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.DISTANCE);
+		measurementsDistance.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.DISTANCE));
+		RadioMenuItem measurementsAngle = new RadioMenuItem("Angle");
+		measurementsAngle.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.ANGLE);
+		measurementsAngle.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.ANGLE));
+		RadioMenuItem measurementsDihedral = new RadioMenuItem("Torsion");
+		measurementsDihedral.setSelected(scene.getMeasurementMode() == V3DScene.MEASUREMENT.TORSION);
+		measurementsDihedral.setOnAction(e -> scene.setMeasurementMode(V3DScene.MEASUREMENT.TORSION));
+		MenuItem measurementsRemoveAll = new MenuItem("Remove All");
+		measurementsRemoveAll.setOnAction(e -> scene.removeMeasurements());
 
 		Menu menuMeasurements = new Menu("Measurements");
 		menuMeasurements.getItems().addAll(measurementsNone, measurementsDistance, measurementsAngle, measurementsDihedral, new SeparatorMenuItem(), measurementsRemoveAll);
@@ -435,6 +444,7 @@ public class V3DPopupMenu extends ContextMenu {
 			}
 
 			getItems().add(new SeparatorMenuItem());
+			int count = getItems().size();
 
 			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 				MenuItem itemHide = new MenuItem("Hide Molecule");
@@ -455,6 +465,10 @@ public class V3DPopupMenu extends ContextMenu {
 				}
 			}
 
+			if (count != getItems().size())
+				getItems().add(new SeparatorMenuItem());
+			count = getItems().size();
+
 			if (!settings.contains(V3DScene.ViewerSettings.UPPERPANEL)
 			 && (settings.contains(V3DScene.ViewerSettings.EDITING) || settings.contains(V3DScene.ViewerSettings.ALLOW_PHARMACOPHORES))) {
 				MenuItem itemPP = new MenuItem("Add Pharmacophores");
@@ -473,6 +487,9 @@ public class V3DPopupMenu extends ContextMenu {
 				});
 				getItems().add(itemTS);
 			}
+
+			if (count != getItems().size())
+				getItems().add(new SeparatorMenuItem());
 
 			/*
 			MenuItem itemHidePP = new MenuItem("Hide Pharmacophore");
@@ -495,8 +512,6 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(new SeparatorMenuItem());
 			*/
 		}
-
-		getItems().add(new SeparatorMenuItem());
 
 		if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
 			MenuItem itemHideAll = new MenuItem("Hide All Molecules");

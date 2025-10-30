@@ -100,6 +100,6 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 
 	private void disableItems() {
 		mTextFieldPDBCode.setDisable(mComboboxMode.getSelectionModel().getSelectedIndex() != 0);
-		mCheckBoxCropLigand.setDisable(mComboboxMode.getSelectionModel().getSelectedIndex() != 0);
+		mCheckBoxCropLigand.setDisable(mComboboxMode.getSelectionModel().getSelectedIndex() >= 2);
 	}
 }

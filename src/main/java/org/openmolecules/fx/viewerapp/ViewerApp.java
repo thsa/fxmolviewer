@@ -61,7 +61,7 @@ public class ViewerApp extends Application {
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		scene.getStylesheets().add(css);
 
-		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.widthProperty().set(scene.getWidth()));
+		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.setWidth(scene.getWidth()));
 		scene.heightProperty().addListener((observableValue, number, t1) -> scene3D.setHeight(scene.getHeight()));
 
 		primaryStage.setTitle("Molecule Viewer");
@@ -73,6 +73,9 @@ public class ViewerApp extends Application {
 			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(scene3D) );
 		else if (System.getProperty("test") != null)
 			Platform.runLater(() -> showStartOptionDialog(scene3D) );
+
+		scene3D.setWidth(scene.getWidth());
+		scene3D.setHeight(scene.getHeight());
 	}
 
 	private static void showStartOptionDialog(V3DScene scene) {

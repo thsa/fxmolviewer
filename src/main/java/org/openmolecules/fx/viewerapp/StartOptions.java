@@ -407,6 +407,8 @@ public class StartOptions {
 				return;
 			}
 
+System.out.println("Proteins loaded...");
+
 			if (mCropLigand) {
 				if (ligands != null && !ligands.isEmpty()) {
 					int index = -1;
@@ -436,10 +438,11 @@ public class StartOptions {
 						ligands.add(ligand);
 						}
 					}
+System.out.println("Proteins cropped...");
 				}
 
-//					mMoleculePanel.setShowStructure(false);
-//				MMTFParser.centerMolecules(mol);
+//			mMoleculePanel.setShowStructure(false);
+//			MMTFParser.centerMolecules(mol);
 
 			Color[] surfaceColor = new Color[proteins.size()];
 			double inc = 2.0 * Math.PI / proteins.size();
@@ -461,7 +464,7 @@ public class StartOptions {
 						mCropLigand ? MoleculeArchitect.CONSTRUCTION_MODE_WIRES : MoleculeArchitect.CONSTRUCTION_MODE_NONE,
 						MoleculeArchitect.HYDROGEN_MODE_DEFAULT,
 						Ribbons.MODE_CARTOON,
-						V3DMolecule.SIDECHAIN_MODE_NEAR_LIGAND,
+						mCropLigand ? V3DMolecule.SIDECHAIN_MODE_NEAR_LIGAND : V3DMolecule.SIDECHAIN_MODE_NONE,
 						mCropLigand ? V3DMolecule.SURFACE_MODE_FILLED : V3DMolecule.SURFACE_MODE_NONE,
 						SurfaceMesh.SURFACE_COLOR_DONORS_ACCEPTORS,
 						surfaceColor[i], 0.5,
@@ -469,7 +472,9 @@ public class StartOptions {
 						V3DMolecule.MoleculeRole.MACROMOLECULE,
 						true, false, ligandList);
 				vm.getMolecule().setName("Protein");
+System.out.println("Protein "+i+" created...");
 				scene.addMolecule(vm, complex, true);
+System.out.println("Protein "+i+" added to scene...");
 			}
 
 			V3DMolecule v3dligand = null;
@@ -486,6 +491,8 @@ public class StartOptions {
 				}
 			}
 
+System.out.println(ligands.size()+" ligands added to scene...");
+
 			List<Molecule3D> solvents = map.get(StructureAssembler.SOLVENT_GROUP);
 			for (Molecule3D mol : solvents) {
 				V3DMolecule vm = new V3DMolecule(mol,
@@ -498,10 +505,16 @@ public class StartOptions {
 				scene.addMolecule(vm, complex, true);
 			}
 
+System.out.println("Solvents added to scene...");
+
+			if (!mCropLigand)
+				scene.setInteractionType(V3DScene.INTERACTION_TYPE_NONE);
+
 			if (v3dligand != null && mCropLigand) {
-				scene.crop(v3dligand, 11.0);
+				scene.crop(v3dligand, 10.0);
 				scene.optimizeView();
 			}
+System.out.println("View optimized...");
 		} catch (FileNotFoundException fnfe) {
 			scene.showMessage("File not found: "+fnfe.getMessage());
 		} catch (Exception e) {
