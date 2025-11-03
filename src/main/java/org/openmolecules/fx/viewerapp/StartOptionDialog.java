@@ -40,7 +40,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 	/**
 	 * @param parent
 	 */
-	public StartOptionDialog(Window parent, StartOptions options) {
+	public StartOptionDialog(final Window parent, StartOptions options) {
 		super();
 
 		initOwner(parent);
@@ -74,7 +74,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 
 		mCheckBoxCropLigand = new CheckBox("Crop ligand");
 		mCheckBoxCropLigand.setSelected(options == null || options.getCropLigand());
-		grid.add(mCheckBoxCropLigand, 0, ++yIndex);
+		grid.add(mCheckBoxCropLigand, 1, ++yIndex);
 
 		getDialogPane().setContent(grid);
 
@@ -85,7 +85,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 				int mode = mComboboxMode.getSelectionModel().getSelectedIndex();
 				String pdbID = (mode == 0) ? mTextFieldPDBCode.getText() : null;
 				String file = (mode == 1) ? selectPDBFile(parent) : null;
-				return new StartOptions( mode, pdbID, file, mCheckBoxCropLigand.isSelected() );
+				return new StartOptions(mode, pdbID, file, mCheckBoxCropLigand.isSelected(), parent);
 			}
 			return null;
 		});

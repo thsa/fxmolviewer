@@ -33,6 +33,9 @@ import javafx.geometry.Point3D;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
+import javafx.stage.Window;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
@@ -319,12 +322,14 @@ public class StartOptions {
 	private static final double SURFACE_BRIGHTNESS = 0.55;
 	private static final double SURFACE_SATURATION = 0.15;   // must be less than 1.0 - SURFACE_BRIGHTNESS
 
+	private final Window mParent;
 	private final int mMode;
 	private final String mPDBEntryCode;
 	private final String mPDBFile;
 	private final boolean mCropLigand;
 
-	public StartOptions(int mode, String pdbEntryCode, String pdbFile, boolean cropLigand) {
+	public StartOptions(int mode, String pdbEntryCode, String pdbFile, boolean cropLigand, Window parent) {
+		mParent = parent;
 		mMode = mode;
 		mPDBEntryCode = pdbEntryCode;
 		mPDBFile = pdbFile;
@@ -415,7 +420,10 @@ public class StartOptions {
 						}
 
 						ChoiceDialog<String> dialog = new ChoiceDialog<>(ligandName[0], ligandName);
-						dialog.titleProperty().set("Select one of multiple ligands:");
+						dialog.initOwner(mParent);
+						dialog.initStyle(StageStyle.UNDECORATED);
+						dialog.initModality(Modality.WINDOW_MODAL);
+						dialog.setHeaderText("Select one of multiple ligands:");
 						dialog.showAndWait();
 						String name = dialog.getSelectedItem();
 						if (name != null)

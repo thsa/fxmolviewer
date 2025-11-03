@@ -45,8 +45,9 @@ public class ViewerApp extends Application {
 	public void start(Stage primaryStage) {
 		String modeString = System.getProperty("mode", "viewer");
 		String path = System.getProperty("file", "");
-		int mode = -1;
-		try { mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
+		int _mode = -1;
+		try { _mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
+		final int mode = _mode;
 
 		EnumSet<V3DScene.ViewerSettings> sceneMode = V3DScene.GENERAL_MODE;
 
@@ -61,27 +62,30 @@ public class ViewerApp extends Application {
 		String css = getClass().getResource("/resources/molviewer.css").toExternalForm();
 		scene.getStylesheets().add(css);
 
-		scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.setWidth(scene.getWidth()));
-		scene.heightProperty().addListener((observableValue, number, t1) -> scene3D.setHeight(scene.getHeight()));
-
 		primaryStage.setTitle("Molecule Viewer");
 		primaryStage.setScene(scene);
+		primaryStage.setWidth(INITIAL_WIDTH);
+		primaryStage.setHeight(INITIAL_HEIGHT);
 		primaryStage.show();
-		if (!path.isEmpty())
-			Platform.runLater(() -> new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path, true).initializeScene(scene3D) );
-		else if (mode != -1)
-			Platform.runLater(() -> new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false).initializeScene(scene3D) );
-		else if (System.getProperty("test") != null)
-			Platform.runLater(() -> showStartOptionDialog(scene3D) );
 
-		scene3D.setWidth(scene.getWidth());
-		scene3D.setHeight(scene.getHeight());
+		Platform.runLater(() -> {
+			scene3D.setWidth(scene.getWidth());
+			scene3D.setHeight(scene.getHeight());
+
+			scene.widthProperty().addListener((observableValue, number, t1) -> scene3D.setWidth(scene.getWidth()));
+			scene.heightProperty().addListener((observableValue, number, t1) -> scene3D.setHeight(scene.getHeight()));
+
+			if (!path.isEmpty())
+				new StartOptions(StartOptions.MODE_PDB_ENTRY, path.substring(1+path.lastIndexOf(File.separatorChar), path.lastIndexOf('.')), path, true, primaryStage.getOwner()).initializeScene(scene3D);
+			else if (mode != -1)
+				new StartOptions(StartOptions.MODE_SMALL_MOLECULES, null, null, false, primaryStage.getOwner()).initializeScene(scene3D);
+			else if (System.getProperty("test") != null)
+				showStartOptionDialog(scene3D);
+		} );
 	}
 
 	private static void showStartOptionDialog(V3DScene scene) {
 		Optional<StartOptions> result = new StartOptionDialog(scene.getScene().getWindow(), null).showAndWait();
-		result.ifPresent(options -> {
-			options.initializeScene(scene);
-		} );
+		result.ifPresent(options -> options.initializeScene(scene) );
 	}
 }
