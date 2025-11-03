@@ -27,13 +27,16 @@ import com.actelion.research.chem.io.pdb.parser.PDBFileEntry;
 import com.actelion.research.chem.io.pdb.parser.PDBFileParser;
 import com.actelion.research.chem.io.pdb.parser.StructureAssembler;
 import com.actelion.research.util.Platform;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point3D;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.MeshView;
-import javafx.stage.FileChooser;
 import org.openmolecules.chem.conf.gen.ConformerGenerator;
 import org.openmolecules.fx.surface.SurfaceMesh;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
+import org.openmolecules.fx.viewer3d.V3DMoleculeCropper;
 import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.nodes.Ribbons;
@@ -48,7 +51,7 @@ import java.util.Map;
 
 public class StartOptions {
 	// home path used when loading pdb file from disk assuming OS is either Linux or MacOSX
-	private static final String HOME_PATH = Platform.isLinux() ? "~/" : "~/Documents/";
+	public static final String HOME_PATH = Platform.isLinux() ? "~/" : "~/Documents/";
 
 	public static final String[] MODE_OPTIONS = {
 			"Get from PDB-Database",
@@ -69,7 +72,7 @@ public class StartOptions {
 	public static final int MODE_SMALL_MOLECULE_SURFACES = 3;
 	public static final int MODE_SMALL_FRAGMENTS = 4;
 	public static final int MODE_METAL_ORGANICS = 5;
-	public static final int MODE_SMALL_COMFORMERS = 6;
+	public static final int MODE_SMALL_CONFORMERS = 6;
 	public static final int MODE_SIMPLE = 7;
 	public static final int MODE_PROTEIN = 8;
 	public static final int MODE_VOXEL_DATA = 9;
@@ -77,6 +80,7 @@ public class StartOptions {
 	private static final double POSITION_FACTOR = 16;
 	private static final double FRAGMENT_POSITION_FACTOR = 16;
 	private static final double ORGANO_METALLICS_POSITION_FACTOR = 32;
+	private static final double CROP_DISTANCE = 10.0;
 
 	private static final double[][] TEST_POSITIONS_13 = {
 		{      0,      0,      0 },
@@ -317,7 +321,7 @@ public class StartOptions {
 
 	private final int mMode;
 	private final String mPDBEntryCode;
-	private String mPDBFile;
+	private final String mPDBFile;
 	private final boolean mCropLigand;
 
 	public StartOptions(int mode, String pdbEntryCode, String pdbFile, boolean cropLigand) {
@@ -344,8 +348,8 @@ public class StartOptions {
 
 		if (mMode == MODE_PDB_ENTRY)
 			loadPDBEntry(scene);
-		if (mMode == MODE_PDB_FILE)
-			loadPDBFile(scene);
+		else if (mMode == MODE_PDB_FILE)
+			loadPDBEntry(scene);
 		else if (mMode == MODE_SMALL_MOLECULES)
 			testMolecules(scene);
 		else if (mMode == MODE_SMALL_MOLECULE_SURFACES)
@@ -354,7 +358,7 @@ public class StartOptions {
 			testFragments(scene);
 		else if (mMode == MODE_METAL_ORGANICS)
 			testOrganoMetallics(scene);
-		else if (mMode == MODE_SMALL_COMFORMERS)
+		else if (mMode == MODE_SMALL_CONFORMERS)
 			testConformers(scene);
 		else if (mMode == MODE_SIMPLE)
 			testSimple(scene);
@@ -362,19 +366,6 @@ public class StartOptions {
 			testProteinFromMMTF(scene);
 		else if (mMode == MODE_VOXEL_DATA)
 			testVoxelData(scene);
-	}
-
-	private void loadPDBFile(V3DScene scene) {
-		String path = System.getProperty("homepath") != null ? System.getProperty("homepath") : HOME_PATH;
-		File dir = new File(path);
-		FileChooser fileChooser = new FileChooser();
-		if (dir.exists())
-			fileChooser.setInitialDirectory(dir);
-		fileChooser.setTitle("Open Resource File");
-		fileChooser.getExtensionFilters().addAll(
-				new FileChooser.ExtensionFilter("PDB-Files", "*.pdb", "*.cif"));
-		mPDBFile = fileChooser.showOpenDialog(scene.getScene().getWindow()).getPath();
-		loadPDBEntry(scene);
 	}
 
 	private void loadPDBEntry(V3DScene scene) {
@@ -407,8 +398,7 @@ public class StartOptions {
 				return;
 			}
 
-System.out.println("Proteins loaded...");
-
+			Bounds ligandBounds = null;
 			if (mCropLigand) {
 				if (ligands != null && !ligands.isEmpty()) {
 					int index = -1;
@@ -436,9 +426,9 @@ System.out.println("Proteins loaded...");
 						Molecule3D ligand = ligands.get(index);
 						ligands.clear();
 						ligands.add(ligand);
+						ligandBounds = calculateBounds(ligand);
 						}
 					}
-System.out.println("Proteins cropped...");
 				}
 
 //			mMoleculePanel.setShowStructure(false);
@@ -459,6 +449,10 @@ System.out.println("Proteins cropped...");
 			scene.addGroup(complex);
 
 			for (int i=0; i<proteins.size(); i++) {
+				Molecule3D protein = proteins.get(i);
+				if (ligandBounds != null && crop(protein, CROP_DISTANCE, ligands.getFirst(), ligandBounds))
+					continue;
+
 				ArrayList<StereoMolecule> ligandList = new ArrayList<>(ligands);
 				V3DMolecule vm = new V3DMolecule(proteins.get(i),
 						mCropLigand ? MoleculeArchitect.CONSTRUCTION_MODE_WIRES : MoleculeArchitect.CONSTRUCTION_MODE_NONE,
@@ -472,9 +466,7 @@ System.out.println("Proteins cropped...");
 						V3DMolecule.MoleculeRole.MACROMOLECULE,
 						true, false, ligandList);
 				vm.getMolecule().setName("Protein");
-System.out.println("Protein "+i+" created...");
 				scene.addMolecule(vm, complex, true);
-System.out.println("Protein "+i+" added to scene...");
 			}
 
 			V3DMolecule v3dligand = null;
@@ -491,10 +483,10 @@ System.out.println("Protein "+i+" added to scene...");
 				}
 			}
 
-System.out.println(ligands.size()+" ligands added to scene...");
-
 			List<Molecule3D> solvents = map.get(StructureAssembler.SOLVENT_GROUP);
 			for (Molecule3D mol : solvents) {
+				if (ligandBounds != null && crop(mol, CROP_DISTANCE, ligands.getFirst(), ligandBounds))
+					continue;
 				V3DMolecule vm = new V3DMolecule(mol,
 						MoleculeArchitect.CONSTRUCTION_MODE_STICKS,
 						MoleculeArchitect.HYDROGEN_MODE_ALL,
@@ -505,21 +497,53 @@ System.out.println(ligands.size()+" ligands added to scene...");
 				scene.addMolecule(vm, complex, true);
 			}
 
-System.out.println("Solvents added to scene...");
-
 			if (!mCropLigand)
 				scene.setInteractionType(V3DScene.INTERACTION_TYPE_NONE);
 
-			if (v3dligand != null && mCropLigand) {
-				scene.crop(v3dligand, 10.0);
+			if (ligandBounds != null)
 				scene.optimizeView();
-			}
-System.out.println("View optimized...");
+
 		} catch (FileNotFoundException fnfe) {
 			scene.showMessage("File not found: "+fnfe.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private Bounds calculateBounds(StereoMolecule mol) {
+		double x1 = 999999999;
+		double y1 = 999999999;
+		double z1 = 999999999;
+		double x2 = -999999999;
+		double y2 = -999999999;
+		double z2 = -999999999;
+		for (int atom = 0; atom<mol.getAllAtoms(); atom++) {
+			x1 = Math.min(x1, mol.getAtomX(atom));
+			y1 = Math.min(y1, mol.getAtomY(atom));
+			z1 = Math.min(z1, mol.getAtomZ(atom));
+			x2 = Math.max(x2, mol.getAtomX(atom));
+			y2 = Math.max(y2, mol.getAtomY(atom));
+			z2 = Math.max(z2, mol.getAtomZ(atom));
+		}
+		return new BoundingBox(x1, y1, z1, x2-x1, y2-y1, z2-z1);
+	}
+
+	private boolean crop(StereoMolecule mol, double distance, StereoMolecule ligand, Bounds ligandBounds) {
+		Bounds bounds = calculateBounds(mol);
+		if (ligandBounds.getMinX() - distance > bounds.getMaxX()
+		 || ligandBounds.getMinY() - distance > bounds.getMaxY()
+		 || ligandBounds.getMinZ() - distance > bounds.getMaxZ()
+		 || ligandBounds.getMaxX() + distance < bounds.getMinX()
+		 || ligandBounds.getMaxY() + distance < bounds.getMinY()
+		 || ligandBounds.getMaxZ() + distance < bounds.getMinZ())
+			return true;
+
+		Point3D[] ligandCoords = new Point3D[ligand.getAllAtoms()];
+		for (int atom=0; atom<ligand.getAllAtoms(); atom++) {
+			Coordinates c = ligand.getAtomCoordinates(atom);
+			ligandCoords[atom] = new Point3D(c.x, c.y, c.z);
+		}
+		return new V3DMoleculeCropper(mol, distance, ligandCoords, ligandBounds).crop() == 2;
 	}
 
 	private void testMolecules(V3DScene scene) {

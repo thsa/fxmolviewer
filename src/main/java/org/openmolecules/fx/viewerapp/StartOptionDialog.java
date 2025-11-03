@@ -24,15 +24,18 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
+import java.io.File;
+
 public class StartOptionDialog extends Dialog<StartOptions> implements EventHandler<ActionEvent> {
 
-	private ComboBox mComboboxMode;
-	private TextField mTextFieldPDBCode;
-	private CheckBox mCheckBoxCropLigand;
+	private final ComboBox<String> mComboboxMode;
+	private final TextField mTextFieldPDBCode;
+	private final CheckBox mCheckBoxCropLigand;
 
 	/**
 	 * @param parent
@@ -58,7 +61,7 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 		int yIndex = -1;
 
 		grid.add(new Label("Viewer Mode:"), 0, ++yIndex);
-		mComboboxMode = new ComboBox();
+		mComboboxMode = new ComboBox<>();
 		for (String mode:StartOptions.MODE_OPTIONS)
 			mComboboxMode.getItems().add(mode);
 		mComboboxMode.getSelectionModel().select(options == null ? 0 : options.getMode());
@@ -79,15 +82,25 @@ public class StartOptionDialog extends Dialog<StartOptions> implements EventHand
 
 		setResultConverter(dialogButton -> {
 			if (dialogButton == ButtonType.OK) {
-				StartOptions outOptions = new StartOptions(
-						mComboboxMode.getSelectionModel().getSelectedIndex(),
-						mTextFieldPDBCode.getText(),
-						null,
-						mCheckBoxCropLigand.isSelected() );
-				return outOptions;
+				int mode = mComboboxMode.getSelectionModel().getSelectedIndex();
+				String pdbID = (mode == 0) ? mTextFieldPDBCode.getText() : null;
+				String file = (mode == 1) ? selectPDBFile(parent) : null;
+				return new StartOptions( mode, pdbID, file, mCheckBoxCropLigand.isSelected() );
 			}
 			return null;
 		});
+	}
+
+	public static String selectPDBFile(Window parent) {
+		String path = System.getProperty("homepath") != null ? System.getProperty("homepath") : StartOptions.HOME_PATH;
+		File dir = new File(path);
+		FileChooser fileChooser = new FileChooser();
+		if (dir.exists())
+			fileChooser.setInitialDirectory(dir);
+		fileChooser.setTitle("Open Protein/Ligand Structure File");
+		fileChooser.getExtensionFilters().addAll(
+				new FileChooser.ExtensionFilter("PDB/MMCIF-Files", "*.pdb", "*.cif", "*.mmcif"));
+		return fileChooser.showOpenDialog(parent).getPath();
 	}
 
 	@Override

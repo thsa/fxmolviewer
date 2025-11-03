@@ -20,9 +20,12 @@
 
 package org.openmolecules.fx.viewer3d;
 
-import com.actelion.research.chem.*;
-import com.actelion.research.chem.conf.HydrogenAssembler;
+import com.actelion.research.chem.AtomFunctionAnalyzer;
+import com.actelion.research.chem.Coordinates;
+import com.actelion.research.chem.Molecule;
+import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.BondRotationHelper;
+import com.actelion.research.chem.conf.HydrogenAssembler;
 import com.actelion.research.chem.conf.VDWRadii;
 import com.actelion.research.chem.phesa.MolecularVolume;
 import com.actelion.research.chem.phesa.ShapeVolume;
@@ -50,7 +53,6 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.*;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 import static org.openmolecules.fx.surface.SurfaceMesh.SURFACE_COLOR_PLAIN;
 
@@ -105,8 +107,9 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private BondRotationHelper mBondRotationHelper;
 	private TorsionStrainVisualization torsionStrainVis;
 	private ArrayList<AtomIndexLabel> mLabelList;
-	private int mnUnconnectedFragments;
+	private int mUnconnectedFragmentNo;
 	private final boolean mSplitAllBonds;
+	private Coordinates[] mInitialCoordinates;
 
 	public enum MoleculeRole{
 		LIGAND { public String toString(){
@@ -122,7 +125,6 @@ public class V3DMolecule extends V3DRotatableGroup {
         return "S";
     } },
 	}
-	private Coordinates[] mInitialCoordinates;
 
 	public static Color getDefaultAtomColor(int atomicNo) {
 		return MoleculeArchitect.getAtomColor(atomicNo, 1.0);
@@ -240,7 +242,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 					   int id, MoleculeRole role, boolean overrideHydrogens, boolean splitAllBonds, ArrayList<StereoMolecule> ligands) {
 		super(mol.getName());
 		mMol = mol;
-		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true);
 		mPickedAtomList = new LinkedList<>();
 		mTemporaryAtomSpheres = new ArrayList<>();
 		mConstructionMode = constructionMode;
@@ -258,7 +259,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mSurfaceColor = new Color[surfaceCount];
 		mSurfaceColorMode = new int[surfaceCount];
 		mSurfaceTransparency = new double[surfaceCount];
-		mBondRotationHelper = new BondRotationHelper(mol);
 		mListeners = new HashSet<>();
 		mStructureListeners = new HashSet<>();
 		mLigands = ligands;
@@ -268,9 +268,8 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mSurfaceColorMode[0] = surfaceColorMode;
 		mSurfaceTransparency[0] = surfaceTransparency;
 		mInitialCoordinates = new Coordinates[mol.getAllAtoms()];
-		IntStream.range(0,mol.getAllAtoms()).forEach(i -> {
+		for (int i=0; i<mol.getAllAtoms(); i++)
 			mInitialCoordinates[i] = new Coordinates(mol.getAtomCoordinates(i));
-		});
 
 		for (int i=1; i<surfaceCount; i++) {
 			mSurfaceMode[i] = SURFACE_MODE_NONE;
@@ -309,18 +308,17 @@ public class V3DMolecule extends V3DRotatableGroup {
 
 	public void setInitialCoordinates() {
 		mInitialCoordinates = new Coordinates[mMol.getAllAtoms()];
-		IntStream.range(0,mMol.getAllAtoms()).forEach(i -> {
+		for (int i=0; i<mMol.getAllAtoms(); i++)
 			mInitialCoordinates[i] = new Coordinates(mMol.getAtomCoordinates(i));
-		});
 	}
 
 	public void resetCoordinates() {
 		if(mInitialCoordinates!=null && mInitialCoordinates.length==mMol.getAllAtoms()) {
-			IntStream.range(0,mMol.getAllAtoms()).forEach(i -> {
+			for (int i=0; i<mMol.getAllAtoms(); i++) {
 				mMol.setAtomX(i, mInitialCoordinates[i].x);
 				mMol.setAtomY(i, mInitialCoordinates[i].y);
 				mMol.setAtomZ(i, mInitialCoordinates[i].z);
-			});
+			}
 		}
 		Platform.runLater(() -> {
 			fireCoordinatesChange();
@@ -457,6 +455,8 @@ public class V3DMolecule extends V3DRotatableGroup {
 	}
 	
 	public BondRotationHelper getBondRotationHelper() {
+		if (mBondRotationHelper == null)
+			mBondRotationHelper = new BondRotationHelper(mMol);
 		return mBondRotationHelper;
 	}
 
@@ -980,11 +980,11 @@ public class V3DMolecule extends V3DRotatableGroup {
 			torsionStrainVis.cleanup();
 			torsionStrainVis=null;
 		}
-		mBondRotationHelper = new BondRotationHelper(mMol);
+		mBondRotationHelper = null;
 		for(MolStructureChangeListener listener : mStructureListeners) {
 			listener.structureChanged();
 		}
-		mnUnconnectedFragments = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true); 
+		mUnconnectedFragmentNo = 0;
 	}
 	
 	private boolean pickedAtomsAreStrand() {
@@ -1081,85 +1081,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 					}
 				}
 			}*/
-		}
-
-	// Delete all flagged atoms except those that have a direct connection
-	// to an atom not to be deleted. In this case change the atom's atomic no
-	// to 0 unless it is a hydrogen, which is not touched.
-	// Note: This method sets the atom marker for all non-hydrogen atoms that
-	// were not deleted and set to atomicNo=0 (exit vectors).
-	public void deleteAtoms(boolean[] isToBeDeleted) {
-		mMol.ensureHelperArrays(Molecule.cHelperNeighbours);
-
-		// delete also all hydrogens that are connected to an atom destined to be deleted
-		for (int atom=mMol.getAtoms(); atom<mMol.getAllAtoms(); atom++)
-			if (isToBeDeleted[mMol.getConnAtom(atom, 0)])
-				isToBeDeleted[atom] = true;
-
-		// Set atomicNo to 0 for first layer of deleted non-H atoms.
-		// They stay (deletion flag is purged), but bonds between them go.
-		int[] borderAtom = new int[mMol.getAllAtoms()];
-		int borderAtomCount = 0;
-		for (int bond=0; bond<mMol.getAllBonds(); bond++) {
-			int atom1 = mMol.getBondAtom(0, bond);
-			int atom2 = mMol.getBondAtom(1, bond);
-			if (isToBeDeleted[atom1] ^ isToBeDeleted[atom2])
-				borderAtom[borderAtomCount++] = isToBeDeleted[atom1] ? atom1 : atom2;
-
-			// Make sure that bond between two atoms for deletion is deleted
-			if (isToBeDeleted[atom1] && isToBeDeleted[atom2])
-				mMol.markBondForDeletion(bond);
-		}
-		for (int i=0; i<borderAtomCount; i++) {
-			int atom = borderAtom[i];
-			if (mMol.getAtomicNo(atom) != 1) {
-				mMol.setAtomicNo(atom, 0);
-				mMol.setAtomMarker(atom, true); // fixed atom for minimizer
-			}
-			isToBeDeleted[atom] = false;
-		}
-
-		int[] oldAtomToNew = new int[mMol.getAllAtoms()];
-		int index = 0;
-		for (int i=0; i<oldAtomToNew.length; i++) {
-			if (isToBeDeleted[i])
-				oldAtomToNew[i] = -1;
-			else
-				oldAtomToNew[i] = index++;
-			}
-
-		int[] oldBondToNew = new int[mMol.getAllBonds()];
-		index = 0;
-		for (int i=0; i<oldBondToNew.length; i++) {
-			if (isToBeDeleted[mMol.getBondAtom(0, i)]
-			 || isToBeDeleted[mMol.getBondAtom(1, i)])
-				oldBondToNew[i] = -1;
-			else
-				oldBondToNew[i] = index++;
-			}
-
-		ArrayList<Node> nodesToBeDeleted = new ArrayList<>();
-		for (Node node:getChildren()) {
-			NodeDetail detail = (NodeDetail)node.getUserData();
-			if (detail != null) {
-				if (detail.isAtom()) {
-					if (oldAtomToNew[detail.getAtom()] == -1)
-						nodesToBeDeleted.add(node);
-					else
-						detail.setIndex(oldAtomToNew[detail.getAtom()]);
-				} else if (detail.isBond()) {
-					if (oldBondToNew[detail.getBond()] == -1)
-						nodesToBeDeleted.add(node);
-					else
-						detail.setIndex(oldBondToNew[detail.getBond()]);
-				}
-			}
-		}
-		getChildren().removeAll(nodesToBeDeleted);
-
-		mMol.deleteAtoms(isToBeDeleted);
-		
-		setInitialCoordinates();
 		}
 
 	/**
@@ -1442,7 +1363,10 @@ public class V3DMolecule extends V3DRotatableGroup {
 	}
 
 	public int getUnconnectedFragmentNo() {
-		return mnUnconnectedFragments;
+		if (mUnconnectedFragmentNo == 0)
+			mUnconnectedFragmentNo = mMol.getFragmentNumbers(new int[mMol.getAllAtoms()], false, true);
+
+		return mUnconnectedFragmentNo;
 	}
 
 	@Override

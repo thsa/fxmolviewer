@@ -634,9 +634,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 					}
 					V3DMoleculeCropper cropper = new V3DMoleculeCropper((V3DMolecule)fxmol, distance, refPoint, refBounds);
 					removeMeasurements((V3DMolecule)fxmol);
-					cropper.crop();
-					for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
-						((V3DMolecule)fxmol).cutSurface(type, cropper);
+					int cropResult = cropper.crop();
+					if (cropResult == 2) {
+						moleculesToBeDeleted.add((V3DMolecule)fxmol);
+					}
+					else if (cropResult == 1) {
+						for (int type = 0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
+							((V3DMolecule)fxmol).cutSurface(type, cropper);
+					}
 				}
 			}
 		}
