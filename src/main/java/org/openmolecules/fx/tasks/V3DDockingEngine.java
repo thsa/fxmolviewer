@@ -13,15 +13,13 @@ import java.util.List;
 
 public class V3DDockingEngine {
 	
-	private V3DBindingSite bindingSite;
-	private V3DScene scene3D;
+	private final V3DBindingSite bindingSite;
+	private final V3DScene scene3D;
 
 	
 	public V3DDockingEngine(V3DScene scene, V3DBindingSite bindingSite) {
 		this.bindingSite = bindingSite;
 		this.scene3D = scene;
-		
-		
 	}
 	
 	public double refineNativePose() throws DockingFailedException {
@@ -42,7 +40,7 @@ public class V3DDockingEngine {
 		});
 		return energy;
 	}
-	
+
 	public void reDock() throws DockingFailedException {
 		StereoMolecule newReceptor =  getMolWithSceneCoords(bindingSite.getReceptor());
 		StereoMolecule newLig =  getMolWithSceneCoords(bindingSite.getNativeLigand());
