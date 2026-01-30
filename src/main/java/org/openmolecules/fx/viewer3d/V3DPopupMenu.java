@@ -211,9 +211,18 @@ public class V3DPopupMenu extends ContextMenu {
 		bgColorExplicit.setHideOnClick(false);
 		menuBGColor.getItems().addAll(bgColorNone, bgColorExplicit);
 
-		CheckMenuItem itemAnimate = new CheckMenuItem("Animate");
-		itemAnimate.setSelected(scene.isAnimate());
-		itemAnimate.setOnAction(e -> scene.setAnimate(!scene.isAnimate()));
+		CheckMenuItem itemAnimateNone = new CheckMenuItem("None");
+		itemAnimateNone.setSelected(scene.getAnimationMode() == V3DScene.ANIMATION_NONE);
+		itemAnimateNone.setOnAction(e -> scene.setAnimationMode(V3DScene.ANIMATION_NONE));
+		CheckMenuItem itemAnimateOscillate = new CheckMenuItem("Oscillate");
+		itemAnimateOscillate.setSelected(scene.getAnimationMode() == V3DScene.ANIMATION_OSCILLATE);
+		itemAnimateOscillate.setOnAction(e -> scene.setAnimationMode(V3DScene.ANIMATION_OSCILLATE));
+		CheckMenuItem itemAnimateRotate = new CheckMenuItem("Rotate");
+		itemAnimateRotate.setSelected(scene.getAnimationMode() == V3DScene.ANIMATION_ROTATE);
+		itemAnimateRotate.setOnAction(e -> scene.setAnimationMode(V3DScene.ANIMATION_ROTATE));
+
+		Menu menuAnimate = new Menu("Animation");
+		menuAnimate.getItems().addAll(itemAnimateNone, itemAnimateOscillate, itemAnimateRotate);
 
 		MenuItem itemStereoView = null;
 		if (V3DStereoPane.getFullScreenView() == null) {
@@ -241,7 +250,7 @@ public class V3DPopupMenu extends ContextMenu {
 		}
 
 		Menu menuView = new Menu("View");
-		menuView.getItems().addAll(itemCenter, menuReset, new SeparatorMenuItem(), menuBGColor, new SeparatorMenuItem(), itemAnimate, new SeparatorMenuItem(), itemStereoView);
+		menuView.getItems().addAll(itemCenter, menuReset, new SeparatorMenuItem(), menuBGColor, new SeparatorMenuItem(), menuAnimate, new SeparatorMenuItem(), itemStereoView);
 
 		getItems().add(menuView);
 		getItems().add(new SeparatorMenuItem());

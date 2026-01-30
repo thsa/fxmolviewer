@@ -717,17 +717,21 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		return mCamera.getFieldOfView();
 		}
 
-	public boolean isAnimate() {
-		return mAnimation != null;
+	public int getAnimationMode() {
+		return mAnimation == null ? ANIMATION_NONE : mAnimationMode;
 	}
 
-	public void setAnimate(boolean animate) {
-		if (animate && (mAnimation == null || mAnimation.getStatus() == Animation.Status.STOPPED)) {
-			startAnimation();
+	public void setAnimationMode(int mode) {
+		if (mAnimationMode == ANIMATION_NONE) {
+			if (mAnimation != null) {
+				mAnimation.stop();
+				mAnimation = null;
+			}
 		}
-		else if (!animate && mAnimation != null) {
-			mAnimation.stop();
-			mAnimation = null;
+		else {
+			mAnimationMode = mode;
+			if (mAnimation == null || mAnimation.getStatus() == Animation.Status.STOPPED)
+				startAnimation();
 		}
 	}
 
@@ -736,12 +740,18 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			startAnimation();
 	}
 
+	public static final String[] ANIMATION_CODE = {"none","oscillate","rotate"};
+	public static final int ANIMATION_NONE = 0;
+	public static final int ANIMATION_OSCILLATE = 1;
+	public static final int ANIMATION_ROTATE = 2;
+	private volatile int mAnimationMode = ANIMATION_OSCILLATE;
 	private volatile Timeline mAnimation;
 
 	private void startAnimation() {
 		DoubleProperty value = new SimpleDoubleProperty(0);
 		value.addListener((observable, oldValue, newValue) -> {
-			double angle = 0.4 * Math.cos(newValue.doubleValue());
+			double angle = (mAnimationMode == ANIMATION_OSCILLATE) ?
+					0.4 * Math.cos(newValue.doubleValue()) : 0.5;
 			Point3D cog = getCOGInGroup(mWorld);
 //			mWorld.rotate(new Rotate(angle, cog.getX(), cog.getY(), cog.getZ(), new Point3D(0, 1, 0)));
 			rotateWorldInternal(new Rotate(angle, new Point3D(0, 1, 0)), cog);
