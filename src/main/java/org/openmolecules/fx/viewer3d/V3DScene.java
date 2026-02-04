@@ -178,7 +178,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		applySettings();
 		mSceneListeners = new ArrayList<>();
 		mChartProperty = new SimpleObjectProperty<XYChart<Number,Number>>();
-		setInteractionType(INTERACTION_TYPE_DRUGSCORE);
+		setInteractionType(INTERACTION_TYPE_PLIP);
 		mInteractionsSuspended = false;
 		initializeDragAndDrop();
 	}
@@ -722,16 +722,17 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 	public void setAnimationMode(int mode) {
-		if (mAnimationMode == ANIMATION_NONE) {
-			if (mAnimation != null) {
-				mAnimation.stop();
-				mAnimation = null;
-			}
-		}
-		else {
+		if (mAnimationMode != mode) {
 			mAnimationMode = mode;
-			if (mAnimation == null || mAnimation.getStatus() == Animation.Status.STOPPED)
+			if (mode == ANIMATION_NONE) {
+				if (mAnimation != null) {
+					mAnimation.stop();
+					mAnimation = null;
+				}
+			}
+			else if (mAnimation == null || mAnimation.getStatus() == Animation.Status.STOPPED) {
 				startAnimation();
+			}
 		}
 	}
 
