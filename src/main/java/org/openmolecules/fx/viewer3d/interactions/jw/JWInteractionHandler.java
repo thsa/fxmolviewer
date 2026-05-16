@@ -3,9 +3,9 @@ package org.openmolecules.fx.viewer3d.interactions.jw;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
-import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
+import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
 import java.util.ArrayList;
@@ -27,16 +27,19 @@ public class JWInteractionHandler implements ListChangeListener<V3DRotatableGrou
 		init();
 		evaluateInteractions();
 	}
-	
+
+	public void cleanup() {
+		mScene3D.getWorld().removeListener(this);
+	}
+
 	private void init() {
 		mInteractionSites  = new HashMap<V3DMolecule, JWInteractionSites>();
 		mInteractingPairs = new ArrayList<JWInteractingPair>();
 		mVisibleProperty = new SimpleBooleanProperty(true);
 		mVisibleProperty.addListener((v,ov,nv) -> {
-			for(JWInteractingPair interactingPair : mInteractingPairs) {
+			for (JWInteractingPair interactingPair : mInteractingPairs)
 				interactingPair.setVisibility(mVisibleProperty.get());
-			}
-		});
+		} );
 	}
 	
 	public void evaluateInteractions() {
@@ -52,7 +55,7 @@ public class JWInteractionHandler implements ListChangeListener<V3DRotatableGrou
 	}
 	
 	private void update() {
-		cleanup();
+		removeAllInteractions();
 		init();
 		evaluateInteractions();
 	}
@@ -128,7 +131,7 @@ public class JWInteractionHandler implements ListChangeListener<V3DRotatableGrou
 			List<JWInteractingPair> toDelete = new ArrayList<JWInteractingPair>();
 			for(JWInteractingPair pair: mInteractingPairs) {
 				if(pair.containsMolecule3D(fxmol)) {
-					pair.cleanup();
+					pair.removeInteractions();
 					toDelete.add(pair);
 				}
 			}
@@ -149,8 +152,12 @@ public class JWInteractionHandler implements ListChangeListener<V3DRotatableGrou
 		mVisibleProperty.set(b);
 	}
 
-	private void cleanup() {
-		for(JWInteractingPair pair: mInteractingPairs)
+	public void
+	removeAllInteractions() {
+		for(JWInteractingPair pair: mInteractingPairs) {
+			pair.removeInteractions();
 			pair.cleanup();
 		}
+		mInteractingPairs.clear();
 	}
+}

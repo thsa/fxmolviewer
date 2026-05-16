@@ -291,11 +291,15 @@ public class V3DPopupMenu extends ContextMenu {
 		getItems().add(new SeparatorMenuItem());
 
 		if (fxmol != null) {
-			RadioMenuItem modePolarHydrogens = new RadioMenuItem("Display Polar Hydrogens Only");
+			RadioMenuItem modeNoHydrogens = new RadioMenuItem("Display No Hydrogen Atoms");
+			modeNoHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HYDROGEN_MODE_NONE);
+			modeNoHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HYDROGEN_MODE_NONE));
+
+			RadioMenuItem modePolarHydrogens = new RadioMenuItem("Display Polar Hydrogen Atoms");
 			modePolarHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HYDROGEN_MODE_POLAR);
 			modePolarHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HYDROGEN_MODE_POLAR));
 			
-			RadioMenuItem modeAllHydrogens = new RadioMenuItem("Display All Hydrogens");
+			RadioMenuItem modeAllHydrogens = new RadioMenuItem("Display All Hydrogen Atoms");
 			modeAllHydrogens.setSelected(fxmol.getHydrogenMode() == MoleculeArchitect.HYDROGEN_MODE_ALL);
 			modeAllHydrogens.setOnAction(e -> fxmol.setHydrogenMode(MoleculeArchitect.HYDROGEN_MODE_ALL));
 
@@ -334,11 +338,11 @@ public class V3DPopupMenu extends ContextMenu {
 			Menu menuMode = new Menu(fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE ?
 						"Sidechain Style" : "Molecule Style");
 			if (fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE)
-				menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
+				menuMode.getItems().addAll(modeNoHydrogens, modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
 						modeNoSideChains, modeNearSideChains, modeAllSideChains, new SeparatorMenuItem(),
 						modeBallAndSticks, modeBalls, modeSticks, modeThinSticks, modeWires);
 			else
-				menuMode.getItems().addAll(modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
+				menuMode.getItems().addAll(modeNoHydrogens, modePolarHydrogens, modeAllHydrogens, new SeparatorMenuItem(),
 						modeBallAndSticks, modeBalls, modeSticks, modeThinSticks, modeWires);
 
 			getItems().add(menuMode);

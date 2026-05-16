@@ -1,5 +1,8 @@
 package org.openmolecules.fx.viewer3d.interactions;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
+
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -9,6 +12,8 @@ public class V3DInteractingPair {
 	private final V3DInteractionSites mISites2;
 	private final V3DInteractionCalculator mCalculator;
 	private final TreeMap<Integer,ArrayList<V3DInteraction>> mInteractionMap;
+	private final InvalidationListener mInvalidationListener;
+	private final ChangeListener<Boolean> mVisibilityChangeListener;
 
 	public V3DInteractingPair(V3DInteractionSites iSites1,
 							  V3DInteractionSites iSites2,
@@ -20,29 +25,40 @@ public class V3DInteractingPair {
 		//fxmol2.addMoleculeCoordinatesChangeListener(this);
 		//fxmol1.addMoleculeCoordinatesChangeListener(this);
 		//fxmol2.addMoleculeCoordinatesChangeListener(this);
-		iSites1.addListener((o) -> recalc());
-		iSites2.addListener((o) -> recalc());
-		iSites1.getFXMol().visibleProperty().addListener((v,ov,nv) -> molVisibilityChanged(nv));
-		iSites1.getFXMol().visibleProperty().addListener((v,ov,nv) -> molVisibilityChanged(nv));
+
+		mInvalidationListener  = observable -> recalc();
+		iSites1.addListener(mInvalidationListener);
+		iSites2.addListener(mInvalidationListener);
+
+		mVisibilityChangeListener = (observable, oldValue, newValue) -> molVisibilityChanged(newValue);
+		iSites1.getFXMol().visibleProperty().addListener(mVisibilityChangeListener);
+		iSites2.getFXMol().visibleProperty().addListener(mVisibilityChangeListener);
 
 		mInteractionMap = new TreeMap<>();
 		createInteractions();
+	}
+
+	public void cleanup() {
+		mISites1.removeListener(mInvalidationListener);
+		mISites2.removeListener(mInvalidationListener);
+		mISites1.getFXMol().visibleProperty().removeListener(mVisibilityChangeListener);
+		mISites2.getFXMol().visibleProperty().removeListener(mVisibilityChangeListener);
 	}
 
 	public boolean hasInteractions() {
 		return !mInteractionMap.isEmpty();
 	}
 
-	public void cleanup() {
+	public void removeInteractions() {
 		for(ArrayList<V3DInteraction> interactions : mInteractionMap.values())
 			for (V3DInteraction interaction : interactions)
-				interaction.cleanup();
+				interaction.remove();
 
 		mInteractionMap.clear();
 	}
 
 	public void recalc() {
-		cleanup();
+		removeInteractions();
 		createInteractions();
 	}
 

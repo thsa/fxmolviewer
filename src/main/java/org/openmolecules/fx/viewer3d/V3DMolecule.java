@@ -186,7 +186,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	}
 
 	/**
-	 * Creates a V3DMolecule from the given molecule with generating and showing any surface
+	 * Creates a V3DMolecule from the given molecule without generating and showing any surface
 	 * @param mol
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 * @param hydrogenMode one of MoleculeArchitect.HYDROGEN_MODE_ options

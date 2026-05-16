@@ -57,6 +57,7 @@ import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
 import org.openmolecules.fx.viewer3d.interactions.drugscore.DrugScoreInteractionCalculator;
 import org.openmolecules.fx.viewer3d.interactions.jw.JWInteractionHandler;
 import org.openmolecules.fx.viewer3d.interactions.plip.PLIPInteractionCalculator;
+import org.openmolecules.fx.viewer3d.interactions.rf.RFInteractionCalculator;
 import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
@@ -139,9 +140,10 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public static final int INTERACTION_TYPE_NONE = 0;
 	public static final int INTERACTION_TYPE_PLIP = 1;
 	public static final int INTERACTION_TYPE_DRUGSCORE = 2;
-	public static final int INTERACTION_TYPE_BASIC = 3;
-	public static final String[] INTERACTION_TEXT = {"<none>","PLIP","Drugscore 2018","Basic Atom Types"};
-	public static final String[] INTERACTION_CODE = {"none","plip","drugscore","basic"};
+	public static final int INTERACTION_TYPE_RF = 3;
+	public static final int INTERACTION_TYPE_BASIC = 4;
+	public static final String[] INTERACTION_TEXT = {"<none>","PLIP","Drugscore 2018","RF-Interactions","Basic Atom Types"};
+	public static final String[] INTERACTION_CODE = {"none","plip","drugscore","rf","basic"};
 
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
@@ -1203,26 +1205,30 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 			mInteractionsSuspended = false;
 
 		if (mInteractionType != type) {
-			mInteractionType = type;
 			if (mJWInteractionHandler != null) {
-				mJWInteractionHandler.setVisibible(false);
+				mJWInteractionHandler.removeAllInteractions();
+				mJWInteractionHandler.cleanup();
 				mJWInteractionHandler = null;
 			}
 			if (mInteractionHandler != null) {
-				mInteractionHandler.setVisibible(false);
+				mInteractionHandler.removeAllInteractions();
+				mInteractionHandler.cleanup();
 				mInteractionHandler = null;
 			}
+
+			mInteractionType = type;
+
 			if (mInteractionType == INTERACTION_TYPE_BASIC) {
 				mJWInteractionHandler = new JWInteractionHandler(this);
-				mJWInteractionHandler.setVisibible(true);
 			}
 			if (mInteractionType == INTERACTION_TYPE_PLIP) {    // PLIP interactions, M.Schroeder et al, doi: 10.1093/nar/gkv315
 				mInteractionHandler = new V3DInteractionHandler(this, new PLIPInteractionCalculator());
-				mInteractionHandler.setVisibible(true);
 			}
 			if (mInteractionType == INTERACTION_TYPE_DRUGSCORE) {    // DrugScore2018 (Klebe, Gohlke) interactions
 				mInteractionHandler = new V3DInteractionHandler(this, new DrugScoreInteractionCalculator());
-				mInteractionHandler.setVisibible(true);
+			}
+			if (mInteractionType == INTERACTION_TYPE_RF) {    // Ratio of Frequencies (Taylor, Kuhn, Tosstorf)
+				mInteractionHandler = new V3DInteractionHandler(this, new RFInteractionCalculator());
 			}
 		}
 	}

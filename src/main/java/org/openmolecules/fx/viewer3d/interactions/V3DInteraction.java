@@ -77,7 +77,7 @@ public class V3DInteraction {
 	//	return mLabel;
 	//}
 
-	public void cleanup() {
+	public void remove() {
 		((Group)mIP1.getFXMol().getParent()).getChildren().remove(mRod);
 		//mLabel.remove(mParent);
 	}

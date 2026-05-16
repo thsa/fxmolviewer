@@ -28,16 +28,19 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 		evaluateInteractions();
 	}
 
+	public void cleanup() {
+		mScene3D.getWorld().removeListener(this);
+	}
+
 	private void init() {
 		mInteractionSites  = new HashMap<>();
 		mInteractingPairs = new ArrayList<>();
 		if (mVisibleProperty == null) {
 			mVisibleProperty = new SimpleBooleanProperty(true);
 			mVisibleProperty.addListener((v,ov,nv) -> {
-				for(V3DInteractingPair interactingPair : mInteractingPairs) {
+				for (V3DInteractingPair interactingPair : mInteractingPairs)
 					interactingPair.setVisibility(mVisibleProperty.get());
-				}
-			});
+			} );
 		}
 	}
 
@@ -54,7 +57,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 	}
 
 	private void update() {
-		cleanup();
+		removeAllInteractions();
 		init();
 		evaluateInteractions();
 	}
@@ -127,8 +130,11 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 		mVisibleProperty.set(b);
 	}
 
-	private void cleanup() {
-		for(V3DInteractingPair pair: mInteractingPairs)
+	public void removeAllInteractions() {
+		for(V3DInteractingPair pair: mInteractingPairs) {
+			pair.removeInteractions();
 			pair.cleanup();
+		}
+		mInteractingPairs.clear();
 	}
 }

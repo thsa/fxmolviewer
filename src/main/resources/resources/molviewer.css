@@ -7,7 +7,6 @@
 -fx-faint-focus-color: -fx-base;
 }
 
-
 .tree-table-view {
   -fx-background-color: transparent; 
   -fx-selection-bar-non-focused: rgba(0, 153, 153,0.2);
@@ -18,8 +17,7 @@
   /*-fx-border-color: transparent;*/
   -fx-background-color: -fx-base ;
   -fx-selection-bar: rgba(0, 153, 153,0.2);
-  -fx-padding: 1; 
-
+  -fx-padding: 1;
 }
 
 .tree-cell .tree-disclosure-node {
@@ -42,12 +40,10 @@
     -fx-max-height: 0;
 }
 
-
 .tree-table-cell{
 	-fx-border-color: transparent;
 	-fx-text-fill:white;
 	-fx-font-size: 15;
-
 }
 
 .titled-pane {
@@ -61,7 +57,6 @@
     -fx-background-color: transparent;
 }
 
-
 .scroll-pane {
     -fx-background-color: transparent;
     -fx-opacity:1.0;
@@ -70,8 +65,6 @@
 .tree-table-row-cell:selected{
 	-fx-background-color: rgba(70, 130, 180,0.2);
 }
-
-
 
 .check-box{
 	-fx-focus-color: transparent;
@@ -108,7 +101,6 @@
 
 }
 
-
 .split-pane:horizontal > * > .split-pane-divider {
 -fx-border-color: transparent -fx-base transparent -fx-base;
 -fx-background-color: transparent, derive(-fx-base,20%);
@@ -118,7 +110,6 @@
 .split-pane {
 -fx-background-color: transparent;
 }
-
 
 .border-pane {
 -fx-background-color: transparent;
@@ -272,9 +263,3 @@
     -fx-border-color: transparent;
     -fx-effect: null;
 }
-
-
-
-
-
-

@@ -4,6 +4,8 @@ import com.actelion.research.chem.phesa.pharmacophore.pp.AcceptorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.ChargePoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.DonorPoint;
 import com.actelion.research.chem.phesa.pharmacophore.pp.IPharmacophorePoint;
+import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Point3D;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DScene;
@@ -22,10 +24,12 @@ public class JWInteractingPair {
 	public static final double CUTOFF_ANGLE_DEVIATION_HBOND_SP3O = 60; //in degree
 	private final V3DMolecule fxmol1;
 	private final V3DMolecule fxmol2;
-	private JWInteractionSites iSites1;
-	private JWInteractionSites iSites2;
-	private List<JWInteraction> interactions;
-	
+	private final JWInteractionSites iSites1;
+	private final JWInteractionSites iSites2;
+	private final List<JWInteraction> interactions;
+	private final InvalidationListener mInvalidationListener;
+	private final ChangeListener<Boolean> mVisibilityChangeListener;
+
 	public JWInteractingPair(V3DMolecule fxmol1, V3DMolecule fxmol2, JWInteractionSites iSites1,
 							 JWInteractionSites iSites2, V3DScene scene) {
 		this.fxmol1 = fxmol1;
@@ -37,10 +41,21 @@ public class JWInteractingPair {
 		//fxmol1.addMoleculeCoordinatesChangeListener(this);
 		//fxmol2.addMoleculeCoordinatesChangeListener(this);
 		interactions = new ArrayList<>();
-		iSites1.addListener((o) -> recalc());
-		iSites2.addListener((o) -> recalc());
-		fxmol1.visibleProperty().addListener((v,ov,nv) -> molVisibilityChanged(nv));
-		fxmol2.visibleProperty().addListener((v,ov,nv) -> molVisibilityChanged(nv));
+
+		mInvalidationListener  = observable -> recalc();
+		iSites1.addListener(mInvalidationListener);
+		iSites2.addListener(mInvalidationListener);
+
+		mVisibilityChangeListener = (observable, oldValue, newValue) -> molVisibilityChanged(newValue);
+		fxmol1.visibleProperty().addListener(mVisibilityChangeListener);
+		fxmol2.visibleProperty().addListener(mVisibilityChangeListener);
+	}
+
+	public void cleanup() {
+		iSites1.removeListener(mInvalidationListener);
+		iSites2.removeListener(mInvalidationListener);
+		fxmol1.visibleProperty().removeListener(mVisibilityChangeListener);
+		fxmol2.visibleProperty().removeListener(mVisibilityChangeListener);
 	}
 
 	public void analyze() {
@@ -66,7 +81,7 @@ public class JWInteractingPair {
 		return Interaction.NONE;
 	}
 
-	public void cleanup() {
+	public void removeInteractions() {
 		for(JWInteraction interaction: interactions)
 			interaction.cleanup();
 			
@@ -74,7 +89,7 @@ public class JWInteractingPair {
 	}
 
 	public void recalc() {
-		cleanup();
+		removeInteractions();
 		analyze();
 	}
 	
