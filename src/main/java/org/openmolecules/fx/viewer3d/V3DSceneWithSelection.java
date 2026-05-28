@@ -20,18 +20,26 @@
 
 package org.openmolecules.fx.viewer3d;
 
+import com.actelion.research.gui.hidpi.HiDPIHelper;
+import com.actelion.research.util.ColorHelper;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
 
-public class V3DSceneWithSelection extends BorderPane {
-	private V3DScene mScene3D;
+public class V3DSceneWithSelection extends BorderPane implements V3DHighlightListener {
+	private final V3DScene mScene3D;
 	private Polygon mSelection;
+	private Text mLeftBottomText;
 	private int mSelectionMode;	// 1:adding, 2:subtracting
 
 	public V3DSceneWithSelection(V3DScene scene3D) {
 		mScene3D = scene3D;
+		mScene3D.addHighlightListener(this);
 
 		setOnMousePressed(me -> {
 			mSelection = null;
@@ -52,7 +60,39 @@ public class V3DSceneWithSelection extends BorderPane {
 			}
 		} );
 		getChildren().addAll(scene3D);
+	}
 
+	@Override
+	public void highlightedAtomChanged(V3DMolecule fxmol, int atom) {
+		String atomText = null;
+		V3DInteractionHandler interactionHandler = mScene3D.getInteractionHandler();
+		if (fxmol != null && atom != -1 && interactionHandler != null) {
+			atomText = interactionHandler.getInteractionInfo(fxmol, atom);
+		}
+		if ((mLeftBottomText == null ^ atomText == null)
+		 || (mLeftBottomText != null && !mLeftBottomText.getText().equals(atomText))) {
+			if (mLeftBottomText != null) {
+				getChildren().remove(mLeftBottomText);
+				mLeftBottomText = null;
+			}
+			if (atomText != null) {
+				int gap = HiDPIHelper.scale(8);
+				int textSize = HiDPIHelper.scale(12);
+				mLeftBottomText = new Text(atomText);
+				mLeftBottomText.setFont(new Font(textSize));
+//				mLeftBottomText.setWrappingWidth(getWidth()-2*gap);
+//				mLeftBottomText.setTextAlignment(TextAlignment.LEFT);
+				float[] rgb = new float[3];
+				rgb[0] = (float)mScene3D.getBackground().getRed();
+				rgb[1] = (float)mScene3D.getBackground().getGreen();
+				rgb[2] = (float)mScene3D.getBackground().getBlue();
+				mLeftBottomText.setFill(Color.gray(ColorHelper.perceivedBrightness(rgb) < 0.5 ? 0.9 : 0.1));
+				mLeftBottomText.setX(gap);
+				mLeftBottomText.setY(getHeight() - mLeftBottomText.getLayoutBounds().getHeight() + 2 * textSize);
+				mLeftBottomText.setBlendMode(BlendMode.DIFFERENCE);
+				getChildren().add(mLeftBottomText);
+			}
+		}
 	}
 
 	private void startSelection(double x, double y) {

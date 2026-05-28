@@ -8,18 +8,18 @@ import java.util.TreeMap;
 
 public class V3DInteractingPair {
 
-	private final V3DInteractionSites mISites1;
-	private final V3DInteractionSites mISites2;
+	private final V3DInteractionSite mISite1;
+	private final V3DInteractionSite mISite2;
 	private final V3DInteractionCalculator mCalculator;
 	private final TreeMap<Integer,ArrayList<V3DInteraction>> mInteractionMap;
 	private final InvalidationListener mInvalidationListener;
 	private final ChangeListener<Boolean> mVisibilityChangeListener;
 
-	public V3DInteractingPair(V3DInteractionSites iSites1,
-							  V3DInteractionSites iSites2,
+	public V3DInteractingPair(V3DInteractionSite iSite1,
+							  V3DInteractionSite iSite2,
 							  V3DInteractionCalculator calculator) {
-		mISites1 = iSites1;
-		mISites2 = iSites2;
+		mISite1 = iSite1;
+		mISite2 = iSite2;
 		mCalculator = calculator;
 		//fxmol1.addMoleculeCoordinatesChangeListener(this);
 		//fxmol2.addMoleculeCoordinatesChangeListener(this);
@@ -27,22 +27,26 @@ public class V3DInteractingPair {
 		//fxmol2.addMoleculeCoordinatesChangeListener(this);
 
 		mInvalidationListener  = observable -> recalc();
-		iSites1.addListener(mInvalidationListener);
-		iSites2.addListener(mInvalidationListener);
+		mISite1.addListener(mInvalidationListener);
+		mISite2.addListener(mInvalidationListener);
 
 		mVisibilityChangeListener = (observable, oldValue, newValue) -> molVisibilityChanged(newValue);
-		iSites1.getFXMol().visibleProperty().addListener(mVisibilityChangeListener);
-		iSites2.getFXMol().visibleProperty().addListener(mVisibilityChangeListener);
+		mISite1.getFXMol().visibleProperty().addListener(mVisibilityChangeListener);
+		mISite2.getFXMol().visibleProperty().addListener(mVisibilityChangeListener);
 
 		mInteractionMap = new TreeMap<>();
 		createInteractions();
 	}
 
+	public V3DInteractionSite getInteractionSite(int i) {
+		return i == 0 ? mISite1 : mISite2;
+	}
+
 	public void cleanup() {
-		mISites1.removeListener(mInvalidationListener);
-		mISites2.removeListener(mInvalidationListener);
-		mISites1.getFXMol().visibleProperty().removeListener(mVisibilityChangeListener);
-		mISites2.getFXMol().visibleProperty().removeListener(mVisibilityChangeListener);
+		mISite1.removeListener(mInvalidationListener);
+		mISite2.removeListener(mInvalidationListener);
+		mISite1.getFXMol().visibleProperty().removeListener(mVisibilityChangeListener);
+		mISite2.getFXMol().visibleProperty().removeListener(mVisibilityChangeListener);
 	}
 
 	public boolean hasInteractions() {
@@ -62,8 +66,12 @@ public class V3DInteractingPair {
 		createInteractions();
 	}
 
+	public TreeMap<Integer,ArrayList<V3DInteraction>> getInteractionMap() {
+		return mInteractionMap;
+	}
+
 	private void createInteractions() {
-		mCalculator.determineInteractions(mISites1, mISites2, mInteractionMap);
+		mCalculator.determineInteractions(mISite1, mISite2, mInteractionMap);
 		for(ArrayList<V3DInteraction> interactions : mInteractionMap.values())
 			for (V3DInteraction interaction : interactions)
 				interaction.create();

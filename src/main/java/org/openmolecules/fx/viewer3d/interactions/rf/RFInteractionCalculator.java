@@ -3,24 +3,30 @@ package org.openmolecules.fx.viewer3d.interactions.rf;
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.util.DoubleFormat;
 import javafx.geometry.Point3D;
 import javafx.scene.paint.Color;
 import org.openmolecules.chem.interaction.AtomClassifier;
-import org.openmolecules.chem.interaction.rf.RFLigandAtomClassifier;
-import org.openmolecules.chem.interaction.rf.RFProteinAtomClassifier;
 import org.openmolecules.chem.interaction.rf.RFInteractionList;
 import org.openmolecules.chem.interaction.rf.RFKnowledgeBase;
+import org.openmolecules.chem.interaction.rf.RFLigandAtomClassifier;
+import org.openmolecules.chem.interaction.rf.RFProteinAtomClassifier;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteraction;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionCalculator;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionPoint;
-import org.openmolecules.fx.viewer3d.interactions.V3DInteractionSites;
+import org.openmolecules.fx.viewer3d.interactions.V3DInteractionSite;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
 public class RFInteractionCalculator implements V3DInteractionCalculator {
+	@Override
+	public String getInteractionTypeName() {
+		return "RF";
+	}
+
 	@Override
 	public List<V3DInteractionPoint> determineInteractionPoints(V3DMolecule fxmol) {
 		AtomClassifier classifier = (fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE) ?
@@ -33,34 +39,32 @@ public class RFInteractionCalculator implements V3DInteractionCalculator {
 	}
 
 	@Override
-	public void determineInteractions(V3DInteractionSites is1, V3DInteractionSites is2, TreeMap<Integer, ArrayList<V3DInteraction>> interactionMap) {
+	public void determineInteractions(V3DInteractionSite is1, V3DInteractionSite is2, TreeMap<Integer, ArrayList<V3DInteraction>> interactionMap) {
 		interactionMap.clear();
-		interactionMap.put(0, new ArrayList<>());	// we don't distinguish interaction types
+//		interactionMap.put(0, new ArrayList<>());	// we don't distinguish interaction types
 
-		V3DInteractionSites proteinSites;
-		V3DInteractionSites ligandSites;
+		V3DInteractionSite proteinSites;
+		V3DInteractionSite ligandSites;
 		if (is1.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE
-		 && is2.getFXMol().getRole() == V3DMolecule.MoleculeRole.LIGAND) {
+				&& is2.getFXMol().getRole() == V3DMolecule.MoleculeRole.LIGAND) {
 			proteinSites = is1;
 			ligandSites = is2;
-		}
-		else if (is2.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE
-			  && is1.getFXMol().getRole() == V3DMolecule.MoleculeRole.LIGAND) {
+		} else if (is2.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE
+				&& is1.getFXMol().getRole() == V3DMolecule.MoleculeRole.LIGAND) {
 			proteinSites = is2;
 			ligandSites = is1;
-		}
-		else {
+		} else {
 			return;
 		}
 		StereoMolecule protein = proteinSites.getFXMol().getMolecule().getCompactCopy();
-		for (int atom=0; atom<protein.getAllAtoms(); atom++) {
+		for (int atom = 0; atom<protein.getAllAtoms(); atom++) {
 			Coordinates c = protein.getAtomCoordinates(atom);
 			Point3D p = proteinSites.getFXMol().localToParent(c.x, c.y, c.z);
 			c.set(p.getX(), p.getY(), p.getZ());
 		}
 		protein.ensureHelperArrays(Molecule.cHelperNeighbours);
 		StereoMolecule ligand = ligandSites.getFXMol().getMolecule().getCompactCopy();
-		for (int atom=0; atom<ligand.getAllAtoms(); atom++) {
+		for (int atom = 0; atom<ligand.getAllAtoms(); atom++) {
 			Coordinates c = ligand.getAtomCoordinates(atom);
 			Point3D p = ligandSites.getFXMol().localToParent(c.x, c.y, c.z);
 			c.set(p.getX(), p.getY(), p.getZ());
@@ -69,23 +73,38 @@ public class RFInteractionCalculator implements V3DInteractionCalculator {
 
 		RFInteractionList interactionList = new RFInteractionList(ligand, protein, false);
 
-		V3DInteractionPoint[] ligandIP = new  V3DInteractionPoint[ligand.getAtoms()];
+		V3DInteractionPoint[] ligandIP = new V3DInteractionPoint[ligand.getAtoms()];
 		for (V3DInteractionPoint ip : ligandSites.getSites())
 			ligandIP[ip.getAtom()] = ip;
-		V3DInteractionPoint[] proteinIP = new  V3DInteractionPoint[protein.getAtoms()];
+		V3DInteractionPoint[] proteinIP = new V3DInteractionPoint[protein.getAtoms()];
 		for (V3DInteractionPoint ip : proteinSites.getSites())
 			proteinIP[ip.getAtom()] = ip;
 
 		ArrayList<V3DInteraction> list = new ArrayList<>();
 		for (RFInteractionList.RFInteraction interaction : interactionList) {
 			double rf = RFKnowledgeBase.getRFValue(interaction.lType, interaction.pType);
-			double strength = 2*Math.abs(Math.log10(rf));
-			if (strength < 0.9 || strength > 1.11) {
-				Color color = (rf < 0.9) ? Color.RED.darker() : (rf < 1.1) ? Color.GRAY : Color.BLUE.brighter();
+			if (rf > 0) {
+				double strength = 0.5 + Math.abs(Math.log10(rf));
+				Color color = (rf<0.9) ? Color.RED.darker() : (rf<1.1) ? Color.GRAY : Color.BLUE.brighter();
 				double distance = ligand.getAtomCoordinates(interaction.lAtom).distance(protein.getAtomCoordinates(interaction.pAtom));
-				list.add(new V3DInteraction(proteinIP[interaction.pAtom], ligandIP[interaction.lAtom], 0, distance, 0, strength, color));
+				list.add(new V3DInteraction(proteinIP[interaction.pAtom], ligandIP[interaction.lAtom], 0, rf, distance, 0, strength, color));
 			}
 		}
+
 		interactionMap.put(0, list);
+	}
+
+	@Override
+	public String getInteractionInfo(V3DInteraction interaction, int remoteIndex, boolean isProtein) {
+		return getAtomTypeName(interaction.getInteractionPoint(remoteIndex).getType(), isProtein)
+		+ ", rf:" + DoubleFormat.toString(interaction.getValue(),3)
+		+ ", dist:" + DoubleFormat.toString(interaction.getDistance(), 3)
+		+ ", angle:" + Math.round(180*interaction.getAngle()/Math.PI);
+	}
+
+	@Override
+	public String getAtomTypeName(int type, boolean isProtein) {
+		return isProtein ? RFProteinAtomClassifier.getDefaultInstance().getAtomTypeName(type)
+						 : RFLigandAtomClassifier.getDefaultInstance().getAtomTypeName(type);
 	}
 }

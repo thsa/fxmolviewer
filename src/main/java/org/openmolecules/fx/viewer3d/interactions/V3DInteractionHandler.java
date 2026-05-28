@@ -7,17 +7,14 @@ import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
 import org.openmolecules.fx.viewer3d.V3DScene;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGroup> {
 
 	private final V3DScene mScene3D;
 	V3DInteractionCalculator mCalculator;
 	private List<V3DInteractingPair> mInteractingPairs;
-	private Map<V3DMolecule, V3DInteractionSites> mInteractionSites;
+	private Map<V3DMolecule, V3DInteractionSite> mInteractionSiteMap;
 	private BooleanProperty mVisibleProperty;
 
 	public V3DInteractionHandler(V3DScene scene, V3DInteractionCalculator calculator) {
@@ -33,7 +30,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 	}
 
 	private void init() {
-		mInteractionSites  = new HashMap<>();
+		mInteractionSiteMap = new HashMap<>();
 		mInteractingPairs = new ArrayList<>();
 		if (mVisibleProperty == null) {
 			mVisibleProperty = new SimpleBooleanProperty(true);
@@ -50,7 +47,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 			v3dmol.addImplicitHydrogens();
 			v3dmol.RoleProperty().addListener((v,ov,nv) -> update());
 			v3dmol.IDProperty().addListener((v,ov,nv) -> update());
-			mInteractionSites.put(v3dmol, new V3DInteractionSites(v3dmol, mCalculator));
+			mInteractionSiteMap.put(v3dmol, new V3DInteractionSite(v3dmol, mCalculator));
 		}
 
 		calculateInteractionsBetweenMols(fxmols);
@@ -69,7 +66,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 				V3DMolecule fxmol2 = fxmols.get(j);
 				if (areTwoMolsInteracting(fxmol1, fxmol2)) {
 					V3DInteractingPair interactingPair = new V3DInteractingPair(
-							mInteractionSites.get(fxmol1), mInteractionSites.get(fxmol2), mCalculator);
+							mInteractionSiteMap.get(fxmol1), mInteractionSiteMap.get(fxmol2), mCalculator);
 					if (interactingPair.hasInteractions()) {
 						interactingPair.setVisibility(mVisibleProperty.get());
 						mInteractingPairs.add(interactingPair);
@@ -136,5 +133,55 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 			pair.cleanup();
 		}
 		mInteractingPairs.clear();
+	}
+
+	public String getInteractionInfo(V3DMolecule fxmol, int atom) {
+		boolean thisIsProtein = fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE;
+		StringBuilder info = new StringBuilder(mCalculator.getInteractionTypeName()+"-"+fxmol.getRole().toString()+": ");
+		V3DInteractionSite sites = mInteractionSiteMap.get(fxmol);
+		boolean found = false;
+		for (V3DInteractionPoint ip : sites.getSites()) {
+			if (ip.getAtom() == atom) {
+				info.append(mCalculator.getAtomTypeName(ip.getType(), thisIsProtein));
+				info.append("\n");
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			info.append("Unknown\n");
+
+		V3DInteractionSite thisSite = mInteractionSiteMap.get(fxmol);
+		for (V3DInteractingPair pair : mInteractingPairs) {
+			for (int i=0; i<2; i++) {
+				if (pair.getInteractionSite(i) == thisSite) {
+					V3DInteractionSite remoteSite = pair.getInteractionSite(1-i);
+					boolean remoteIsProtein = remoteSite.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE;
+					TreeMap<Integer,ArrayList<V3DInteraction>> interactionMap = pair.getInteractionMap();
+					for (int type : interactionMap.keySet()) {
+						ArrayList<V3DInteraction> interactions = interactionMap.get(type);
+						for (V3DInteraction interaction : interactions) {
+							for (int j=0; j<2; j++) {
+								V3DInteractionPoint thisPoint = interaction.getInteractionPoint(j);
+								if (thisPoint.getFXMol() == fxmol && thisPoint.getAtom() == atom) {
+									info.append(remoteSite.getFXMol().getRole().toString()).append(": ");
+									info.append(mCalculator.getInteractionInfo(interaction, 1-j, remoteIsProtein));
+									info.append("\n");
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	return info.toString();
+	}
+
+	public String getAtomTypeName(V3DMolecule fxmol, int atom) {
+		V3DInteractionSite sites = mInteractionSiteMap.get(fxmol);
+		for (V3DInteractionPoint ip : sites.getSites())
+			if (ip.getAtom() == atom)
+				return mCalculator.getAtomTypeName(ip.getType(), fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE);
+		return "Unknown";
 	}
 }

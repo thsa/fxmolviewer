@@ -9,7 +9,7 @@ import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteraction;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionCalculator;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionPoint;
-import org.openmolecules.fx.viewer3d.interactions.V3DInteractionSites;
+import org.openmolecules.fx.viewer3d.interactions.V3DInteractionSite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -838,7 +838,7 @@ public class DrugScoreInteractionCalculator implements V3DInteractionCalculator 
 double mTotalPotential;
 
 	@Override
-	public void determineInteractions(V3DInteractionSites is1, V3DInteractionSites is2, TreeMap<Integer, ArrayList<V3DInteraction>> interactionMap) {
+	public void determineInteractions(V3DInteractionSite is1, V3DInteractionSite is2, TreeMap<Integer, ArrayList<V3DInteraction>> interactionMap) {
 		buildPotentials();
 
 		interactionMap.clear();
@@ -856,6 +856,16 @@ if (DEBUG_LIST_INTERACTIONS) System.out.println("Key\tAtom1\tAtom2\tPotential\ta
 if (DEBUG_LIST_INTERACTIONS) System.out.println("Total potential: "+DoubleFormat.toString(mTotalPotential)+" --------------------------------------");
 
 		removeRedundantInteractions(interactionMap.get(0));
+	}
+
+	@Override
+	public String getInteractionTypeName() {
+		return "DrugScore2018";
+	}
+
+	@Override
+	public String getAtomTypeName(int type, boolean isProtein) {
+		return DrugScoreAtomClassifier.typeName(type);
 	}
 
 	private V3DInteraction determineInteraction(V3DInteractionPoint ip1, V3DInteractionPoint ip2) {
@@ -879,13 +889,20 @@ if (DEBUG_LIST_INTERACTIONS) System.out.println(key+"\t"+ip1.getAtom()+"\t"+ip2.
 					if (Math.abs(potential) > 0.1) {
 						Color color = // distance<vdwSum ? new Color(Math.min(1, 5 * (vdwSum - distance)), Math.min(1, 5 * (vdwSum - distance)), 1, 1) :
 									  (potential<0.0) ? Color.GREEN : Color.RED;
-						return new V3DInteraction(ip1, ip2, 0, distance, 0, Math.abs(potential), color);
+						return new V3DInteraction(ip1, ip2, 0, potential, distance, 0, Math.abs(potential), color);
 					}
 //				}
 			}
 		}
 
 		return null;
+	}
+
+	@Override
+	public String getInteractionInfo(V3DInteraction interaction, int remoteIndex, boolean isProtein) {
+		return DrugScoreAtomClassifier.typeName(interaction.getInteractionPoint(remoteIndex).getType())
+				+ ", potential:" + DoubleFormat.toString(interaction.getValue(), 3)
+				+ ", dist:" + DoubleFormat.toString(interaction.getDistance(), 3);
 	}
 
 	private void removeRedundantInteractions(ArrayList<V3DInteraction> interactionList) {

@@ -41,6 +41,7 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.TorsionHistogram;
 
 import java.util.ArrayList;
+import java.util.Vector;
 import java.util.stream.IntStream;
 
 public class V3DMouseHandler {
@@ -57,13 +58,16 @@ public class V3DMouseHandler {
 	private double mMouseX,mMouseY;
 	private long mRecentWheelMillis;
 	private V3DMolecule mHighlightedMol,mAffectedMol;
+	private int mHighlightedAtom;
 	private long mMousePressedMillis;
 	private Node mSelectedNode;
 	private VolumeSphere mHighlightedExclusionSphere, mAffectedExclusionSphere;
-
+	private Vector<V3DHighlightListener> mHighlightListeners;
 
 	public V3DMouseHandler(final V3DScene scene) {
 		mScene = scene;
+		mHighlightedAtom = -1;
+		mHighlightListeners = new Vector<>();
 
 		scene.setOnScroll(se -> {
 			// we modify the wheel delta depending on how quickly the wheel is rotated
@@ -256,6 +260,10 @@ public class V3DMouseHandler {
 		} );
 	}
 
+	public void cleanUp() {
+		mHighlightListeners.clear();
+	}
+
 	private boolean isDraggingInXY(MouseEvent me) {
 		return me.isMiddleButtonDown() || (me.isPrimaryButtonDown() && me.isMetaDown());
 		}
@@ -297,6 +305,14 @@ public class V3DMouseHandler {
 		return false;
 	}
 
+	public void addHighlightListener(V3DHighlightListener listener) {
+		mHighlightListeners.add(listener);
+	}
+
+	public void removeHighlightListener(V3DHighlightListener listener) {
+		mHighlightListeners.remove(listener);
+	}
+
 	private void trackHighlightedMol(MouseEvent me) {
 		PickResult pr = me.getPickResult();
 		Node node = pr.getIntersectedNode();
@@ -317,15 +333,18 @@ public class V3DMouseHandler {
 		if (mHighlightedMol != null && (molecule == null || molecule != mHighlightedMol))
 			mHighlightedMol.setHighlightedShape(null);
 
-		mHighlightedMol = (V3DMolecule) molecule;
-		if (mHighlightedMol != null && node instanceof Shape3D && node.getUserData() != null) {
-			mHighlightedMol.setHighlightedShape((Shape3D)node);
+		int highlightedAtom = -1;
+		if (molecule != null && node instanceof Shape3D && node.getUserData() != null) {
+			((V3DMolecule)molecule).setHighlightedShape((Shape3D)node);
 			NodeDetail detail = (NodeDetail)node.getUserData();
-			if (detail.isTorsion()) {
+			if (detail.isAtom()) {
+				highlightedAtom = detail.getAtom();
+			}
+			else if (detail.isTorsion()) {
 				int b = detail.getTorsion();
-				byte[] histogram = mHighlightedMol.getTorsionStrainVis().getTorsionAnalyzer().getHistogram(b);
+				byte[] histogram = ((V3DMolecule)molecule).getTorsionStrainVis().getTorsionAnalyzer().getHistogram(b);
 				if(histogram!=null) {
-					double angle = mHighlightedMol.getTorsionStrainVis().getTorsionAnalyzer().getAngle(b);
+					double angle = ((V3DMolecule)molecule).getTorsionStrainVis().getTorsionAnalyzer().getAngle(b);
 					XYChart<Number,Number> bc = TorsionHistogram.create(histogram,angle);
 					mScene.chartProperty().set(bc);
 				}
@@ -333,8 +352,16 @@ public class V3DMouseHandler {
 					mScene.chartProperty().set(null);
 				}
 			}
-			}
-		if(mHighlightedMol==null)
+		}
+		if (mHighlightedMol != molecule || mHighlightedAtom != highlightedAtom) {
+			for (V3DHighlightListener l : mHighlightListeners)
+				l.highlightedAtomChanged((V3DMolecule)molecule, highlightedAtom);
+		}
+
+		mHighlightedMol = (V3DMolecule)molecule;
+		mHighlightedAtom = highlightedAtom;
+
+		if (mHighlightedMol == null)
 			mScene.chartProperty().set(null);
 	}
 

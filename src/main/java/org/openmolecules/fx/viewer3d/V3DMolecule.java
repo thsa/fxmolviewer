@@ -97,7 +97,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private final ArrayList<Sphere> mTemporaryAtomSpheres;
 	private boolean mOverrideHydrogens;
 	private final double[] mSurfaceTransparency;
-	private final Set<MolCoordinatesChangeListener> mListeners;
+	private final Set<MolCoordinatesChangeListener> mCoordinateChangeListeners;
 	private final Set<MolStructureChangeListener> mStructureListeners;
 	private Point3D mRotationCenter;
 	private final ObjectProperty<MoleculeRole> mRoleProperty;
@@ -259,7 +259,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		mSurfaceColor = new Color[surfaceCount];
 		mSurfaceColorMode = new int[surfaceCount];
 		mSurfaceTransparency = new double[surfaceCount];
-		mListeners = new HashSet<>();
+		mCoordinateChangeListeners = new HashSet<>();
 		mStructureListeners = new HashSet<>();
 		mLigands = ligands;
 
@@ -384,7 +384,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		pharmacophore.buildPharmacophore();
 		this.addGroup(pharmacophore);
 		//Platform.runLater(() -> getChildren().add(mPharmacophore));
-		mListeners.add(pharmacophore);
+		mCoordinateChangeListeners.add(pharmacophore);
 	}
 	
 	public List<V3DCustomizablePheSA> getPharmacophoreModels() {
@@ -431,11 +431,11 @@ public class V3DMolecule extends V3DRotatableGroup {
 	}
 	
 	public void addMoleculeCoordinatesChangeListener(MolCoordinatesChangeListener listener) {
-		mListeners.add(listener);
+		mCoordinateChangeListeners.add(listener);
 	}
 	
 	public void removeMoleculeCoordinatesChangeListener(MolCoordinatesChangeListener listener) {
-		mListeners.remove(listener);
+		mCoordinateChangeListeners.remove(listener);
 	}
 	
 	public void addMoleculeStructureChangeListener(MolStructureChangeListener listener) {
@@ -969,7 +969,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	}
 	
 	public void fireCoordinatesChange() {
-		for(MolCoordinatesChangeListener listener : mListeners) {
+		for(MolCoordinatesChangeListener listener : mCoordinateChangeListeners) {
 			listener.coordinatesChanged();
 		}
 	}
@@ -1176,7 +1176,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 
 	public void updateAppearance(Node node) {
-		
 		if(node.getParent() instanceof PPArrow)
 			node = ((PPArrow)node.getParent()).getCylinder();
 		if(node.getParent() instanceof PPSphere)
@@ -1336,14 +1335,11 @@ public class V3DMolecule extends V3DRotatableGroup {
 			if(child instanceof V3DCustomizablePheSA)
 				removePharmacophore((V3DCustomizablePheSA)child);
 		}
-		
 	}
 	
 	public void removePharmacophore(V3DCustomizablePheSA pharmacophore) {
 		this.deleteGroup(pharmacophore);
-		//Platform.runLater(() -> getChildren().add(mPharmacophore));
-		mListeners.remove(pharmacophore);
-
+		mCoordinateChangeListeners.remove(pharmacophore);
 	}
 	
 	public MoleculeRole getRole() {

@@ -75,6 +75,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private final Group mRoot;                  	// not rotatable, contains light and camera
 	private final V3DRotatableGroup mWorld;		// rotatable, not movable, root in center of scene, contains all visible objects
 	private final List<V3DSceneListener> mSceneListeners;
+	private final V3DMouseHandler mMouseHandler;
 	private int mSurfaceCutMode,mInteractionType,mPreviousInteractionType;
 	private V3DMolecule mSurfaceCutMolecule;
 	private V3DMoleculeEditor mEditor;
@@ -169,7 +170,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		buildLight();
 		buildMainCamera();  // light first, because the camera positions the light
 		mMeasurements = new ArrayList<V3DMeasurement>();
-		new V3DMouseHandler(this);
+		mMouseHandler = new V3DMouseHandler(this);
 		new V3DKeyHandler(this);
 		mClipboardHandler = new ClipboardHandler();
 		mMouseDragged = false;
@@ -263,8 +264,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void addSceneListener(V3DSceneListener sl) {
 		mSceneListeners.add(sl);
 		}
-	
-	
+
+	public void addHighlightListener(V3DHighlightListener listener) {
+		mMouseHandler.addHighlightListener(listener);
+	}
+
+	public void removeHighlightListener(V3DHighlightListener listener) {
+		mMouseHandler.removeHighlightListener(listener);
+	}
+
 	public boolean isOverrideHydrogenColor() {
 		return mOverrideHydrogens;
 	}
@@ -1194,6 +1202,10 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 				setInteractionType(mPreviousInteractionType);
 			}
 		}
+	}
+
+	public V3DInteractionHandler getInteractionHandler() {
+		return mInteractionHandler;
 	}
 
 	public int getInteractionType() {

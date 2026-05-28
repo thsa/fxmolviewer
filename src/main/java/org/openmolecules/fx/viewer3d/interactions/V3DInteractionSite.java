@@ -9,17 +9,17 @@ import org.openmolecules.fx.viewer3d.V3DMolecule;
 import java.util.ArrayList;
 import java.util.List;
 
-public class V3DInteractionSites implements MolCoordinatesChangeListener, MolStructureChangeListener, Observable {
+public class V3DInteractionSite implements MolCoordinatesChangeListener, MolStructureChangeListener, Observable {
 
 	private final V3DInteractionCalculator mCalculator;
-	private List<V3DInteractionPoint> mInteractionSites;
+	private List<V3DInteractionPoint> mInteractionPoints;
 	private final V3DMolecule mFXMol;
 	private final List<InvalidationListener> mInvalidationListeners;
 
-	public V3DInteractionSites(V3DMolecule fxmol, V3DInteractionCalculator calculator) {
+	public V3DInteractionSite(V3DMolecule fxmol, V3DInteractionCalculator calculator) {
 		mFXMol = fxmol;
 		mCalculator = calculator;
-		mInteractionSites = mCalculator.determineInteractionPoints(fxmol);
+		mInteractionPoints = mCalculator.determineInteractionPoints(fxmol);
 		fxmol.addMoleculeCoordinatesChangeListener(this);
 		fxmol.addMoleculeStructureChangeListener(this);
 		mInvalidationListeners = new ArrayList<>();
@@ -27,7 +27,7 @@ public class V3DInteractionSites implements MolCoordinatesChangeListener, MolStr
 
 	@Override
 	public void coordinatesChanged() {
-		for(V3DInteractionPoint pp: mInteractionSites)
+		for(V3DInteractionPoint pp: mInteractionPoints)
 			pp.updateCoordinates();
 		mInvalidationListeners.forEach(i -> i.invalidated(this));
 	}
@@ -36,14 +36,18 @@ public class V3DInteractionSites implements MolCoordinatesChangeListener, MolStr
 		return mFXMol;
 	}
 
+	public V3DInteractionCalculator getCalculator() {
+		return mCalculator;
+	}
+
 	@Override
 	public void structureChanged() {
-		mInteractionSites = mCalculator.determineInteractionPoints(mFXMol);
+		mInteractionPoints = mCalculator.determineInteractionPoints(mFXMol);
 		mInvalidationListeners.forEach(i -> i.invalidated(this));
 	}
 
 	public List<V3DInteractionPoint> getSites() {
-		return mInteractionSites;
+		return mInteractionPoints;
 	}
 
 	@Override
