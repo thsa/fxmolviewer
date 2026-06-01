@@ -5,12 +5,8 @@ import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.util.DoubleFormat;
 import javafx.geometry.Point3D;
-import javafx.scene.paint.Color;
 import org.openmolecules.chem.interaction.AtomClassifier;
-import org.openmolecules.chem.interaction.rf.RFInteractionList;
-import org.openmolecules.chem.interaction.rf.RFKnowledgeBase;
-import org.openmolecules.chem.interaction.rf.RFLigandAtomClassifier;
-import org.openmolecules.chem.interaction.rf.RFProteinAtomClassifier;
+import org.openmolecules.chem.interaction.rf.*;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteraction;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionCalculator;
@@ -43,30 +39,30 @@ public class RFInteractionCalculator implements V3DInteractionCalculator {
 		interactionMap.clear();
 //		interactionMap.put(0, new ArrayList<>());	// we don't distinguish interaction types
 
-		V3DInteractionSite proteinSites;
-		V3DInteractionSite ligandSites;
+		V3DInteractionSite proteinSite;
+		V3DInteractionSite ligandSite;
 		if (is1.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE
-				&& is2.getFXMol().getRole() == V3DMolecule.MoleculeRole.LIGAND) {
-			proteinSites = is1;
-			ligandSites = is2;
+		 && is2.getFXMol().getRole() == V3DMolecule.MoleculeRole.LIGAND) {
+			proteinSite = is1;
+			ligandSite = is2;
 		} else if (is2.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE
 				&& is1.getFXMol().getRole() == V3DMolecule.MoleculeRole.LIGAND) {
-			proteinSites = is2;
-			ligandSites = is1;
+			proteinSite = is2;
+			ligandSite = is1;
 		} else {
 			return;
 		}
-		StereoMolecule protein = proteinSites.getFXMol().getMolecule().getCompactCopy();
+		StereoMolecule protein = proteinSite.getFXMol().getMolecule().getCompactCopy();
 		for (int atom = 0; atom<protein.getAllAtoms(); atom++) {
 			Coordinates c = protein.getAtomCoordinates(atom);
-			Point3D p = proteinSites.getFXMol().localToParent(c.x, c.y, c.z);
+			Point3D p = proteinSite.getFXMol().localToParent(c.x, c.y, c.z);
 			c.set(p.getX(), p.getY(), p.getZ());
 		}
 		protein.ensureHelperArrays(Molecule.cHelperNeighbours);
-		StereoMolecule ligand = ligandSites.getFXMol().getMolecule().getCompactCopy();
+		StereoMolecule ligand = ligandSite.getFXMol().getMolecule().getCompactCopy();
 		for (int atom = 0; atom<ligand.getAllAtoms(); atom++) {
 			Coordinates c = ligand.getAtomCoordinates(atom);
-			Point3D p = ligandSites.getFXMol().localToParent(c.x, c.y, c.z);
+			Point3D p = ligandSite.getFXMol().localToParent(c.x, c.y, c.z);
 			c.set(p.getX(), p.getY(), p.getZ());
 		}
 		ligand.ensureHelperArrays(Molecule.cHelperNeighbours);
@@ -74,32 +70,30 @@ public class RFInteractionCalculator implements V3DInteractionCalculator {
 		RFInteractionList interactionList = new RFInteractionList(ligand, protein, false);
 
 		V3DInteractionPoint[] ligandIP = new V3DInteractionPoint[ligand.getAtoms()];
-		for (V3DInteractionPoint ip : ligandSites.getSites())
+		for (V3DInteractionPoint ip : ligandSite.getSites())
 			ligandIP[ip.getAtom()] = ip;
 		V3DInteractionPoint[] proteinIP = new V3DInteractionPoint[protein.getAtoms()];
-		for (V3DInteractionPoint ip : proteinSites.getSites())
+		for (V3DInteractionPoint ip : proteinSite.getSites())
 			proteinIP[ip.getAtom()] = ip;
 
 		ArrayList<V3DInteraction> list = new ArrayList<>();
-		for (RFInteractionList.RFInteraction interaction : interactionList) {
-			double rf = RFKnowledgeBase.getRFValue(interaction.lType, interaction.pType);
-			if (rf > 0) {
-				double strength = 0.5 + Math.abs(Math.log10(rf));
-				Color color = (rf<0.9) ? Color.RED.darker() : (rf<1.1) ? Color.GRAY : Color.BLUE.brighter();
-				double distance = ligand.getAtomCoordinates(interaction.lAtom).distance(protein.getAtomCoordinates(interaction.pAtom));
-				list.add(new V3DInteraction(proteinIP[interaction.pAtom], ligandIP[interaction.lAtom], 0, rf, distance, 0, strength, color));
-			}
+		for (RFInteraction interaction : interactionList) {
+			double rf = RFKnowledgeBase.getRFValue(interaction.getLType(), interaction.getPType());
+			if (rf > 0)
+				list.add(new RFInteractionV3D(proteinIP[interaction.getPAtom()], ligandIP[interaction.getLAtom()], interaction, rf));
 		}
 
 		interactionMap.put(0, list);
 	}
 
 	@Override
-	public String getInteractionInfo(V3DInteraction interaction, int remoteIndex, boolean isProtein) {
-		return getAtomTypeName(interaction.getInteractionPoint(remoteIndex).getType(), isProtein)
+	public String getInteractionInfo(V3DInteraction interaction, int remoteIndex, boolean isl2P) {
+		RFInteraction rfi = ((RFInteractionV3D)interaction).getRFInteraction();
+		return getAtomTypeName(interaction.getInteractionPoint(remoteIndex).getType(), isl2P)
 		+ ", rf:" + DoubleFormat.toString(interaction.getValue(),3)
 		+ ", dist:" + DoubleFormat.toString(interaction.getDistance(), 3)
-		+ ", angle:" + Math.round(180*interaction.getAngle()/Math.PI);
+		+ ", ang:" + Math.round(180*(isl2P ? rfi.getL2PAngle() : rfi.getP2LAngle())/Math.PI)
+		+ ", tor:" + Math.round(180*(isl2P ? rfi.getL2PTorsion() : rfi.getP2LTorsion())/Math.PI);
 	}
 
 	@Override

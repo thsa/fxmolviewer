@@ -12,22 +12,19 @@ public class V3DInteraction {
 	private static final float GAP_LENGTH = 0.25f;
 
 	private final V3DInteractionPoint mIP1,mIP2;
-	private final double mValue,mDistance,mAngle,mStrength;
+	private final double mValue,mDistance,mStrength;
 	private double mLength;
-	private final int mType;
 	private int mVisAtom1, mVisAtom2;
 	private DashedRod mRod;
 	private final Color mColor;
 
-	public V3DInteraction(V3DInteractionPoint ip1, V3DInteractionPoint ip2, int type, double value, double distance, double angle, double strength, Color color) {
+	public V3DInteraction(V3DInteractionPoint ip1, V3DInteractionPoint ip2, double value, double distance, double strength, Color color) {
 		mIP1 = ip1;
 		mIP2 = ip2;
 		mVisAtom1 = -1;
 		mVisAtom2 = -1;
-		mType = type;
 		mValue = value;
 		mDistance = distance;
-		mAngle = angle;
 		mStrength = strength;
 		mColor = color;
 	}
@@ -46,10 +43,6 @@ public class V3DInteraction {
 		return mDistance;
 	}
 
-	public double getAngle() {
-		return mAngle;
-	}
-
 	public double getValue() {
 		return mValue;
 	}
@@ -60,10 +53,6 @@ public class V3DInteraction {
 
 	public double getLength() {
 		return mLength;
-	}
-
-	public int getType() {
-		return mType;
 	}
 
 	public void create() {

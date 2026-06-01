@@ -161,7 +161,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 
 		for (V3DInteractionPoint p1: is1.getSites() ) {
 			for (V3DInteractionPoint p2: is2.getSites() ) {
-				V3DInteraction interaction = determineInteraction(p1,p2);
+				PLIPInteraction interaction = (PLIPInteraction)determineInteraction(p1,p2);
 				if (interaction != null)
 					interactionMap.get(interaction.getType()).add(interaction);
 			}
@@ -181,7 +181,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 		// HYDROPHOBIC
 		if (ip1.getType() == IP_TYPE_HYDROPHOBIC
 		 && ip2.getType() == IP_TYPE_HYDROPHOBIC) {
-			return distance<HYDROPH_DIST_MAX ? new V3DInteraction(ip1, ip2, I_TYPE_HYDROPHOBIC, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_HYDROPHOBIC]) : null;
+			return distance<HYDROPH_DIST_MAX ? new PLIPInteraction(ip1, ip2, I_TYPE_HYDROPHOBIC, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_HYDROPHOBIC]) : null;
 		}
 
 		if ((ip1.getType() == IP_TYPE_DONOR && ip2.getType() == IP_TYPE_ACCEPTOR)
@@ -208,7 +208,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 				}
 				double angle = pHyd.subtract(accP).angle(pHyd.subtract(donP));
 				if (angle > HBOND_DON_ANGLE_MIN) {
-					V3DInteraction ia = new V3DInteraction(ip1, ip2, I_TYPE_HBOND, 1.0, distance, angle, 1.0, INTERACTION_COLOR[I_TYPE_HBOND]);
+					V3DInteraction ia = new PLIPInteraction(ip1, ip2, I_TYPE_HBOND, 1.0, distance, angle, 1.0, INTERACTION_COLOR[I_TYPE_HBOND]);
 					ia.setVisAtom(ip1.getType() == IP_TYPE_DONOR ? 0 : 1, hydrogen);
 					return ia;
 				}
@@ -232,7 +232,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 					Point3D accPR = accIP.getFXMol().localToParent(accCR.x, accCR.y, accCR.z);
 					double angle2 = accP.subtract(accPR).angle(accP.subtract(donP));
 					if (Math.abs(angle2 - HALOGEN_ACC_ANGLE) < HALOGEN_ANGLE_DEV)
-						return new V3DInteraction(ip1, ip2, I_TYPE_HALOGEN_BOND, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_HALOGEN_BOND]);
+						return new PLIPInteraction(ip1, ip2, I_TYPE_HALOGEN_BOND, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_HALOGEN_BOND]);
 				}
 			}
 		}
@@ -241,7 +241,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 		if ((ip1.getType() == IP_TYPE_POS_CHARGE && ip2.getType() == IP_TYPE_NEG_CHARGE)
 		 || (ip2.getType() == IP_TYPE_POS_CHARGE && ip1.getType() == IP_TYPE_NEG_CHARGE)) {
 			if (distance<SALTBRIDGE_DIST_MAX)
-				return new V3DInteraction(ip1, ip2, I_TYPE_SALT_BRIDGE, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_SALT_BRIDGE]);
+				return new PLIPInteraction(ip1, ip2, I_TYPE_SALT_BRIDGE, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_SALT_BRIDGE]);
 		}
 
 		// PI-CATIONS
@@ -265,7 +265,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 				angle = 180 - 90;
 			double distMax = PICATION_DIST_MAX_0 - angle * PICATION_DIST_PLUS_PER_DEGREE;
 			if (distance<distMax)
-				return new V3DInteraction(ip1, ip2, I_TYPE_PI_CATION, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_PI_CATION]);
+				return new PLIPInteraction(ip1, ip2, I_TYPE_PI_CATION, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_PI_CATION]);
 		}
 
 		// PI-STACKING
@@ -286,7 +286,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 				  || (180 - angle < PISTACK_ANG_DEV))
 				 &&	((projectedDistanceOnPlane(p1, p2, n2l) < PISTACK_OFFSET_MAX)
 				  || (projectedDistanceOnPlane(p2, p1, n1l) < PISTACK_OFFSET_MAX)))
-					return new V3DInteraction(ip1, ip2, I_TYPE_PI_STACKING, 1.0, distance, angle, 1.0, INTERACTION_COLOR[I_TYPE_PI_STACKING]);
+					return new PLIPInteraction(ip1, ip2, I_TYPE_PI_STACKING, 1.0, distance, angle, 1.0, INTERACTION_COLOR[I_TYPE_PI_STACKING]);
 			}
 			return null;
 		}
@@ -296,7 +296,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 		 && (ip2.getType() == IP_TYPE_ACCEPTOR || ip2.getType() == IP_TYPE_DONOR)) {
 			int[] hydrogenHolder = new int[1];
 			if (isHBondToWater(ip2, ip1, p2, p1, distance, hydrogenHolder)) {
-				V3DInteraction ia = new V3DInteraction(ip1, ip2, I_TYPE_WATER_BRIDGE, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_BRIDGE]);
+				V3DInteraction ia = new PLIPInteraction(ip1, ip2, I_TYPE_WATER_BRIDGE, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_BRIDGE]);
 				if (hydrogenHolder[0] != -1)
 					ia.setVisAtom(1, hydrogenHolder[0]);
 				return ia;
@@ -308,7 +308,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 		 && (ip1.getType() == IP_TYPE_ACCEPTOR || ip1.getType() == IP_TYPE_DONOR)) {
 			int[] hydrogenHolder = new int[1];
 			if (isHBondToWater(ip1, ip2, p1, p2, distance, hydrogenHolder)) {
-				V3DInteraction ia = new V3DInteraction(ip1, ip2, I_TYPE_WATER_BRIDGE, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_BRIDGE]);
+				V3DInteraction ia = new PLIPInteraction(ip1, ip2, I_TYPE_WATER_BRIDGE, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_BRIDGE]);
 				if (hydrogenHolder[0] != -1)
 					ia.setVisAtom(0, hydrogenHolder[0]);
 				return ia;
@@ -319,7 +319,7 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 		if (ip1.getType() == IP_TYPE_WATER
 				&& ip2.getType() == IP_TYPE_WATER) {
 			if (distance < WATER_WATER_MAXDIST)
-				return new V3DInteraction(ip1, ip2, I_TYPE_WATER_WATER, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_WATER]);
+				return new PLIPInteraction(ip1, ip2, I_TYPE_WATER_WATER, 1.0, distance, 0.0, 1.0, INTERACTION_COLOR[I_TYPE_WATER_WATER]);
 		}
 
 		return null;
@@ -445,25 +445,21 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 		ArrayList<V3DInteraction> allHBonds = interactionMap.get(I_TYPE_HBOND);
 		ArrayList<V3DInteraction> bestHBonds = new ArrayList<>();
 		for (int site=0; site<2; site++) {
-			TreeMap<Integer,ArrayList<V3DInteraction>> atomInteractionMap = new TreeMap<>();
+			TreeMap<Integer,ArrayList<PLIPInteraction>> atomInteractionMap = new TreeMap<>();
 			for (V3DInteraction hbond : allHBonds) {
 				V3DInteractionPoint ip = hbond.getInteractionPoint(site);
 				if (ip.getType() == IP_TYPE_DONOR) {
-					ArrayList<V3DInteraction> atomInteractions = atomInteractionMap.get(ip.getAtom());
-					if (atomInteractions == null) {
-						atomInteractions = new ArrayList<>();
-						atomInteractionMap.put(ip.getAtom(), atomInteractions);
-					}
-					atomInteractions.add(hbond);
+					ArrayList<PLIPInteraction> atomInteractions = atomInteractionMap.computeIfAbsent(ip.getAtom(), k -> new ArrayList<>());
+					atomInteractions.add((PLIPInteraction)hbond);
 				}
 			}
 
 			for (int atom : atomInteractionMap.keySet()) {
-				ArrayList<V3DInteraction> hbondsWithAtomAsDonor = atomInteractionMap.get(atom);
-				V3DInteraction bestHBond = hbondsWithAtomAsDonor.get(0);
+				ArrayList<PLIPInteraction> hbondsWithAtomAsDonor = atomInteractionMap.get(atom);
+				PLIPInteraction bestHBond = hbondsWithAtomAsDonor.get(0);
 				double bestAngle = bestHBond.getAngle();
 				for (int i=1; i<hbondsWithAtomAsDonor.size(); i++) {
-					V3DInteraction hbond = hbondsWithAtomAsDonor.get(i);
+					PLIPInteraction hbond = hbondsWithAtomAsDonor.get(i);
 					if (bestAngle < hbond.getAngle()) {
 						bestAngle = hbond.getAngle();
 						bestHBond = hbond;
@@ -577,9 +573,9 @@ public class PLIPInteractionCalculator implements V3DInteractionCalculator {
 
 	@Override
 	public String getInteractionInfo(V3DInteraction interaction, int remoteIndex, boolean isProtein) {
-		return I_TYPE_NAME[interaction.getType()]
+		return I_TYPE_NAME[((PLIPInteraction)interaction).getType()]
 				+ ", " + IP_TYPE_NAME[interaction.getInteractionPoint(remoteIndex).getType()]
 				+ ", dist:" + DoubleFormat.toString(interaction.getDistance(), 3)
-				+ ", angle:" + Math.round(180*interaction.getAngle()/Math.PI);
+				+ ", angle:" + Math.round(180*((PLIPInteraction)interaction).getAngle()/Math.PI);
 	}
 }

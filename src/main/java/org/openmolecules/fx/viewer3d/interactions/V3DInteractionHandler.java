@@ -156,7 +156,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 			for (int i=0; i<2; i++) {
 				if (pair.getInteractionSite(i) == thisSite) {
 					V3DInteractionSite remoteSite = pair.getInteractionSite(1-i);
-					boolean remoteIsProtein = remoteSite.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE;
+					boolean isL2P = remoteSite.getFXMol().getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE;
 					TreeMap<Integer,ArrayList<V3DInteraction>> interactionMap = pair.getInteractionMap();
 					for (int type : interactionMap.keySet()) {
 						ArrayList<V3DInteraction> interactions = interactionMap.get(type);
@@ -165,7 +165,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 								V3DInteractionPoint thisPoint = interaction.getInteractionPoint(j);
 								if (thisPoint.getFXMol() == fxmol && thisPoint.getAtom() == atom) {
 									info.append(remoteSite.getFXMol().getRole().toString()).append(": ");
-									info.append(mCalculator.getInteractionInfo(interaction, 1-j, remoteIsProtein));
+									info.append(mCalculator.getInteractionInfo(interaction, 1-j, isL2P));
 									info.append("\n");
 								}
 							}

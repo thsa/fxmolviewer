@@ -850,7 +850,7 @@ if (DEBUG_LIST_INTERACTIONS) System.out.println("Key\tAtom1\tAtom2\tPotential\ta
 			for (V3DInteractionPoint p2: is2.getSites() ) {
 				V3DInteraction interaction = determineInteraction(p1,p2);
 				if (interaction != null)
-					interactionMap.get(interaction.getType()).add(interaction);
+					interactionMap.get(0).add(interaction);
 			}
 		}
 if (DEBUG_LIST_INTERACTIONS) System.out.println("Total potential: "+DoubleFormat.toString(mTotalPotential)+" --------------------------------------");
@@ -889,7 +889,7 @@ if (DEBUG_LIST_INTERACTIONS) System.out.println(key+"\t"+ip1.getAtom()+"\t"+ip2.
 					if (Math.abs(potential) > 0.1) {
 						Color color = // distance<vdwSum ? new Color(Math.min(1, 5 * (vdwSum - distance)), Math.min(1, 5 * (vdwSum - distance)), 1, 1) :
 									  (potential<0.0) ? Color.GREEN : Color.RED;
-						return new V3DInteraction(ip1, ip2, 0, potential, distance, 0, Math.abs(potential), color);
+						return new V3DInteraction(ip1, ip2, potential, distance, Math.abs(potential), color);
 					}
 //				}
 			}
