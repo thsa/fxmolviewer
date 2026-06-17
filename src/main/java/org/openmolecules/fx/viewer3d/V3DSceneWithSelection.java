@@ -22,11 +22,11 @@ package org.openmolecules.fx.viewer3d;
 
 import com.actelion.research.gui.hidpi.HiDPIHelper;
 import com.actelion.research.util.ColorHelper;
-import javafx.scene.effect.BlendMode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.openmolecules.fx.viewer3d.interactions.V3DInteractionHandler;
@@ -35,6 +35,7 @@ public class V3DSceneWithSelection extends BorderPane implements V3DHighlightLis
 	private final V3DScene mScene3D;
 	private Polygon mSelection;
 	private Text mLeftBottomText;
+	private Rectangle mLeftBottomRect;
 	private int mSelectionMode;	// 1:adding, 2:subtracting
 
 	public V3DSceneWithSelection(V3DScene scene3D) {
@@ -73,7 +74,9 @@ public class V3DSceneWithSelection extends BorderPane implements V3DHighlightLis
 		 || (mLeftBottomText != null && !mLeftBottomText.getText().equals(atomText))) {
 			if (mLeftBottomText != null) {
 				getChildren().remove(mLeftBottomText);
+				getChildren().remove(mLeftBottomRect);
 				mLeftBottomText = null;
+				mLeftBottomRect = null;
 			}
 			if (atomText != null) {
 				int gap = HiDPIHelper.scale(8);
@@ -86,11 +89,17 @@ public class V3DSceneWithSelection extends BorderPane implements V3DHighlightLis
 				rgb[0] = (float)mScene3D.getBackground().getRed();
 				rgb[1] = (float)mScene3D.getBackground().getGreen();
 				rgb[2] = (float)mScene3D.getBackground().getBlue();
-				mLeftBottomText.setFill(Color.gray(ColorHelper.perceivedBrightness(rgb) < 0.5 ? 0.9 : 0.1));
+				boolean	isDarkBackground = (ColorHelper.perceivedBrightness(rgb) < 0.5);
+				double textWidth = mLeftBottomText.getBoundsInLocal().getWidth();
+				double textHeight = mLeftBottomText.getBoundsInLocal().getHeight();
+				mLeftBottomText.setFill(Color.gray(isDarkBackground ? 0.9 : 0.0));
 				mLeftBottomText.setX(gap);
-				mLeftBottomText.setY(getHeight() - mLeftBottomText.getLayoutBounds().getHeight() + 2 * textSize);
-				mLeftBottomText.setBlendMode(BlendMode.DIFFERENCE);
-				getChildren().add(mLeftBottomText);
+				mLeftBottomText.setY(getHeight() - textHeight + 2 * textSize);
+				mLeftBottomRect = new Rectangle(gap, getHeight() - textHeight + textSize, textWidth, textHeight);
+				mLeftBottomRect.setFill(new Color(rgb[0], rgb[1], rgb[2], 0.75));
+//				mLeftBottomRect.setFill(Color.gray(isDarkBackground ? 0.1 : 0.9, 0.75));
+//				mLeftBottomText.setBlendMode(BlendMode.DIFFERENCE);
+				getChildren().addAll(mLeftBottomRect, mLeftBottomText);
 			}
 		}
 	}
