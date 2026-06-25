@@ -16,8 +16,8 @@
 	<properties>
 		<revision>1.0.0-SNAPSHOT</revision>
 		<maven.min-version>3.2.5</maven.min-version>
-		<maven.compiler.target>11</maven.compiler.target>
-		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+		<maven.compiler.source>21</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Use:
