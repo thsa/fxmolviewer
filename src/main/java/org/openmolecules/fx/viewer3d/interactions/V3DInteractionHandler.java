@@ -136,13 +136,13 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 	}
 
 	public String getInteractionInfo(V3DMolecule fxmol, int atom) {
-		boolean thisIsProtein = fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE;
+		boolean isProtein = fxmol.getRole() == V3DMolecule.MoleculeRole.MACROMOLECULE;
 		StringBuilder info = new StringBuilder(mCalculator.getInteractionTypeName()+"-"+fxmol.getRole().toString()+": ");
 		V3DInteractionSite sites = mInteractionSiteMap.get(fxmol);
 		boolean found = false;
 		for (V3DInteractionPoint ip : sites.getSites()) {
 			if (ip.getAtom() == atom) {
-				info.append(mCalculator.getAtomTypeName(ip.getType(), thisIsProtein));
+				info.append(mCalculator.getAtomTypeName(ip.getType(), isProtein));
 				info.append("\n");
 				found = true;
 				break;
@@ -151,6 +151,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 		if (!found)
 			info.append("Unknown\n");
 
+		found = false;
 		V3DInteractionSite thisSite = mInteractionSiteMap.get(fxmol);
 		for (V3DInteractingPair pair : mInteractingPairs) {
 			for (int i=0; i<2; i++) {
@@ -167,6 +168,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 									info.append(remoteSite.getFXMol().getRole().toString()).append(": ");
 									info.append(mCalculator.getInteractionInfo(interaction, 1-j, isL2P));
 									info.append("\n");
+									found = true;
 								}
 							}
 						}
@@ -174,7 +176,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 				}
 			}
 		}
-	return info.toString();
+	return found ? info.toString() : null;
 	}
 
 	public String getAtomTypeName(V3DMolecule fxmol, int atom) {
