@@ -385,7 +385,7 @@ public class StartOptions {
 				return;
 			}
 
-			Map<String, List<Molecule3D>> map = entryFile.extractMols(true);
+			Map<String, List<Molecule3D>> map = entryFile.extractMols(true, true);
 			List<Molecule3D> ligands = map.get(StructureAssembler.LIGAND_GROUP);
 
 			int covalentCount = 0;

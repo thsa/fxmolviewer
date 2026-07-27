@@ -167,11 +167,11 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param mol
 	 */
 	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role) {
-		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role );
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, defaultHydrogenMode(role), id, role );
 		}
 	
 	public V3DMolecule(StereoMolecule mol, int id, MoleculeRole role, boolean overrideHydrogen, boolean splitAllBonds) {
-		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role, overrideHydrogen, splitAllBonds);
+		this(mol, MoleculeArchitect.CONSTRUCTION_MODE_STICKS, defaultHydrogenMode(role), id, role, overrideHydrogen, splitAllBonds);
 		}
 
 	/**
@@ -182,7 +182,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	 * @param constructionMode one of MoleculeArchitect.CONSTRUCTION_MODE_ options
 	 */
 	public V3DMolecule(StereoMolecule mol, int constructionMode, int id, MoleculeRole role) {
-		this(mol, constructionMode, MoleculeArchitect.HYDROGEN_MODE_DEFAULT, id, role);
+		this(mol, constructionMode, defaultHydrogenMode(role), id, role);
 	}
 
 	/**
@@ -304,6 +304,10 @@ public class V3DMolecule extends V3DRotatableGroup {
 			mSurfaceMesh[0] = new SurfaceMesh(mMol, 0, surfaceColorMode, getNeutralColor(0), 1.0 - surfaceTransparency, cutter);
 			updateSurfaceFromMesh(0);
 		}
+	}
+
+	private static int defaultHydrogenMode(MoleculeRole role) {
+		return role == MoleculeRole.MACROMOLECULE ? MoleculeArchitect.HYDROGEN_MODE_NONE : MoleculeArchitect.HYDROGEN_MODE_ALL;
 	}
 
 	public void setInitialCoordinates() {

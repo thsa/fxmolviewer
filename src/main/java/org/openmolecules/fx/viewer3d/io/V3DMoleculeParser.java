@@ -139,7 +139,7 @@ public class V3DMoleculeParser {
 				V3DRotatableGroup pdbGroup = new V3DRotatableGroup(new File(file).getName().split("\\.")[0]);
 				scene.addGroup(pdbGroup);
 				PDBFileEntry pdbEntry = file.endsWith(".pdb") ? new PDBFileParser().parse(new File(file)) : MMCIFParser.parse(new File(file));
-				pdbEntry.extractMols().forEach((k,v) -> {
+				pdbEntry.extractMols(false, false).forEach((k,v) -> {
 					List<V3DMolecule> groupMols = new ArrayList<V3DMolecule>();
 					V3DMolecule.MoleculeRole role;
 					boolean isProtein = false;

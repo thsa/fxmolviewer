@@ -18,6 +18,7 @@
 
 package org.openmolecules.mesh;
 
+import com.actelion.research.chem.Molecule;
 import com.actelion.research.chem.Molecule3D;
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.conf.VDWRadii;
@@ -96,8 +97,9 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		float ymax = Float.MIN_VALUE;
 		float zmin = Float.MAX_VALUE;
 		float zmax = Float.MIN_VALUE;
+		mol.ensureHelperArrays(Molecule.cHelperNeighbours);
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-			if (mol.isMetalAtom(atom))
+			if (mol.isMetalAtom(atom) || isWaterAtom(mol, atom))
 				continue;
 
 			float r = VDWRadii.getVDWRadius(mol.getAtomicNo(atom));
@@ -134,7 +136,7 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		float[] grid = new float[mGridSizeX*mGridSizeY*mGridSizeZ];
 
 		for (int atom=0; atom<mol.getAllAtoms(); atom++) {
-			if (mol.isMetalAtom(atom))
+			if (mol.isMetalAtom(atom) || isWaterAtom(mol, atom))
 				continue;
 
 			// translate atom coordinates to voxel space
@@ -173,6 +175,13 @@ public class MoleculeSurfaceAlgorithm extends SmoothMarchingCubesAlgorithm imple
 		setOffset(offsetX, offsetY, offsetZ);
 
 		return grid;
+		}
+
+	private boolean isWaterAtom(StereoMolecule mol, int atom) {
+		return (mol.getAtomicNo(atom) == 8 && mol.getConnAtoms(atom) == 0)	// water oxygen
+			|| (mol.getAtomicNo(atom) == 1 && mol.getConnAtoms(atom) == 1	// water hydrogen
+			 && mol.getAtomicNo(mol.getConnAtom(atom, 0)) == 8
+			 && mol.getConnAtoms(mol.getConnAtom(atom, 0)) == 0);
 		}
 
 	/**

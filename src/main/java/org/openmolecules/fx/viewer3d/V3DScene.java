@@ -62,6 +62,7 @@ import org.openmolecules.fx.viewer3d.nodes.DashedRod;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
 import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
+import org.openmolecules.render.MoleculeArchitect;
 
 import java.util.*;
 
@@ -1004,16 +1005,6 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		return new OneEyeView(this, camera, targetScreen);
 	}
 
-
-	/*
-	public void updateEditorAction(AbstractV3DEditorAction action) {
-		for (Node node : mWorld.getChildren())
-			if (node instanceof V3DMolecule) {
-				((V3DMolecule) node).setEditorAction(action);
-			}
-	}
-	*/
-	
 	public void setEditor(V3DMoleculeEditor editor) {
 		mEditor = editor;
 	}
@@ -1030,19 +1021,16 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 	}
 
 	public List<V3DMolecule> getMolsInScene() {
-		V3DMolecule fxmol;
-		ArrayList<V3DMolecule> fxmols = new ArrayList<V3DMolecule>();
-		for (Node node : getWorld().getAllAttachedRotatableGroups()) {
-			if (node instanceof V3DMolecule) {
-				fxmol = (V3DMolecule)node;
-				fxmols.add(fxmol);
-			}
-		}
+		ArrayList<V3DMolecule> fxmols = new ArrayList<>();
+		for (Node node : getWorld().getAllAttachedRotatableGroups())
+			if (node instanceof V3DMolecule)
+				fxmols.add((V3DMolecule)node);
+
 		return fxmols;
 	}
 	
 	public void tryAddMeasurement() {
-		Set<V3DMolecule> mols = new HashSet<V3DMolecule>(mPickedMolsList);
+		Set<V3DMolecule> mols = new HashSet<>(mPickedMolsList);
 		int pickedAtoms = 0;
 		for(V3DMolecule fxmol : mols) {
 			pickedAtoms += fxmol.getPickedAtoms().size();
@@ -1050,8 +1038,8 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		if(pickedAtoms >= mMeasurementMode.getRequiredAtoms()) {
 			Sphere[] pickedAtomList = new Sphere[mMeasurementMode.getRequiredAtoms()];
 			Coordinates[] coords = new Coordinates[mMeasurementMode.getRequiredAtoms()];
-			ArrayList<Integer> atIds = new ArrayList<Integer>();
-			ArrayList<V3DMolecule> fxmols = new ArrayList<V3DMolecule>();
+			ArrayList<Integer> atIds = new ArrayList<>();
+			ArrayList<V3DMolecule> fxmols = new ArrayList<>();
 			int counter=0;
 			for(V3DMolecule fxmol : mPickedMolsList) {
 				pickedAtomList[counter] = fxmol.getPickedAtoms().removeFirst();
@@ -1121,26 +1109,25 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		mMeasurements.clear();
 	}
 
-	public void moveToGroup(List<V3DRotatableGroup> toMove, V3DRotatableGroup target) {
-		List<V3DRotatableGroup> targetChildren = target.getAllAttachedRotatableGroups();
-		List<V3DRotatableGroup> notToMove = new ArrayList<V3DRotatableGroup>(); //MolGroups that are subGroups of other groups that will be moved, shouldn't be moved separately
-		for(V3DRotatableGroup group1 : toMove) {
-			if(targetChildren.contains(group1))
-				notToMove.add(group1);
-			List<V3DRotatableGroup> group1Children = group1.getAllAttachedRotatableGroups();
-			for(V3DRotatableGroup group2 : toMove) {
-				if(group1==group2)
-					continue;
-				if(group1Children.contains(group2))
-					notToMove.add(group2);
-			}
-		}
-		toMove.removeAll(notToMove);
-		this.delete(toMove);
-		for(V3DRotatableGroup group : toMove)
-			target.addGroup(group);
-		
-	}
+//	public void moveToGroup(List<V3DRotatableGroup> toMove, V3DRotatableGroup target) {
+//		List<V3DRotatableGroup> targetChildren = target.getAllAttachedRotatableGroups();
+//		List<V3DRotatableGroup> notToMove = new ArrayList<V3DRotatableGroup>(); //MolGroups that are subGroups of other groups that will be moved, shouldn't be moved separately
+//		for(V3DRotatableGroup group1 : toMove) {
+//			if(targetChildren.contains(group1))
+//				notToMove.add(group1);
+//			List<V3DRotatableGroup> group1Children = group1.getAllAttachedRotatableGroups();
+//			for(V3DRotatableGroup group2 : toMove) {
+//				if(group1==group2)
+//					continue;
+//				if(group1Children.contains(group2))
+//					notToMove.add(group2);
+//			}
+//		}
+//		toMove.removeAll(notToMove);
+//		this.delete(toMove);
+//		for(V3DRotatableGroup group : toMove)
+//			target.addGroup(group);
+//	}
 	
 	public V3DRotatableGroup getParent(V3DRotatableGroup child) {
 		boolean foundParent = false;
@@ -1242,7 +1229,19 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 			if (mInteractionType == INTERACTION_TYPE_RF) {    // Ratio of Frequencies (Taylor, Kuhn, Tosstorf)
 				mInteractionHandler = new V3DInteractionHandler(this, new RFInteractionCalculator());
 			}
+
+			adaptHydrogenModeForInteractions();
 		}
+	}
+
+	private void adaptHydrogenModeForInteractions() {
+		int bestMode = (mInteractionType == INTERACTION_TYPE_BASIC
+					 || mInteractionType == INTERACTION_TYPE_PLIP) ?
+				MoleculeArchitect.HYDROGEN_MODE_POLAR : MoleculeArchitect.HYDROGEN_MODE_NONE;
+
+		for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups())
+			if(fxmol instanceof V3DMolecule)
+				((V3DMolecule)fxmol).setHydrogenMode(bestMode);
 	}
 
 	public double getDepthCueingIntensity() {
