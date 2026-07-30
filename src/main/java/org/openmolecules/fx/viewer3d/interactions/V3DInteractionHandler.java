@@ -41,7 +41,7 @@ public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGro
 		}
 	}
 
-	public void evaluateInteractions() {
+	private void evaluateInteractions() {
 		List<V3DMolecule> fxmols = mScene3D.getMolsInScene();
 		for(V3DMolecule v3dmol : fxmols) {
 			v3dmol.addImplicitHydrogens();

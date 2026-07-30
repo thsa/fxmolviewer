@@ -64,6 +64,7 @@ public class NearLigandSideChainConstructionFilter extends AtomConstructionFilte
 		for (int ap=0; ap<protein.getAllAtoms(); ap++) {
 			if (!atomMask[ap]) {
 				if (protein.isMetalAtom(ap)
+				 || (protein.getAtomicNo(ap) == 8 && protein.getConnAtoms(ap) == 0)	// water
 				 || (includeBackbone && ap<isBackboneAtom.length && isBackboneAtom[ap])) {
 					atomMask[ap] = true;
 					continue;

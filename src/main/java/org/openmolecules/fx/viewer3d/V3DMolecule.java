@@ -306,6 +306,13 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 	}
 
+	public void cleanup() {
+		removeAllPharmacophores();
+		removeAtomIndexLabels();
+		mCoordinateChangeListeners.clear();
+		mStructureListeners.clear();
+	}
+
 	private static int defaultHydrogenMode(MoleculeRole role) {
 		return role == MoleculeRole.MACROMOLECULE ? MoleculeArchitect.HYDROGEN_MODE_NONE : MoleculeArchitect.HYDROGEN_MODE_ALL;
 	}

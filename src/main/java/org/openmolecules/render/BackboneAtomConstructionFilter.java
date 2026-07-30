@@ -16,7 +16,9 @@ public class BackboneAtomConstructionFilter extends AtomConstructionFilter {
 
 	private static boolean[] addMetalAtoms(StereoMolecule protein, boolean[] isBackboneAtom) {
 		for (int ap=0; ap<protein.getAllAtoms(); ap++)
-			if (ap<isBackboneAtom.length && protein.isMetalAtom(ap))
+			if (ap<isBackboneAtom.length
+			 && (protein.isMetalAtom(ap)
+			  || (protein.getAtomicNo(ap) == 8 && protein.getConnAtoms(ap) == 0)))
 				isBackboneAtom[ap] = true;
 		return isBackboneAtom;
 	}

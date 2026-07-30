@@ -92,6 +92,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
 	private JWInteractionHandler mJWInteractionHandler;
+	private V3DWaterBridgeHandler mWaterBridgeHandler;
 	private final ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle)
 	private PointLight mLight;
 	private PerspectiveCamera mCamera;
@@ -184,6 +185,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mChartProperty = new SimpleObjectProperty<XYChart<Number,Number>>();
 		setInteractionType(INTERACTION_TYPE_PLIP);
 		mInteractionsSuspended = false;
+		mWaterBridgeHandler = new V3DWaterBridgeHandler(this);
 		initializeDragAndDrop();
 	}
 
@@ -381,13 +383,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void delete(V3DRotatableGroup group) {
 		if(group instanceof V3DMolecule) {
 			removeMeasurements((V3DMolecule)group);
-			((V3DMolecule)group).removeAllPharmacophores();
-			((V3DMolecule)group).removeAtomIndexLabels();
+			((V3DMolecule)group).cleanup();
 		}
 //		fxmol.deactivateEvents();
 		mWorld.deleteGroup(group);
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.removeGroup(group);
+		mWaterBridgeHandler.update();
 		}
 	
 	public void delete(List<? extends V3DRotatableGroup> groups) {
@@ -449,6 +451,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.initialize();
 		mWorld.getChildren().clear();	// this does not remove the measurements
+		mWaterBridgeHandler.update();
 	}
 
 	public void optimizeView() {
@@ -684,6 +687,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		updateDepthCueing();
 		for(V3DSceneListener listener : mSceneListeners)
 			listener.addGroup(fxmol);
+		mWaterBridgeHandler.update();
+		fxmol.addMoleculeCoordinatesChangeListener(mWaterBridgeHandler);
 	}
 	
 	public void applySettings() {

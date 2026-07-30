@@ -210,7 +210,6 @@ public class V3DPopupMenu extends ContextMenu {
 		CustomMenuItem bgColorExplicit = new CustomMenuItem(bgColorPicker);
 		bgColorExplicit.setHideOnClick(false);
 		menuBGColor.getItems().addAll(bgColorNone, bgColorExplicit);
-
 		CheckMenuItem itemAnimateNone = new CheckMenuItem("None");
 		itemAnimateNone.setSelected(scene.getAnimationMode() == V3DScene.ANIMATION_NONE);
 		itemAnimateNone.setOnAction(e -> scene.setAnimationMode(V3DScene.ANIMATION_NONE));
