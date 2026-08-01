@@ -75,7 +75,7 @@
 }
 
 .check-box .mark {
--fx-background-color: 
+-fx-background-color:
         #3c7fb1,
         linear-gradient(#fafdfe, #e8f5fc),
         linear-gradient(#eaf6fd 0%, #d9f0fc 49%, #bee6fd 50%, #a7d9f5 100%);

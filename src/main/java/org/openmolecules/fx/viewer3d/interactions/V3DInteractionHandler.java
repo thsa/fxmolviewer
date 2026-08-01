@@ -12,7 +12,7 @@ import java.util.*;
 public class V3DInteractionHandler implements ListChangeListener<V3DRotatableGroup> {
 
 	private final V3DScene mScene3D;
-	V3DInteractionCalculator mCalculator;
+	private final V3DInteractionCalculator mCalculator;
 	private List<V3DInteractingPair> mInteractingPairs;
 	private Map<V3DMolecule, V3DInteractionSite> mInteractionSiteMap;
 	private BooleanProperty mVisibleProperty;

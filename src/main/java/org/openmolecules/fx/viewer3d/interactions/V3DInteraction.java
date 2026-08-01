@@ -64,7 +64,7 @@ public class V3DInteraction {
 		//String text = DoubleFormat.toString(distance,3);
 		mRod = new DashedRod(point1, point2, mColor, (float)mStrength*MAX_RADIUS, DASH_LENGTH, GAP_LENGTH);
 		//mLabel = NonRotatingLabel.create(mParent, text, point1, point2, color);
-		((Group)mIP1.getFXMol().getParent()).getChildren().add(mRod);
+		((Group)mIP1.getFXMol().getParent()).getChildren().addFirst(mRod);
 	}
 
 	//public NonRotatingLabel getLabel() {

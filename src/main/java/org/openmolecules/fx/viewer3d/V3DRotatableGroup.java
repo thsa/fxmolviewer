@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point3D;
+import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +34,17 @@ public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DM
 	}
 
 	public void addGroup(V3DRotatableGroup group) {
-		getChildren().add(group);
-		children.add(group);
+		// add molecules with surface last, because transparent surfaces are only transparent for objects added earlier
+		if (group instanceof V3DMolecule
+		 && (((V3DMolecule)group).getSurfaceMode(MoleculeSurfaceAlgorithm.CONNOLLY) == V3DMolecule.SURFACE_MODE_FILLED
+		  || ((V3DMolecule)group).getSurfaceMode(MoleculeSurfaceAlgorithm.LEE_RICHARDS) == V3DMolecule.SURFACE_MODE_FILLED)) {
+			getChildren().addLast(group);
+			children.addLast(group);
+		}
+		else {
+			getChildren().addFirst(group);
+			children.addFirst(group);
+		}
 		for(ListChangeListener<V3DRotatableGroup> listener : listeners)
 			group.addListener(listener);
 		visibleProperty().addListener(group.mVisibilityListener);

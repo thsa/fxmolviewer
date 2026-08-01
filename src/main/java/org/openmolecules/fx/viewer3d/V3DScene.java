@@ -86,13 +86,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private final ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
 	private volatile V3DPopupMenuController mPopupMenuController;
-	private final EnumSet<ViewerSettings> mSettings;
-	private boolean mOverrideHydrogens,mInteractionsSuspended;
+	private final int mSettings;
+	private boolean mOverrideHydrogens,mInteractionsSuspended,mIsShowWaterNetwork;
 	private int mMoleculeColorID;
 	private V3DBindingSite mBindingSiteHelper;
 	private V3DInteractionHandler mInteractionHandler;
 	private JWInteractionHandler mJWInteractionHandler;
-	private V3DWaterBridgeHandler mWaterBridgeHandler;
+	private final V3DWaterBridgeHandler mWaterBridgeHandler;
 	private final ObjectProperty<XYChart<Number,Number>> mChartProperty; //for graphs and charts that are created by interaction with the scene (e.g. hovering over a torsion angle)
 	private PointLight mLight;
 	private PerspectiveCamera mCamera;
@@ -125,20 +125,23 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 	}
 
-	public enum ViewerSettings {
-		 EDITING, SMALL_MOLS, SIDEPANEL, UPPERPANEL, WHITE_HYDROGENS, WHITE_BACKGROUND, BLUE_BACKGROUND, BLACK_BACKGROUND,
-		 ROLE, ALLOW_PHARMACOPHORES, ATOM_INDEXES, INDIVIDUAL_ROTATION, ATOM_LEVEL_SELECTION
-	}
+	public static final int SETTING_EDITING = 0x000001;
+	public static final int SETTING_SMALL_MOLS = 0x000002;
+	public static final int SETTING_SIDEPANEL = 0x000004;
+	public static final int SETTING_UPPERPANEL = 0x000008;
+	public static final int SETTING_WHITE_HYDROGENS = 0x000010;
+	public static final int SETTING_WHITE_BACKGROUND = 0x000020;
+	public static final int SETTING_BLUE_BACKGROUND = 0x000040;
+	public static final int SETTING_BLACK_BACKGROUND = 0x000080;
+	public static final int SETTING_ROLE = 0x000100;
+	public static final int SETTING_ALLOW_PHARMACOPHORES = 0x000200;
+	public static final int SETTING_ATOM_INDEXES = 0x000400;
+	public static final int SETTING_INDIVIDUAL_ROTATION = 0x000800;
+	public static final int SETTING_ATOM_LEVEL_SELECTION = 0x001000;
 
-	// IMPORTANT: When deriving a predefined setting for modification, then clone it first!!!
-	public static final EnumSet<ViewerSettings> CONFORMER_VIEW_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES);
-	public static final EnumSet<ViewerSettings> CONFORMER_EDIT_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.SIDEPANEL, ViewerSettings.ALLOW_PHARMACOPHORES, ViewerSettings.EDITING);
-	public static final EnumSet<ViewerSettings> VISUALIZATION_MINIMALIST_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS);
-	public static final EnumSet<ViewerSettings> VISUALIZATION_EXTENDED_MODE = EnumSet.of(ViewerSettings.BLUE_BACKGROUND, ViewerSettings.SMALL_MOLS, ViewerSettings.EDITING);
-
-	public static final EnumSet<ViewerSettings> GENERAL_MODE = EnumSet.of(
-			ViewerSettings.EDITING, ViewerSettings.SIDEPANEL, ViewerSettings.WHITE_HYDROGENS,
-			ViewerSettings.BLACK_BACKGROUND, ViewerSettings.UPPERPANEL,ViewerSettings.ROLE);
+	public static final int CONFORMER_VIEW_MODE = SETTING_BLUE_BACKGROUND | SETTING_SMALL_MOLS | SETTING_SIDEPANEL | SETTING_ALLOW_PHARMACOPHORES;
+	public static final int CONFORMER_EDIT_MODE = SETTING_BLUE_BACKGROUND | SETTING_SMALL_MOLS | SETTING_SIDEPANEL | SETTING_ALLOW_PHARMACOPHORES | SETTING_EDITING;
+	public static final int GENERAL_MODE = SETTING_EDITING | SETTING_SIDEPANEL | SETTING_WHITE_HYDROGENS | SETTING_BLACK_BACKGROUND | SETTING_UPPERPANEL | SETTING_ROLE;
 
 	public static final int INTERACTION_TYPE_NONE = 0;
 	public static final int INTERACTION_TYPE_PLIP = 1;
@@ -152,7 +155,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
 	private static final Color TORSION_COLOR = Color.VIOLET;
 
-	public V3DScene(Group root, double width, double height, EnumSet<V3DScene.ViewerSettings> settings) {
+	public V3DScene(Group root, double width, double height, int settings) {
 		super(root, width, height, true, SceneAntialiasing.BALANCED);
 		mRoot = root;
 		mBindingSiteHelper = null;
@@ -166,8 +169,8 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 //		Stop[] stops = new Stop[] { new Stop(0, Color.MIDNIGHTBLUE), new Stop(1, Color.MIDNIGHTBLUE.darker().darker().darker())};
 //		LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
 
-		mDefaultBackground = mSettings.contains(ViewerSettings.WHITE_BACKGROUND) ? Color.WHITE :
-							 mSettings.contains(ViewerSettings.BLUE_BACKGROUND) ? Color.BLUE : Color.BLACK;
+		mDefaultBackground = (mSettings & SETTING_WHITE_BACKGROUND) != 0 ? Color.WHITE
+						   : (mSettings & SETTING_BLUE_BACKGROUND) != 0 ? Color.BLUE : Color.BLACK;
 		setFill(mDefaultBackground);
 		buildLight();
 		buildMainCamera();  // light first, because the camera positions the light
@@ -185,6 +188,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mChartProperty = new SimpleObjectProperty<XYChart<Number,Number>>();
 		setInteractionType(INTERACTION_TYPE_PLIP);
 		mInteractionsSuspended = false;
+		mIsShowWaterNetwork = true;
 		mWaterBridgeHandler = new V3DWaterBridgeHandler(this);
 		initializeDragAndDrop();
 	}
@@ -281,7 +285,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 
 	public boolean isSplitAllBonds() {
-		return mSettings.contains(ViewerSettings.ATOM_LEVEL_SELECTION);
+		return (mSettings & SETTING_ATOM_LEVEL_SELECTION) != 0;
 	}
 	
 	public MEASUREMENT getMeasurementMode() {
@@ -692,17 +696,17 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	}
 	
 	public void applySettings() {
-		if(mSettings.contains(ViewerSettings.WHITE_HYDROGENS))
+		if ((mSettings & SETTING_WHITE_HYDROGENS) != 0)
 			setOverrideHydrogens(false);
-		if(mSettings.contains(ViewerSettings.WHITE_BACKGROUND))
+		if ((mSettings & SETTING_WHITE_BACKGROUND) != 0)
 			setFill(Color.WHITE);
-		if(mSettings.contains(ViewerSettings.BLACK_BACKGROUND))
+		if ((mSettings & SETTING_BLACK_BACKGROUND) != 0)
 			setFill(Color.BLACK);
-		if(mSettings.contains(ViewerSettings.BLUE_BACKGROUND))
+		if ((mSettings & SETTING_BLACK_BACKGROUND) != 0)
 			setFill(Color.MIDNIGHTBLUE);
 	}
 
-	public EnumSet<ViewerSettings> getSettings() {
+	public int getSettings() {
 		return mSettings;
 	}
 
@@ -1025,6 +1029,13 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		return false;
 	}
 
+	public boolean hasWater() {
+		for (V3DMolecule mol : getMolsInScene())
+			if (mol.getRole().equals(V3DMolecule.MoleculeRole.SOLVENT))
+				return true;
+		return false;
+	}
+
 	public List<V3DMolecule> getMolsInScene() {
 		ArrayList<V3DMolecule> fxmols = new ArrayList<>();
 		for (Node node : getWorld().getAllAttachedRotatableGroups())
@@ -1033,7 +1044,21 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 
 		return fxmols;
 	}
-	
+
+	public boolean isShowWaterNetwork() {
+		return mIsShowWaterNetwork;
+	}
+
+	public void setShowWaterNetwork(boolean b) {
+		if (mIsShowWaterNetwork != b) {
+			mIsShowWaterNetwork = b;
+			for (V3DMolecule mol : getMolsInScene())
+				if (mol.getRole().equals(V3DMolecule.MoleculeRole.SOLVENT))
+					mol.setVisible(b);
+			mWaterBridgeHandler.setVisible(b);
+		}
+	}
+
 	public void tryAddMeasurement() {
 		Set<V3DMolecule> mols = new HashSet<>(mPickedMolsList);
 		int pickedAtoms = 0;

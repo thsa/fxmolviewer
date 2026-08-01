@@ -9,7 +9,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import org.openmolecules.fx.viewer3d.V3DMolecule;
 import org.openmolecules.fx.viewer3d.V3DMolecule.MoleculeRole;
 import org.openmolecules.fx.viewer3d.V3DRotatableGroup;
-import org.openmolecules.fx.viewer3d.V3DScene.ViewerSettings;
+import org.openmolecules.fx.viewer3d.V3DScene;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -87,7 +87,7 @@ public class MolPaneMouseHandler {
 			});
 		
 			popup.getItems().add(itemZoom);
-			if(mMolPane.getV3DScene().getSettings().contains(ViewerSettings.EDITING)) {	
+			if((mMolPane.getV3DScene().getSettings() & V3DScene.SETTING_EDITING) != 0) {
 				MenuItem itemAddSubGroup = new MenuItem("Add New Subgroup");
 				itemAddSubGroup.setOnAction(e-> {
 					String groupName = createGroupDialog();
@@ -176,7 +176,7 @@ public class MolPaneMouseHandler {
 			popup.getItems().add(menuRole);
 		}
 		
-		if(!mMolPane.getV3DScene().getSettings().contains(ViewerSettings.UPPERPANEL)) {
+		if((mMolPane.getV3DScene().getSettings() & V3DScene.SETTING_UPPERPANEL) == 0) {
 			MenuItem itemDelete = new MenuItem("Selected Molecules");
 			itemDelete.setOnAction(e -> mMolPane.getV3DScene().delete(mMolPane.getAllSelectedMolGroups()));
 	

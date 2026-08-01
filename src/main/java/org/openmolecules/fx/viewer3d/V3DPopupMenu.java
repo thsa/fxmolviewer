@@ -46,7 +46,6 @@ import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 import org.openmolecules.render.TorsionStrainVisualization;
 
-import java.util.EnumSet;
 import java.util.Optional;
 
 public class V3DPopupMenu extends ContextMenu {
@@ -70,7 +69,7 @@ public class V3DPopupMenu extends ContextMenu {
 		mMolecule = fxmol;
 		mScene = scene;
 		V3DPopupMenuController controller = scene.getPopupMenuController();
-		EnumSet<V3DScene.ViewerSettings> settings = scene.getSettings();
+		int settings = scene.getSettings();
 
 		if (controller != null)	// Add external File items
 			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_FILE);
@@ -78,7 +77,7 @@ public class V3DPopupMenu extends ContextMenu {
 		if (controller != null)	// Add external View items
 			controller.addExternalMenuItems(this, V3DPopupMenuController.TYPE_EDIT);
 
-		if (settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) {
+		if ((settings & V3DScene.SETTING_EDITING) != 0) {
 			Menu menuEdit = new Menu("Edit");
 
 			MenuItem itemCut = new MenuItem("Cut Molecule");
@@ -124,7 +123,7 @@ public class V3DPopupMenu extends ContextMenu {
 
 			menuEdit.getItems().addAll(itemCut, itemCopy3D, menuCopy, itemPaste, itemDelete, new SeparatorMenuItem(), itemClear);
 
-			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SMALL_MOLS)) {
+			if ((settings & V3DScene.SETTING_SMALL_MOLS) == 0) {
 				MenuItem itemCrop6 = new MenuItem("0.6 nm");
 				itemCrop6.setOnAction(e -> scene.crop(fxmol, 6.0));
 
@@ -266,6 +265,14 @@ public class V3DPopupMenu extends ContextMenu {
 			Menu menuInteractions = new Menu("Interactions");
 			for (RadioMenuItem item : interactionItem)
 				menuInteractions.getItems().add(item);
+
+			if (mScene.hasWater()) {
+				CheckMenuItem itemWater = new CheckMenuItem("Show Water-Network");
+				itemWater.setSelected(mScene.isShowWaterNetwork());
+				itemWater.setOnAction(e -> mScene.setShowWaterNetwork(!mScene.isShowWaterNetwork()));
+				menuInteractions.getItems().addAll(new SeparatorMenuItem(), itemWater);
+			}
+
 			getItems().add(menuInteractions);
 		}
 
@@ -458,13 +465,13 @@ public class V3DPopupMenu extends ContextMenu {
 			getItems().add(new SeparatorMenuItem());
 			int count = getItems().size();
 
-			if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
+			if ((settings & V3DScene.SETTING_SIDEPANEL) == 0) {
 				MenuItem itemHide = new MenuItem("Hide Molecule");
 				itemHide.setOnAction(e -> fxmol.setVisible(false));
 				getItems().add(itemHide);
 			}
 
-			if (settings.contains(V3DScene.ViewerSettings.ATOM_INDEXES)) {
+			if ((settings & V3DScene.SETTING_ATOM_INDEXES) != 0) {
 				if (fxmol.hasAtomIndexLabels()) {
 					MenuItem itemAI = new MenuItem("Remove Atom Indexes");
 					itemAI.setOnAction(e -> fxmol.removeAtomIndexLabels());
@@ -481,14 +488,14 @@ public class V3DPopupMenu extends ContextMenu {
 				getItems().add(new SeparatorMenuItem());
 			count = getItems().size();
 
-			if (!settings.contains(V3DScene.ViewerSettings.UPPERPANEL)
-			 && (settings.contains(V3DScene.ViewerSettings.EDITING) || settings.contains(V3DScene.ViewerSettings.ALLOW_PHARMACOPHORES))) {
+			if ((settings & V3DScene.SETTING_UPPERPANEL) == 0
+			 && ((settings & V3DScene.SETTING_EDITING) != 0 || (settings & V3DScene.SETTING_ALLOW_PHARMACOPHORES) != 0)) {
 				MenuItem itemPP = new MenuItem("Add Pharmacophores");
 				itemPP.setOnAction(e -> fxmol.addPharmacophore());
 				getItems().add(itemPP);
 			}
-			if (!settings.contains(V3DScene.ViewerSettings.UPPERPANEL)) {
-				RadioMenuItem itemTS = new RadioMenuItem("Visualize Torsion Strain");
+			if ((settings & V3DScene.SETTING_UPPERPANEL) ==  0) {
+				CheckMenuItem itemTS = new CheckMenuItem("Visualize Torsion Strain");
 				itemTS.setSelected(fxmol.getTorsionStrainVis()!=null && fxmol.getTorsionStrainVis().isVisible());
 				itemTS.setOnAction(e -> {
 					TorsionStrainVisualization torsionStrainVis = fxmol.getTorsionStrainVis();
@@ -525,7 +532,7 @@ public class V3DPopupMenu extends ContextMenu {
 			*/
 		}
 
-		if (settings == null || !settings.contains(V3DScene.ViewerSettings.SIDEPANEL)) {
+		if ((settings & V3DScene.SETTING_SIDEPANEL) == 0) {
 			MenuItem itemHideAll = new MenuItem("Hide All Molecules");
 			itemHideAll.setOnAction(e -> scene.setAllVisible(false));
 			getItems().add(itemHideAll);
@@ -610,7 +617,7 @@ public class V3DPopupMenu extends ContextMenu {
 		menuClippingPlanes.getItems().addAll(sliderItem1, useWheelForClipping, sliderItem2);
 		getItems().add(menuClippingPlanes);
 		
-		if ((settings == null || settings.contains(V3DScene.ViewerSettings.EDITING)) && !settings.contains(V3DScene.ViewerSettings.UPPERPANEL)) {
+		if ((settings & V3DScene.SETTING_EDITING) != 0 && (settings & V3DScene.SETTING_UPPERPANEL) == 0) {
 			getItems().add(new SeparatorMenuItem());
 			MenuItem itemMinimizeMol = new MenuItem("Of This Molecule");
 			itemMinimizeMol.setOnAction(e -> {

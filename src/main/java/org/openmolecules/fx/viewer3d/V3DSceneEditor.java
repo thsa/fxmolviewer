@@ -11,7 +11,7 @@ public class V3DSceneEditor extends V3DSceneWithSidePane  {
 	
 	private TextArea mOutputLog;
 
-	public V3DSceneEditor(EnumSet<V3DScene.ViewerSettings> settings) {
+	public V3DSceneEditor(int settings) {
 		super(settings);
 		mOutputLog = new TextArea();
 		mOutputLog.setEditable(false);

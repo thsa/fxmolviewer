@@ -56,7 +56,6 @@ import org.openmolecules.render.TorsionStrainVisualization;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -104,13 +103,13 @@ public class V3DSceneWithSidePane extends BorderPane {
 	protected DraggableHBox slidingBox;
 	protected ToggleGroup rightPaneToggleGroup;
 	
-	public V3DSceneWithSidePane(EnumSet<V3DScene.ViewerSettings> settings) {
+	public V3DSceneWithSidePane(int settings) {
 		this(1024, 768, settings);
 	}
 
-	public V3DSceneWithSidePane(int width, int height, EnumSet<V3DScene.ViewerSettings> settings) {
+	public V3DSceneWithSidePane(int width, int height, int settings) {
 		rightPaneToggleGroup = new ToggleGroup();
-		globalModeProperty = new SimpleObjectProperty<GlobalMode>(GlobalMode.EXPLORER);
+		globalModeProperty = new SimpleObjectProperty<>(GlobalMode.EXPLORER);
 		globalModeProperty.addListener((v,nv,ov) -> {
 			this.setTop(null);
 			createUpperPanel();
@@ -132,10 +131,10 @@ public class V3DSceneWithSidePane extends BorderPane {
 	    stackPane.getChildren().add(sceneWithSelection);
 	    stackPane.getChildren().add(center);
 	    center.setPickOnBounds(false);
-		if(settings.contains(V3DScene.ViewerSettings.SIDEPANEL))
-			createSidePane(center,settings);
+		if((settings & V3DScene.SETTING_SIDEPANEL) != 0)
+			createSidePane(center);
 		setCenter(stackPane);
-		if(settings.contains(V3DScene.ViewerSettings.UPPERPANEL))
+		if((settings & V3DScene.SETTING_UPPERPANEL) != 0)
 			createUpperPanel();
 		mScene3D.chartProperty().addListener((o,ov,nv) -> {
 			if(nv!=null) 
@@ -144,7 +143,7 @@ public class V3DSceneWithSidePane extends BorderPane {
 		});
 	}
 	
-	protected void createSidePane(BorderPane center, EnumSet<V3DScene.ViewerSettings> settings) {
+	protected void createSidePane(BorderPane center) {
 		this.setStyle("-fx-background-color:black");
 		mMoleculePanel = new MolGroupPane(mScene3D);
 		mMoleculePanel.getStyleClass().add("side-panel");

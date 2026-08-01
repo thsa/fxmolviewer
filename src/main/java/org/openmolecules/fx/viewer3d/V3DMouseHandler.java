@@ -489,7 +489,7 @@ public class V3DMouseHandler {
 				p1 = new Point3D(dy, -dx, 0);
 			}
 
-			if (mAffectedMol != null || mScene.getSettings().contains(V3DScene.ViewerSettings.INDIVIDUAL_ROTATION)) {
+			if (mAffectedMol != null || (mScene.getSettings() & V3DScene.SETTING_INDIVIDUAL_ROTATION) != 0) {
 				RotatableGroup world = mScene.getWorld();
 				Point3D p0 = world.sceneToLocal(new Point3D(0, 0, 0));
 				Point3D p2 = world.sceneToLocal(p1).subtract(p0);

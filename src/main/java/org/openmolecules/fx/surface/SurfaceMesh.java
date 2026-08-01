@@ -40,7 +40,10 @@ import java.io.IOException;
 import static org.openmolecules.mesh.MoleculeSurfaceAlgorithm.CONNOLLY;
 
 public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
-	public static final boolean USE_NORMALS = false;	// doesn't seem to do anything for FX (JDK 1.8.0_74)
+	public static final boolean USE_NORMALS = false;	// doesn't seem to do anything for FX, at least for single sided triangles
+
+	// TODO implement this: second set of inverted order triangles and also inverted normals for them
+	public static final boolean USE_TWO_SIDED_TRIANGLES = false;	// improves transparency, if surface is to scene after everything else
 
 	private static final boolean BUILD_TRIANGLE_STATISTICS = false;
 	private static final String ANGLE_STATISTICS_FILE_DIR = "/home/thomas/doc/marchingCubes/";
@@ -208,6 +211,12 @@ public class SurfaceMesh extends TriangleMesh implements MeshBuilder {
 
 	@Override
 	public void addTriangle(int i1, int i2, int i3) {
+		addTriangle_(i1, i2, i3);
+		if (USE_TWO_SIDED_TRIANGLES)
+			addTriangle_(i1, i3, i2);
+	}
+
+	private void addTriangle_(int i1, int i2, int i3) {
 		if (VERBOSE_POINTS_AND_TRIANGLES)
 			System.out.println("addTriangle("+i1+", "+i2+", "+i3+")");
 /*

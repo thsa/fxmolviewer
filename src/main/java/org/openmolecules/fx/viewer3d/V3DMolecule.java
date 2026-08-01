@@ -72,7 +72,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 	public static final int SURFACE_MODE_FILLED = 2;
 	public static final String[] SURFACE_MODE_CODE = { "none", "wires", "filled" };
 
-	private static final Color HIGHLIGHT_COLOR = Color.RED;
+	private static final Color HIGHLIGHT_COLOR = Color.YELLOWGREEN;
 	private static final Color PICKED_COLOR = Color.BLUEVIOLET;
 	private static final Color DEFAULT_INHERITED_SURFACE_COLOR = Color.LIGHTGRAY;
 	private static final Color DEFAULT_SURFACE_COLOR = Color.ROYALBLUE;

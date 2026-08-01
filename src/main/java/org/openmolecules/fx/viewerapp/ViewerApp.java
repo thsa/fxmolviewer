@@ -30,7 +30,6 @@ import org.openmolecules.fx.viewer3d.V3DScene;
 import org.openmolecules.fx.viewer3d.V3DSceneWithSidePane;
 
 import java.io.File;
-import java.util.EnumSet;
 import java.util.Optional;
 
 public class ViewerApp extends Application {
@@ -49,12 +48,10 @@ public class ViewerApp extends Application {
 		try { _mode = Integer.parseInt(modeString.substring(modeString.length()-1)); } catch (NumberFormatException nfe) {}
 		final int mode = _mode;
 
-		EnumSet<V3DScene.ViewerSettings> sceneMode = V3DScene.GENERAL_MODE;
-
 		Parent view;
 		V3DScene scene3D;
 
-		V3DSceneWithSidePane sceneWithSidePane =  new V3DSceneWithSidePane(sceneMode);
+		V3DSceneWithSidePane sceneWithSidePane =  new V3DSceneWithSidePane(V3DScene.GENERAL_MODE);
 		scene3D = sceneWithSidePane.getScene3D();
 		view = sceneWithSidePane;
 
