@@ -81,7 +81,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	private V3DMolecule mSurfaceCutMolecule;
 	private V3DMoleculeEditor mEditor;
 	private boolean mMouseDragged; //don't place molecule fragments if mouse is released after a drag event
-	private final ArrayList<V3DMolecule> mPickedMolsList;
+	private final ArrayList<Sphere> mPickedNodeList;
 	private MEASUREMENT mMeasurementMode;
 	private final ArrayList<V3DMeasurement> mMeasurements;
 	private V3DMolecule mCopiedMol;
@@ -180,7 +180,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mClipboardHandler = new ClipboardHandler();
 		mMouseDragged = false;
 		mMeasurementMode = MEASUREMENT.NONE;
-		mPickedMolsList = new ArrayList<>();
+		mPickedNodeList = new ArrayList<>();
 		mOverrideHydrogens = true;
 		mMoleculeColorID = 0;
 		applySettings();
@@ -292,14 +292,20 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		return mMeasurementMode;
 	}
 	
-	public ArrayList<V3DMolecule> getPickedMolsList() {
-		return mPickedMolsList;
+	public void updatePickedSphereList(Sphere atomSphere) {
+		if (mPickedNodeList.contains(atomSphere)) {
+			mPickedNodeList.remove(atomSphere);
+		}
+		else {
+			mPickedNodeList.add(atomSphere);
+			tryAddMeasurement();
+		}
 	}
 
 	public void setMeasurementMode(MEASUREMENT measurement) {
-		for(V3DMolecule fxmol : mPickedMolsList)
+		for(V3DMolecule fxmol : getMolsInScene())
 			fxmol.clearPickedAtomList();
-		mPickedMolsList.clear();
+		mPickedNodeList.clear();
 		mMeasurementMode = measurement;
 		}
 	
@@ -1073,50 +1079,45 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 	}
 
 	public void tryAddMeasurement() {
-		Set<V3DMolecule> mols = new HashSet<>(mPickedMolsList);
-		int pickedAtoms = 0;
-		for(V3DMolecule fxmol : mols) {
-			pickedAtoms += fxmol.getPickedAtoms().size();
-		}
-		if(pickedAtoms >= mMeasurementMode.getRequiredAtoms()) {
+		if(mPickedNodeList.size() >= mMeasurementMode.getRequiredAtoms()) {
 			Sphere[] pickedAtomList = new Sphere[mMeasurementMode.getRequiredAtoms()];
 			Coordinates[] coords = new Coordinates[mMeasurementMode.getRequiredAtoms()];
-			ArrayList<Integer> atIds = new ArrayList<>();
-			ArrayList<V3DMolecule> fxmols = new ArrayList<>();
-			int counter=0;
-			for(V3DMolecule fxmol : mPickedMolsList) {
-				pickedAtomList[counter] = fxmol.getPickedAtoms().removeFirst();
-				fxmol.updateAppearance(pickedAtomList[counter]);
-				int atid = ((NodeDetail) pickedAtomList[counter].getUserData()).getAtom();
-				atIds.add(atid);
-				fxmols.add(fxmol);
-				Coordinates c = fxmol.getMolecule().getAtomCoordinates(atid);
-				//Point3D globalCoords = fxmol.localToParent(c.x,c.y,c.z);
+			ArrayList<Integer> atomIDList = new ArrayList<>();
+			ArrayList<V3DMolecule> fxmolList = new ArrayList<>();
+			for(int i=0; i<mMeasurementMode.getRequiredAtoms(); i++) {
+				pickedAtomList[i] = mPickedNodeList.get(i);
+				int atomID = ((NodeDetail) pickedAtomList[i].getUserData()).getAtom();
+				atomIDList.add(atomID);
+				Node parent = pickedAtomList[i].getParent();
+				while (!(parent instanceof V3DMolecule fxmol))
+					parent = parent.getParent();
+				fxmolList.add(fxmol);
+				Coordinates c = fxmol.getMolecule().getAtomCoordinates(atomID);
 				Coordinates worldPoint =  fxmol.getWorldCoordinates(this, c);
-				Point3D globalCoords = new Point3D(worldPoint.x, worldPoint.y, worldPoint.z);
-				coords[counter] = new Coordinates(globalCoords.getX(),globalCoords.getY(),globalCoords.getZ());
-				counter++;
+				coords[i] = new Coordinates(worldPoint.x, worldPoint.y, worldPoint.z);
 			}
 			if (mMeasurementMode == MEASUREMENT.DISTANCE) {
 				double dist = coords[0].distance(coords[1]);
 				addMeasurementNodes(coords[0],coords[1], getContrastColor(DISTANCE_COLOR),
-								DoubleFormat.toString(dist,3),atIds,fxmols);
+								DoubleFormat.toString(dist,3),atomIDList,fxmolList);
 			}
 			else if(mMeasurementMode == MEASUREMENT.ANGLE) {
 				Coordinates v1 = coords[0].subC(coords[1]);
 				Coordinates v2 = coords[2].subC(coords[1]);
 				double angle = v1.getAngle(v2);
 				angle = 180*angle/Math.PI;
-				addMeasurementNodes(coords[0], coords[2], getContrastColor(ANGLE_COLOR), DoubleFormat.toString(angle,3),atIds,fxmols);
+				addMeasurementNodes(coords[0], coords[2], getContrastColor(ANGLE_COLOR), DoubleFormat.toString(angle,3), atomIDList, fxmolList);
 			}
 			
 			else if(mMeasurementMode == MEASUREMENT.TORSION) {
 				double dihedral = Coordinates.getDihedral(coords[0],coords[1],coords[2],coords[3]);
 				dihedral = 180*dihedral/Math.PI;
-				addMeasurementNodes(coords[0], coords[3], getContrastColor(TORSION_COLOR), DoubleFormat.toString(dihedral,3),atIds,fxmols);
+				addMeasurementNodes(coords[0], coords[3], getContrastColor(TORSION_COLOR), DoubleFormat.toString(dihedral,3), atomIDList, fxmolList);
 			}
-	
-			mPickedMolsList.clear();
+
+			for (V3DMolecule fxmol : getMolsInScene())
+				fxmol.clearPickedAtomList();
+			mPickedNodeList.clear();
 		}
 	}
 
@@ -1177,7 +1178,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		V3DRotatableGroup parent = null;
 		LinkedList<V3DRotatableGroup> queue = new LinkedList<>();
 		queue.add(mWorld);
-		Set<V3DRotatableGroup> visited = new HashSet<V3DRotatableGroup>();
+		Set<V3DRotatableGroup> visited = new HashSet<>();
 		while(!queue.isEmpty() && !foundParent ) {
 			V3DRotatableGroup candidate = queue.poll();
 			if(visited.contains(candidate))
@@ -1189,7 +1190,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 				foundParent = true;
 			}
 			else {
-				candidate.getGroups().stream().forEach(e -> queue.add(e));
+				queue.addAll(candidate.getGroups());
 			}
 		}
 		return parent;
@@ -1199,7 +1200,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 
 	@Override
 	public void labelDeleted(Label l) {
-		ArrayList<V3DMeasurement> toBeRemoved = new ArrayList<V3DMeasurement>();
+		ArrayList<V3DMeasurement> toBeRemoved = new ArrayList<>();
 		for(V3DMeasurement measurement: mMeasurements) {
 			if(measurement.getLabel().equals(l)) {
 				measurement.cleanup();

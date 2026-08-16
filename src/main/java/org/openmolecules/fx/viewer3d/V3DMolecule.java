@@ -81,7 +81,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 
 	private StereoMolecule mMol;
 	private final ArrayList<StereoMolecule> mLigands;
-	private Node mLastPickedNode;
 	private Shape3D mHighlightedShape;
 	private PhongMaterial mOverrideMaterial,mHydrogenMaterial;
 	private Ribbons mRibbons;
@@ -953,30 +952,22 @@ public class V3DMolecule extends V3DRotatableGroup {
 			setHighlightedShape((Shape3D)node);
 		}
 */
-	public Node getLastPickedNode() {
-		return mLastPickedNode;
-		}
 
-	public boolean pickShape(MouseEvent me) {
+	public Sphere pickShape(MouseEvent me) {
 		PickResult result = me.getPickResult();
-		mLastPickedNode = result.getIntersectedNode();
-		if (mLastPickedNode instanceof Sphere) {
-			NodeDetail detail = (NodeDetail)mLastPickedNode.getUserData();
+		Node pickedNode = result.getIntersectedNode();
+		if (pickedNode instanceof Sphere atomShape) {
+			NodeDetail detail = (NodeDetail)pickedNode.getUserData();
 			if (detail != null && detail.isAtom()) {
-				Sphere atomShape = (Sphere)mLastPickedNode;
-				if (mPickedAtomList.contains(atomShape)) {
+				if (mPickedAtomList.contains(atomShape))
 					mPickedAtomList.remove(atomShape);
-					updateAppearance(atomShape);
-					return false;
-				}
-				else {
+				else
 					mPickedAtomList.add(atomShape);
-					updateAppearance(atomShape);
-					return true;
-				}
+				updateAppearance(atomShape);
+				return atomShape;
 			}
 		}
-		return false;
+		return null;
 	}
 	
 	public void fireCoordinatesChange() {

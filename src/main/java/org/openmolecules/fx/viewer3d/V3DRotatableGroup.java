@@ -140,19 +140,18 @@ public class V3DRotatableGroup extends RotatableGroup implements Cloneable,IV3DM
 //	}
 
 	public Coordinates getWorldCoordinates(V3DScene scene, Coordinates coordinates) {
-		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
-		if(this==scene.getWorld())
+		if (this == scene.getWorld())
 			return new Coordinates(coordinates.x, coordinates.y, coordinates.z);
+
 		V3DRotatableGroup subGroup = this;
+		Point3D point = new Point3D(coordinates.x, coordinates.y, coordinates.z);
 		while(true) {
 			V3DRotatableGroup parent = scene.getParent(subGroup);
 			point = subGroup.localToParent(point);
-			if(parent==scene.getWorld())
+			if (parent==scene.getWorld())
 				return new Coordinates(point.getX(), point.getY(), point.getZ());
 			subGroup = parent;
 		}
-		
-		
 	}
 	
 	public Coordinates getWorldToLocalCoordinates(V3DScene scene, Coordinates coordinates) {

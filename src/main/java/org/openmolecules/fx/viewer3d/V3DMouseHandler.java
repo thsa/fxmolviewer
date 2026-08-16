@@ -32,6 +32,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.shape.Shape3D;
+import javafx.scene.shape.Sphere;
 import javafx.scene.transform.Rotate;
 import org.openmolecules.fx.viewer3d.nodes.IPPNode;
 import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
@@ -138,18 +139,16 @@ public class V3DMouseHandler {
 					mScene.selectMolecule(mHighlightedMol, me.isShiftDown() ? 1 : me.isControlDown() ? 2 : 0);
 				}
 				else {
-					if(mScene.getMeasurementMode()!=V3DScene.MEASUREMENT.NONE) {
+					if(mScene.getMeasurementMode() != V3DScene.MEASUREMENT.NONE) {
 						Node parent = mSelectedNode;
 						while (parent != null && !(parent instanceof V3DMolecule))
 							parent = parent.getParent();
 
-						if(parent != null) {
-							V3DMolecule fxmol = (V3DMolecule) parent;
-							boolean molPicked = fxmol.pickShape(me);
-							if(molPicked) {
-								mScene.getPickedMolsList().add(fxmol);
-								mScene.tryAddMeasurement();
-							}
+						if (parent != null) {
+							V3DMolecule fxmol = (V3DMolecule)parent;
+							Sphere pickedSphere = fxmol.pickShape(me);
+							if (pickedSphere != null)
+								mScene.updatePickedSphereList(pickedSphere);
 						}
 					}
 				}
