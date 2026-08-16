@@ -1030,9 +1030,22 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 	}
 
 	public boolean hasWater() {
-		for (V3DMolecule mol : getMolsInScene())
-			if (mol.getRole().equals(V3DMolecule.MoleculeRole.SOLVENT))
+		for (V3DMolecule fxmol : getMolsInScene()) {
+			if (fxmol.getRole().equals(V3DMolecule.MoleculeRole.SOLVENT))
 				return true;
+
+			StereoMolecule mol = fxmol.getMolecule();
+			mol.ensureHelperArrays(Molecule.cHelperNeighbours);
+			for (Node node1: fxmol.getChildren()) {
+				NodeDetail detail = (NodeDetail)node1.getUserData();
+				if (detail != null && detail.isAtom() && node1.isVisible()) {
+					int water = detail.getAtom();
+					if (mol.getAtomicNo(water) == 8 && mol.getConnAtoms(water) == 0)
+						return true;
+				}
+			}
+		}
+
 		return false;
 	}
 
