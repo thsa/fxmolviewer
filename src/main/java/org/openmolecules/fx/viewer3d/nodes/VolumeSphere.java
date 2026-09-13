@@ -1,7 +1,7 @@
 package org.openmolecules.fx.viewer3d.nodes;
 
 import com.actelion.research.chem.Coordinates;
-import com.actelion.research.chem.PeriodicTable;
+import com.actelion.research.chem.conf.VDWRadii;
 import com.actelion.research.chem.phesa.VolumeGaussian;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
@@ -40,12 +40,11 @@ public class VolumeSphere extends Group  {
 	
 	public VolumeSphere (VolumeGaussian volGauss) {
 		setUserData(new NodeDetail(material, RoleHelper.createExclusionRole(), false));
-		sphereRadius = new SimpleDoubleProperty(PeriodicTable.getElement(volGauss.getAtomicNo()).getVDWRadius());
+		sphereRadius = new SimpleDoubleProperty(VDWRadii.getVDWRadius(volGauss.getAtomicNo()));
 		
 		this.setTranslateX(volGauss.getReferenceVector().x);
 		this.setTranslateY(volGauss.getReferenceVector().y);
 		this.setTranslateZ(volGauss.getReferenceVector().z);
-		
 
 		shift = new SimpleObjectProperty<Coordinates>(new Coordinates(volGauss.getShiftVector()));
 		sphereRadius.addListener((o,ov,nv) -> {
@@ -61,8 +60,7 @@ public class VolumeSphere extends Group  {
 			Coordinates diff = nv.subC(ov);
 			volGauss.addShift(diff);			
 		});
-		
-		
+
 		construct();
 		
 		menu = new ContextMenu();
@@ -88,7 +86,7 @@ public class VolumeSphere extends Group  {
 		c.setSelected(volGauss.getAtomicNo()==6);
 		c.setOnAction(e -> {
 			volGauss.setAtomicNo(6);
-			sphereRadius.set(PeriodicTable.getElement(volGauss.getAtomicNo()).getVDWRadius());
+			sphereRadius.set(VDWRadii.getVDWRadius(volGauss.getAtomicNo()));
 		});
 		
 		c.setToggleGroup(group);
@@ -97,7 +95,7 @@ public class VolumeSphere extends Group  {
 		cl.setSelected(volGauss.getAtomicNo()==17);
 		cl.setOnAction(e -> {
 			volGauss.setAtomicNo(17);
-			sphereRadius.set(PeriodicTable.getElement(volGauss.getAtomicNo()).getVDWRadius());
+			sphereRadius.set(VDWRadii.getVDWRadius(volGauss.getAtomicNo()));
 		});
 		
 		cl.setToggleGroup(group);
@@ -106,16 +104,13 @@ public class VolumeSphere extends Group  {
 		br.setSelected(volGauss.getAtomicNo()==35);
 		br.setOnAction(e -> {
 			volGauss.setAtomicNo(35);
-			sphereRadius.set(PeriodicTable.getElement(volGauss.getAtomicNo()).getVDWRadius());
+			sphereRadius.set(VDWRadii.getVDWRadius(volGauss.getAtomicNo()));
 		});
 		
 		br.setToggleGroup(group);
 		
 		menuVol.getItems().addAll(f,c,cl,br);
 		menu.getItems().add(menuVol);
-		
-		
-	
 	}
 	
 	
@@ -133,7 +128,6 @@ public class VolumeSphere extends Group  {
 		icosahedron.setTranslateY(newShift.y);
 		icosahedron.setTranslateZ(newShift.z);		
 		shift.setValue(newShift);
-		
 	}
 		
 	private void construct() {
@@ -167,8 +161,6 @@ public class VolumeSphere extends Group  {
 		V3DCustomizablePheSA parentPharmacophore = (V3DCustomizablePheSA) this.getParent();
 		parentPharmacophore.getMolVol().getVolumeGaussians().remove(volGauss);
 		parentPharmacophore.getChildren().remove(this);
-
-		
 	}
 	
 	public Sphere getSphere() {
@@ -176,7 +168,6 @@ public class VolumeSphere extends Group  {
 	}
 	
 	public void showMenu(double x, double y) {
-
 		menu.show(this, x, y);
         }
 	
@@ -187,7 +178,6 @@ public class VolumeSphere extends Group  {
 		icosahedron.setTranslateX(p1.x);
 		icosahedron.setTranslateY(p1.y);
 		icosahedron.setTranslateZ(p1.z);
-		
 	}
 
 	public VolumeGaussian getVolumeGaussian() {
@@ -201,6 +191,4 @@ public class VolumeSphere extends Group  {
 		this.setTranslateZ(newRef.z);
 		
 	}
-
-
 }

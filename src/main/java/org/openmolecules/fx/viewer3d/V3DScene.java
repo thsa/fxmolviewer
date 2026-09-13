@@ -37,13 +37,16 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.*;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
@@ -64,6 +67,10 @@ import org.openmolecules.fx.viewer3d.nodes.NonRotatingLabel;
 import org.openmolecules.mesh.MoleculeSurfaceAlgorithm;
 import org.openmolecules.render.MoleculeArchitect;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static org.openmolecules.fx.viewer3d.V3DStereoPane.MODE_HOU;
@@ -995,6 +1002,60 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		+" l_objNear:"+DoubleFormat.toString(lmin)+" l_objFar:"+DoubleFormat.toString(lmax));
 */
 }
+
+	public boolean writeImageSequence(String dirPath, int width, int height) {
+		// Convert images into movie with something like this:
+		// ffmpeg -framerate 5 -i frame_%04d.jpg -c:v libx264 ../fxmolviewer.mp4
+		final PerspectiveCamera camera = new PerspectiveCamera(true);
+		camera.setTranslateX(mCamera.getTranslateX());
+		camera.setTranslateY(mCamera.getTranslateY());
+		camera.setTranslateZ(mCamera.getTranslateZ());
+		camera.setNearClip(mCamera.getNearClip());
+		camera.setFarClip(mCamera.getFarClip());
+
+		mCamera.translateXProperty().addListener((observableValue, number, t1) -> camera.setTranslateX(mCamera.getTranslateX()));
+		mCamera.translateYProperty().addListener((observableValue, number, t1) -> camera.setTranslateY(mCamera.getTranslateY()));
+		mCamera.translateZProperty().addListener((observableValue, number, t1) -> camera.setTranslateZ(mCamera.getTranslateZ()));
+		mCamera.nearClipProperty().addListener((observableValue, number, t1) -> camera.setNearClip(mCamera.getNearClip()));
+		mCamera.farClipProperty().addListener((observableValue, number, t1) -> camera.setFarClip(mCamera.getFarClip()));
+
+		int seconds = 36;
+		Point3D cog = getCOGInGroup(mWorld);
+		for (int i=0; i<24*seconds; i++) {
+			double angle = 15.0 / seconds;
+			rotateWorldInternal(new Rotate(angle, new Point3D(0, 1, 0)), cog);
+			if (!writeOneImage(camera, dirPath+File.separator+"frame_"+String.format("%04d", i)+".jpg", width, height))
+				return false;
+		}
+		return true;
+	}
+
+	public boolean writeOneImage(PerspectiveCamera camera, String filePath, int width, int height) {
+		WritableImage image = new WritableImage(width, height);
+
+		SnapshotParameters params = new SnapshotParameters();
+		params.setCamera(camera);
+		params.setDepthBuffer(true);
+		params.setFill(getFill());
+		params.setViewport(new Rectangle2D(0, 0, width, height));
+
+		getRoot().snapshot(params, image);
+
+		File outputFile = new File(filePath);
+
+		try {
+			BufferedImage imageWithAlpha = SwingFXUtils.fromFXImage(image, null);
+
+			BufferedImage imageWithoutAlpha = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			imageWithoutAlpha.getGraphics().drawImage(imageWithAlpha, 0, 0, null);
+
+			ImageIO.write(imageWithoutAlpha, "jpg", outputFile);
+			return true;
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			return false;
+		}
+	}
 
 	public OneEyeView buildOneEyeView(final double eyeShift, int stereoMode, Screen targetScreen) {
 		final PerspectiveCamera camera = new PerspectiveCamera(true);
