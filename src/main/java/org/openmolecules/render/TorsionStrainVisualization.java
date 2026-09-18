@@ -1,14 +1,7 @@
 package org.openmolecules.render;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
-import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
-
 import com.actelion.research.chem.Coordinates;
 import com.actelion.research.chem.conf.TorsionDB;
-
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -18,17 +11,22 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Transform;
+import org.openmolecules.fx.viewer3d.nodes.NodeDetail;
+import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TorsionStrainVisualization implements TorsionStrainVisBuilder {
-	private V3DTorsionStrainAnalyzer analyzer;
-	private TorsionStrainVisArchitect architect = new TorsionStrainVisArchitect(this);
+	private final V3DTorsionStrainAnalyzer analyzer;
+	private final TorsionStrainVisArchitect architect = new TorsionStrainVisArchitect(this);
 	private static final  int CYLINDER_DIVISIONS = 10;
 	public static final double LENGTH_SCALE = 0.4;
-	private static PhongMaterial sGreenTorsionMat;
-	private static PhongMaterial sOrangeTorsionMat;
-	private static PhongMaterial sVioletTorsionMat;
-	private static PhongMaterial sGreyTorsionMat;
+	private static final PhongMaterial sGreenTorsionMat;
+	private static final PhongMaterial sOrangeTorsionMat;
+	private static final PhongMaterial sVioletTorsionMat;
+	private static final PhongMaterial sGreyTorsionMat;
 	private static BooleanProperty isVisible;
 	
 	static {
@@ -52,9 +50,7 @@ public class TorsionStrainVisualization implements TorsionStrainVisBuilder {
 		sGreyTorsionMat.setSpecularColor(new Color(greyColor.getRed(), greyColor.getGreen(), greyColor.getBlue(),0.8));
 		sGreyTorsionMat.setDiffuseColor(new Color(greyColor.getRed(), greyColor.getGreen(), greyColor.getBlue(),0.8).darker());
 	}
-	
-	
-	
+
 	public TorsionStrainVisualization(V3DTorsionStrainAnalyzer analyzer) {
 		this.analyzer = analyzer;
 		isVisible = new SimpleBooleanProperty();
@@ -86,7 +82,6 @@ public class TorsionStrainVisualization implements TorsionStrainVisBuilder {
 			break;
 		}
 		return material;
-			
 	}
 
 	@Override
@@ -139,9 +134,5 @@ public class TorsionStrainVisualization implements TorsionStrainVisBuilder {
 		Platform.runLater(() -> {
 			analyzer.getV3DMolecule().getChildren().removeAll(toBeRemoved);
 		});
-		
 	}
-	
-
-
 }

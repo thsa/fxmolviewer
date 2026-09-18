@@ -796,7 +796,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mAnimationRevivalThread = null;
 	}
 
-	public void rotateWorld(Rotate r) {
+/*	public void rotateWorld(Rotate r) {
 		if (mAnimation != null && mAnimation.getStatus() != Animation.Status.STOPPED) {
 			mAnimation.stop();
 			if (mAnimationRevivalThread == null) {
@@ -815,7 +815,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mPreviousManualRotationMillis = System.currentTimeMillis();
 
 		mWorld.rotate(r);
-	}
+	}	*/
 
 	public void rotateWorld(Rotate r, Point3D cog) {    // we now put the pivot point into the Rotate
 		if (mAnimation != null && mAnimation.getStatus() != Animation.Status.STOPPED) {

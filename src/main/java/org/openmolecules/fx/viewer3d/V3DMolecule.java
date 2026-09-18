@@ -42,10 +42,16 @@ import javafx.scene.paint.Material;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
+import org.openmolecules.chem.interaction.rf.RFKnowledgeBase;
+import org.openmolecules.chem.interaction.rf.RFLigandAtomClassifier;
+import org.openmolecules.chem.interaction.rf.RFProteinAtomClassifier;
 import org.openmolecules.fx.surface.MarkedAtomSurfaceCutter;
 import org.openmolecules.fx.surface.PolygonSurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceCutter;
 import org.openmolecules.fx.surface.SurfaceMesh;
+import org.openmolecules.fx.viewer3d.interactions.V3DInteractionMeshAlgorithm;
+import org.openmolecules.fx.viewer3d.interactions.V3DInteractionMesh;
+import org.openmolecules.fx.viewer3d.interactions.rf.RFInteractionVolumeBuilder;
 import org.openmolecules.fx.viewer3d.nodes.*;
 import org.openmolecules.fx.viewer3d.torsionstrain.V3DTorsionStrainAnalyzer;
 import org.openmolecules.mesh.Cone;
@@ -104,7 +110,8 @@ public class V3DMolecule extends V3DRotatableGroup {
 	private final BooleanProperty mSelectedProperty;
 	private Color mCarbonColor;
 	private BondRotationHelper mBondRotationHelper;
-	private TorsionStrainVisualization torsionStrainVis;
+	private TorsionStrainVisualization mTorsionStrainVis;
+	private ArrayList<MeshView> mRFPotentialMeshView;
 	private ArrayList<AtomIndexLabel> mLabelList;
 	private int mUnconnectedFragmentNo;
 	private final boolean mSplitAllBonds;
@@ -308,6 +315,10 @@ public class V3DMolecule extends V3DRotatableGroup {
 	public void cleanup() {
 		removeAllPharmacophores();
 		removeAtomIndexLabels();
+		if (mRFPotentialMeshView != null)
+			for (MeshView meshView : mRFPotentialMeshView)
+				getChildren().remove(meshView);
+		mRFPotentialMeshView = null;
 		mCoordinateChangeListeners.clear();
 		mStructureListeners.clear();
 	}
@@ -363,11 +374,62 @@ public class V3DMolecule extends V3DRotatableGroup {
 		}
 	}
 
-	public void addTorsionStrainVisualization() {
+	public void addRFPotentialMesh() {
+		if (mRFPotentialMeshView == null) {
+			mRFPotentialMeshView = new ArrayList<>();
+			mMol.ensureHelperArrays(Molecule.cHelperNeighbours);
+			RFKnowledgeBase knowledgeBase = RFKnowledgeBase.getInstance();
+			int[] ligandType = RFLigandAtomClassifier.getDefaultInstance().classifyAtoms(mMol);
+			for (int atom=0; atom<mMol.getAtoms(); atom++) {
+				int pType = -1;
+				double maxRawRF = 0;
+				for (int i = 1; i<RFProteinAtomClassifier.TYPE_COUNT; i++) {
+					double rf = knowledgeBase.getRawRFValue(ligandType[atom], i);
+					if (maxRawRF < rf) {
+						maxRawRF = rf;
+						pType = i;
+					}
+				}
+				if (pType != -1 && maxRawRF >= 2.0) {
+					V3DInteractionMesh meshData = new V3DInteractionMesh();
+					new V3DInteractionMeshAlgorithm(meshData).build(new RFInteractionVolumeBuilder(mMol), mMol, atom, pType);
+
+					MeshView meshView = new MeshView(meshData);
+					meshView.setCullFace(CullFace.NONE);
+
+					Color color = Color.hsb(360.0 * pType / RFProteinAtomClassifier.TYPE_COUNT, 1.0, 1.0, 1.0);
+					PhongMaterial material = createMaterial(color, 0.3);
+					meshView.setMaterial(material);
+
+					getChildren().add(meshView);
+					mRFPotentialMeshView.add(meshView);
+				}
+			}
+		}
+	}
+
+	public ArrayList<MeshView> getRFInteractionMesh() {
+		return mRFPotentialMeshView;
+	}
+
+	public void removeTorsionStrainVisualization() {
+		mTorsionStrainVis.cleanup();
+		mTorsionStrainVis =null;
+	}
+
+	public void removeRFPotentialMesh() {
+		if (mRFPotentialMeshView != null) {
+			for (MeshView meshView : mRFPotentialMeshView)
+				getChildren().remove(meshView);
+			mRFPotentialMeshView = null;
+		}
+	}
+
+		public void addTorsionStrainVisualization() {
 		V3DTorsionStrainAnalyzer torsionAnalyzer = new V3DTorsionStrainAnalyzer(this);
 		torsionAnalyzer.init();
-		torsionStrainVis = new TorsionStrainVisualization(torsionAnalyzer);
-		torsionStrainVis.build();
+		mTorsionStrainVis = new TorsionStrainVisualization(torsionAnalyzer);
+		mTorsionStrainVis.build();
 	}
 
 	public void addPharmacophore() {
@@ -978,10 +1040,13 @@ public class V3DMolecule extends V3DRotatableGroup {
 	
 	public void fireStructureChange() {
 		removeAllPharmacophores();
-		if(torsionStrainVis!=null) {
-			torsionStrainVis.cleanup();
-			torsionStrainVis=null;
-		}
+
+		if(mTorsionStrainVis !=null)
+			removeTorsionStrainVisualization();
+
+		if(mRFPotentialMeshView != null)
+			removeRFPotentialMesh();
+
 		mBondRotationHelper = null;
 		for(MolStructureChangeListener listener : mStructureListeners) {
 			listener.structureChanged();
@@ -1109,30 +1174,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 			updateAppearance(atomShape);
 		}
 
-
-
-/*
-	public void setConformer(Conformer conf) { //added by JW
-		mConformer = conf;
-		V3DMoleculeBuilder builder = new V3DMoleculeBuilder(this);
-		// we cannot center pre-alligned conformers			builder.centerMolecule(conformer);
-		ArrayList<Node> nodesToBeDeleted = new ArrayList<Node>();
-		for(Node node : getChildren()) {
-			NodeDetail detail = (NodeDetail)node.getUserData();
-			if (detail != null) {
-				if (detail.isAtom()) {
-					nodesToBeDeleted.add(node);
-				}
-				
-				else if(detail.isBond()) {
-					nodesToBeDeleted.add(node);
-				}
-			}
-		}
-		builder.buildMolecule(mConformer);
-		getChildren().removeAll(nodesToBeDeleted);
-	}*/
-
 	public Shape3D getHighlightedShape() {
 		return mHighlightedShape;
 	}
@@ -1156,8 +1197,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 				}
 			}
 		}
-
-
 
 	/**
 	 * @return center of molecule or location of picked Shape in scene as Point3D
@@ -1329,8 +1368,7 @@ public class V3DMolecule extends V3DRotatableGroup {
 		for (int type=0; type<MoleculeSurfaceAlgorithm.SURFACE_TYPE.length; type++)
 			setSurfaceMode(type, SURFACE_MODE_NONE);
 	}
-	
-	
+
 	public void removeAllPharmacophores() {
 		List<V3DRotatableGroup> allChildren = this.getAllAttachedRotatableGroups();
 		for(V3DRotatableGroup child : allChildren) {
@@ -1373,6 +1411,6 @@ public class V3DMolecule extends V3DRotatableGroup {
 	}
 
 	public TorsionStrainVisualization getTorsionStrainVis() {
-		return torsionStrainVis;
+		return mTorsionStrainVis;
 	}
 }

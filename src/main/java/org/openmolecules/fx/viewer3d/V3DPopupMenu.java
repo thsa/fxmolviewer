@@ -494,7 +494,7 @@ public class V3DPopupMenu extends ContextMenu {
 				itemPP.setOnAction(e -> fxmol.addPharmacophore());
 				getItems().add(itemPP);
 			}
-			if ((settings & V3DScene.SETTING_UPPERPANEL) ==  0) {
+			if ((settings & V3DScene.SETTING_UPPERPANEL) == 0) {
 				CheckMenuItem itemTS = new CheckMenuItem("Visualize Torsion Strain");
 				itemTS.setSelected(fxmol.getTorsionStrainVis()!=null && fxmol.getTorsionStrainVis().isVisible());
 				itemTS.setOnAction(e -> {
@@ -505,6 +505,17 @@ public class V3DPopupMenu extends ContextMenu {
 						torsionStrainVis.toggleVisibility();
 				});
 				getItems().add(itemTS);
+			}
+			if (System.getProperty("development") != null && (settings & V3DScene.SETTING_UPPERPANEL) == 0) {
+				CheckMenuItem itemRF = new CheckMenuItem("Visualize RF-Potential");
+				itemRF.setSelected(fxmol.getRFInteractionMesh() != null);
+				itemRF.setOnAction(e -> {
+					if (fxmol.getRFInteractionMesh() == null)
+						fxmol.addRFPotentialMesh();
+					else
+						fxmol.removeRFPotentialMesh();
+				});
+				getItems().add(itemRF);
 			}
 
 			if (count != getItems().size())
