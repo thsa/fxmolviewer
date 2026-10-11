@@ -150,13 +150,14 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public static final int CONFORMER_EDIT_MODE = SETTING_BLUE_BACKGROUND | SETTING_SMALL_MOLS | SETTING_SIDEPANEL | SETTING_ALLOW_PHARMACOPHORES | SETTING_EDITING;
 	public static final int GENERAL_MODE = SETTING_EDITING | SETTING_SIDEPANEL | SETTING_WHITE_HYDROGENS | SETTING_BLACK_BACKGROUND | SETTING_UPPERPANEL | SETTING_ROLE;
 
+	public static final int RELEASE_INTERACTION_TYPES = 3;
 	public static final int INTERACTION_TYPE_NONE = 0;
 	public static final int INTERACTION_TYPE_PLIP = 1;
-	public static final int INTERACTION_TYPE_DRUGSCORE = 2;
-	public static final int INTERACTION_TYPE_RF = 3;
-	public static final int INTERACTION_TYPE_BASIC = 4;
-	public static final String[] INTERACTION_TEXT = {"<none>","PLIP","Drugscore 2018","RF-Interactions","Basic Atom Types"};
-	public static final String[] INTERACTION_CODE = {"none","plip","drugscore","rf","basic"};
+	public static final int INTERACTION_TYPE_RF = 2;
+	public static final int INTERACTION_TYPE_BASIC = 3;
+	public static final int INTERACTION_TYPE_DRUGSCORE = 4;
+	public static final String[] INTERACTION_TEXT = {"<none>","PLIP","RF-Interactions","Basic Atom Types","Drugscore 2018"};
+	public static final String[] INTERACTION_CODE = {"none","plip","rf","basic","drugscore"};
 
 	private static final Color DISTANCE_COLOR = Color.TURQUOISE;
 	private static final Color ANGLE_COLOR = Color.YELLOWGREEN;
@@ -294,11 +295,11 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public boolean isSplitAllBonds() {
 		return (mSettings & SETTING_ATOM_LEVEL_SELECTION) != 0;
 	}
-	
+
 	public MEASUREMENT getMeasurementMode() {
 		return mMeasurementMode;
 	}
-	
+
 	public void updatePickedSphereList(Sphere atomSphere) {
 		if (mPickedNodeList.contains(atomSphere)) {
 			mPickedNodeList.remove(atomSphere);
@@ -315,7 +316,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mPickedNodeList.clear();
 		mMeasurementMode = measurement;
 		}
-	
+
 	public void cut(V3DMolecule fxmol) {
 		copy3D(fxmol);
 		delete(fxmol);
@@ -395,7 +396,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		addMolecule(fxmol, !getMolsInScene().isEmpty());
 		optimizeView(fxmol);
 		}
-	
+
 
 	public void delete(V3DRotatableGroup group) {
 		if(group instanceof V3DMolecule) {
@@ -408,13 +409,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			listener.removeGroup(group);
 		mWaterBridgeHandler.update();
 		}
-	
+
 	public void delete(List<? extends V3DRotatableGroup> groups) {
 		for(V3DRotatableGroup fxmol:groups)
 			delete(fxmol);
 	}
 
-	
+
 	public void removeMeasurements(V3DMolecule fxmol) {
 		ArrayList<V3DMeasurement> toDelete = new ArrayList<V3DMeasurement>();
 		for(V3DMeasurement measurement : mMeasurements) {
@@ -426,15 +427,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		}
 		mMeasurements.removeAll(toDelete);
 	}
-	
-	
+
+
 	public void deleteInvisibleMolecules() {
 		ArrayList<V3DMolecule> list = new ArrayList<>();
 		for(V3DRotatableGroup fxmol : mWorld.getAllAttachedRotatableGroups()) {
 			if(fxmol instanceof V3DMolecule &&!fxmol.isVisible())
 				list.add((V3DMolecule)fxmol);
 		}
-		
+
 
 		for (V3DMolecule fxmol:list)
 			delete(fxmol);
@@ -447,7 +448,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			if(fxmol instanceof V3DMolecule)
 				list.add((V3DMolecule) fxmol);
 		}
-		
+
 		for (V3DMolecule fxmol:list)
 			delete(fxmol);
 	}
@@ -474,7 +475,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public void optimizeView() {
 		optimizeView(mWorld);
 	}
-	
+
 	/**
 	 * Moves the camera such that x and y are at all atom's COG and that all atoms of visible molecules are just within the field of view.
 	 */
@@ -676,13 +677,13 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 				}
 			}
 		}
-		
+
 		for (V3DMolecule fxmol:moleculesToBeDeleted)
 			delete(fxmol);
 
 		optimizeView();
 	}
-	
+
 	public void addGroup(V3DRotatableGroup group, V3DRotatableGroup parent) {
 		parent.addGroup(group);
 	}
@@ -707,7 +708,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 		mWaterBridgeHandler.update();
 		fxmol.addMoleculeCoordinatesChangeListener(mWaterBridgeHandler);
 	}
-	
+
 	public void applySettings() {
 		if ((mSettings & SETTING_WHITE_HYDROGENS) != 0)
 			setOverrideHydrogens(false);
@@ -733,15 +734,15 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 	public V3DRotatableGroup getWorld() {
 		return mWorld;
 		}
-	
+
 	public void setMouseDragged(boolean mouseDragged) {
 		mMouseDragged = mouseDragged;
 	}
-	
+
 	public boolean isMouseDragged() {
 		return mMouseDragged;
 	}
-	
+
 	public void setOverrideHydrogens(boolean override) {
 		mOverrideHydrogens = override;
 	}
@@ -867,7 +868,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 					if(fxmol instanceof V3DMolecule)
 						((V3DMolecule)fxmol).cutSurface(polygon, mSurfaceCutMode, paneOnScreen);
 			}
-				
+
 			mSurfaceCutMolecule = null;
 			mSurfaceCutMode = 0;
 			return;
@@ -877,7 +878,7 @@ public class V3DScene extends SubScene implements LabelDeletionListener {
 			if(fxmol instanceof V3DMolecule)
 				((V3DMolecule)fxmol).select(polygon, mode, paneOnScreen);
 	}
-		
+
 	public void activateSurfaceCutter(int mode, V3DMolecule mol3D) {
 		mSurfaceCutMode = mode;
 		mSurfaceCutMolecule = mol3D;
@@ -1084,7 +1085,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 	public void setEditor(V3DMoleculeEditor editor) {
 		mEditor = editor;
 	}
-	
+
 	public V3DMoleculeEditor getEditor() {
 		return mEditor;
 	}
@@ -1169,7 +1170,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 				angle = 180*angle/Math.PI;
 				addMeasurementNodes(coords[0], coords[2], getContrastColor(ANGLE_COLOR), DoubleFormat.toString(angle,3), atomIDList, fxmolList);
 			}
-			
+
 			else if(mMeasurementMode == MEASUREMENT.TORSION) {
 				double dihedral = Coordinates.getDihedral(coords[0],coords[1],coords[2],coords[3]);
 				dihedral = 180*dihedral/Math.PI;
@@ -1202,7 +1203,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 		V3DMeasurement measurement = new V3DMeasurement(this,atoms,fxmols,line,label,mWorld);
 		mMeasurements.add(measurement);
 		}
-	
+
 	public ArrayList<V3DMeasurement> getMeasurements() {
 		return mMeasurements;
 	}
@@ -1233,7 +1234,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 //		for(V3DRotatableGroup group : toMove)
 //			target.addGroup(group);
 //	}
-	
+
 	public V3DRotatableGroup getParent(V3DRotatableGroup child) {
 		boolean foundParent = false;
 		V3DRotatableGroup parent = null;
@@ -1244,7 +1245,7 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 			V3DRotatableGroup candidate = queue.poll();
 			if(visited.contains(candidate))
 				continue;
-			else 
+			else
 				visited.add(candidate);
 			if(candidate.getGroups().contains(child)) {
 				parent = candidate;
@@ -1255,8 +1256,8 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 			}
 		}
 		return parent;
-		
-		
+
+
 	}
 
 	@Override
