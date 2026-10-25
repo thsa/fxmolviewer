@@ -79,7 +79,7 @@ public class RFInteractionCalculator implements V3DInteractionCalculator {
 		RFKnowledgeBase rfKnowledge = RFKnowledgeBase.getInstance();
 		ArrayList<V3DInteraction> list = new ArrayList<>();
 		for (RFInteraction interaction : interactionList) {
-			double rf = rfKnowledge.getRFValue(interaction, null);
+			double rf = rfKnowledge.getRFValue(interaction, null, null);
 			if (rf > 0)
 				list.add(new RFInteractionV3D(proteinIP[interaction.getPAtom()], ligandIP[interaction.getLAtom()], interaction, rf));
 		}
@@ -91,7 +91,8 @@ public class RFInteractionCalculator implements V3DInteractionCalculator {
 	public String getInteractionInfo(V3DInteraction interaction, int remoteIndex, boolean isl2P) {
 		RFInteraction rfi = ((RFInteractionV3D)interaction).getRFInteraction();
 		double[] uncertaintyHolder = new double[1];
-		double rf = rfi.getRFValue(uncertaintyHolder);
+		double[] geometryFactorHolder = new double[1];
+		double rf = rfi.getRFValue(uncertaintyHolder, geometryFactorHolder);
 		return (System.getProperty("development") != null) ?
 				getAtomTypeName(interaction.getInteractionPoint(remoteIndex).getType(), isl2P)
 				+ ", " + RFKnowledgeBase.getInstance().getFullRFDetails(rfi)	// more info for debugging
@@ -100,7 +101,8 @@ public class RFInteractionCalculator implements V3DInteractionCalculator {
 			+ ", " + getAtomTypeName(interaction.getInteractionPoint(remoteIndex).getType(), isl2P)
 			+ ", dist:" + DoubleFormat.toString(interaction.getDistance(), 3)
 			+ ", ang:" + Math.round(180*(isl2P ? rfi.getL2PAngle() : rfi.getP2LAngle())/Math.PI)
-			+ ", tor:" + Math.round(180*(isl2P ? rfi.getL2PTorsion() : rfi.getP2LTorsion())/Math.PI);
+			+ ", tor:" + Math.round(180*(isl2P ? rfi.getL2PTorsion() : rfi.getP2LTorsion())/Math.PI)
+			+ ", geom:" + DoubleFormat.toString(geometryFactorHolder[0],2);
 	}
 
 	@Override
