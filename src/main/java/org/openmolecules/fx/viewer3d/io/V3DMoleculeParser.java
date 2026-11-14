@@ -33,12 +33,12 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class V3DMoleculeParser {
-	
+
 	public static enum Input {REQUIRE_3D, PREFER_3D, GENERATE_CONFS};
 	public static final String CONFORMER_SET = "conformerSet";
-	
-	
-	
+
+
+
 	public static List<StereoMolecule> parseChemFile(String file) {
 		List<StereoMolecule> mols = new ArrayList<>();
 		if(file.endsWith(".mol") ) {
@@ -63,7 +63,7 @@ public class V3DMoleculeParser {
 
 					mols.add(mol);
 				}
-				
+
 			}
 			catch (FileNotFoundException fnfe) {}
 		}
@@ -88,12 +88,12 @@ public class V3DMoleculeParser {
 		}
 		else {
 			CompoundFileParser parser = null;
-	
+
 			if(file.endsWith(".sdf"))
 				parser = new SDFileParser(file);
 			else if(file.endsWith(".dwar"))
 				parser = new DWARFileParser(file,DWARFileParser.MODE_COORDINATES_PREFER_3D);
-	
+
 			if(parser!=null) {
 				StereoMolecule mol;
 				ConformerGenerator confGen = new ConformerGenerator();
@@ -121,11 +121,11 @@ public class V3DMoleculeParser {
 			}
 		}
 		return mols;
-		
-	}
-	
 
-	
+	}
+
+
+
 	private static void parseFile(V3DScene scene,String file) {
 		List<V3DRotatableGroup> molGroups = new ArrayList<V3DRotatableGroup>();
 
@@ -143,9 +143,9 @@ public class V3DMoleculeParser {
 					List<V3DMolecule> groupMols = new ArrayList<V3DMolecule>();
 					V3DMolecule.MoleculeRole role;
 					boolean isProtein = false;
-					if(k.equals(StructureAssembler.SOLVENT_GROUP)) 
+					if(k.equals(StructureAssembler.SOLVENT_GROUP))
 						role = V3DMolecule.MoleculeRole.SOLVENT;
-					else if(k.equals(StructureAssembler.LIGAND_GROUP)) 
+					else if(k.equals(StructureAssembler.LIGAND_GROUP))
 						role = V3DMolecule.MoleculeRole.LIGAND;
 					else {
 						role =  V3DMolecule.MoleculeRole.MACROMOLECULE;
@@ -153,26 +153,26 @@ public class V3DMoleculeParser {
 					}
 					V3DRotatableGroup molGroup = new V3DRotatableGroup(k.toUpperCase());
 					v.forEach(e -> {
-						if(role==V3DMolecule.MoleculeRole.SOLVENT) 
+						if(role==V3DMolecule.MoleculeRole.SOLVENT)
 							e.setName("HOH" + " " + e.getAtomChainId(0));
 						else if (role==V3DMolecule.MoleculeRole.LIGAND)
 							e.setName(e.getAtomAmino(0) + " " + e.getAtomChainId(0));
-						else 
+						else
 							e.setName("PROT");
 						V3DMolecule fxmol;
 						e.ensureHelperArrays(Molecule.cHelperCIP);
 						fxmol = new V3DMolecule(e, V3DMolecule.getNextID(),role,false, false);
 						groupMols.add(fxmol);
-						
+
 					});
 					pdbGroup.addGroup(molGroup);
 					for(V3DMolecule fxmol : groupMols) {
 						scene.addMolecule(fxmol, molGroup, true);
-						if(isProtein) 
+						if(isProtein)
 							Platform.runLater(() -> fxmol.setColor(Color.DARKGRAY));
-						
+
 					}
-					
+
 				molGroups.add(pdbGroup);
 				});
 
@@ -181,15 +181,15 @@ public class V3DMoleculeParser {
 			catch (ParseException pe) {}
 			catch (IOException ie) {}
 		}
-	
+
 	}
 
 
 	public static void readMoleculeFile(V3DScene scene, String filename) {
 		parseFile(scene,filename);
 	}
-	
-	
+
+
 	public static List<V3DMolecule> readPheSAQuery(V3DScene scene, File pheSAFile, int group) {
 		DescriptorHandlerShape dhs = new DescriptorHandlerShape();
 		DWARFileParser dwParser = new DWARFileParser(pheSAFile, DWARFileParser.MODE_COORDINATES_REQUIRE_3D);
@@ -216,7 +216,7 @@ public class V3DMoleculeParser {
 					SpecialField confField = dwParser.getSpecialFieldMap().get(CONFORMER_SET);
 					if(confField!=null) {
 						String confSetString = dwParser.getSpecialFieldData(confField .fieldIndex);
-						ConformerSet confSet = new ConformerSet(confSetString);
+						ConformerSet confSet = new ConformerSet(confSetString, null);
 						PheSAMolecule pheSAMol = dhs.createDescriptor(confSet);
 						for(MolecularVolume molVol : pheSAMol.getVolumes()) {
 							StereoMolecule m = pheSAMol.getConformer(molVol);
@@ -226,7 +226,7 @@ public class V3DMoleculeParser {
 							fxMols.add(fxMol);
 						}
 					}
-					
+
 				}
 				notDone = dwParser.next();
 			}
@@ -235,7 +235,7 @@ public class V3DMoleculeParser {
 			}
 		}
 		return fxMols;
-	
+
 	}
 	/*
 	public static List<V3DMolecule> readNegReceptorImage(V3DScene scene, File imgFile, int group){
@@ -253,7 +253,7 @@ public class V3DMoleculeParser {
 				V3DMolecule fxMol = new V3DMolecule(mol, V3DMolecule.getNextID(),V3DMolecule.MoleculeRole.MACROMOLECULE, scene.mayOverrideHydrogenColor());
 				fxMol.addNegativeReceptorImage(bsVol);
 				fxMols.add(fxMol);
-				
+
 				notDone = dwParser.next();
 			}
 			catch(Exception e) {
@@ -261,8 +261,8 @@ public class V3DMoleculeParser {
 			}
 		}
 		return fxMols;
-		
-		
+
+
 	}
 	*/
 }
