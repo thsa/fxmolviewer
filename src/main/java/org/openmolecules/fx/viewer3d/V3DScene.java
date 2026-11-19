@@ -1151,8 +1151,9 @@ System.out.println("Calculated q:"+DoubleFormat.toString(q)+" l:"+DoubleFormat.t
 				int atomID = ((NodeDetail) pickedAtomList[i].getUserData()).getAtom();
 				atomIDList.add(atomID);
 				Node parent = pickedAtomList[i].getParent();
-				while (!(parent instanceof V3DMolecule fxmol))
+				while (!(parent instanceof V3DMolecule))
 					parent = parent.getParent();
+				V3DMolecule fxmol = (V3DMolecule)parent;
 				fxmolList.add(fxmol);
 				Coordinates c = fxmol.getMolecule().getAtomCoordinates(atomID);
 				Coordinates worldPoint =  fxmol.getWorldCoordinates(this, c);
